@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Who does what, the acceptance promise, the AI in the stack, data handling, and the free First-File 3.6 Conversion — in plain English.">
+<link rel="canonical" href="https://appraisalpartners.net/how-it-works.html">
+<meta property="og:title" content="How the Desk Works">
+<meta property="og:description" content="Who does what, the acceptance promise, the AI in the stack, data handling, and the free First-File 3.6 Conversion — in plain English.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://appraisalpartners.net/how-it-works.html">
+<meta property="og:image" content="https://appraisalpartners.net/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
+<title>How the Desk Works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper: #FAFAF7;
+    --ink: #1C2420;
+    --muted: #5C6660;
+    --rule: #D9DED9;
+    --accent: #2E5D46;
+    --accent-deep: #24493A;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --paper: #141917;
+      --ink: #E8EAE6;
+      --muted: #97A19A;
+      --rule: #2A322D;
+      --accent: #6FA98C;
+      --accent-deep: #8FBFA6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #141917;
+    --ink: #E8EAE6;
+    --muted: #97A19A;
+    --rule: #2A322D;
+    --accent: #6FA98C;
+    --accent-deep: #8FBFA6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.65;
+    margin: 0;
+    padding: 0 24px;
+  }
+  .sheet { max-width: 640px; margin: 0 auto; padding: 48px 0 64px; }
+  .letterhead {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 16px; flex-wrap: wrap;
+    border-bottom: 2px solid var(--ink); padding-bottom: 14px;
+  }
+  .letterhead .name {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-weight: 500; font-size: 14px; letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  .letterhead .cred {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+  }
+  h1 {
+    font-size: clamp(26px, 5vw, 34px); font-weight: 700; line-height: 1.25;
+    text-wrap: balance; margin: 40px 0 8px;
+  }
+  .back {
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px;
+  }
+  p { margin: 0 0 18px; }
+  a { color: var(--accent-deep); text-decoration-color: var(--rule); text-underline-offset: 3px; }
+  a:hover, a:focus-visible { text-decoration-color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  section { border-top: 1px solid var(--rule); margin-top: 38px; padding-top: 26px; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 16px;
+  }
+  .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }
+  .cols h3 {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+  .cols .never h3 { color: var(--accent); }
+  .cols ul { margin: 0; padding-left: 1.1em; font-size: 15.5px; }
+  .cols li { margin-bottom: 7px; }
+  ul.plain { margin: 0; padding: 0 0 0 1.15em; }
+  ul.plain li { margin-bottom: 10px; }
+  ul.plain li::marker { color: var(--accent); }
+  footer {
+    border-top: 2px solid var(--ink); margin-top: 44px; padding-top: 14px;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <header class="letterhead">
+    <span class="name">Appraisal Partners</span>
+    <span class="cred">Report Production Desk &middot; run by two appraisers</span>
+  </header>
+
+  <h1>How the desk works</h1>
+  <p class="back"><a href="index.html">&larr; back to the front page</a></p>
+  <p>The plain-English version of everything — the same terms that live in the service agreement, without the legalese. If a question isn't answered here, ask: <a href="mailto:mrr@appraisalpartners.net">mrr@appraisalpartners.net</a>.</p>
+
+  <section>
+    <p class="eyebrow">Who does what</p>
+    <div class="cols">
+      <div>
+        <h3>You decide</h3>
+        <ul>
+          <li>Inspection findings</li>
+          <li>Comparable selection</li>
+          <li>Adjustment methodology and amounts</li>
+          <li>Analyses, conclusions, value</li>
+        </ul>
+      </div>
+      <div>
+        <h3>We produce</h3>
+        <ul>
+          <li>Data entry and photo/sketch assembly</li>
+          <li>Source-based drafting and commentary</li>
+          <li>Proposed adjustments with their data basis, for your approval — nothing stands without your sign-off</li>
+          <li>Exhibits, formatting, consistency checks</li>
+        </ul>
+      </div>
+      <div class="never">
+        <h3>We never</h3>
+        <ul>
+          <li>Sign or deliver</li>
+          <li>Communicate with your client</li>
+          <li>Silently change appraisal judgment</li>
+          <li>Touch your MLS login</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:18px">If our drafting has an error, we fix it free and fast, and it's on us. The appraisal itself — analyses, conclusions, value — is yours; the agreement puts that split in plain English.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">The acceptance promise</p>
+    <p>Orders are reviewed as they come in. Within 30 minutes during desk hours (7am–10pm Central, seven days) you get one of three answers: accepted and the clock's running; what's missing; or "needs a closer look — answer within two hours." Never silence. How two people keep that promise seven days a week: the acknowledgment and first-pass triage run on the desk's systems, so the response window never depends on a human staring at an inbox — the licensed judgment happens at acceptance and review. An assignment is accepted only when the packet is confirmed complete, authorized, and assigned an open production slot — the delivery time is quoted at acceptance. Accepted orders get a secure upload link for assignment files (or your client's approved channel); plain email stays for contact and questions. Paid live assignments outrank demonstrations; rush only when expressly confirmed. The clock starts at acceptance, not when you hit send.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">How it's this fast</p>
+    <p>Matt's an appraiser who's also an engineer, and he built the desk's production stack himself, for this exact job. Part of it is an AI-assisted production pipeline Matt built — it does the data entry, grid assembly, formatting, and error checks against the source documents, over and over, without getting tired at 11pm, and it's barred by contract from training on your data. The judgment stays where it belongs: comps, adjustments, and conclusions are yours, and every file gets Matt's licensed review before it leaves — with Tim's forty years on call for the hard ones. No magic, no shortcuts — an appraiser who got tired of typing and knew how to fix it.</p>
+  </section>
+
+  <section id="first-file">
+    <p class="eyebrow">The free First-File 3.6 Conversion</p>
+    <p>One complimentary conversion per firm: see your own workflow translated into the new format using a past file — with your client's written authorization — or a training file we provide. You get the native working file back, a missing-information memo, and a short call with Matt. Scheduled slots, subject to availability; training and evaluation only; paid production always comes first — demonstrations typically come back within 24&ndash;48 hours of acceptance, not the 4&ndash;6-hour paid turnaround. (Why the authorization requirement? Assignment results are confidential to your client under USPAP — we built the offer around that instead of ignoring it.)</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Want the whole thing done?</p>
+    <p>Some appraisers want to send photos, a sketch, and field notes, and get a finished appraisal back — comps and all. We do that by arrangement only. Depending on your market it takes licensing and MLS setup on our end, so it runs as an ongoing contract with committed volume, priced for your situation. If that's you, <a href="mailto:mrr@appraisalpartners.net?subject=Full%20production%20arrangement">ask</a>.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Where your data goes</p>
+    <p>Your packet is used for your assignment and nothing else. No subcontractors — nobody touches your file but the two of us. Nothing is sold, reused for another customer, or used to train anyone's models. The report, the working file, and the workfile copy are yours; we keep our own assistance record confidentially, as USPAP expects, and delete anything beyond it on written request. Email works for most customers — if your client requires secure transfer, tell us your channel and we'll use it. NDA available on request.</p>
+    <p>One check that saves everyone a headache: read your engagement letter first — some letters restrict outside assistance. Before any order is accepted, you confirm the engagement and client permit the requested assistance; it's part of intake, not an afterthought.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">The human part</p>
+    <p>In a world going full robot, you're dealing with two licensed appraisers with last names. The software types; the care comes from us, on every file, every time. Yes it's fast and yes it's affordable — and it's built to be signed next to, because our names ride with yours. When something's urgent, established customers get a person on the phone, not a ticket number. We treat you and your work with care and courtesy, and we ask the same back.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Why I built this desk</p>
+    <p>I grew up in appraisal, and I know an experienced appraiser's time is best spent inspecting, analyzing, and exercising judgment — not doing repetitive production late at night. My engineering background let me build a disciplined system around the part of the work I do best: you inspect, I build.</p>
+    <p>We cap capacity so the same licensed appraiser reviews every file, with a 40-year MAI behind him. The founding rate is possible because the workflow is efficient — not because the work is rushed. I know what swimming underwater feels like. This is the production desk I wish more appraisers had. <em>— Matt</em></p>
+  </section>
+
+  <footer>
+    <span><a href="index.html">Appraisal Partners</a> &middot; Dallas&ndash;Fort Worth, Texas</span>
+    <span>Desk hours 7am&ndash;10pm CT, seven days</span>
+    <span><a href="terms.html">Service Terms</a> &middot; TX Certified Residential #1361115-CR &middot; E&amp;O carried</span>
+  </footer>
+</div>
+</body>
+</html>
