@@ -3,104 +3,112 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Who does what, the acceptance promise, the AI in the stack, data handling, and the free First-File 3.6 Conversion — in plain English.">
+<meta name="description" content="Disclosed report-production assistance for experienced residential appraisers: Matthew Roth builds the editable draft report and supporting file; the signing appraiser reviews and owns the final decisions.">
 <link rel="canonical" href="https://appraisalpartners.net/how-it-works.html">
-<meta property="og:title" content="How the Desk Works">
-<meta property="og:description" content="Who does what, the acceptance promise, the AI in the stack, data handling, and the free First-File 3.6 Conversion — in plain English.">
+<meta property="og:title" content="Production Desk for Appraisers | Appraisal Partners">
+<meta property="og:description" content="You inspect the property and make the value decisions. Matthew Roth builds the report and supporting file for your independent review.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/how-it-works.html">
 <meta property="og:image" content="https://appraisalpartners.net/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
-<title>How the Desk Works</title>
+<title>Production Desk for Appraisers | Appraisal Partners</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
 <style>
   :root {
-    --paper: #FAFAF7;
-    --ink: #1C2420;
-    --muted: #5C6660;
-    --rule: #D9DED9;
-    --accent: #2E5D46;
-    --accent-deep: #24493A;
+    --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
+    --rule: #D9DED9; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
   }
   :root:not([data-theme="light"]) {
     @media (prefers-color-scheme: dark) {
-      --paper: #141917;
-      --ink: #E8EAE6;
-      --muted: #97A19A;
-      --rule: #2A322D;
-      --accent: #6FA98C;
-      --accent-deep: #8FBFA6;
+      --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
+      --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
     }
   }
   :root[data-theme="dark"] {
-    --paper: #141917;
-    --ink: #E8EAE6;
-    --muted: #97A19A;
-    --rule: #2A322D;
-    --accent: #6FA98C;
-    --accent-deep: #8FBFA6;
+    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
+    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
   }
   * { box-sizing: border-box; }
   body {
-    background: var(--paper);
-    color: var(--ink);
+    background: var(--paper); color: var(--ink);
     font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
-    font-size: 17px;
-    line-height: 1.65;
-    margin: 0;
-    padding: 0 24px;
+    font-size: 17px; line-height: 1.68; margin: 0; padding: 0 24px;
   }
-  .sheet { max-width: 640px; margin: 0 auto; padding: 48px 0 64px; }
+  .sheet { max-width: 720px; margin: 0 auto; padding: 44px 0 64px; }
   .letterhead {
     display: flex; justify-content: space-between; align-items: baseline;
-    gap: 16px; flex-wrap: wrap;
-    border-bottom: 2px solid var(--ink); padding-bottom: 14px;
+    gap: 18px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 14px;
   }
   .letterhead .name {
     font-family: "IBM Plex Mono", "Courier New", monospace;
     font-weight: 500; font-size: 14px; letter-spacing: 0.22em; text-transform: uppercase;
   }
-  .letterhead .cred {
+  .letterhead .cred, .nav {
     font-family: "IBM Plex Mono", "Courier New", monospace;
     font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
   }
+  .nav { width: 100%; display: flex; flex-wrap: wrap; gap: 9px 20px; padding-top: 2px; }
+  .nav a { color: var(--muted); }
   h1 {
-    font-size: clamp(26px, 5vw, 34px); font-weight: 700; line-height: 1.25;
-    text-wrap: balance; margin: 40px 0 8px;
+    font-size: clamp(34px, 7vw, 50px); font-weight: 700; line-height: 1.16;
+    letter-spacing: -0.02em; text-wrap: balance; margin: 46px 0 20px;
   }
-  .back {
-    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px;
-  }
+  h1 .line { color: var(--accent); }
+  h2 { font-size: 24px; line-height: 1.35; margin: 0 0 14px; }
+  .lede { font-size: 20px; line-height: 1.55; margin: 0 0 14px; }
   p { margin: 0 0 18px; }
   a { color: var(--accent-deep); text-decoration-color: var(--rule); text-underline-offset: 3px; }
   a:hover, a:focus-visible { text-decoration-color: var(--accent); }
   a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-  section { border-top: 1px solid var(--rule); margin-top: 38px; padding-top: 26px; }
+  section { border-top: 1px solid var(--rule); margin-top: 44px; padding-top: 30px; }
   .eyebrow {
     font-family: "IBM Plex Mono", "Courier New", monospace;
     font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--accent); margin: 0 0 16px;
+    color: var(--accent); margin: 0 0 18px;
   }
-  .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }
-  .cols h3 {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
-    margin: 0 0 10px;
+  .actions {
+    display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 24px; align-items: center;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px;
   }
-  .cols .never h3 { color: var(--accent); }
-  .cols ul { margin: 0; padding-left: 1.1em; font-size: 15.5px; }
-  .cols li { margin-bottom: 7px; }
-  ul.plain { margin: 0; padding: 0 0 0 1.15em; }
-  ul.plain li { margin-bottom: 10px; }
+  a.btn {
+    display: inline-block; background: var(--accent); color: var(--paper);
+    padding: 10px 18px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
+    text-decoration: none; border: 1.5px solid var(--accent);
+  }
+  a.btn:hover, a.btn:focus-visible { background: var(--accent-deep); border-color: var(--accent-deep); }
+  .relationship { background: var(--wash); border: 1px solid var(--rule); padding: 22px 24px; margin-top: 28px; }
+  .relationship p:last-child { margin-bottom: 0; }
+  .scope {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px;
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  }
+  .scope > div { padding: 20px 0 4px; }
+  .scope h2 { font-size: 19px; }
+  ul.plain { margin: 0 0 18px; padding: 0 0 0 1.15em; }
+  ul.plain li { margin-bottom: 9px; }
   ul.plain li::marker { color: var(--accent); }
+  ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 17px; }
+  ol.steps li { display: grid; grid-template-columns: 34px 1fr; gap: 14px; }
+  ol.steps .n {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 14px; color: var(--accent); padding-top: 4px;
+  }
+  .fit { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .fit article { border: 1px solid var(--rule); padding: 19px 20px 3px; }
+  .fit h2 { font-size: 19px; }
+  .proof { display: flex; flex-wrap: wrap; gap: 12px 24px; font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; }
+  .cta { border: 1.5px solid var(--ink); padding: 24px 26px; margin-top: 44px; }
+  .cta p:last-child { margin-bottom: 0; }
   footer {
     border-top: 2px solid var(--ink); margin-top: 44px; padding-top: 14px;
     font-family: "IBM Plex Mono", "Courier New", monospace;
     font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
     display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+  @media (max-width: 620px) {
+    .scope, .fit { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -108,97 +116,154 @@
 
 <div class="sheet">
   <header class="letterhead">
-    <span class="name">Appraisal Partners</span>
-    <span class="cred">Report Production Desk &middot; run by two appraisers</span>
+    <span class="name">Appraisal Partners / Production Desk</span>
+    <span class="cred">A distinct professional production service</span>
+    <nav class="nav" aria-label="Primary">
+      <a href="index.html">Residential appraisal practice</a>
+      <a href="how-it-works.html">Production Desk</a>
+      <a href="get-started.html">Contact Matt</a>
+    </nav>
   </header>
 
-  <h1>How the desk works</h1>
-  <p class="back"><a href="index.html">&larr; back to the front page</a></p>
-  <p>The plain-English tour of how the desk runs. The binding agreement lives on the <a href="terms.html">Service Terms</a> page; if a question isn't answered on either, ask: <a href="mailto:mrr@appraisalpartners.net">mrr@appraisalpartners.net</a>.</p>
+  <h1>You inspect the property and make the value decisions. <span class="line">I build the report and supporting file.</span></h1>
+  <p class="lede">This is disclosed report-production assistance for experienced residential appraisers who want help with the full desk side of recurring assignments.</p>
+  <p>If your AMC or lending program permits named significant appraisal assistance, we can also discuss a limited arrangement for participating signing appraisers.</p>
+  <p>Forward the order, inspect the property, then send the photos, sketch, and notes. I handle the authorized research, data collection, report construction, proposed analysis, narrative, exhibits, and quality checks. You independently review every judgment, make the final decisions, sign, and deliver.</p>
+
+  <div class="relationship">
+    <p><strong>The Production Desk is a distinct service line of Appraisal Partners.</strong> It has its own client relationships, scope, onboarding, and written terms, separate from my residential appraisal practice. This is contract report-production assistance; I do not join your staff or sign your report. AMC and lender programs use their own vendor approval and written agreement.</p>
+  </div>
+
+  <div class="actions">
+    <a class="btn" href="mailto:mrr@appraisalpartners.net?subject=Production%20Desk%20relationship">Discuss a working relationship</a>
+    <a href="uad36-work-sample.pdf">Review a sanitized sample</a>
+  </div>
 
   <section>
-    <p class="eyebrow">Who does what</p>
-    <div class="cols">
+    <p class="eyebrow">Why I am offering this</p>
+    <h2>The desk side is the part of appraisal I have always gravitated toward.</h2>
+    <p>I have spent twenty years in residential appraisal. I like the research, analysis, report construction, and clear writing &mdash; and I have built careful systems around that work.</p>
+    <p>I want a few stable working relationships where the division of work is clear, the signing appraiser stays in control, and the client receives credible work. UAD 3.6 makes that help useful now, but it is not a reason to cut corners or hide who did what. Capacity and delivery timing are agreed before the first file and kept at a level I can personally review.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Who this can help</p>
+    <div class="fit">
+      <article>
+        <h2>Appraisers and appraisal firms</h2>
+        <ul class="plain">
+          <li>You want to keep inspecting the property, serving the client, and making the final judgment</li>
+          <li>You need recurring capacity without hiring and training another employee</li>
+          <li>You need the report and support file built, not just fields typed</li>
+          <li>You will independently review the work and disclose significant assistance</li>
+          <li>You want to keep production moving through UAD 3.6</li>
+        </ul>
+      </article>
+      <article>
+        <h2>AMCs and lenders</h2>
+        <ul class="plain">
+          <li>Your program permits named significant appraisal assistance</li>
+          <li>You want to test a limited arrangement with participating signing appraisers</li>
+          <li>You need a clear division of responsibility and documented data handling</li>
+          <li>You will use your normal vendor approval and written terms</li>
+        </ul>
+      </article>
+    </div>
+    <p style="margin-top:20px"><strong>Not a fit:</strong> anonymous ghostwriting, shared credentials, co-signing, or any report the signing appraiser will not independently review.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">The responsibility line</p>
+    <div class="scope">
       <div>
-        <h3>You decide</h3>
-        <ul>
-          <li>Inspection findings</li>
-          <li>Comparable selection</li>
-          <li>Adjustment methodology and amounts</li>
-          <li>Analyses, conclusions, value</li>
+        <h2>The signing appraiser retains</h2>
+        <ul class="plain">
+          <li>Client and engagement relationship</li>
+          <li>Inspection and inspection findings</li>
+          <li>Scope and final comparable selection</li>
+          <li>Final adjustments and appraisal judgments</li>
+          <li>Reconciliation and opinion of value</li>
+          <li>Certification, signature, and delivery</li>
         </ul>
       </div>
       <div>
-        <h3>We produce</h3>
-        <ul>
-          <li>Data entry and photo/sketch assembly</li>
-          <li>Source-based drafting and commentary</li>
-          <li>Proposed adjustments with their data basis, for your approval — nothing stands without your sign-off</li>
-          <li>Exhibits, formatting, consistency checks</li>
-        </ul>
-      </div>
-      <div class="never">
-        <h3>We never</h3>
-        <ul>
-          <li>Sign or deliver</li>
-          <li>Communicate with your client</li>
-          <li>Silently change appraisal judgment</li>
-          <li>Touch your MLS login</li>
+        <h2>Appraisal Partners produces</h2>
+        <ul class="plain">
+          <li>Authorized MLS and public-record research</li>
+          <li>Comparable candidates and proposed analyses</li>
+          <li>Report data and narrative</li>
+          <li>Maps, exhibits, and organized source material</li>
+          <li>Consistency and completion checks</li>
+          <li>A complete editable non-final draft</li>
         </ul>
       </div>
     </div>
-    <p style="margin-top:18px">If our drafting has an error, we fix it free and fast, and it's on us. The appraisal itself — analyses, conclusions, value — is yours; the agreement puts that split in plain English.</p>
+    <p style="margin-top:20px">A narrower draft-from-your-research scope can also be arranged when your office already has the comps, adjustments, and market data assembled.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">How a file moves</p>
+    <ol class="steps">
+      <li><span class="n">1.</span><span><strong>We establish the relationship first.</strong> Onboarding covers your markets, client mix, engagement restrictions, expected volume, authorized data access, software and deliverables, schedule, and written terms.</span></li>
+      <li><span class="n">2.</span><span><strong>You forward the order and engagement letter.</strong> After the inspection, you send the photos, sketch, and written or voice notes through the agreed secure channel.</span></li>
+      <li><span class="n">3.</span><span><strong>I produce the desk side of the assignment.</strong> I assemble the support, research permitted sources, develop comparable candidates and proposed analyses, complete the report, and run the file through quality checks.</span></li>
+      <li><span class="n">4.</span><span><strong>You review it as the appraiser.</strong> Accept, change, or reject anything necessary. You make the final appraisal judgments, sign, and deliver to your client.</span></li>
+    </ol>
+  </section>
+
+  <section>
+    <p class="eyebrow">What you receive</p>
+    <p>The working arrangement defines the exact package. For a typical supported assignment, that means an editable working file in the agreed software format, applicable PDF and UAD output, organized supporting materials, and a short record of assumptions or unresolved items that deserve attention during review.</p>
+    <p>I fill the report as completely as the evidence allows and flag anything you need to verify or decide.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Markets and current boundaries</p>
+    <div class="fit">
+      <article>
+        <h2>Designed for</h2>
+        <ul class="plain">
+          <li>Established residential appraisers and firms</li>
+          <li>AMC or lender arrangements that permit named assistance</li>
+          <li>Recurring UAD 3.6 production needs</li>
+        </ul>
+      </article>
+      <article>
+        <h2>Current boundaries</h2>
+        <ul class="plain">
+          <li>Texas and Colorado are the starting markets</li>
+          <li>Other markets require client, licensing, and data-access review</li>
+          <li>Current scope is conventional and private residential work</li>
+          <li>No shared MLS credentials, in either direction</li>
+        </ul>
+      </article>
+    </div>
+    <p style="margin-top:20px">Market setup is deliberate. Client permission, licensing, market competence, and authorized MLS and data access are confirmed before production begins; a new market may take one to three weeks to establish.</p>
   </section>
 
   <section id="disclosure">
-    <p class="eyebrow">The disclosure, exactly as it appears</p>
-    <p>Every draft carries the USPAP SR 2-3 assistance disclosure, naming a person, not a company. This is the language, as placed in every draft:</p>
-    <blockquote style="margin:0; border:1px solid var(--rule); border-left:3px solid var(--accent); padding:14px 18px; font-size:15.5px;">
-      <p>Matthew Roth, Texas Certified Residential Appraiser #1361115-CR, provided significant real property appraisal assistance to the appraiser signing this certification. The extent of that assistance was: entry of property and market data into the report software; research and assembly of comparable data for the appraiser's review and selection; drafting of the report, including the sales grid and commentary, for the appraiser's review; and quality checks against source documents. All analyses, opinions, and conclusions — including comparable selection, all adjustments, and the opinion of value — are those of the signing appraiser, who reviewed and approved the report in its entirety. Matthew Roth did not inspect the subject property.</p>
-    </blockquote>
-    <p style="margin-top:14px">The extent list is trimmed to what we actually did on your assignment, and the credential recited matches the subject's state — Colorado assignments cite CO #CR200002387. You may edit the wording to fit your report; removing it ends our work together. Your client sees a named, plainly described service — the same thing this page tells you, and the same thing the <a href="uad36-work-sample.pdf">work sample</a> shows.</p>
+    <p class="eyebrow">Disclosure, data, and trust</p>
+    <p>When my work constitutes significant real property appraisal assistance, the certification identifies me and describes the assistance provided. Client, jurisdiction, and licensing requirements are confirmed before an assignment is accepted. I do not remove a required disclosure.</p>
+    <p>Files move through an agreed secure channel. No outside human subcontractors receive the assignment, no client is solicited, no MLS login is shared, and assignment data is never sold.</p>
+    <p>I use software automation and AI-assisted tools for clerical work, research organization, drafting, and quality checks. I direct and review the production file; the signing appraiser independently reviews and owns the appraisal judgments. Before live work begins, we document the exact tools, data path, storage, retention, and model-training terms so you and your client can approve the setup.</p>
+    <div class="proof">
+      <a href="Matthew-Roth-Appraisal-Qualifications.pdf">Qualifications</a>
+      <a href="uad36-work-sample.pdf">Sanitized demonstration report</a>
+      <a href="terms.html">Report production terms</a>
+      <span>W-9, licenses, E&amp;O evidence, and NDA available during onboarding</span>
+    </div>
   </section>
 
-  <section>
-    <p class="eyebrow">Current fit</p>
-    <p>UAD 3.6 conventional and private work. We don't take FHA or VA panel assignments — those panels carry roster and handbook requirements we're not set up to serve yet — and Georgia bars out-of-state appraisal assistance, so we sit that state out. Full Research + Draft runs Texas and Colorado by default; other markets open case by case.</p>
-  </section>
-
-  <section>
-    <p class="eyebrow">The acceptance promise</p>
-    <p>Orders are reviewed as they come in. Within 30 minutes during desk hours (7am–10pm Central, seven days) you get one of three answers: accepted and the clock's running; what's missing; or "needs a closer look — answer within two hours." Never silence. How two people keep that promise seven days a week: the acknowledgment and first-pass triage run on the desk's systems, so the response window never depends on a human staring at an inbox — the licensed judgment happens at acceptance and review. An assignment is accepted only when the packet is confirmed complete, authorized, and assigned an open production slot — the delivery time is quoted at acceptance. Accepted orders get a secure upload link for assignment files (or your client's approved channel); plain email stays for contact and questions. Paid live assignments outrank demonstrations; rush only when expressly confirmed. The clock starts at acceptance, not when you hit send.</p>
-  </section>
-
-  <section>
-    <p class="eyebrow">How it's this fast</p>
-    <p>Matt's an appraiser who's also an engineer, and he built the desk's production stack himself, for this exact job. It does the data entry, grid assembly, formatting, and error checks against the source documents, over and over, without getting tired at 11pm. That stack includes AI drafting tools Matt built and runs — disclosed as his assistance like everything else on this desk, and your data never trains anyone's models. The judgment stays where it belongs: comps, adjustments, and conclusions are yours, and every file gets Matt's licensed review before it leaves — with Tim's forty years on call for the hard ones. No magic, no shortcuts — an appraiser who got tired of typing and knew how to fix it.</p>
-  </section>
-
-  <section id="first-file">
-    <p class="eyebrow">The free First-File 3.6 Conversion</p>
-    <p>One complimentary conversion per firm: see your own workflow translated into the new format using a past file — with your client's written authorization — or a training file we provide. You get the native working file back, a missing-information memo, and a short call with Matt. Scheduled slots, subject to availability; training and evaluation only; paid production always comes first — demonstrations typically come back within one to two days of acceptance, not the next-day paid turnaround. (Why the authorization requirement? Assignment results are confidential to your client under USPAP — we built the offer around that instead of ignoring it.)</p>
-  </section>
-
-  <section id="full-service">
-    <p class="eyebrow">Full appraisal — the whole thing done</p>
-    <p>After separate onboarding and agreement, we can perform agreed desk-based data collection, assemble the MLS and public-record research packet, develop proposed market and comparable analysis, and prepare the report data and narrative. You complete the required inspection and retain independent responsibility for scope, appraisal judgments, reconciliation, value, certification, signature, and delivery — everything we produce reaches you as a proposal for your review, disclosed like all our assistance. Availability is market-specific — licensing, client requirements, and authorized MLS and data access, meaning our own memberships joined per market during onboarding — <strong>Texas and Colorado by default</strong>, other markets case by case; setup typically takes one to three weeks after eligibility and access are confirmed. Every arrangement starts with onboarding and a fit check under its own clear agreement. We never share MLS credentials, in either direction. If that's the lane you want, <a href="mailto:mrr@appraisalpartners.net?subject=Full%20Research%20%2B%20Draft">ask before your first order</a>.</p>
-  </section>
-
-  <section>
-    <p class="eyebrow">Where your data goes</p>
-    <p>Your packet is used for your assignment and nothing else. No outside human subcontractors — the only people in your file are the two of us; production runs on our own systems and standard commercial software and cloud services under their confidentiality terms. Nothing is sold, reused for another customer, or used to train anyone's models. The report, the working file, and the workfile copy are yours; we keep our own assistance record confidentially, as USPAP expects, and delete anything beyond it on written request. If your client requires secure transfer, tell us your channel and we'll use it. NDA available on request.</p>
-    <p>One check that saves everyone a headache: read your engagement letter first — some letters restrict outside assistance. Before any order is accepted, you confirm the engagement and client permit the requested assistance; it's part of intake, not an afterthought.</p>
-  </section>
-
-  <section>
-    <p class="eyebrow">Why this desk exists</p>
-    <p>The short version lives on its own page: <a href="why.html">Why we're doing this</a> — the honest answer, from the appraiser who runs it.</p>
-  </section>
+  <div class="cta">
+    <p><strong>Tell me how your practice or program works.</strong></p>
+    <p>Send your markets, typical assignment mix, approximate recurring volume, current software or workflow, and the part of production you want handled. If the client terms, licensing, data access, and working style fit, we can start with one file under written terms.</p>
+    <p><a href="mailto:mrr@appraisalpartners.net?subject=Production%20Desk%20relationship">mrr@appraisalpartners.net</a></p>
+  </div>
 
   <footer>
-    <span><a href="index.html">Appraisal Partners</a> &middot; Dallas&ndash;Fort Worth, Texas</span>
-    <span>Desk hours 7am&ndash;10pm CT, seven days</span>
-    <span><a href="terms.html">Service Terms</a> &middot; TX Certified Residential #1361115-CR &middot; E&amp;O carried</span>
+    <span><a href="index.html">Appraisal Partners</a> / Production Desk &middot; Dallas&ndash;Fort Worth</span>
+    <span>Matthew Roth &middot; TX #1361115-CR &middot; CO #CR200002387</span>
+    <span><a href="terms.html">Report Production Terms</a></span>
   </footer>
 </div>
 </body>
