@@ -68,6 +68,14 @@
     font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
     color: var(--accent); margin: 0 0 18px;
   }
+  .jumpnav {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12px; letter-spacing: 0.04em;
+    display: flex; flex-wrap: wrap; gap: 8px 18px;
+    border: 1px solid var(--rule); background: var(--wash);
+    padding: 13px 16px; margin: 26px 0 0;
+  }
+  .jumpnav span { color: var(--muted); }
   .actions {
     display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 24px; align-items: center;
     font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px;
@@ -98,6 +106,10 @@
   .fit { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .fit article { border: 1px solid var(--rule); padding: 19px 20px 3px; }
   .fit h2 { font-size: 19px; }
+  .benefits { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .benefits article { border: 1px solid var(--rule); border-top: 3px solid var(--accent); padding: 18px 20px 4px; }
+  .benefits h2 { font-size: 18px; margin-bottom: 8px; }
+  .benefits p { font-size: 15.5px; margin-bottom: 14px; }
   .proof { display: flex; flex-wrap: wrap; gap: 12px 24px; font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; }
   .fineprint { font-size: 14.5px; color: var(--muted); margin: 12px 0 0; }
   figure.excerpt { margin: 0 0 18px; }
@@ -115,7 +127,7 @@
     display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   }
   @media (max-width: 620px) {
-    .scope, .fit { grid-template-columns: 1fr; }
+    .scope, .fit, .benefits { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -133,14 +145,21 @@
     </nav>
   </header>
 
-  <h1>You inspect the property and make the value decisions. <span class="line">I write the report and prepare the supporting file.</span></h1>
-  <p class="lede">This is disclosed report-production assistance for experienced residential appraisers who want help with the full desk side of recurring assignments.</p>
-  <p>If your AMC or lending program permits named significant appraisal assistance, we can also discuss a limited arrangement for participating signing appraisers.</p>
-  <p>Forward the order, inspect the property, then send the photos, sketch, and notes. I handle the authorized research, data collection, report drafting, proposed analysis, narrative, exhibits, and quality checks. You independently review every judgment, make the final decisions, sign, and deliver.</p>
+  <h1>In by 5:00 PM. <span class="line">Finished on your desk by 6:00 PM tomorrow.</span></h1>
+  <p class="lede">Send the order and your appraiser data, the photos, sketch, and notes, by 5:00 PM. You get back a complete, review-ready UAD 3.6 draft by 6:00 PM the next day, and usually sooner.</p>
+  <p>You inspect the property and make every appraisal decision. I write the report and prepare the supporting file, disclosed the way USPAP requires. You review, change what needs changing, sign, and deliver.</p>
+  <p class="fineprint">Committed delivery time is quoted when each order is accepted.</p>
 
-  <div class="relationship">
-    <p><strong>The Production Desk is a distinct service line of Appraisal Partners.</strong> It has its own client relationships, scope, onboarding, and written terms, separate from my residential appraisal practice. This is contract report-production assistance; I do not join your staff or sign your report. AMC and lender programs use their own vendor approval and written agreement.</p>
-  </div>
+  <nav class="jumpnav" aria-label="On this page">
+    <span>On this page:</span>
+    <a href="#benefits">What this buys you</a>
+    <a href="#line">The responsibility line</a>
+    <a href="#how">How a file moves</a>
+    <a href="#fit">Who it fits</a>
+    <a href="#boundaries">Markets</a>
+    <a href="#disclosure">Disclosure &amp; data</a>
+    <a href="#start">Start</a>
+  </nav>
 
   <div class="actions">
     <a class="btn" href="mailto:mrr@appraisalpartners.net?subject=Production%20Desk%20relationship">Discuss a working relationship</a>
@@ -148,40 +167,33 @@
   </div>
   <p class="fineprint">The sample is a sanitized file from my own practice, prepared as the deliverable a customer receives, including the assistance disclosure in the certification.</p>
 
-  <section>
-    <p class="eyebrow">Why I am offering this</p>
-    <h2>The desk side is the part of appraisal I have always gravitated toward.</h2>
-    <p>I have spent twenty years in residential appraisal. I like the research, the analysis, and the report writing itself. Over time, I have developed repeatable ways to organize source material, keep the report consistent, and catch omissions.</p>
-    <p>I want a few stable working relationships where the division of work is clear, the signing appraiser stays in control, and the client receives credible work. UAD 3.6 makes that help useful now, but it is not a reason to cut corners or hide who did what. Capacity and delivery timing are agreed before the first file and kept at a level I can personally review.</p>
-  </section>
-
-  <section>
-    <p class="eyebrow">Who this can help</p>
-    <div class="fit">
+  <section id="benefits">
+    <p class="eyebrow">What this buys you</p>
+    <div class="benefits">
       <article>
-        <h2>Appraisers and appraisal firms</h2>
-        <ul class="plain">
-          <li>You want to keep inspecting the property, serving the client, and making the final judgment</li>
-          <li>You need recurring capacity without hiring and training another employee</li>
-          <li>You need the report and support file built, not just fields typed</li>
-          <li>You will independently review the work and disclose significant assistance</li>
-          <li>You want to keep production moving through UAD 3.6</li>
-        </ul>
+        <h2>Your evenings back</h2>
+        <p>The hours after the inspection, the entry, research, grids, and commentary, move to the desk. You review finished work in the morning instead of producing it at night.</p>
       </article>
       <article>
-        <h2>AMCs and lenders</h2>
-        <ul class="plain">
-          <li>Your program permits named significant appraisal assistance</li>
-          <li>You want to test a limited arrangement with participating signing appraisers</li>
-          <li>You need a clear division of responsibility and documented data handling</li>
-          <li>You will use your normal vendor approval and written terms</li>
-        </ul>
+        <h2>More accepted orders</h2>
+        <p>Capacity is what makes you decline work. One additional accepted assignment per working day, at typical residential fees, compounds into six figures a year.</p>
+      </article>
+      <article>
+        <h2>You keep the fee</h2>
+        <p>Your client stays yours and the large majority of every fee stays with you, typically three-quarters of the gross or more. Flat per-report pricing, quoted directly.</p>
+      </article>
+      <article>
+        <h2>Leverage without hiring</h2>
+        <p>No recruiting, training, payroll, or overhead that stays when the market slows. The desk scales up and down with your order flow.</p>
       </article>
     </div>
-    <p style="margin-top:20px"><strong>Not a fit:</strong> anonymous ghostwriting, shared credentials, co-signing, or any report the signing appraiser will not independently review.</p>
   </section>
 
-  <section>
+  <div class="relationship">
+    <p><strong>The Production Desk is a distinct service line of Appraisal Partners.</strong> It has its own client relationships, scope, onboarding, and written terms, separate from my residential appraisal practice. This is contract report-production assistance; I do not join your staff or sign your report. AMC and lender programs use their own vendor approval and written agreement. If your AMC or lending program permits named significant appraisal assistance, we can discuss a limited arrangement for participating signing appraisers.</p>
+  </div>
+
+  <section id="line">
     <p class="eyebrow">The responsibility line</p>
     <div class="scope">
       <div>
@@ -210,23 +222,45 @@
     <p style="margin-top:20px">A narrower draft-from-your-research scope can also be arranged when your office already has the comps, adjustments, and market data assembled.</p>
   </section>
 
-  <section>
+  <section id="how">
     <p class="eyebrow">How a file moves</p>
     <ol class="steps">
       <li><span class="n">1.</span><span><strong>We establish the relationship first.</strong> Onboarding covers your markets, client mix, engagement restrictions, expected volume, authorized data access, software and deliverables, schedule, and written terms.</span></li>
-      <li><span class="n">2.</span><span><strong>You forward the order and engagement letter.</strong> After the inspection, you send the photos, sketch, and written or voice notes through the agreed secure channel.</span></li>
-      <li><span class="n">3.</span><span><strong>I produce the desk side of the assignment.</strong> I assemble the support, research the agreed sources, develop comparable candidates and proposed analyses, complete the report, and run the file through quality checks.</span></li>
-      <li><span class="n">4.</span><span><strong>You review it as the appraiser.</strong> Accept, change, or reject anything necessary. You make the final appraisal judgments, sign, and deliver to your client.</span></li>
+      <li><span class="n">2.</span><span><strong>You forward the order, inspect, and send the packet by 5:00 PM.</strong> Photos, sketch, and written or voice notes, through the agreed secure channel.</span></li>
+      <li><span class="n">3.</span><span><strong>I produce the desk side of the assignment.</strong> Research through the agreed sources, comparable candidates and proposed analyses, the complete report, and layered quality checks.</span></li>
+      <li><span class="n">4.</span><span><strong>You review it as the appraiser.</strong> A complete, review-ready draft is back on your desk by 6:00 PM the next day, usually sooner. Accept, change, or reject anything. You make the final judgments, sign, and deliver.</span></li>
     </ol>
+    <p style="margin-top:18px">The deliverable: an editable working file in the agreed software format, applicable PDF and UAD output, organized supporting materials, and a short record of assumptions or unresolved items that deserve attention during review. I fill the report as completely as the evidence allows and flag anything you need to verify or decide.</p>
   </section>
 
-  <section>
-    <p class="eyebrow">What you receive</p>
-    <p>The working arrangement defines the exact package. For a typical supported assignment, that means an editable working file in the agreed software format, applicable PDF and UAD output, organized supporting materials, and a short record of assumptions or unresolved items that deserve attention during review.</p>
-    <p>I fill the report as completely as the evidence allows and flag anything you need to verify or decide.</p>
+  <section id="fit">
+    <p class="eyebrow">Who this can help</p>
+    <div class="fit">
+      <article>
+        <h2>Appraisers and appraisal firms</h2>
+        <ul class="plain">
+          <li>You want to keep inspecting, serving the client, and making the final judgment</li>
+          <li>You need recurring capacity without hiring and training another employee</li>
+          <li>You need the report and support file built, not just fields typed</li>
+          <li>You will independently review the work and disclose significant assistance</li>
+          <li>You want production to keep moving through UAD 3.6</li>
+        </ul>
+      </article>
+      <article>
+        <h2>AMCs and lenders</h2>
+        <ul class="plain">
+          <li>Your program permits named significant appraisal assistance</li>
+          <li>You want to test a limited arrangement with participating signing appraisers</li>
+          <li>You need a clear division of responsibility and documented data handling</li>
+          <li>You will use your normal vendor approval and written terms</li>
+        </ul>
+      </article>
+    </div>
+    <p style="margin-top:20px"><strong>Not a fit:</strong> anonymous ghostwriting, shared credentials, co-signing, or any report the signing appraiser will not independently review.</p>
+    <p>Wondering whether this is you? <a href="story.html">Read the three appraisers</a> and see whose week sounds familiar.</p>
   </section>
 
-  <section>
+  <section id="boundaries">
     <p class="eyebrow">Markets and current boundaries</p>
     <div class="fit">
       <article>
@@ -250,6 +284,11 @@
     <p style="margin-top:20px">Market setup is deliberate. Client permission, licensing, market competence, and authorized MLS and data access are confirmed before production begins; a new market may take one to three weeks to establish.</p>
   </section>
 
+  <section id="why">
+    <p class="eyebrow">Why I am offering this</p>
+    <p>I have spent twenty years in residential appraisal, and the desk side, the research, the analysis, the report writing itself, is the part I have always gravitated toward. I want a few stable working relationships where the division of work is clear, the signing appraiser stays in control, and the client receives credible work. UAD 3.6 makes that help useful now, but it is not a reason to cut corners or hide who did what. Capacity and delivery timing are agreed before the first file and kept at a level I can personally review.</p>
+  </section>
+
   <section id="disclosure">
     <p class="eyebrow">Disclosure, data, and trust</p>
     <p>When my work constitutes significant real property appraisal assistance, the certification identifies me and describes the assistance provided. Client, jurisdiction, and licensing requirements are confirmed before an assignment is accepted. I do not remove a required disclosure.</p>
@@ -267,7 +306,7 @@
     </div>
   </section>
 
-  <div class="cta">
+  <div class="cta" id="start">
     <p><strong>Tell me how your practice or program works.</strong></p>
     <p>Send your markets, typical assignment mix, approximate recurring volume, current software or workflow, and the part of production you want handled. If the client terms, licensing, data access, and working style fit, we can start with one file under written terms.</p>
     <p><a href="mailto:mrr@appraisalpartners.net?subject=Production%20Desk%20relationship">mrr@appraisalpartners.net</a></p>
