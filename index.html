@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="The residential appraisal practice of Matthew Roth, a second-generation Certified Residential appraiser in Texas and Colorado, with roots in Southern California and UAD 3.6 in practice now.">
+<meta name="description" content="A report-production desk for signing residential appraisers. Send the order and your inspection packet; an editable UAD 3.6 draft comes back on a committed return time, with the comps documented and the workfile organized. You review, sign, and deliver.">
 <link rel="canonical" href="https://appraisalpartners.net/">
-<meta property="og:title" content="Appraisal Partners | Matthew Roth">
-<meta property="og:description" content="Appraisal is the work Matthew Roth grew up in. Certified Residential in Texas and Colorado, with UAD 3.6 in practice now.">
+<meta property="og:title" content="Appraisal Partners | Report Production for Signing Appraisers">
+<meta property="og:description" content="You walk the property. I write the report. Editable UAD 3.6 drafts on a committed return time, with your client, your judgment, and your signature staying yours.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/">
 <meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
-<title>Appraisal Partners | Matthew Roth, Certified Residential Appraiser</title>
+<title>Appraisal Partners | Report Production for Signing Appraisers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
@@ -75,7 +75,7 @@
   .nav a, footer a { text-decoration-thickness: 0.5px; text-underline-offset: 2px; }
   h1 {
     font-size: clamp(34px, 7vw, 52px); font-weight: 700; line-height: 1.15;
-    letter-spacing: -0.02em; text-wrap: balance; margin: 46px 0 20px;
+    letter-spacing: -0.02em; text-wrap: balance; margin: 20px 0 20px;
   }
   h1 .line { color: var(--accent); }
   h2 { font-size: 25px; line-height: 1.3; margin: 0 0 16px; }
@@ -90,6 +90,11 @@
     font-family: "IBM Plex Mono", "Courier New", monospace;
     font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
     color: var(--accent); margin: 0 0 18px;
+  }
+  .audience {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); margin: 44px 0 0;
   }
   .actions {
     display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 24px; align-items: center;
@@ -107,31 +112,33 @@
     font-family: "IBM Plex Mono", "Courier New", monospace;
     font-size: 13px; margin: 14px 0 0;
   }
+  ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 17px; }
+  ol.steps li { display: grid; grid-template-columns: 34px 1fr; gap: 14px; }
+  ol.steps .n {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 14px; color: var(--accent); padding-top: 4px;
+  }
+  .rail {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12.5px; line-height: 2.1; letter-spacing: 0.02em;
+    border: 1px solid var(--rule); background: var(--wash);
+    padding: 14px 18px; margin: 22px 0 0; color: var(--muted);
+  }
+  .rail b { color: var(--ink); font-weight: 500; }
+  .rail .arrow { color: var(--accent); }
+  .scopes { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .scopes article { border: 1px solid var(--rule); border-top: 3px solid var(--accent); padding: 19px 20px 6px; }
+  .scopes h3 { margin-bottom: 6px; }
+  .price {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 14px; color: var(--accent-deep); margin: 0 0 12px;
+  }
+  .scopes p { font-size: 15.5px; }
+  .fineprint { font-size: 14.5px; color: var(--muted); margin: 14px 0 0; }
   .profile {
-    display: grid; grid-template-columns: 168px 1fr; gap: 28px; align-items: start;
+    display: grid; grid-template-columns: 148px 1fr; gap: 26px; align-items: start;
   }
-  .profile img { width: 168px; height: 168px; object-fit: cover; border: 1px solid var(--rule); display: block; }
-  .profile p:last-child { margin-bottom: 0; }
-  .facts {
-    display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--rule);
-    margin-top: 24px;
-  }
-  .fact { padding: 15px 14px 4px 0; border-bottom: 1px solid var(--rule); }
-  .fact strong {
-    display: block; font-family: "IBM Plex Mono", "Courier New", monospace;
-    color: var(--accent); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
-  }
-  .fact span { font-size: 15.5px; }
-  .legacy {
-    display: grid; grid-template-columns: 1fr 132px; gap: 28px; align-items: start;
-  }
-  .legacy img { width: 132px; height: 132px; object-fit: cover; border: 1px solid var(--rule); display: block; }
-  .desk-door {
-    background: var(--wash); border: 1px solid var(--rule); border-left: 4px solid var(--accent);
-    padding: 24px 26px; margin-top: 34px;
-  }
-  .desk-door p:last-child { margin-bottom: 0; }
-  .desk-door .eyebrow { margin-bottom: 12px; }
+  .profile img { width: 148px; height: 148px; object-fit: cover; border: 1px solid var(--rule); display: block; }
   .cta { border: 1.5px solid var(--ink); padding: 24px 26px; margin-top: 44px; }
   .cta p:last-child { margin-bottom: 0; }
   footer {
@@ -141,12 +148,13 @@
     display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   }
   footer .postal-address { flex-basis: 100%; font-style: normal; }
+  ul.plain { margin: 0 0 18px; padding: 0 0 0 1.15em; }
+  ul.plain li { margin-bottom: 9px; }
+  ul.plain li::marker { color: var(--accent); }
   @media (max-width: 600px) {
+    .scopes { grid-template-columns: 1fr; }
     .profile { grid-template-columns: 112px 1fr; gap: 18px; }
     .profile img { width: 112px; height: 112px; }
-    .legacy { grid-template-columns: 1fr; }
-    .legacy img { width: 112px; height: 112px; }
-    .facts { grid-template-columns: 1fr; }
   }
   .skip {
     position: absolute; left: -9999px; top: 0;
@@ -164,84 +172,103 @@
     <span class="name">Appraisal Partners</span>
     <span class="cred">Matthew Roth &middot; Certified Residential Appraiser</span>
     <nav class="nav" aria-label="Primary">
-      <a href="index.html">Residential appraisal practice</a>
-      <a href="how-it-works.html">Production Desk</a>
+      <a href="how-it-works.html">How it works</a>
       <a href="story.html">The story</a>
-      <a href="get-started.html">Contact Matt</a>
+      <a href="about.html">About Matt</a>
+      <a href="faq.html">FAQ</a>
+      <a href="start.html">Start with one report</a>
     </nav>
   </header>
 
-  <h1><span class="line">Appraisal</span> is the work I grew up in.</h1>
-  <p class="lede">The appraisal comes before the form. I&rsquo;m Matt Roth, a second-generation appraiser with active Certified Residential credentials in Texas and Colorado.</p>
-  <p>I trained through licensure in my father&rsquo;s Southern California practice beginning in 2006, later ran M R Pacific Appraisals in Los Angeles, and established Appraisal Partners in North Texas. Twenty years across twelve metro markets in three states have taught me to look past the template and focus on condition, location, market behavior, and the details that actually move value.</p>
+  <p class="audience">For signing residential appraisers</p>
+  <h1>You walk the property. <span class="line">I write the report.</span></h1>
+  <p class="lede">This is a report-production desk for assignments you already control. Send the order and your inspection packet. An editable UAD 3.6 draft comes back on a committed return time, with the comps documented, the grid built, the commentary written, and the workfile organized behind it.</p>
+  <p>You make every appraisal decision. You review, revise, sign, and deliver. Your client stays yours, and my assistance is named in the certification. That line never moves.</p>
 
   <div class="actions">
-    <a class="btn" href="mailto:mrr@appraisalpartners.net?subject=Residential%20appraisal%20inquiry">Discuss an appraisal assignment</a>
-    <a class="btn btn-alt" href="story.html">Appraisers: start here</a>
+    <a class="btn" href="start.html">Start with one report</a>
+    <a class="btn btn-alt" href="uad36-work-sample.pdf">Read a demonstration report</a>
   </div>
-  <p class="docs"><a href="Matthew-Roth-Appraisal-Qualifications.pdf">Qualifications</a> &middot; <a href="uad36-work-sample.pdf">UAD 3.6 demonstration report (PDF, 10 MB)</a></p>
-
-  <div class="desk-door">
-    <p class="eyebrow">UAD 3.6 &middot; A separate production service</p>
-    <h2>Transitioning to UAD 3.6? Let me help.</h2>
-    <p>Beginning November 2, 2026, new appraisal reports submitted to UCDP must use UAD 3.6. I write the new form every day, so you don't have to learn it under deadline pressure.</p>
-    <p>If you want to keep inspecting, serving clients, and signing while the report writing is handled, this is for you. AMCs and lenders exploring disclosed production assistance for participating signing appraisers start here too.</p>
-    <p>The <strong>Appraisal Partners Production Desk</strong> is a distinct service line with its own scope, onboarding, and <a href="terms.html">written terms</a>.</p>
-    <p><a href="how-it-works.html"><strong>Visit the Production Desk &rarr;</strong></a></p>
-  </div>
+  <p class="docs">Flat price confirmed before acceptance &middot; No subscription &middot; <a href="Matthew-Roth-Appraisal-Qualifications.pdf">Qualifications</a></p>
 
   <section>
-    <h2 class="eyebrow">Residential appraisal practice</h2>
+    <h2 class="eyebrow">How a report moves</h2>
+    <ol class="steps">
+      <li><span class="n">1.</span><span><strong>Start with one report.</strong> Fill out a short form. You get an order number and a private folder link back, usually within business hours. No call, no sales conversation.</span></li>
+      <li><span class="n">2.</span><span><strong>Send the packet.</strong> The order, photos, sketch, your notes, the contract if it's a purchase. The <a href="start.html#checklist">start page</a> shows exactly what to send for your kind of assignment, so nothing gets forgotten.</span></li>
+      <li><span class="n">3.</span><span><strong>Get a firm acceptance.</strong> Received is not accepted. I confirm scope, a flat price, and a committed return time before production begins. I hold the desk to what I can personally produce and review, and when the day is full, I tell you before you send.</span></li>
+      <li><span class="n">4.</span><span><strong>Watch it move.</strong> Every order has its own status page: where the report is, what happened last, what happens next, and when it's due back. Optional email or text updates at the moments that matter.</span></li>
+      <li><span class="n">5.</span><span><strong>Review, revise, sign, deliver.</strong> The draft is yours. Accept, change, or reject anything in it. One consolidated direction round is included, and my errors are fixed free, always.</span></li>
+    </ol>
+    <div class="rail" aria-label="Order stages">
+      <b>Submitted</b> <span class="arrow">&rarr;</span> Intake review <span class="arrow">&rarr;</span> Accepted &middot; return time committed <span class="arrow">&rarr;</span> Research <span class="arrow">&rarr;</span> Draft production <span class="arrow">&rarr;</span> Matt's review <span class="arrow">&rarr;</span> <b>Ready for your review</b> <span class="arrow">&rarr;</span> Complete
+    </div>
+    <p class="fineprint">The full process, including how acceptance, comp direction, and revisions work, is on the <a href="how-it-works.html">how it works</a> page.</p>
+  </section>
+
+  <section>
+    <h2 class="eyebrow">Two ways to run a report</h2>
+    <div class="scopes">
+      <article>
+        <h3>Packet-to-Draft</h3>
+        <p class="price">$89 per report &middot; pilot rate</p>
+        <p>You inspected, pulled your own comps, and have the data. I build the report from your packet: entry, grid, commentary, exhibits, consistency checks, and an editable draft with the support file organized.</p>
+      </article>
+      <article>
+        <h3>Research + Draft</h3>
+        <p class="price">$149 per report &middot; pilot rate</p>
+        <p>For eligible Dallas&ndash;Fort Worth assignments. I run authorized MLS and public-record research, prepare comparable candidates, propose the analyses, and build the draft and support file end to end.</p>
+      </article>
+    </div>
+    <p class="fineprint">Pilot pricing. The price confirmed at acceptance is the price you pay. A report with unusual complexity gets flagged before acceptance, never billed after. Pay per report. Stop anytime.</p>
+  </section>
+
+  <section>
+    <h2 class="eyebrow">You can see where your report is</h2>
+    <p>Most production help is a black box: you send an order into the dark and hope it comes back. This desk isn't built that way. Every order gets its own status page, no login needed, that answers the questions you'd actually ask. Where is it now? What happened last? What happens next? When is it due back on my desk?</p>
+    <p>If I need something from you, the page says so and you get a ping. If you'd rather not check at all, opt into email or text updates when the report is accepted, when I need something, and when the draft is ready. And the page never shows your client's name, the property address, or any number from the report. Your report is your business.</p>
+  </section>
+
+  <section>
+    <h2 class="eyebrow">What comes back</h2>
+    <p><strong>An editable draft, not a printout.</strong> If you're on TOTAL, you get the native working file, ready to open in your own software with everything editable and the photos placed. On other software, you get the UAD 3.6 package: the XML, a draft-watermarked PDF, the exhibits, and the organized support file. Tell me your software and version at intake and I confirm compatibility at acceptance, not at delivery.</p>
+    <p>Every draft ships with a short list of open items worth your attention during review, the documented comp pool behind the grid, and suggested assistance-disclosure language. It arrives marked DRAFT and stays a draft until you've made it yours.</p>
+  </section>
+
+  <section>
+    <h2 class="eyebrow">The line that never moves</h2>
+    <ul class="plain">
+      <li>Your client stays yours. I never solicit your clients.</li>
+      <li>You keep every final judgment: the comps, the adjustments, the opinion of value, the signature.</li>
+      <li>My assistance is named in the certification. That disclosure is not optional, and I do not remove it.</li>
+      <li>No shared MLS credentials, in either direction.</li>
+      <li>I don't farm your files out to anybody.</li>
+    </ul>
+    <p class="fineprint">The full responsibility split, data handling, and how I use software and AI in the work are spelled out plainly on the <a href="how-it-works.html#disclosure">how it works</a> page.</p>
+  </section>
+
+  <section>
+    <h2 class="eyebrow">Who's behind the desk</h2>
     <div class="profile">
-      <img src="photos/matt.jpg" alt="Matt Roth" width="168" height="168">
+      <img src="photos/matt.jpg" alt="Matt Roth" width="148" height="148">
       <div>
-        <p>Appraisal Partners of Texas, Inc. is my residential valuation practice. I accept work selectively and remain responsible for every assignment carrying my name.</p>
-        <p>Current work includes DFW field assignments and eligible desktop, hybrid, and review work in Texas and Colorado. My experience spans single-family, condominium and PUD, two-to-four unit, new construction, acreage, view and waterfront, complex and high-value residential, retrospective, and appraisal review assignments.</p>
+        <p>I'm Matt Roth, a second-generation appraiser, Certified Residential in Texas and Colorado. I trained through licensure in my father's Southern California practice starting in 2006 and have spent twenty years across three states doing this work. The appraisal comes before the form. That's the standard I was raised on, and it's the standard the desk runs on.</p>
+        <p><a href="about.html">About Matt</a> &middot; <a href="story.html">Three appraisers, three different weeks</a></p>
       </div>
     </div>
-    <div class="facts" aria-label="Practice facts">
-      <div class="fact"><strong>Experience</strong><span>California, Colorado, and Texas since 2006</span></div>
-      <div class="fact"><strong>Credentials</strong><span>Certified Residential, Texas &amp; Colorado</span></div>
-      <div class="fact"><strong>Current work</strong><span>UAD 3.6, desktop, hybrid, and review</span></div>
-    </div>
-    <p style="margin-top:22px">The standard is straightforward: material facts are source-identified or retained in the workfile, the analysis can be followed, and the report is checked against its source material before delivery.</p>
-  </section>
-
-  <section>
-    <h2 class="eyebrow">Where the practice came from</h2>
-    <div class="legacy">
-      <div>
-        <p>My father, Tim Roth, MAI, SRA, built the California practice where I trained from trainee through licensure. His standard was simple: define the appraisal problem before opening the form. The form is the delivery vehicle; the appraisal is the analysis behind it.</p>
-        <p>That standard still shapes my work. I remain accountable for the assignments I accept and the conclusions I sign.</p>
-      </div>
-      <img src="photos/tim.jpg" alt="Tim Roth" width="132" height="132">
-    </div>
-  </section>
-
-  <section>
-    <p class="eyebrow">UAD 3.6, in practice now</p>
-    <h2>New form, same responsibility.</h2>
-    <p>The dynamic URAR asks for more structured data and makes the relationships between fields more visible. I'm producing UAD 3.6 reports now, with the research, intake, and review process rebuilt around the new structure.</p>
-    <p>The form still does not choose the right comparable, recognize what matters about a location, or explain why a conclusion makes sense. That remains the appraiser&rsquo;s work.</p>
-    <p>The transition is also why the separate <a href="how-it-works.html">Production Desk</a> exists now: experienced appraisers should be able to keep their work and client relationships moving while they learn the new structure.</p>
-  </section>
-
-  <section>
-    <h2 class="eyebrow">Why now</h2>
-    <p>I have a full-time career in engineering and product operations, so I keep my own field practice selective rather than promise a high-volume inspection calendar. That work has also sharpened the side of appraisal I've always liked most: research, analysis, and report writing that holds up to checking. It's also why the desk stays deliberately small: I take only the files I can personally produce and review, and I've built my process so the review is real, never rushed.</p>
-    <p>I want a few durable professional relationships with clients and peers who care about credible results. The practice will stay small enough for accountability to remain personal.</p>
   </section>
 
   <div class="cta">
-    <p><strong>If you need a residential appraisal, write me directly.</strong></p>
-    <p>Send the property location, assignment type, intended use, and timing. I&rsquo;ll tell you plainly whether the practice is a fit.</p>
-    <p><a href="mailto:mrr@appraisalpartners.net?subject=Residential%20appraisal%20inquiry">mrr@appraisalpartners.net</a></p>
+    <p><strong>Start with one report.</strong></p>
+    <p>Not a contract, not a commitment. One report, a flat price, a committed return time, and a draft you can judge with your own eyes. If it isn't usable to you, you don't pay for it.</p>
+    <p><a class="btn" href="start.html">Start with one report</a></p>
+    <p class="fineprint">Prefer to write first? <a href="mailto:mrr@appraisalpartners.net?subject=Production%20desk%20question">mrr@appraisalpartners.net</a>. I read every note myself and reply directly.</p>
   </div>
 
   <footer>
-    <span>Appraisal Partners of Texas, Inc. &middot; Residential appraisal practice</span>
+    <span>Appraisal Partners of Texas, Inc.</span>
     <span><a href="https://www.asc.gov/appraiser?field_state_name_value=All&amp;field_license_type__value=All&amp;field_first_name__value=Matthew&amp;field_last_name__value=Roth&amp;items_per_page=20&amp;submit=Apply">Verify credentials</a></span>
-    <span><a href="how-it-works.html">Production Desk</a></span>
+    <span><a href="terms.html">Production terms</a></span>
     <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
   </footer>
 </main>
