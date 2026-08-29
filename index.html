@@ -9,11 +9,12 @@
 <meta property="og:description" content="Appraisal is the work Matthew Roth grew up in. Certified Residential in Texas and Colorado, with UAD 3.6 in practice now.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/">
-<meta property="og:image" content="https://appraisalpartners.net/og-image.png">
+<meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
 <title>Appraisal Partners | Matthew Roth, Certified Residential Appraiser</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
 <style>
   :root {
@@ -25,15 +26,15 @@
     --accent-deep: #24493A;
     --wash: #F1F3EF;
   }
-  :root:not([data-theme="light"]) {
-    @media (prefers-color-scheme: dark) {
-      --paper: #141917;
-      --ink: #E8EAE6;
-      --muted: #97A19A;
-      --rule: #2A322D;
-      --accent: #6FA98C;
-      --accent-deep: #8FBFA6;
-      --wash: #1B211E;
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+    --paper: #141917;
+    --ink: #E8EAE6;
+    --muted: #97A19A;
+    --rule: #2A322D;
+    --accent: #6FA98C;
+    --accent-deep: #8FBFA6;
+    --wash: #1B211E;
     }
   }
   :root[data-theme="dark"] {
@@ -77,9 +78,10 @@
   }
   h1 .line { color: var(--accent); }
   h2 { font-size: 25px; line-height: 1.3; margin: 0 0 16px; }
+  h3 { font-size: 19px; line-height: 1.35; margin: 0 0 12px; }
   .lede { font-size: 20px; line-height: 1.55; margin: 0 0 14px; max-width: 670px; }
   p { margin: 0 0 18px; }
-  a { color: var(--accent-deep); text-decoration-color: var(--rule); text-underline-offset: 3px; }
+  a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
   a:hover, a:focus-visible { text-decoration-color: var(--accent); }
   a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   section { border-top: 1px solid var(--rule); margin-top: 44px; padding-top: 30px; }
@@ -98,6 +100,12 @@
     text-decoration: none; border: 1.5px solid var(--accent);
   }
   a.btn:hover, a.btn:focus-visible { background: var(--accent-deep); border-color: var(--accent-deep); }
+  a.btn.btn-alt { background: transparent; color: var(--accent-deep); border-color: var(--accent); }
+  a.btn.btn-alt:hover, a.btn.btn-alt:focus-visible { background: var(--wash); color: var(--accent-deep); border-color: var(--accent-deep); }
+  .docs {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 13px; margin: 14px 0 0;
+  }
   .profile {
     display: grid; grid-template-columns: 168px 1fr; gap: 28px; align-items: start;
   }
@@ -138,11 +146,18 @@
     .legacy img { width: 112px; height: 112px; }
     .facts { grid-template-columns: 1fr; }
   }
+  .skip {
+    position: absolute; left: -9999px; top: 0;
+    background: var(--accent); color: var(--paper); padding: 10px 16px;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; z-index: 10;
+  }
+  .skip:focus { left: 8px; top: 8px; }
 </style>
 </head>
 <body>
 
-<div class="sheet">
+<a class="skip" href="#main">Skip to content</a>
+<main class="sheet" id="main">
   <header class="letterhead">
     <span class="name">Appraisal Partners</span>
     <span class="cred">Matthew Roth &middot; Certified Residential Appraiser</span>
@@ -160,22 +175,21 @@
 
   <div class="actions">
     <a class="btn" href="mailto:mrr@appraisalpartners.net?subject=Residential%20appraisal%20inquiry">Discuss an appraisal assignment</a>
-    <a class="btn" href="story.html">Appraisers: start here</a>
-    <a href="Matthew-Roth-Appraisal-Qualifications.pdf">Qualifications</a>
-    <a href="uad36-work-sample.pdf">Sanitized work sample (PDF, 10 MB)</a>
+    <a class="btn btn-alt" href="story.html">Appraisers: start here</a>
   </div>
+  <p class="docs"><a href="Matthew-Roth-Appraisal-Qualifications.pdf">Qualifications</a> &middot; <a href="uad36-work-sample.pdf">UAD 3.6 demonstration report (PDF, 10 MB)</a></p>
 
   <div class="desk-door">
     <p class="eyebrow">UAD 3.6 &middot; A separate production service</p>
     <h2>Transitioning to UAD 3.6? Let me help.</h2>
     <p>Beginning November 2, 2026, new appraisal reports submitted to UCDP must use UAD 3.6. I write the new form every day, so you don't have to learn it under deadline pressure.</p>
     <p>If you want to keep inspecting, serving clients, and signing while the report writing is handled, this is for you. AMCs and lenders exploring disclosed production assistance for participating signing appraisers start here too.</p>
-    <p>The <strong>Appraisal Partners Production Desk</strong> is a distinct service line with its own scope, onboarding, and written terms.</p>
+    <p>The <strong>Appraisal Partners Production Desk</strong> is a distinct service line with its own scope, onboarding, and <a href="terms.html">written terms</a>.</p>
     <p><a href="how-it-works.html"><strong>Visit the Production Desk &rarr;</strong></a></p>
   </div>
 
   <section>
-    <p class="eyebrow">Residential appraisal practice</p>
+    <h2 class="eyebrow">Residential appraisal practice</h2>
     <div class="profile">
       <img src="photos/matt.jpg" alt="Matt Roth" width="168" height="168">
       <div>
@@ -192,7 +206,7 @@
   </section>
 
   <section>
-    <p class="eyebrow">Where the practice came from</p>
+    <h2 class="eyebrow">Where the practice came from</h2>
     <div class="legacy">
       <div>
         <p>My father, Tim Roth, MAI, SRA, built the California practice where I trained from trainee through licensure. His standard was simple: define the appraisal problem before opening the form. The form is the delivery vehicle; the appraisal is the analysis behind it.</p>
@@ -211,7 +225,7 @@
   </section>
 
   <section>
-    <p class="eyebrow">Why now</p>
+    <h2 class="eyebrow">Why now</h2>
     <p>I have a full-time career in engineering and product operations, so I keep my own field practice selective rather than promise a high-volume inspection calendar. That work has also sharpened the side of appraisal I've always liked most: research, analysis, and report writing that holds up to checking. It's also why the desk stays deliberately small: I take only the files I can personally produce and review, up to five standard files per business day, and I've built my process so the review is real, never rushed.</p>
     <p>I want a few durable professional relationships with clients and peers who care about credible results. The practice will stay small enough for accountability to remain personal.</p>
   </section>
@@ -227,7 +241,7 @@
     <span><a href="https://www.asc.gov/appraiser?field_state_name_value=All&amp;field_license_type__value=All&amp;field_first_name__value=Matthew&amp;field_last_name__value=Roth&amp;items_per_page=20&amp;submit=Apply">Verify credentials</a></span>
     <span><a href="how-it-works.html">Production Desk</a></span>
   </footer>
-</div>
+</main>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5e65f76cb49d4898942bc1e1e33ce728"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>

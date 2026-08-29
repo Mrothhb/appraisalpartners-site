@@ -9,21 +9,22 @@
 <meta property="og:description" content="Contact Matthew Roth about a residential appraisal, or about disclosed report-production assistance for participating signing appraisers.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/get-started.html">
-<meta property="og:image" content="https://appraisalpartners.net/og-image.png">
+<meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
 <title>Contact Matthew Roth | Appraisal Partners</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
 <style>
   :root {
     --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
     --rule: #D9DED9; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
   }
-  :root:not([data-theme="light"]) {
-    @media (prefers-color-scheme: dark) {
-      --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-      --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
+    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
     }
   }
   :root[data-theme="dark"] {
@@ -57,9 +58,10 @@
   }
   h1 .line { color: var(--accent); }
   h2 { font-size: 23px; line-height: 1.35; margin: 0 0 14px; }
+  h3 { font-size: 19px; line-height: 1.35; margin: 0 0 12px; }
   .lede { font-size: 20px; line-height: 1.55; margin: 0 0 14px; }
   p { margin: 0 0 18px; }
-  a { color: var(--accent-deep); text-decoration-color: var(--rule); text-underline-offset: 3px; }
+  a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
   a:hover, a:focus-visible { text-decoration-color: var(--accent); }
   a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .doors { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 34px; }
@@ -96,11 +98,18 @@
     display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   }
   @media (max-width: 680px) { .doors { grid-template-columns: 1fr; } }
+  .skip {
+    position: absolute; left: -9999px; top: 0;
+    background: var(--accent); color: var(--paper); padding: 10px 16px;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; z-index: 10;
+  }
+  .skip:focus { left: 8px; top: 8px; }
 </style>
 </head>
 <body>
 
-<div class="sheet">
+<a class="skip" href="#main">Skip to content</a>
+<main class="sheet" id="main">
   <header class="letterhead">
     <span class="name">Appraisal Partners</span>
     <span class="cred">Contact Matthew Roth</span>
@@ -148,7 +157,7 @@
   </div>
 
   <section>
-    <p class="eyebrow">What happens next</p>
+    <h2 class="eyebrow">What happens next</h2>
     <ol class="steps">
       <li><span class="n">1.</span><span>I read every note myself and reply directly.</span></li>
       <li><span class="n">2.</span><span>We confirm fit, scope, timing, and which service applies.</span></li>
@@ -167,7 +176,7 @@
     <span><a href="how-it-works.html">Production Desk</a></span>
     <span>Dallas&ndash;Fort Worth</span>
   </footer>
-</div>
+</main>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5e65f76cb49d4898942bc1e1e33ce728"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>

@@ -9,21 +9,22 @@
 <meta property="og:description" content="You inspect the property and make the value decisions. Matthew Roth writes the report and prepares the supporting file for your independent review.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/how-it-works.html">
-<meta property="og:image" content="https://appraisalpartners.net/og-image.png">
+<meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
 <title>Production Desk for Appraisers | Appraisal Partners</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
 <style>
   :root {
     --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
     --rule: #D9DED9; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
   }
-  :root:not([data-theme="light"]) {
-    @media (prefers-color-scheme: dark) {
-      --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-      --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
+    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
     }
   }
   :root[data-theme="dark"] {
@@ -59,7 +60,7 @@
   h2 { font-size: 24px; line-height: 1.35; margin: 0 0 14px; }
   .lede { font-size: 20px; line-height: 1.55; margin: 0 0 14px; }
   p { margin: 0 0 18px; }
-  a { color: var(--accent-deep); text-decoration-color: var(--rule); text-underline-offset: 3px; }
+  a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
   a:hover, a:focus-visible { text-decoration-color: var(--accent); }
   a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   section { border-top: 1px solid var(--rule); margin-top: 44px; padding-top: 30px; }
@@ -93,7 +94,7 @@
     border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
   }
   .scope > div { padding: 20px 0 4px; }
-  .scope h2 { font-size: 19px; }
+  .scope h3 { font-size: 19px; }
   ul.plain { margin: 0 0 18px; padding: 0 0 0 1.15em; }
   ul.plain li { margin-bottom: 9px; }
   ul.plain li::marker { color: var(--accent); }
@@ -105,15 +106,23 @@
   }
   .fit { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .fit article { border: 1px solid var(--rule); padding: 19px 20px 3px; }
-  .fit h2 { font-size: 19px; }
+  .fit h3 { font-size: 19px; }
   .benefits { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .benefits article { border: 1px solid var(--rule); border-top: 3px solid var(--accent); padding: 18px 20px 4px; }
-  .benefits h2 { font-size: 18px; margin-bottom: 8px; }
+  .benefits h3 { font-size: 18px; margin-bottom: 8px; }
   .benefits p { font-size: 15.5px; margin-bottom: 14px; }
   .proof { display: flex; flex-wrap: wrap; gap: 12px 24px; font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; }
   .fineprint { font-size: 14.5px; color: var(--muted); margin: 12px 0 0; }
   figure.excerpt { margin: 0 0 18px; }
-  figure.excerpt img { width: 100%; height: auto; border: 1px solid var(--rule); display: block; }
+  figure.excerpt blockquote {
+    margin: 0; border: 1px solid var(--rule); background: var(--wash); padding: 15px 18px 2px;
+  }
+  figure.excerpt blockquote p { font-size: 15.5px; }
+  figure.excerpt .excerpt-head {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px;
+  }
   figure.excerpt figcaption {
     font-family: "IBM Plex Mono", "Courier New", monospace;
     font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted); margin-top: 8px;
@@ -129,11 +138,18 @@
   @media (max-width: 620px) {
     .scope, .fit, .benefits { grid-template-columns: 1fr; }
   }
+  .skip {
+    position: absolute; left: -9999px; top: 0;
+    background: var(--accent); color: var(--paper); padding: 10px 16px;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; z-index: 10;
+  }
+  .skip:focus { left: 8px; top: 8px; }
 </style>
 </head>
 <body>
 
-<div class="sheet">
+<a class="skip" href="#main">Skip to content</a>
+<main class="sheet" id="main">
   <header class="letterhead">
     <span class="name">Appraisal Partners / Production Desk</span>
     <span class="cred">UAD 3.6 report production for signing appraisers</span>
@@ -166,25 +182,25 @@
     <a class="btn" href="mailto:mrr@appraisalpartners.net?subject=Production%20Desk%20relationship">Discuss a working relationship</a>
     <a href="uad36-work-sample.pdf">Review a sanitized sample (PDF, 10 MB)</a>
   </div>
-  <p class="fineprint">The sample is a sanitized file from my own practice, prepared as the deliverable a customer receives, including the assistance disclosure in the certification.</p>
+  <p class="fineprint">The sample is a demonstration report. It shows the deliverable a customer receives, including the assistance disclosure in the certification. The address, borrower, appraiser, firm, and photos are replaced with placeholders.</p>
 
   <section id="benefits">
-    <p class="eyebrow">What this buys you</p>
+    <h2 class="eyebrow">What this buys you</h2>
     <div class="benefits">
       <article>
-        <h2>Fewer nights at the desk</h2>
+        <h3>Fewer nights at the desk</h3>
         <p>The after-inspection hours are the ones I take: entry, research, grids, commentary. You read finished work in the morning instead of writing it at night.</p>
       </article>
       <article>
-        <h2>More accepted orders</h2>
+        <h3>More accepted orders</h3>
         <p>You turn down orders for lack of hours, not lack of appetite. Even one more accepted assignment a day adds up fast. Run it against your own fee schedule.</p>
       </article>
       <article>
-        <h2>You keep the fee</h2>
+        <h3>You keep the fee</h3>
         <p>Your client stays yours. The fee stays yours too, minus a flat per-report price quoted directly before you commit.</p>
       </article>
       <article>
-        <h2>Capacity without hiring</h2>
+        <h3>Capacity without hiring</h3>
         <p>No recruiting, no training, no payroll that keeps running when the market cools. Send more when you're slammed, nothing when you're not.</p>
       </article>
     </div>
@@ -195,10 +211,10 @@
   </div>
 
   <section id="line">
-    <p class="eyebrow">The responsibility line</p>
+    <h2 class="eyebrow">The responsibility line</h2>
     <div class="scope">
       <div>
-        <h2>The signing appraiser retains</h2>
+        <h3>The signing appraiser retains</h3>
         <ul class="plain">
           <li>Client and engagement relationship</li>
           <li>Inspection and inspection findings</li>
@@ -209,7 +225,7 @@
         </ul>
       </div>
       <div>
-        <h2>Appraisal Partners produces</h2>
+        <h3>Appraisal Partners produces</h3>
         <ul class="plain">
           <li>Authorized MLS and public-record research</li>
           <li>Comparable candidates and proposed analyses</li>
@@ -224,7 +240,7 @@
   </section>
 
   <section id="how">
-    <p class="eyebrow">How a file moves</p>
+    <h2 class="eyebrow">How a file moves</h2>
     <ol class="steps">
       <li><span class="n">1.</span><span><strong>We establish the relationship first.</strong> Onboarding covers your markets, client mix, engagement restrictions, expected volume, authorized data access, software and deliverables, schedule, and written terms.</span></li>
       <li><span class="n">2.</span><span><strong>You forward the order, inspect, and send the packet by end of day.</strong> Photos, sketch, and written or voice notes, through the agreed secure channel.</span></li>
@@ -235,10 +251,10 @@
   </section>
 
   <section id="fit">
-    <p class="eyebrow">Who this can help</p>
+    <h2 class="eyebrow">Who this can help</h2>
     <div class="fit">
       <article>
-        <h2>Appraisers and appraisal firms</h2>
+        <h3>Appraisers and appraisal firms</h3>
         <ul class="plain">
           <li>You want to keep inspecting, serving the client, and making the final judgment</li>
           <li>You need recurring capacity without hiring and training another employee</li>
@@ -248,7 +264,7 @@
         </ul>
       </article>
       <article>
-        <h2>AMCs and lenders</h2>
+        <h3>AMCs and lenders</h3>
         <ul class="plain">
           <li>Your program permits named significant appraisal assistance</li>
           <li>You want to test a limited arrangement with participating signing appraisers</li>
@@ -262,10 +278,10 @@
   </section>
 
   <section id="boundaries">
-    <p class="eyebrow">Markets and current boundaries</p>
+    <h2 class="eyebrow">Markets and current boundaries</h2>
     <div class="fit">
       <article>
-        <h2>Designed for</h2>
+        <h3>Designed for</h3>
         <ul class="plain">
           <li>Established residential appraisers and firms</li>
           <li>AMC or lender arrangements that permit named assistance</li>
@@ -273,7 +289,7 @@
         </ul>
       </article>
       <article>
-        <h2>Current boundaries</h2>
+        <h3>Current boundaries</h3>
         <ul class="plain">
           <li>Texas and Colorado are the starting markets</li>
           <li>Other markets require client, licensing, and data-access review</li>
@@ -286,16 +302,19 @@
   </section>
 
   <section id="why">
-    <p class="eyebrow">Why I am offering this</p>
+    <h2 class="eyebrow">Why I am offering this</h2>
     <p>I've spent twenty years in residential appraisal, and I've always gravitated to the desk side: the research, the analysis, the report writing itself. I want a few stable working relationships where the division of work is clear, the signing appraiser stays in control, and the client receives credible work. UAD 3.6 makes that help useful now, but it is not a reason to cut corners or hide who did what. Capacity and delivery timing are agreed before the first file and kept at a level I can personally review.</p>
   </section>
 
   <section id="disclosure">
-    <p class="eyebrow">Disclosure, data, and trust</p>
+    <h2 class="eyebrow">Disclosure, data, and trust</h2>
     <p>The certification identifies me and describes the assistance provided. When the work is significant real property appraisal assistance, that disclosure is not optional, and I do not remove it. Client, jurisdiction, and licensing requirements are confirmed before an assignment is accepted.</p>
     <figure class="excerpt">
-      <img src="photos/disclosure-excerpt.png" alt="Certification excerpt: an appraisal assistance block naming Matthew Roth and describing the assistance provided" width="2210" height="270" loading="lazy">
-      <figcaption>The assistance block as it appears in the report software, from a desk test draft.</figcaption>
+      <blockquote>
+        <p class="excerpt-head">Assignment Information and Scope of Work Commentary</p>
+        <p>Significant real property appraisal assistance was provided by the Appraisal Partners production desk: data entry, comparable research support, market analysis support, and report preparation, all subject to the appraiser&rsquo;s review and approval.</p>
+      </blockquote>
+      <figcaption>The assistance block as it appears in the report software, from a desk test draft. <a href="photos/disclosure-excerpt.png">View the screenshot</a>.</figcaption>
     </figure>
     <p>Files move through a secure channel we agree on during onboarding. I don't farm your files out to anybody. No client is solicited, no MLS login is shared, and assignment data is never sold.</p>
     <p>I use software automation and AI-assisted tools in this work, and yes, that includes the drafting. I direct and review every production file myself; the signing appraiser independently reviews and owns the appraisal judgments. Before live work begins, we identify the software and service providers expected to handle assignment data, along with their available storage, retention, and data-use terms, so you and your client can approve the setup.</p>
@@ -318,7 +337,7 @@
     <span>Matthew Roth &middot; TX #1361115-CR &middot; CO #CR200002387</span>
     <span><a href="terms.html">Report Production Terms</a></span>
   </footer>
-</div>
+</main>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5e65f76cb49d4898942bc1e1e33ce728"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>

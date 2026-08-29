@@ -9,21 +9,22 @@
 <meta property="og:description" content="Scope, signer responsibility, disclosure, data handling, and the working relationship in plain English.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/terms.html">
-<meta property="og:image" content="https://appraisalpartners.net/og-image.png">
+<meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
 <title>Production Desk Terms | Appraisal Partners</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
 <style>
   :root {
     --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
     --rule: #D9DED9; --accent: #2E5D46; --accent-deep: #24493A;
   }
-  :root:not([data-theme="light"]) {
-    @media (prefers-color-scheme: dark) {
-      --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-      --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6;
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
+    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6;
     }
   }
   :root[data-theme="dark"] {
@@ -55,7 +56,7 @@
   .vers { font-family: "IBM Plex Mono", "Courier New", monospace; color: var(--muted); font-size: 12px; }
   p { margin: 0 0 16px; }
   h2 { font-size: 18px; margin: 28px 0 8px; }
-  a { color: var(--accent-deep); text-decoration-color: var(--rule); text-underline-offset: 3px; }
+  a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
   a:hover, a:focus-visible { text-decoration-color: var(--accent); }
   a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .stamp { border: 1.5px solid var(--accent); padding: 14px 18px; margin: 26px 0; }
@@ -67,17 +68,25 @@
     font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
     display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   }
+  .skip {
+    position: absolute; left: -9999px; top: 0;
+    background: var(--accent); color: var(--paper); padding: 10px 16px;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; z-index: 10;
+  }
+  .skip:focus { left: 8px; top: 8px; }
 </style>
 </head>
 <body>
 
-<div class="sheet">
+<a class="skip" href="#main">Skip to content</a>
+<main class="sheet" id="main">
   <header class="letterhead">
     <span class="name">Appraisal Partners / Production Desk</span>
     <span class="cred">Standard terms for direct appraiser relationships</span>
     <nav class="nav" aria-label="Primary">
       <a href="index.html">Residential appraisal practice</a>
       <a href="how-it-works.html">Production Desk</a>
+      <a href="story.html">The story</a>
       <a href="get-started.html">Contact Matt</a>
     </nav>
   </header>
@@ -130,7 +139,7 @@
     <span><a href="get-started.html">Contact Matt</a></span>
     <span>mrr@appraisalpartners.net</span>
   </footer>
-</div>
+</main>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5e65f76cb49d4898942bc1e1e33ce728"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>
