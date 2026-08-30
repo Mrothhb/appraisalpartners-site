@@ -64,18 +64,13 @@
   a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
   a:hover, a:focus-visible { text-decoration-color: var(--accent); }
   a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-  details {
-    border-top: 1px solid var(--rule); padding: 4px 0;
+  .qa { border-top: 1px solid var(--rule); padding: 4px 0; }
+  .qa:last-of-type { border-bottom: 1px solid var(--rule); }
+  .qa > h2 {
+    padding: 14px 4px 8px; font-weight: 700; font-size: 18px; line-height: 1.4; margin: 0;
   }
-  details:last-of-type { border-bottom: 1px solid var(--rule); }
-  summary {
-    cursor: pointer; padding: 14px 4px; font-weight: 700; font-size: 18px; line-height: 1.4;
-    list-style-position: outside;
-  }
-  summary::marker { color: var(--accent); }
-  details[open] summary { color: var(--accent-deep); }
-  details .a { padding: 0 4px 14px; }
-  details .a p:last-child { margin-bottom: 0; }
+  .qa .a { padding: 0 4px 14px; }
+  .qa .a p:last-child { margin-bottom: 0; }
   .note { border: 1.5px solid var(--ink); padding: 21px 23px; margin-top: 36px; }
   .note p:last-child { margin-bottom: 0; }
   a.btn {
@@ -122,90 +117,90 @@
   <h1>The questions worth <span class="line">asking first.</span></h1>
   <p class="lede">Short answers here, longer ones on the <a href="how-it-works.html">how it works</a> page. If yours isn't covered, write me and I'll answer it directly.</p>
 
-  <details>
-    <summary>Whose client is it?</summary>
+  <section class="qa" id="q-whose-client-is-it">
+    <h2>Whose client is it?</h2>
     <div class="a"><p>Yours. Always. The engagement is yours, the relationship is yours, the fee is yours. I work for you, not for your client, and I never solicit your clients. The desk only exists because that line holds.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>Who's responsible for the appraisal?</summary>
+  <section class="qa" id="q-whos-responsible-for-the-appraisal">
+    <h2>Who's responsible for the appraisal?</h2>
     <div class="a"><p>You are, and nothing about this service changes that. You keep scope, final comp selection, adjustments, reconciliation, the opinion of value, the certification, and the signature. I produce the draft and the support file for your independent review. You accept, change, or reject anything in it.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>Is this allowed? How does disclosure work?</summary>
+  <section class="qa" id="q-is-this-allowed-how-does-disclosure-work">
+    <h2>Is this allowed? How does disclosure work?</h2>
     <div class="a"><p>For accepted work that constitutes significant appraisal assistance, I work as the signing appraiser's independent subcontractor under that appraiser's assignment-specific direction and supervision. My name, credential information, non-inspection, and the work I actually performed go in the report. The signing appraiser independently reviews the draft and makes every final appraisal decision. The arrangement must also be permitted by the engagement, client, property-state rules, and assignment program before I accept the report.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>Do you use AI?</summary>
+  <section class="qa" id="q-do-you-use-ai">
+    <h2>Do you use AI?</h2>
     <div class="a"><p>Yes. I use software automation and AI-assisted tools, including for drafting and quality checks. I verify the work against its sources; the signing appraiser independently adopts, changes, or rejects the draft and makes every final appraisal decision. Before confidential work begins, the appraiser approves the provider route that will handle the file.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>What software do you work with?</summary>
+  <section class="qa" id="q-what-software-do-you-work-with">
+    <h2>What software do you work with?</h2>
     <div class="a"><p>Current production is in TOTAL. You receive the native working file, editable in your own TOTAL installation with the photos placed, plus the agreed draft and support package. Your TOTAL version and delivery formats are confirmed before acceptance.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>How fast is it, really?</summary>
+  <section class="qa" id="q-how-fast-is-it-really">
+    <h2>How fast is it, really?</h2>
     <div class="a"><p>Every accepted live report gets a committed return time before production begins, and that's the number that matters. A typical complete packet might come in Thursday evening and be ready for your review Friday afternoon. The free past-report trial has an illustrative return time, not a client deadline. If a live commitment is ever at risk, you hear it from me before the deadline, not after.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>How do I know where my report is?</summary>
+  <section class="qa" id="q-how-do-i-know-where-my-report-is">
+    <h2>How do I know where my report is?</h2>
     <div class="a"><p>Every trial and live order gets a private-link status page showing the current stage, last update, accepted scope, return time, next step, and who needs to act. At intake, choose Email, Text, Both, or Status page only. Text or Both requires your mobile number and explicit consent. Matt sends those transactional order updates manually from his business line for now. No marketing and no automated campaign. Message and data rates may apply; reply STOP to opt out. Text consent is not a condition of purchase. <a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">Open the working demonstration order</a> and see the status page exactly as an appraiser would.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>What if I don't like the comps?</summary>
+  <section class="qa" id="q-what-if-i-dont-like-the-comps">
+    <h2>What if I don't like the comps?</h2>
     <div class="a"><p>You steer. At intake you choose: use your comps, let me prepare candidates and judge them at review, or get a candidate memo before the grid is built. Steering means evidence and direction with reasons. It never means steering toward a number, and I'll decline an instruction that reads like value pressure.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>What if something's wrong with the draft?</summary>
+  <section class="qa" id="q-what-if-somethings-wrong-with-the-draft">
+    <h2>What if something's wrong with the draft?</h2>
     <div class="a"><p>My production errors are fixed without another fee. One consolidated, within-scope direction round is included with every accepted trial or live report. For thirty days after a live report is delivered, client conditions that trace to my production work are also corrected without another fee. If a paid package materially misses the accepted scope and I cannot correct it through that process, the report is not billed.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>What does it cost?</summary>
+  <section class="qa" id="q-what-does-it-cost">
+    <h2>What does it cost?</h2>
     <div class="a"><p>Your first accepted prior-assignment trial is free. After that, the $89 or $149 is an appraiser-paid desk fee, not the appraisal fee. Your appraisal fee and client relationship stay yours; I do not bill your AMC, lender, borrower, or end client. You pay $89 when you supply the packet, comps, and data, or $149 when I run the research on an eligible assignment. These are the actual rates for those defined scopes, not introductory rates. The desk fee confirmed at acceptance is the desk fee you pay. No subscription, minimum, or long-term agreement.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>How can the desk fee be this low?</summary>
+  <section class="qa" id="q-how-can-the-desk-fee-be-this-low">
+    <h2>How can the desk fee be this low?</h2>
     <div class="a"><p>Before this desk, I spent about a decade as an engineer, much of it in product operations. I built the software- and AI-assisted production workflow for my own appraisal reports first. It removes most re-keying, routine form filling, document collection and organization, and clerical editing. The tools draft. They never decide. What they produce gets checked against its sources and read through before it leaves the desk. My time stays on research, analysis, judgment, and personally reviewing every report; you keep every final appraisal decision. You have already won the assignment, handled the client, and inspected the property, so I price only the defined work behind you. Speed comes from better tooling, not lower standards or anonymous labor. The $89 and $149 are the actual defined-scope rates, not a low introductory price that changes once you rely on the desk. A report that does not fit is declined or separately scoped before acceptance.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>Do I have to risk a live order to try it?</summary>
+  <section class="qa" id="q-do-i-have-to-risk-a-live-order-to-try-it">
+    <h2>Do I have to risk a live order to try it?</h2>
     <div class="a"><p>No. Use a closed prior assignment you are authorized to share. Keep your finished report back while I work from the original packet, then compare the two. The accepted trial is free, has no live-client deadline, and is never signed, delivered, or relied on. Client permission still matters; redaction alone does not create it.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>Can I use the desk only when volume spikes?</summary>
+  <section class="qa" id="q-can-i-use-the-desk-only-when-volume-spikes">
+    <h2>Can I use the desk only when volume spikes?</h2>
     <div class="a"><p>Yes. That is one of the main reasons it exists. Appraisal volume comes in waves, while hiring and payroll do not. Send one report when your own production desk is full and nothing when it is not; there is no subscription, minimum volume, or staffing commitment. The free past-report trial lets us rehearse the handoff before the wave hits. Every live report still depends on my available capacity and receives a written acceptance and committed return time before production begins.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>How much can you take on?</summary>
+  <section class="qa" id="q-how-much-can-you-take-on">
+    <h2>How much can you take on?</h2>
     <div class="a"><p>Less than a mill, on purpose. The goal is a small number of appraisers whose work and handoff I know before the next market-wide wave arrives. I hold the desk to what I can personally produce and review, and when the day is full, I tell you before accepting a report. I don't farm your files out to anybody, so capacity is honest and so are the return times.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>Where do you work?</summary>
+  <section class="qa" id="q-where-do-you-work">
+    <h2>Where do you work?</h2>
     <div class="a"><p>Packet-to-Draft travels outside my licensed markets, because when you supply the packet and the comps the market is already yours. Two current exceptions, so you don't waste a packet finding out: I'm not taking FHA or VA panel assignments, and I'm not taking Georgia assignments under present desk policy. Research + Draft needs a market I can work in, meaning authorized MLS access, competence, and whatever your state and client require. Dallas&ndash;Fort Worth is established now, and I set up new markets on request, usually one to three weeks. Tell me where you work and I'll tell you straight whether it's ready or needs setting up. Either way the checks are real: client permission, property-state requirements, competence, insurance, data rights, software.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>What about my client's confidential information?</summary>
+  <section class="qa" id="q-what-about-my-clients-confidential-information">
+    <h2>What about my client's confidential information?</h2>
     <div class="a"><p>Keep it out of the first form entirely. Documents move through the agreed private workflow, and status pages never show client names, addresses, report numbers, email addresses, or mobile numbers. Notification contact details and consent stay in the private order email and records, never in the status-page data. Assignment data is never sold or disclosed outside the service providers and workflow agreed for the work. If you want to judge the output before sharing anything at all, <a href="uad36-work-sample.pdf">View Sample UAD 3.6 Report</a>. We also confirm you're authorized to share a past assignment or engage assistance on live work before anything starts.</p></div>
-  </details>
+  </section>
 
-  <details>
-    <summary>How do I start?</summary>
+  <section class="qa" id="q-how-do-i-start">
+    <h2>How do I start?</h2>
     <div class="a"><p>Use the <a href="start.html">short form</a> to request a free trial on an authorized past assignment. You get a trial number, private status link, and secure folder back. No call, no live-client deadline, and no commitment to send live work afterward.</p></div>
-  </details>
+  </section>
 
   <div class="note">
     <p><strong>Didn't find yours?</strong></p>

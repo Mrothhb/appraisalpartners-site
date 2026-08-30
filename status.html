@@ -157,9 +157,7 @@
   .example-toggle, .rail-wrap, .order-details {
     border-top: 1px solid var(--rule); margin-top: 22px; padding-top: 15px;
   }
-  summary { cursor: pointer; font-size: 14px; font-weight: 700; }
-  summary::marker { color: var(--accent); }
-  details[open] > summary { margin-bottom: 16px; }
+  .sublabel { font-size: 14px; font-weight: 700; margin: 0 0 16px; }
   .message-samples { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
   .message-sample { background: var(--surface); border: 1px solid var(--rule); padding: 13px 14px; }
   .message-sample .badge {
@@ -267,8 +265,6 @@
         <ol class="tracker" id="status-tracker" aria-label="Major report milestones"></ol>
       </div>
 
-      </div>
-
       <div class="status-details" aria-label="What happens next">
         <div class="detail">
           <span class="label">What happens next</span>
@@ -315,8 +311,8 @@
       <p class="milestones" id="milestone-copy"></p>
       <p class="fineprint">Updates are short, manual order messages from Matt, not marketing. Contact details and text consent stay with the private order; neither is stored in this tracking link.</p>
 
-      <details class="example-toggle" id="demo-notification-examples" hidden>
-        <summary>See a sample email and text update</summary>
+      <div class="example-toggle" id="demo-notification-examples" hidden>
+        <p class="sublabel">A sample email and text update</p>
         <div class="message-samples">
           <div class="message-sample">
             <span class="badge">Email subject</span>
@@ -327,17 +323,17 @@
             <p id="demo-text"></p>
           </div>
         </div>
-      </details>
+      </div>
     </section>
 
-    <details class="rail-wrap">
-      <summary>View all nine report checkpoints</summary>
+    <div class="rail-wrap">
+      <p class="sublabel">All nine report checkpoints</p>
       <p class="latest"><span class="label">Latest checkpoint</span><span id="current-note"></span></p>
       <ol class="rail" id="status-rail" aria-label="All report production checkpoints"></ol>
-    </details>
+    </div>
 
-    <details class="order-details">
-      <summary>Order details</summary>
+    <div class="order-details">
+      <p class="sublabel">Order details</p>
       <div class="facts" aria-label="Accepted order details">
         <div class="fact">
           <div class="label">Accepted scope</div>
@@ -348,7 +344,7 @@
           <p class="value" id="price"></p>
         </div>
       </div>
-    </details>
+    </div>
 
     <div class="direction">
       <p>Want to steer the comps, correct something, or add evidence?</p>
