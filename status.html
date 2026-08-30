@@ -12,165 +12,211 @@
 <title>Order Status | Appraisal Partners</title>
 <style>
   :root {
-    --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
-    --rule: #D9DED9; --accent: #2E5D46; --accent-deep: #24493A;
-    --wash: #F1F3EF; --notice: #FFF7DD; --notice-rule: #B5841A;
+    --paper: #F7F8F5; --surface: #FFFFFF; --ink: #1C2420; --muted: #667069;
+    --rule: #DCE1DC; --accent: #2E5D46; --accent-deep: #24493A;
+    --wash: #F0F4F1; --notice: #FFF7DD; --notice-rule: #B5841A;
+    --shadow: 0 12px 36px rgba(28, 36, 32, .07);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --paper: #141917; --ink: #E8EAE6; --muted: #A4ADA7;
+      --paper: #121715; --surface: #191F1C; --ink: #E8EAE6; --muted: #A4ADA7;
       --rule: #364039; --accent: #7AB395; --accent-deep: #A5CEB8;
-      --wash: #1B211E; --notice: #302916; --notice-rule: #C29A3D;
+      --wash: #202823; --notice: #302916; --notice-rule: #C29A3D;
+      --shadow: none;
     }
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   body {
     background: var(--paper); color: var(--ink);
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 17px; line-height: 1.6; margin: 0; padding: 0 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px; line-height: 1.55; margin: 0; padding: 0 22px;
   }
-  .sheet { max-width: 780px; margin: 0 auto; padding: 32px 0 54px; }
+  .sheet { max-width: 820px; margin: 0 auto; padding: 28px 0 52px; }
   .letterhead {
-    display: flex; justify-content: space-between; align-items: baseline;
-    gap: 18px; border-bottom: 2px solid var(--ink); padding-bottom: 13px;
-    font-family: "Courier New", monospace; text-transform: uppercase;
+    align-items: center; border-bottom: 1px solid var(--rule); display: flex;
+    justify-content: space-between; gap: 18px; padding-bottom: 17px;
   }
-  .name { font-size: 14px; font-weight: 700; letter-spacing: .18em; }
-  .page-kind { color: var(--muted); font-size: 11.5px; letter-spacing: .08em; }
-  .loading, .error { border: 1px solid var(--rule); margin-top: 48px; padding: 26px; }
-  .error h1 { margin-top: 0; }
-  h1 { font-size: clamp(30px, 7vw, 44px); line-height: 1.14; margin: 34px 0 8px; }
-  h2 { font-size: 22px; line-height: 1.3; margin: 0 0 16px; }
-  p { margin: 0 0 16px; }
+  .name {
+    font-family: Georgia, "Times New Roman", serif; font-size: 18px;
+    font-weight: 700; letter-spacing: .025em;
+  }
+  .page-kind, .eyebrow, .label, .timestamp, .badge, .rail-label, .stage-count {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  }
+  .page-kind {
+    color: var(--muted); font-size: 10.5px; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase;
+  }
+  .loading, .error {
+    background: var(--surface); border: 1px solid var(--rule);
+    margin-top: 36px; padding: 28px;
+  }
+  .error h1 { font: 700 32px/1.18 Georgia, "Times New Roman", serif; margin: 0 0 12px; }
+  h1, h2, p { margin-top: 0; }
+  h1 {
+    font-family: Georgia, "Times New Roman", serif; font-size: clamp(35px, 7vw, 50px);
+    letter-spacing: -.02em; line-height: 1.08; margin: 5px 0 10px;
+  }
+  h2 { font: 700 24px/1.25 Georgia, "Times New Roman", serif; margin: 0 0 9px; }
+  p { margin-bottom: 14px; }
   a { color: var(--accent-deep); text-underline-offset: 3px; }
   a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-  .eyebrow, .label, .timestamp, .badge, .rail-label, .notification-row dt {
-    font-family: "Courier New", monospace;
+  .order-header {
+    align-items: center; display: flex; flex-wrap: wrap; gap: 9px 14px;
+    justify-content: space-between; margin: 27px 0 13px;
   }
-  .eyebrow { color: var(--accent); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; margin-top: 38px; }
-  .order-number { color: var(--accent); }
-  .timestamp { color: var(--muted); font-size: 12.5px; }
-  .demo-banner, .waiting-banner {
-    border: 1.5px solid var(--notice-rule); background: var(--notice);
-    padding: 13px 16px; margin: 22px 0 0; font-weight: 700;
+  .eyebrow {
+    color: var(--accent); font-size: 11px; font-weight: 700;
+    letter-spacing: .13em; margin: 0; text-transform: uppercase;
   }
+  .order-number { color: var(--ink); }
   .demo-banner {
-    font-family: "Courier New", monospace; font-size: 12px; letter-spacing: .08em;
-    text-transform: uppercase;
+    background: var(--notice); border: 1px solid var(--notice-rule);
+    color: var(--ink); font-size: 10.5px; font-weight: 700;
+    letter-spacing: .07em; padding: 5px 9px; text-transform: uppercase;
   }
-  .status-summary {
-    background: var(--wash); border-left: 5px solid var(--accent);
-    display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(220px, .8fr);
-    gap: 22px; margin-top: 24px; padding: 21px 22px;
+  .waiting-banner {
+    background: var(--notice); border: 1.5px solid var(--notice-rule);
+    font-weight: 700; margin: 0 0 14px; padding: 13px 16px;
   }
-  .current { min-width: 0; }
-  .current .label { color: var(--muted); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
-  .current .note { font-size: 22px; line-height: 1.38; margin: 5px 0 8px; }
-  .summary-aside { border-left: 1px solid var(--rule); padding-left: 20px; }
-  .summary-line { margin-bottom: 15px; }
-  .summary-line:last-child { margin-bottom: 0; }
-  .summary-line .label, .latest .label {
-    color: var(--muted); display: block; font-size: 10.5px;
-    letter-spacing: .1em; text-transform: uppercase;
+  .status-card {
+    background: var(--surface); border: 1px solid var(--rule);
+    box-shadow: var(--shadow); padding: 27px 28px 24px;
   }
-  .summary-line .value { font-size: 15px; line-height: 1.45; margin: 3px 0 0; }
-  .summary-line.actor .value { color: var(--accent-deep); font-weight: 700; }
-  .latest { color: var(--muted); font-size: 14px; margin: 12px 5px 0; }
-  .latest .label { display: inline; margin-right: 7px; }
-  .rail-wrap, .order-details { border-top: 1px solid var(--rule); margin-top: 28px; padding-top: 18px; }
-  summary { cursor: pointer; font-weight: 700; }
-  summary::marker { color: var(--accent); }
-  .rail-wrap[open] summary, .order-details[open] summary { margin-bottom: 18px; }
+  .status-top {
+    display: grid; gap: 26px; grid-template-columns: minmax(0, 1.3fr) minmax(245px, .7fr);
+  }
+  .stage-count {
+    color: var(--accent); font-size: 11px; font-weight: 700;
+    letter-spacing: .11em; margin: 0; text-transform: uppercase;
+  }
+  .status-story { color: var(--muted); font-size: 17px; margin: 0 0 11px; max-width: 520px; }
+  .timestamp { color: var(--muted); font-size: 11.5px; margin: 0; }
+  .delivery {
+    align-self: stretch; background: var(--wash); border-left: 3px solid var(--accent);
+    display: flex; flex-direction: column; justify-content: center; padding: 18px 20px;
+  }
+  .delivery .label, .detail .label, .preference .label, .latest .label {
+    color: var(--muted); display: block; font-size: 10.5px; font-weight: 700;
+    letter-spacing: .09em; text-transform: uppercase;
+  }
+  .delivery .value {
+    font-family: Georgia, "Times New Roman", serif; font-size: 19px;
+    font-weight: 700; line-height: 1.35; margin: 6px 0 0;
+  }
+  .progress-wrap { margin-top: 27px; }
+  .progress-meta {
+    color: var(--muted); display: flex; font-size: 12px;
+    justify-content: space-between; margin-bottom: 8px;
+  }
+  .progress-track { background: var(--rule); height: 8px; overflow: hidden; }
+  .progress-fill { background: var(--accent); height: 100%; transition: width .25s ease; width: 0; }
   .tracker {
     display: grid; grid-template-columns: repeat(5, 1fr);
-    list-style: none; margin: 0 0 26px; padding: 0;
+    list-style: none; margin: 12px 0 0; padding: 0;
   }
-  .tracker li { position: relative; text-align: center; padding-top: 22px; }
-  .tracker li::before {
-    content: ""; position: absolute; top: 6px; left: 0; right: 0;
-    height: 4px; background: var(--rule);
-  }
-  .tracker li:first-child::before { left: 50%; border-radius: 2px 0 0 2px; }
-  .tracker li:last-child::before { right: 50%; border-radius: 0 2px 2px 0; }
-  .tracker li.done::before, .tracker li.now::before { background: var(--accent); }
-  .tracker li.now::before { background: linear-gradient(to right, var(--accent) 50%, var(--rule) 50%); }
-  .tracker li:first-child.now::before { background: var(--accent); }
-  .tracker .dot {
-    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-    width: 16px; height: 16px; border-radius: 50%;
-    background: var(--paper); border: 3px solid var(--rule);
-  }
-  .tracker li.done .dot { background: var(--accent); border-color: var(--accent); }
-  .tracker li.now .dot {
-    background: var(--paper); border-color: var(--accent);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent);
-  }
-  .tracker .step {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--muted); display: block; line-height: 1.35; padding: 0 3px;
-  }
-  .tracker li.now .step { color: var(--accent-deep); font-weight: 500; }
+  .tracker li { color: var(--muted); font-size: 11px; position: relative; text-align: center; }
+  .tracker li:first-child { text-align: left; }
+  .tracker li:last-child { text-align: right; }
+  .tracker .dot { display: none; }
+  .tracker .step { display: block; line-height: 1.3; }
   .tracker li.done .step { color: var(--ink); }
-  @media (max-width: 560px) {
-    .tracker .step { font-size: 9px; letter-spacing: 0.02em; }
+  .tracker li.now .step { color: var(--accent-deep); font-weight: 750; }
+  .status-details {
+    border-top: 1px solid var(--rule); display: grid; gap: 24px;
+    grid-template-columns: 1.45fr .55fr; margin-top: 23px; padding-top: 20px;
   }
+  .detail p { margin: 5px 0 0; }
+  .detail.owner p { color: var(--accent-deep); font-weight: 750; }
+  .updates { border-top: 1px solid var(--rule); margin-top: 34px; padding-top: 28px; }
+  .updates-lede { color: var(--muted); font-size: 17px; margin-bottom: 18px; max-width: 710px; }
+  .preference {
+    align-items: center; background: var(--wash); border-left: 3px solid var(--accent);
+    display: flex; flex-wrap: wrap; gap: 15px 24px; justify-content: space-between;
+    padding: 15px 17px;
+  }
+  .preference strong { color: var(--accent-deep); display: block; font-size: 18px; margin-top: 2px; }
+  .preference-link { font-size: 14px; font-weight: 700; }
+  .delivery-state { color: var(--muted); display: flex; flex-wrap: wrap; font-size: 13px; gap: 5px 18px; margin: 11px 0 0; }
+  .delivery-state strong { color: var(--ink); }
+  .notify-explainer {
+    display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr);
+    margin: 21px 0 0;
+  }
+  .notify-step { border-top: 2px solid var(--rule); padding-top: 11px; }
+  .notify-step .n {
+    color: var(--accent); font: 700 11px/1 "SFMono-Regular", Consolas, monospace;
+    letter-spacing: .08em;
+  }
+  .notify-step strong { display: block; font-size: 15px; margin: 5px 0 3px; }
+  .notify-step p { color: var(--muted); font-size: 13.5px; line-height: 1.5; margin: 0; }
+  .milestones { color: var(--muted); font-size: 13.5px; margin: 18px 0 0; }
+  .milestones strong { color: var(--ink); }
+  .fineprint { color: var(--muted); font-size: 12.5px; }
+  .example-toggle, .rail-wrap, .order-details {
+    border-top: 1px solid var(--rule); margin-top: 22px; padding-top: 15px;
+  }
+  summary { cursor: pointer; font-size: 14px; font-weight: 700; }
+  summary::marker { color: var(--accent); }
+  details[open] > summary { margin-bottom: 16px; }
+  .message-samples { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+  .message-sample { background: var(--surface); border: 1px solid var(--rule); padding: 13px 14px; }
+  .message-sample .badge {
+    color: var(--accent); font-size: 10px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+  }
+  .message-sample p { font-size: 13.5px; margin: 7px 0 0; }
+  .latest { color: var(--muted); font-size: 14px; margin: 0 0 17px; }
+  .latest .label { display: inline; margin-right: 7px; }
   .rail {
     display: grid; grid-template-columns: repeat(9, minmax(78px, 1fr));
-    list-style: none; margin: 0; padding: 0; overflow-x: auto;
+    list-style: none; margin: 0; overflow-x: auto; padding: 0 0 8px;
   }
-  .rail li { position: relative; min-width: 78px; padding: 0 9px 0 0; }
+  .rail li { min-width: 78px; padding-right: 9px; position: relative; }
   .rail li::after {
-    content: ""; position: absolute; top: 14px; left: 29px; right: 0;
-    height: 2px; background: var(--rule); z-index: 0;
+    background: var(--rule); content: ""; height: 2px; left: 27px;
+    position: absolute; right: 0; top: 13px; z-index: 0;
   }
   .rail li:last-child::after { display: none; }
   .rail-marker {
     align-items: center; background: var(--paper); border: 2px solid var(--rule);
-    border-radius: 50%; color: var(--muted); display: flex; font: 11px/1 "Courier New", monospace;
-    height: 30px; justify-content: center; position: relative; width: 30px; z-index: 1;
+    border-radius: 50%; color: var(--muted); display: flex;
+    font: 11px/1 "SFMono-Regular", Consolas, monospace; height: 28px;
+    justify-content: center; position: relative; width: 28px; z-index: 1;
   }
   .rail .complete .rail-marker { background: var(--accent); border-color: var(--accent); color: var(--paper); }
   .rail .complete::after { background: var(--accent); }
-  .rail .active .rail-marker { border-color: var(--accent); color: var(--accent); border-width: 3px; }
-  .rail-label { display: block; font-size: 10.5px; line-height: 1.35; margin-top: 8px; color: var(--muted); }
+  .rail .active .rail-marker { border-color: var(--accent); border-width: 3px; color: var(--accent); }
+  .rail-label { color: var(--muted); display: block; font-size: 10px; line-height: 1.35; margin-top: 7px; }
   .rail .active .rail-label { color: var(--ink); font-weight: 700; }
-  .facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-  .fact { border: 1px solid var(--rule); padding: 17px 18px; min-width: 0; }
-  .fact .label { color: var(--muted); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; }
-  .fact .value { font-size: 17px; margin: 7px 0 0; overflow-wrap: anywhere; }
-  section { border-top: 1px solid var(--rule); margin-top: 30px; padding-top: 24px; }
-  .updates-card {
-    background: var(--wash); border: 1px solid var(--rule); border-top: 4px solid var(--accent);
-    margin-top: 28px; padding: 21px 22px 18px;
+  .facts { display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr); }
+  .fact { background: var(--surface); border: 1px solid var(--rule); padding: 15px 16px; }
+  .fact .label { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+  .fact .value { margin: 5px 0 0; overflow-wrap: anywhere; }
+  .direction {
+    align-items: center; border-top: 1px solid var(--rule); display: flex;
+    flex-wrap: wrap; gap: 10px 20px; justify-content: space-between;
+    margin-top: 24px; padding-top: 20px;
   }
-  .updates-card h2 { margin-bottom: 8px; }
-  .notification-choice { font-size: 18px; margin-bottom: 12px; }
-  .notification-choice strong { color: var(--accent-deep); }
-  .notification-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-  .delivery-state { display: flex; flex-wrap: wrap; gap: 7px 18px; margin-bottom: 10px; }
-  .delivery-state span { font-size: 14px; }
-  .fineprint { color: var(--muted); font-size: 14px; }
-  .preference-link { display: inline-block; font-weight: 700; margin-top: 2px; }
-  .example-toggle { border-top: 1px solid var(--rule); margin-top: 12px; padding-top: 12px; }
-  .example-toggle summary { font-size: 14px; }
-  .message-samples { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .message-sample { background: var(--paper); border: 1px solid var(--rule); padding: 13px 14px; margin: 12px 0 0; }
-  .message-sample .badge { color: var(--accent); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; }
-  .message-sample p { font-size: 14px; margin: 7px 0 0; }
-  footer { border-top: 2px solid var(--ink); color: var(--muted); margin-top: 40px; padding-top: 14px; font: 11.5px/1.55 "Courier New", monospace; }
-  .direction { margin-top: 26px; }
-  .direction h2 { font-size: 18px; margin-bottom: 7px; }
+  .direction p { color: var(--muted); font-size: 14px; margin: 0; }
+  .direction strong { color: var(--accent-deep); }
+  footer {
+    border-top: 1px solid var(--rule); color: var(--muted); font-size: 11.5px;
+    margin-top: 32px; padding-top: 15px;
+  }
   .demo-link { display: inline-block; margin-top: 8px; }
-  @media (max-width: 720px) {
-    .status-summary, .facts, .notification-grid, .message-samples { grid-template-columns: 1fr; }
-    .sheet { padding-top: 22px; }
-    .summary-aside { border-left: 0; border-top: 1px solid var(--rule); padding: 17px 0 0; }
-    .rail { grid-template-columns: 1fr 1fr; gap: 12px 18px; overflow: visible; padding-bottom: 8px; }
-    .rail li { display: grid; grid-template-columns: 30px 1fr; align-items: center; min-width: 0; padding: 0; }
-    .rail li::after { display: none; }
-    .rail-label { margin: 0 0 0 8px; }
+  @media (max-width: 680px) {
+    body { padding: 0 15px; }
+    .sheet { padding-top: 20px; }
+    .status-card { padding: 21px 18px; }
+    .status-top, .status-details, .notify-explainer, .facts, .message-samples { grid-template-columns: 1fr; }
+    .delivery { border-left: 0; border-top: 3px solid var(--accent); }
+    .status-details { gap: 16px; }
+    .tracker li { font-size: 9px; }
+    .notify-explainer { gap: 13px; }
+    .preference { align-items: flex-start; flex-direction: column; }
+    .page-kind { display: none; }
   }
 </style>
 </head>
@@ -179,80 +225,113 @@
 <main class="sheet">
   <header class="letterhead">
     <span class="name">Appraisal Partners</span>
-    <span class="page-kind">Private order status</span>
+    <span class="page-kind">Private report tracking</span>
   </header>
 
-  <div class="loading" id="loading" role="status">Opening your order status&hellip;</div>
+  <div class="loading" id="loading" role="status">Opening report tracking&hellip;</div>
 
   <section class="error" id="error-panel" hidden aria-live="polite">
-    <h1>This status link isn&rsquo;t available.</h1>
+    <h1>This tracking link isn&rsquo;t available.</h1>
     <p>Open the complete link from your latest Appraisal Partners order email. If that link was forwarded or replaced, reply to the existing order thread and ask Matt for a new one.</p>
     <p>This page never asks for a password, property address, borrower name, or report data.</p>
     <p><a class="demo-link" href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">See the free prior-assignment trial demonstration</a></p>
   </section>
 
   <article id="status-panel" hidden aria-live="polite">
-    <p class="eyebrow">Order <span id="order-number"></span></p>
-    <h1>Here&rsquo;s where your report stands.</h1>
-    <div class="demo-banner" id="demo-banner" hidden>Free prior-assignment trial &middot; Not for client reliance</div>
+    <div class="order-header">
+      <p class="eyebrow">Report tracking &middot; <span class="order-number" id="order-number"></span></p>
+      <div class="demo-banner" id="demo-banner" hidden>Free prior-assignment trial &middot; Not for client reliance</div>
+    </div>
+
     <div class="waiting-banner" id="waiting-banner" hidden></div>
 
-    <ol class="tracker" id="status-tracker" aria-label="Order progress"></ol>
-
-    <div class="status-summary">
-      <div class="current">
-        <div class="label">Current status</div>
-        <p class="note" id="current-note"></p>
-        <p class="timestamp">Last updated <span id="last-updated"></span></p>
-        <p class="latest"><span class="label">Latest</span><span id="what-happened"></span></p>
-      </div>
-      <div class="summary-aside" aria-label="What happens next">
-        <div class="summary-line">
+    <section class="status-card" aria-labelledby="stage-name">
+      <div class="status-top">
+        <div>
+          <p class="stage-count" id="stage-count"></p>
+          <h1 id="stage-name"></h1>
+          <p class="status-story" id="what-happened"></p>
+          <p class="timestamp">Updated by Matt <span id="last-updated"></span></p>
+        </div>
+        <div class="delivery">
           <span class="label" id="return-label">Return time</span>
           <p class="value" id="return-time"></p>
         </div>
-        <div class="summary-line">
-          <span class="label">Next</span>
-          <p class="value" id="what-next"></p>
-        </div>
-        <div class="summary-line actor">
-          <span class="label">With</span>
-          <p class="value" id="who-acts"></p>
-        </div>
       </div>
-    </div>
 
-    <section class="updates-card" aria-labelledby="updates-heading">
-      <h2 id="updates-heading">How you&rsquo;ll hear from me</h2>
-      <p>At intake, choose email, text, both, or this status page only.</p>
-      <p class="notification-choice">This order: <strong id="notification-mode"></strong></p>
-      <div class="notification-grid">
-        <div>
-          <p>I send a short manual update when I accept the report, when I need something from you, and when the draft is ready.</p>
-          <p class="delivery-state"><span>Email milestones: <strong id="email-setting"></strong></span><span>Text opt-in: <strong id="text-setting"></strong></span></p>
-          <p class="fineprint">This page is always updated. Texts are one-to-one order updates from my business line, not marketing messages.</p>
-          <p class="fineprint" id="research-milestone" hidden>A research-complete update is included because this return window is longer than one business day.</p>
-          <p><a class="preference-link" href="mailto:mrr@appraisalpartners.net?subject=Change%20my%20order%20notification%20preference">Change this preference</a></p>
+      <div class="progress-wrap">
+        <div class="progress-meta"><span>Submitted</span><span>Complete</span></div>
+        <div class="progress-track" id="progress-track" role="progressbar" aria-label="Report production progress" aria-valuemin="1" aria-valuemax="9">
+          <div class="progress-fill" id="progress-fill"></div>
         </div>
-        <details class="example-toggle" id="demo-notification-examples" hidden>
-          <summary>See the email and text examples</summary>
-          <div class="message-samples">
-            <div class="message-sample">
-              <span class="badge">Example email subject</span>
-              <p id="demo-email"></p>
-            </div>
-            <div class="message-sample">
-              <span class="badge">Example text</span>
-              <p id="demo-text"></p>
-            </div>
-          </div>
-        </details>
+        <ol class="tracker" id="status-tracker" aria-label="Major report milestones"></ol>
+      </div>
+
+      <div class="status-details" aria-label="What happens next">
+        <div class="detail">
+          <span class="label">What happens next</span>
+          <p id="what-next"></p>
+        </div>
+        <div class="detail owner">
+          <span class="label">Who has it</span>
+          <p id="who-acts"></p>
+        </div>
       </div>
     </section>
 
+    <section class="updates" aria-labelledby="updates-heading">
+      <h2 id="updates-heading">Follow the report without chasing it.</h2>
+      <p class="updates-lede">This private tracker follows all nine production checkpoints, so you can see more than &ldquo;in progress.&rdquo; Choose email, text, both, or the tracking page alone&mdash;and you never have to send a &ldquo;just checking status&rdquo; message.</p>
+
+      <div class="preference">
+        <div>
+          <span class="label">Updates for this report</span>
+          <strong id="notification-mode"></strong>
+          <p class="delivery-state"><span>Tracking page: <strong>Included</strong></span><span>Email: <strong id="email-setting"></strong></span><span>Text: <strong id="text-setting"></strong></span></p>
+        </div>
+        <a class="preference-link" href="mailto:mrr@appraisalpartners.net?subject=Change%20my%20report%20update%20preference">Change update preference</a>
+      </div>
+
+      <div class="notify-explainer" aria-label="How report updates work">
+        <div class="notify-step">
+          <span class="n">01</span>
+          <strong>Choose your channel</strong>
+          <p>Email, text, both, or this tracking page only. You choose at intake and can change it anytime.</p>
+        </div>
+        <div class="notify-step">
+          <span class="n">02</span>
+          <strong>Watch every checkpoint</strong>
+          <p>Intake, acceptance, research, comps, drafting, review, and delivery stay visible here.</p>
+        </div>
+        <div class="notify-step">
+          <span class="n">03</span>
+          <strong>Know when to step in</strong>
+          <p>I alert you if I need something, if timing changes, and when the draft is ready for you.</p>
+        </div>
+      </div>
+
+      <p class="milestones" id="milestone-copy"></p>
+      <p class="fineprint">Updates are short, manual order messages from Matt, not marketing. Contact details and text consent stay with the private order; neither is stored in this tracking link.</p>
+
+      <details class="example-toggle" id="demo-notification-examples" hidden>
+        <summary>See a sample email and text update</summary>
+        <div class="message-samples">
+          <div class="message-sample">
+            <span class="badge">Email subject</span>
+            <p id="demo-email"></p>
+          </div>
+          <div class="message-sample">
+            <span class="badge">Text message</span>
+            <p id="demo-text"></p>
+          </div>
+        </div>
+      </details>
+    </section>
+
     <details class="rail-wrap">
-      <summary>See all 9 production stages</summary>
-      <ol class="rail" id="status-rail" aria-label="Order progress"></ol>
+      <summary>View all nine report checkpoints</summary>
+      <p class="latest"><span class="label">Latest checkpoint</span><span id="current-note"></span></p>
+      <ol class="rail" id="status-rail" aria-label="All report production checkpoints"></ol>
     </details>
 
     <details class="order-details">
@@ -269,14 +348,13 @@
       </div>
     </details>
 
-    <section class="direction">
-      <h2>Need to change direction?</h2>
-      <p>Reply to the existing order email. Your comp direction, corrections, and added evidence stay with the report.</p>
-      <p class="fineprint">This page carries production status only. It never displays your client&rsquo;s name, the property address, a value conclusion, report details, or another appraiser&rsquo;s activity.</p>
-    </section>
+    <div class="direction">
+      <p>Want to steer the comps, correct something, or add evidence?</p>
+      <p><strong>Reply in your existing <span id="direction-order"></span> order email.</strong></p>
+    </div>
   </article>
 
-  <footer>Keep this link private. If it was shared by mistake, ask Matt to replace it.</footer>
+  <footer><strong>Private link.</strong> Keep it with the order. This page omits the property address, client, borrower, value conclusion, and report contents. If the link was shared by mistake, ask Matt to replace it.</footer>
 </main>
 <script type="module" src="status-app.mjs"></script>
 </body>

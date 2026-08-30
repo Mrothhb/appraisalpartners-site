@@ -27,7 +27,14 @@ function showError() {
 function renderRail(payload) {
   const rail = byId("status-rail");
   rail.replaceChildren();
-  const activeIndex = stageDefinition(payload.stage).index;
+  const definition = stageDefinition(payload.stage);
+  const activeIndex = definition.index;
+
+  setText("stage-name", definition.label);
+  setText("stage-count", `Checkpoint ${activeIndex + 1} of ${STAGES.length}`);
+  const progress = byId("progress-track");
+  progress.setAttribute("aria-valuenow", String(activeIndex + 1));
+  byId("progress-fill").style.width = `${((activeIndex + 1) / STAGES.length) * 100}%`;
 
   for (const [index, stage] of STAGES.entries()) {
     const item = document.createElement("li");
@@ -48,8 +55,8 @@ function renderRail(payload) {
 }
 
 const MILESTONES = [
-  { label: "Submitted", codes: ["submitted"] },
-  { label: "Accepted", codes: ["intake", "accepted"] },
+  { label: "Submitted", codes: ["submitted", "intake"] },
+  { label: "Accepted", codes: ["accepted"] },
   { label: "In production", codes: ["research", "comparables", "drafting", "review"] },
   { label: "Ready for you", codes: ["ready"] },
   { label: "Complete", codes: ["complete"] },
@@ -84,7 +91,12 @@ function renderNotifications(payload) {
   setText("notification-mode", delivery.label);
   setText("email-setting", delivery.email ? "On" : "Off");
   setText("text-setting", delivery.text ? "Active" : "Not selected");
-  byId("research-milestone").hidden = !payload.long_window || (!delivery.email && !delivery.text);
+  setText(
+    "milestone-copy",
+    delivery.email || delivery.text
+      ? `Standard alerts: accepted · waiting on you · ready for review${payload.long_window ? " · research complete on this longer turn" : ""}.`
+      : "No email or text alerts are selected. Every checkpoint stays visible on this page.",
+  );
 
   if (payload.demo) {
     setText("demo-email", `AP-${payload.order}: research done, drafting now`);
@@ -100,6 +112,7 @@ function renderNotifications(payload) {
 
 function render(payload) {
   setText("order-number", `AP-${payload.order}`);
+  setText("direction-order", `AP-${payload.order}`);
   setText("current-note", pageNote(payload));
   setText("last-updated", formatCentralTime(payload.updated_at));
   renderTracker(payload);
