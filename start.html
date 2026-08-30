@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Start with one report. A two-minute form, an order number and private folder back within business hours, a flat price and committed return time before production begins. No call required.">
+<meta name="description" content="Try Appraisal Partners free on an authorized closed prior assignment. No live client, no due-date risk, no call required. Follow the trial on a private status page.">
 <link rel="canonical" href="https://appraisalpartners.net/start.html">
-<meta property="og:title" content="Start With One Report | Appraisal Partners">
-<meta property="og:description" content="One report, a flat price, a committed return time, and a draft you judge with your own eyes. No call, no subscription.">
+<meta property="og:title" content="Try It Free on a Past Report | Appraisal Partners">
+<meta property="og:description" content="Use an authorized closed prior assignment to judge the work without risking a live client report or deadline.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/start.html">
 <meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
-<title>Start With One Report | Appraisal Partners</title>
+<title>Try It Free on a Past Report | Appraisal Partners</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
@@ -143,7 +143,7 @@
 <main class="sheet" id="main">
   <header class="letterhead">
     <span class="name">Appraisal Partners</span>
-    <span class="cred">Start with one report</span>
+    <span class="cred">Free prior-assignment trial</span>
     <nav class="nav" aria-label="Primary">
       <a href="index.html">Home</a>
       <a href="how-it-works.html">How it works</a>
@@ -153,11 +153,18 @@
     </nav>
   </header>
 
-  <h1>Start with <span class="line">one report.</span></h1>
-  <p class="lede">Two minutes, no call, no commitment past this report. Fill this out and you'll get an order number and a private folder link back, usually within business hours. The packet comes after that, into your folder. Nothing gets attached here.</p>
-  <p class="fineprint">Please keep the property address, borrower names, and assignment documents out of this form. All of that goes in your private folder once you have it.</p>
+  <h1>Try it free on a <span class="line">past report.</span></h1>
+  <p class="lede">No live client. No due-date gamble. Use a closed prior assignment you are authorized to share, and judge my work against a report you already know. The trial is free.</p>
+  <p>This page prepares a complete trial-request email, so you do not have to compose one. After I review it, I reply with a trial number, private status link, and secure folder. Hold back your finished report until my draft comes back so the comparison is real.</p>
+  <p class="fineprint">Keep the property address, borrower names, and assignment documents out of this form. Those go in the private folder after I confirm the trial. Redaction by itself does not create permission to share a client file.</p>
 
-  <form id="startform">
+  <form id="startform" action="javascript:void(0)" method="post">
+    <noscript>
+      <div class="note">
+        <p><strong>JavaScript is off, so this form will not send.</strong></p>
+        <p>Nothing has been submitted. Email <a href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a> with the subject &ldquo;Free past-report trial&rdquo; instead.</p>
+      </div>
+    </noscript>
     <div class="grid2">
       <div class="field">
         <label for="f-name">Your name</label>
@@ -172,21 +179,13 @@
         <input type="email" id="f-email" name="email" autocomplete="email" required>
       </div>
       <div class="field">
-        <label for="f-cell">Cell (optional, only for text updates)</label>
-        <input type="tel" id="f-cell" name="cell" autocomplete="tel">
-      </div>
-      <div class="field">
         <label for="f-software">Your forms software and version</label>
         <input type="text" id="f-software" name="software" placeholder="e.g. TOTAL 2026, ACI, SFREP">
-      </div>
-      <div class="field">
-        <label for="f-due">Client due date</label>
-        <input type="date" id="f-due" name="due">
       </div>
     </div>
 
     <div class="field">
-      <label for="f-scenario">What kind of report is it?</label>
+      <label for="f-scenario">What kind of past assignment was it?</label>
       <select id="f-scenario" name="scenario">
         <option value="full-interior">Full interior inspection (I walked the property)</option>
         <option value="exterior">Exterior-only</option>
@@ -198,9 +197,9 @@
     </div>
 
     <fieldset>
-      <legend>The data</legend>
-      <div class="opt"><input type="radio" id="d-mine" name="datalane" value="I'm sending everything" checked><label for="d-mine">I'm sending everything: my comps, my data, my direction ($89 Packet-to-Draft)</label></div>
-      <div class="opt"><input type="radio" id="d-research" name="datalane" value="Research it"><label for="d-research">Research it for me, DFW assignment ($149 Research + Draft)</label></div>
+      <legend>What do you want to test?</legend>
+      <div class="opt"><input type="radio" id="d-mine" name="datalane" value="Build from my packet and comps" checked><label for="d-mine">Build from my original packet, comps, data, and direction</label></div>
+      <div class="opt"><input type="radio" id="d-research" name="datalane" value="Research and build it"><label for="d-research">Research and build it independently (eligible DFW assignments)</label></div>
     </fieldset>
 
     <fieldset>
@@ -221,29 +220,28 @@
       <legend>Updates along the way</legend>
       <div class="opt"><input type="radio" id="n-page" name="notify" value="Status page only" checked><label for="n-page">Status page only, I'll check when I want</label></div>
       <div class="opt"><input type="radio" id="n-email" name="notify" value="Email milestones"><label for="n-email">Email me at the milestones</label></div>
-      <div class="opt"><input type="radio" id="n-sms" name="notify" value="Email + text milestones"><label for="n-sms">Email and text me at the milestones</label></div>
     </fieldset>
 
     <div class="field">
       <label for="f-notes">Anything I should know</label>
-      <textarea id="f-notes" name="notes" rows="3" placeholder="Special instructions, quirks of the assignment, client requirements"></textarea>
+      <textarea id="f-notes" name="notes" rows="3" placeholder="Anything unusual about the property or original assignment"></textarea>
     </div>
 
     <div class="consent">
       <input type="checkbox" id="f-permission" required>
-      <label for="f-permission">I have authority to engage named report-production assistance on this assignment, and the assistance will be disclosed in the certification.</label>
+      <label for="f-permission">This is a closed prior assignment, not live client work. I have authority to share it for this trial, and it will not be signed, delivered, or relied on.</label>
     </div>
 
-    <button class="btn" type="submit">Send it over</button>
-    <p class="fineprint">This opens a pre-filled email from your own mail app, so you keep a copy in your own sent folder. Nothing is stored on this website. Prefer to just write? <a href="mailto:mrr@appraisalpartners.net?subject=New%20file">mrr@appraisalpartners.net</a> works too. I read every note myself and reply directly.</p>
+    <button class="btn" type="submit">Prepare my free trial request</button>
+    <p class="fineprint">This opens a pre-filled email from your own mail app, so you keep a copy in your sent folder. Nothing is stored on this website. One accepted trial per appraiser or firm, subject to scope and capacity. Prefer to just write? <a href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a> works too.</p>
   </form>
 
   <section id="next">
-    <h2 class="eyebrow">What happens after you hit send</h2>
+    <h2 class="eyebrow">What happens after you send the email</h2>
     <ol class="steps">
-      <li><span class="n">1.</span><span><strong>You get an order number and a private folder link,</strong> usually within business hours. Drop the packet in the folder, or reply to the acknowledgment with attachments.</span></li>
-      <li><span class="n">2.</span><span><strong>You get a firm acceptance.</strong> Received is not accepted. I confirm the scope, the flat price, and a committed return time before production begins. If anything's missing, I tell you exactly what, and the clock waits for it.</span></li>
-      <li><span class="n">3.</span><span><strong>You follow the report on its status page</strong> and get the draft back for your review by the committed time. You review, revise, sign, and deliver. If the draft isn't usable to you, you don't pay for it.</span></li>
+      <li><span class="n">1.</span><span><strong>I review the request and reply with a trial number, private status link, and secure folder.</strong> Drop in the original order and inspection packet, but keep your completed report back for now.</span></li>
+      <li><span class="n">2.</span><span><strong>I confirm the trial.</strong> Received is not accepted. I check permission, scope, software, and capacity, then tell you exactly what I need. The accepted prior-assignment trial is $0 and has no live-client deadline.</span></li>
+      <li><span class="n">3.</span><span><strong>You watch the trial move on its status page.</strong> When the draft comes back, compare it with the report you completed. One consolidated, within-scope direction round is included, and my production errors are fixed free. You can judge the research, writing, organization, and corrections without putting a current assignment at risk.</span></li>
     </ol>
   </section>
 
@@ -357,8 +355,8 @@
   </section>
 
   <div class="note">
-    <p><strong>Want to judge the work before sending anything?</strong></p>
-    <p>Read the <a href="uad36-work-sample.pdf">demonstration report</a>. It's the actual deliverable a customer receives, with the address, borrower, appraiser, firm, and photos replaced by placeholders, and the assistance disclosure right there in the certification.</p>
+    <p><strong>Not ready to share a past assignment?</strong></p>
+    <p><a href="uad36-work-sample.pdf">View Sample UAD 3.6 Report</a> to inspect the deliverable, or <a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">open the working status demonstration</a> to see how the production updates look on your phone. Both use synthetic or sanitized information.</p>
   </div>
 
   <footer>
@@ -396,24 +394,22 @@
       return el ? el.value : '';
     }
     var lines = [
-      'New report request',
+      'Free prior-assignment trial request',
       '',
       'Name: ' + v('f-name'),
       'License: ' + v('f-license'),
       'Email: ' + v('f-email'),
-      'Cell: ' + (v('f-cell') || 'n/a'),
       'Software: ' + v('f-software'),
-      'Client due date: ' + v('f-due'),
-      'Scenario: ' + sel.options[sel.selectedIndex].text,
-      'Data: ' + r('datalane'),
+      'Past assignment type: ' + sel.options[sel.selectedIndex].text,
+      'Trial scope: ' + r('datalane'),
       'Comps: ' + r('compdir'),
       'Draft format: ' + r('format'),
       'Updates: ' + r('notify'),
       'Notes: ' + (v('f-notes') || 'none'),
       '',
-      'I confirm I have authority to engage named report-production assistance on this assignment, and the assistance will be disclosed in the certification.'
+      'I confirm this is a closed prior assignment, not live client work. I have authority to share it for this trial, and it will not be signed, delivered, or relied on.'
     ];
-    var subject = 'New report request: ' + v('f-name');
+    var subject = 'Free past-report trial: ' + v('f-name');
     var href = 'mailto:mrr@appraisalpartners.net?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
     window.location.href = href;
   });
