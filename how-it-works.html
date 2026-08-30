@@ -72,15 +72,10 @@
     font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
     color: var(--accent); margin: 0 0 18px;
   }
-  details.sect { border-top: 1px solid var(--rule); margin-top: 0; padding: 0; }
-  details.sect summary {
-    cursor: pointer; list-style-position: outside; padding: 22px 4px 20px;
-  }
-  details.sect summary::marker { color: var(--accent); }
-  details.sect summary h2 { display: inline; font-size: 24px; margin: 0; }
-  details.sect[open] summary h2 { color: var(--accent-deep); }
-  details.sect .sect-body { padding: 0 4px 26px; }
-  details.sect .sect-body > *:first-child { margin-top: 0; }
+  section.sect { border-top: 1px solid var(--rule); margin-top: 0; padding: 22px 4px 6px; }
+  section.sect > h2 { font-size: 24px; margin: 0 0 14px; }
+  section.sect .sect-body { padding: 0 0 20px; }
+  section.sect .sect-body > *:first-child { margin-top: 0; }
   .jumpnav {
     font-family: "IBM Plex Mono", "Courier New", monospace;
     font-size: 12px; letter-spacing: 0.04em;
@@ -220,8 +215,8 @@
   <p><strong>Already buried in live work?</strong> Call <a href="tel:+14692968726">(469) 296-8726</a> or <a href="mailto:mrr@appraisalpartners.net?subject=Live%20overflow%20request">request live overflow help by email</a>. I check fit and current capacity before sending a private order folder; no property or borrower information belongs in the first note.</p>
   <p class="fineprint">The sample shows the draft and support package that come back to the signing appraiser, including the assistance disclosure in the certification. The address, borrower, appraiser, firm, and photos are replaced with placeholders.</p>
 
-  <details id="benefits" class="sect">
-    <summary><h2>Overflow capacity without another employee</h2></summary>
+  <section id="benefits" class="sect">
+    <h2>Overflow capacity without another employee</h2>
     <div class="sect-body">
     <p>Volume comes in waves. When the inspection calendar fills faster than the reports behind it can be written, send the desk work here instead of turning down the assignment or giving the next several nights to the form.</p>
     <div class="benefits">
@@ -244,7 +239,7 @@
     </div>
     <p style="margin-top:20px">Not sure it's for you? <a href="story.html">Read the three appraisers</a> and see which one is having your week.</p>
   </div>
-  </details>
+  </section>
 
   <div class="relationship">
     <p><strong>The Production Desk is appraiser-to-appraiser overflow help.</strong> You already control the assignment and client relationship. I work behind you under a defined scope and written terms; I do not accept the assignment from your client, join your staff, or sign your report.</p>
@@ -292,12 +287,12 @@
     </ol>
   </section>
 
-  <details id="window" class="sect">
-    <summary><h2>Private report tracking</h2></summary>
+  <section id="window" class="sect">
+    <h2>Private report tracking</h2>
     <div class="sect-body">
     <p>Every trial and live order gets its own status page. The private link arrives with your order number, works from your phone, and has no login to manage.</p>
     <p><strong>It cannot leak your file, by construction.</strong> Each order has its own encryption key that lives in the link itself, in the part browsers never send to a web server. What sits on the server is an encrypted blob. And the page's data format is only capable of holding an order number, a stage, a scope, a price, a return time, and whether I'm waiting on you. There is no field for your client's name, the property address, the report number, or the value, so those cannot appear even by mistake. Anyone holding the link sees that status, including the scope and the desk fee, so treat it like the order folder. If a link ever reaches someone it shouldn't, tell me and I'll issue a replacement, which retires the old link.</p>
-    <p class="proof"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>Open a working demonstration order and watch a report move &rarr;</strong></a> <span>Synthetic, no client data, and the same page a real report receives. Press play and it walks all nine checkpoints.</span></p>
+    <p class="proof"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>Open a working demonstration order and watch a report move &rarr;</strong></a> <span>Synthetic, no client data, and the same page a real report receives. It walks all nine checkpoints on its own when you open it.</span></p>
     <div class="rail" aria-label="Order stages">
       <b>Submitted</b> <span class="arrow">&rarr;</span> Intake review <span class="arrow">&rarr;</span> Accepted &middot; return set <span class="arrow">&rarr;</span> Research <span class="arrow">&rarr;</span> Comparable candidates <span class="arrow">&rarr;</span> Draft production <span class="arrow">&rarr;</span> Matt's review <span class="arrow">&rarr;</span> <b>Ready for your review</b> <span class="arrow">&rarr;</span> Complete
     </div>
@@ -306,10 +301,10 @@
     <p>Texts are manual, one-to-one order updates from my business line for now. They are not marketing messages. You opt in with the mobile number you want me to use, and you can change the preference or stop texts at any time. Email remains the order thread for files, questions, and comp direction.</p>
     <p>And if a committed time is ever at risk, you hear it from me before the deadline, not after. You choose: a revised time, a pause, or a cancellation under the terms.</p>
   </div>
-  </details>
+  </section>
 
-  <details id="comps" class="sect">
-    <summary><h2>Comps and direction</h2></summary>
+  <section id="comps" class="sect">
+    <h2>Comps and direction</h2>
     <div class="sect-body">
     <p>At intake you pick one of three ways to run the comparables:</p>
     <ol class="steps">
@@ -319,10 +314,10 @@
     </ol>
     <p>Steering means facts and evidence: corrections, include-or-exclude direction with your reasoning, additional market data, a documented change in scope. It never means steering toward a number. If an instruction reads like value pressure, I'll say so and decline it.</p>
   </div>
-  </details>
+  </section>
 
-  <details id="revisions" class="sect">
-    <summary><h2>When something needs fixing</h2></summary>
+  <section id="revisions" class="sect">
+    <h2>When something needs fixing</h2>
     <div class="sect-body">
     <p>Four kinds of fixes, four plain answers. The rule behind all of them: I handle the mechanical production work; your job is independent appraisal judgment.</p>
     <ul class="plain">
@@ -333,10 +328,10 @@
     </ul>
     <p>If a paid package materially misses something in the accepted scope and I cannot correct it through the included correction process, you do not pay for that report. The <a href="terms.html">terms</a> define that line so neither of us has to guess.</p>
   </div>
-  </details>
+  </section>
 
-  <details id="pricing" class="sect">
-    <summary><h2>Live pricing after the free trial</h2></summary>
+  <section id="pricing" class="sect">
+    <h2>Live pricing after the free trial</h2>
     <div class="sect-body">
     <p><strong>Your appraisal fee stays yours. You pay me for the desk work.</strong> These are not cut-rate appraisal fees. They are separate production fees paid by the signing appraiser on an assignment the appraiser already controls and bills. I do not quote or bill the AMC, lender, borrower, or other end client.</p>
     <div class="fee-note"><p><strong>Why the desk fee works:</strong> before this desk, I spent about a decade as an engineer, much of it in product operations. I built the software- and AI-assisted production workflow for my own reports first. It removes most re-keying, routine form filling, document collection and organization, and clerical editing. The tools draft. They never decide. What they produce gets checked against its sources and read through before it leaves the desk. My time stays on research, analysis, judgment, and personally reviewing every report; you keep every final appraisal decision. You have already won the assignment, handled the client, and inspected the property, so I price only the defined work behind you. Speed comes from better tooling, not lower standards or anonymous labor. These are the actual rates for the scopes shown, not introductory prices.</p></div>
@@ -355,10 +350,10 @@
     <p style="margin-top:20px"><strong>No surprise fees. The price confirmed at acceptance is the price you pay.</strong> A report outside the defined scope gets flagged before acceptance, never billed after. A material scope change you request gets a new quote you can accept or decline. Pay per report. No subscription, minimum, or long-term agreement.</p>
     <p class="fineprint">These are the actual rates for the scopes shown, not introductory rates. The accepted rate is locked to the accepted scope. A material change you request proceeds only after you approve its new price and timing.</p>
   </div>
-  </details>
+  </section>
 
-  <details id="sendget" class="sect">
-    <summary><h2>What you send, what comes back</h2></summary>
+  <section id="sendget" class="sect">
+    <h2>What you send, what comes back</h2>
     <div class="sect-body">
     <div class="scope">
       <div>
@@ -386,20 +381,20 @@
     </div>
     <p style="margin-top:20px">Current production is in TOTAL. The draft opens in your own TOTAL installation with everything editable and the photos placed. Everything ships marked DRAFT, because it is one until you've made it yours. No shared MLS, portal, or software credentials, in either direction, ever.</p>
   </div>
-  </details>
+  </section>
 
-  <details id="boundaries" class="sect">
-    <summary><h2>Markets and current boundaries</h2></summary>
+  <section id="boundaries" class="sect">
+    <h2>Markets and current boundaries</h2>
     <div class="sect-body">
     <p><strong>Packet-to-Draft travels beyond my licensed markets.</strong> When you supply the packet, the comps, the data, and the direction, the market is already yours and geography stops being the constraint. Every report is still subject to the property-state, client, and assignment-program rules, and those get confirmed before acceptance. Two exclusions worth knowing up front: no FHA or VA panel assignments, and no Georgia assignments under present desk policy.</p>
     <p><strong>Research + Draft needs a market I can work in.</strong> That means authorized MLS access, market competence, and whatever your state and client require. Dallas&ndash;Fort Worth is established today. New markets get established on request, and I'll tell you at intake whether yours is ready or needs setting up first.</p>
     <p class="fineprint">Setting up a new market is deliberate, not a formality: client permission, licensing, market competence, and authorized MLS and data access are confirmed before production begins, and it usually takes one to three weeks. If you have volume in a market I'm not in yet, say so early and we'll start that clock. Current scope is conventional and private residential work.</p>
   </div>
-  </details>
+  </section>
 
 
-  <details id="disclosure" class="sect">
-    <summary><h2>Disclosure, data, and trust</h2></summary>
+  <section id="disclosure" class="sect">
+    <h2>Disclosure, data, and trust</h2>
     <div class="sect-body">
     <p>The certification identifies me and describes the assistance provided. When the work is significant real property appraisal assistance, that disclosure is not optional, and I do not remove it. Client, jurisdiction, and licensing requirements are confirmed before an assignment is accepted. UAD 3.6 even gives that disclosure a proper home: the new form has a dedicated place to name report assistance. It's not a workaround. It's the form working as designed.</p>
     <figure class="excerpt">
@@ -417,7 +412,7 @@
       <span>W-9, licenses, and NDA available at onboarding</span>
     </div>
   </div>
-  </details>
+  </section>
 
   <div class="cta" id="start">
     <p><strong>Try it on work you already know.</strong></p>
@@ -426,21 +421,6 @@
     <p class="fineprint">Questions first? <a href="faq.html">The FAQ</a> covers the client relationship, confidentiality, software, revisions, and what happens when something goes sideways. Or write me: <a href="mailto:mrr@appraisalpartners.net?subject=Production%20desk%20question">mrr@appraisalpartners.net</a>.</p>
   </div>
   </main>
-<script>
-  // A deep link to a collapsed section has to open it, or the link goes nowhere.
-  function openTargetSection() {
-    var id = location.hash.slice(1);
-    if (!id) return;
-    var el = document.getElementById(id);
-    if (!el) return;
-    var box = el.closest ? el.closest("details") : null;
-    if (box) box.open = true;
-    if (el.tagName === "DETAILS") el.open = true;
-    el.scrollIntoView();
-  }
-  window.addEventListener("hashchange", openTargetSection);
-  openTargetSection();
-</script>
 
 
   <footer>

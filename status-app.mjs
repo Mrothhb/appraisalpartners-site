@@ -213,22 +213,34 @@ function setUpReplay(base) {
     state.textContent = message;
   };
 
-  play.addEventListener("click", () => {
-    if (timer) {
-      stop("Paused. Press play to continue.");
-      return;
-    }
+  const startPlaying = () => {
     show(0);
     play.disabled = false;
     play.textContent = "Pause";
     timer = window.setInterval(() => {
       if (cursor >= STAGES.length - 1) {
-        stop("Replay finished. Reload to see the live record.");
+        stop("Replay finished. Press play to watch it again.");
         return;
       }
       show(cursor + 1);
     }, reduceMotion ? 3200 : 2100);
+  };
+
+  play.addEventListener("click", () => {
+    if (timer) {
+      stop("Paused. Press play to continue.");
+      return;
+    }
+    startPlaying();
   });
+
+  // An arriving visitor should see the report move without pressing anything.
+  // Skipped for reduced-motion visitors, and skipped if they already took control.
+  if (!reduceMotion) {
+    window.setTimeout(() => {
+      if (!timer && cursor === 0) startPlaying();
+    }, 900);
+  }
 
   step.addEventListener("click", () => {
     if (timer) stop("");
