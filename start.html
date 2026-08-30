@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Try Appraisal Partners free on an authorized closed prior assignment. No live client, no due-date risk, no call required. Follow the trial on a private status page.">
+<meta name="referrer" content="no-referrer">
+<!-- Public configuration; the Apps Script deployment passed the private accepted/duplicate/rejected smoke test. -->
+<meta name="ap-intake-endpoint" content="https://script.google.com/macros/s/AKfycbyf_YUnCq8lWuJSCl8fYXuMvBDX8CJ48oLRHhP-tpTZI6X-bjal_IhAy7gduJFC2GkWQg/exec">
 <link rel="canonical" href="https://appraisalpartners.net/start.html">
 <meta property="og:title" content="Try It Free on a Past Report | Appraisal Partners">
 <meta property="og:description" content="Use an authorized closed prior assignment to judge the work without risking a live client report or deadline.">
@@ -106,6 +109,11 @@
   .notify-toggle label span { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
   .consent { background: var(--wash); border: 1px solid var(--rule); padding: 16px 18px; margin-bottom: 18px; font-size: 15.5px; display: flex; gap: 10px; align-items: baseline; }
   .consent input { accent-color: var(--accent); }
+  .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .form-result { border: 1.5px solid var(--ink); padding: 16px 18px; margin: 18px 0 0; }
+  .form-result[data-state="success"] { border-color: var(--accent); background: var(--wash); }
+  .form-result[data-state="error"] { border-color: #8A3F35; }
+  .form-result p:last-child { margin-bottom: 0; }
   button.btn {
     display: inline-block; background: var(--accent); color: var(--paper);
     padding: 12px 22px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
@@ -166,32 +174,42 @@
   <h1>Try it free on a <span class="line">past report.</span></h1>
   <p class="lede">No live client. No due-date gamble. Use a closed prior assignment you are authorized to share, and judge my work against a report you already know. The trial is free.</p>
   <p><strong>Use the trial to test the handoff before you need it.</strong> Judge the private report tracking, draft quality, and correction loop while your calendar is calm. If we fit, you will already know where to send the next packet when inspections stack up and the reports behind them all have due dates.</p>
-  <p>This page prepares a complete trial-request email, so you do not have to compose one. After I review it, I reply with a trial number, private status link, and secure folder. Hold back your finished report until my draft comes back so the comparison is real.</p>
+  <p>This page sends me a short trial request, so you do not have to compose an email or get on a call. After I review it, I reply with a trial number, private status link, and secure folder. Hold back your finished report until my draft comes back so the comparison is real.</p>
   <p class="fineprint">Keep the property address, borrower names, and assignment documents out of this form. Those go in the private folder after I confirm the trial. Redaction by itself does not create permission to share a client file.</p>
 
-  <form id="startform" action="javascript:void(0)" method="post">
+  <form id="startform" action="start.html" method="post">
     <noscript>
       <div class="note">
         <p><strong>JavaScript is off, so this form will not send.</strong></p>
         <p>Nothing has been submitted. Email <a href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a> with the subject &ldquo;Free past-report trial&rdquo; instead.</p>
       </div>
     </noscript>
+    <div class="honeypot" aria-hidden="true">
+      <label for="f-company-website">Company website</label>
+      <input type="text" id="f-company-website" name="company_website" tabindex="-1" autocomplete="off">
+    </div>
+    <input type="hidden" id="f-form-version" name="form_version" value="ap-intake-v1">
+    <input type="hidden" id="f-trial-consent-version" name="trial_consent_version" value="trial-authority-2026-08-30">
+    <input type="hidden" id="f-sms-consent-version" name="sms_consent_version" value="sms-transactional-2026-08-30">
+    <input type="hidden" id="f-consent-source" name="consent_source" value="https://appraisalpartners.net/start.html">
+    <input type="hidden" id="f-request-id" name="request_id" value="">
+    <input type="hidden" id="f-started-at" name="started_at" value="">
     <div class="grid2">
       <div class="field">
         <label for="f-name">Your name</label>
-        <input type="text" id="f-name" name="name" autocomplete="name" required>
+        <input type="text" id="f-name" name="name" autocomplete="name" maxlength="100" required>
       </div>
       <div class="field">
         <label for="f-license">License # and state</label>
-        <input type="text" id="f-license" name="license" placeholder="e.g. TX 1234567-CR">
+        <input type="text" id="f-license" name="license" maxlength="80" placeholder="e.g. TX 1234567-CR">
       </div>
       <div class="field">
         <label for="f-email">Email</label>
-        <input type="email" id="f-email" name="email" autocomplete="email" required>
+        <input type="email" id="f-email" name="email" autocomplete="email" maxlength="254" required>
       </div>
       <div class="field">
         <label for="f-software">Your forms software and version</label>
-        <input type="text" id="f-software" name="software" placeholder="e.g. TOTAL 2026, ACI, SFREP">
+        <input type="text" id="f-software" name="software" maxlength="100" placeholder="e.g. TOTAL 2026, ACI, SFREP">
       </div>
     </div>
 
@@ -244,31 +262,27 @@
     <div id="text-update-fields" hidden>
       <div class="field">
         <label for="f-mobile">Mobile number for order texts</label>
-        <input type="tel" id="f-mobile" name="mobile" autocomplete="tel" inputmode="tel" aria-describedby="sms-details">
+        <input type="tel" id="f-mobile" name="mobile" autocomplete="tel" inputmode="tel" maxlength="30" aria-describedby="sms-details">
         <p class="hint" id="sms-details">Matt sends these order updates manually from his business line for now. Your number and consent stay in the private request email and never go in the status-page data.</p>
       </div>
       <div class="consent">
-        <input type="checkbox" id="f-sms-consent" name="sms-consent">
+        <input type="checkbox" id="f-sms-consent" name="sms_consent" value="yes">
         <label for="f-sms-consent">I agree to receive manual transactional text messages from Appraisal Partners at the mobile number above about my trial or orders. No marketing or automated messages. Message and data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.</label>
       </div>
     </div>
 
-    <div class="field">
-      <label for="f-notes">Anything I should know</label>
-      <textarea id="f-notes" name="notes" rows="3" placeholder="Anything unusual about the property or original assignment"></textarea>
-    </div>
-
     <div class="consent">
-      <input type="checkbox" id="f-permission" required>
+      <input type="checkbox" id="f-permission" name="trial_authority_consent" value="yes" required>
       <label for="f-permission">This is a closed prior assignment, not live client work. I have authority to share it for this trial, and it will not be signed, delivered, or relied on.</label>
     </div>
 
-    <button class="btn" type="submit">Prepare my free trial request</button>
-    <p class="fineprint">This opens a pre-filled email from your own mail app, so you keep a copy in your sent folder. Nothing is stored on this website. One accepted trial per appraiser or firm, subject to scope and capacity. Prefer to just write? <a href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a> works too.</p>
+    <button class="btn" id="submit-intake" type="submit" disabled>Send my free trial request</button>
+    <div class="form-result" id="intake-result" role="status" aria-live="polite" hidden></div>
+    <p class="fineprint">This sends only the contact, trial-scope, software, and update choices shown above. It cannot accept a property address, borrower name, report, photo, or assignment file. One accepted trial per appraiser or firm, subject to scope and capacity. If the secure form is unavailable, I will open the same request in your mail app instead; nothing is sent until you press Send. Prefer to write directly? <a id="email-fallback" href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a> works too.</p>
   </form>
 
   <section id="next">
-    <h2 class="eyebrow">What happens after you send the email</h2>
+    <h2 class="eyebrow">What happens after you send the request</h2>
     <ol class="steps">
       <li><span class="n">1.</span><span><strong>I review the request and reply with a trial number, private status link, and secure folder.</strong> Drop in the original order and inspection packet, but keep your completed report back for now.</span></li>
       <li><span class="n">2.</span><span><strong>I confirm the trial.</strong> Received is not accepted. I check permission, scope, software, and capacity, then tell you exactly what I need. The accepted prior-assignment trial is $0 and has no live-client deadline.</span></li>
@@ -400,6 +414,10 @@
 
 <script>
 (function () {
+  var form = document.getElementById('startform');
+  var submitButton = document.getElementById('submit-intake');
+  var result = document.getElementById('intake-result');
+  var emailFallback = document.getElementById('email-fallback');
   var sel = document.getElementById('f-scenario');
   var textUpdateFields = document.getElementById('text-update-fields');
   var mobile = document.getElementById('f-mobile');
@@ -451,13 +469,29 @@
   }
   showTextUpdateFields();
 
-  document.getElementById('startform').addEventListener('submit', function (e) {
-    e.preventDefault();
-    function v(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+  function requestId() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return 'TR-' + window.crypto.randomUUID();
+    }
+    var bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    return 'TR-' + Array.prototype.map.call(bytes, function (b) {
+      return b.toString(16).padStart(2, '0');
+    }).join('');
+  }
+
+  function v(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  }
+
+  function preparedEmailHref() {
     var notificationPreference = notificationPreferenceLabel();
     var includesText = textUpdatesSelected();
+    var id = v('f-request-id');
     var lines = [
       'Free prior-assignment trial request',
+      'Request ID: ' + id,
       '',
       'Name: ' + v('f-name'),
       'License: ' + v('f-license'),
@@ -470,18 +504,91 @@
       'Updates: ' + notificationPreference,
       'Mobile: ' + (includesText ? v('f-mobile') : 'not provided'),
       'SMS consent: ' + (includesText && smsConsent.checked
-        ? 'Yes: manual transactional trial and order updates only; no marketing or automated messages; message and data rates may apply; reply STOP to opt out; consent is not a condition of purchase.'
+        ? 'Yes (' + v('f-sms-consent-version') + '): manual transactional trial and order updates only; no marketing or automated messages; message and data rates may apply; reply STOP to opt out; consent is not a condition of purchase.'
         : 'Not requested'),
-      'Notes: ' + (v('f-notes') || 'none'),
       '',
-      'I confirm this is a closed prior assignment, not live client work. I have authority to share it for this trial, and it will not be signed, delivered, or relied on.'
+      'Trial authority consent (' + v('f-trial-consent-version') + '): I confirm this is a closed prior assignment, not live client work. I have authority to share it for this trial, and it will not be signed, delivered, or relied on.',
+      'Consent source: ' + v('f-consent-source')
     ];
-    var subject = 'Free past-report trial: ' + v('f-name');
-    var href = 'mailto:mrr@appraisalpartners.net?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
-    window.location.href = href;
+    var subject = 'Free past-report trial ' + id + ': ' + v('f-name');
+    return 'mailto:mrr@appraisalpartners.net?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
+  }
+
+  function showResult(state, html) {
+    result.dataset.state = state;
+    result.innerHTML = html;
+    result.hidden = false;
+    result.focus();
+  }
+
+  var endpointMeta = document.querySelector('meta[name="ap-intake-endpoint"]');
+  var endpoint = endpointMeta ? endpointMeta.content.trim() : '';
+  var allowedEndpoint = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(endpoint);
+  var iframe = null;
+  var pendingTimer = null;
+  var pendingRequestId = '';
+
+  function useEmailFallback(message) {
+    var href = preparedEmailHref();
+    emailFallback.href = href;
+    submitButton.disabled = false;
+    submitButton.textContent = 'Open request in my email';
+    showResult('error', '<p><strong>' + message + '</strong></p><p>I cannot confirm a website submission. <a id="result-email-fallback" href="' + href.replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '">Open the prepared email</a>, then press Send in your mail app.</p>');
+  }
+
+  window.addEventListener('message', function (event) {
+    var trustedOrigin = event.origin === 'https://script.google.com' || /^https:\/\/[A-Za-z0-9.-]+\.googleusercontent\.com$/.test(event.origin);
+    var data = event.data || {};
+    if (!trustedOrigin || data.type !== 'ap-intake-result' || data.requestId !== pendingRequestId) return;
+    window.clearTimeout(pendingTimer);
+    pendingTimer = null;
+    if (data.ok) {
+      form.reset();
+      showPanel();
+      showTextUpdateFields();
+      submitButton.textContent = 'Request received';
+      submitButton.disabled = true;
+      showResult('success', '<p><strong>Your trial request was received.</strong></p><p>Keep the property address, names, and files out of email. I will reply personally with the private folder and status link after I review the request.</p>');
+    } else {
+      useEmailFallback('The secure form could not confirm your request.');
+    }
+  });
+
+  document.getElementById('f-request-id').value = requestId();
+  document.getElementById('f-started-at').value = String(Date.now());
+  submitButton.disabled = false;
+  if (!allowedEndpoint) submitButton.textContent = 'Prepare my free trial request';
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!form.reportValidity()) return;
+    emailFallback.href = preparedEmailHref();
+
+    if (!allowedEndpoint) {
+      window.location.href = preparedEmailHref();
+      showResult('success', '<p><strong>Your mail app should open with the request prepared.</strong></p><p>Nothing has been submitted yet. Review the note and press Send in your mail app.</p>');
+      return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = 'Sending securely...';
+    showResult('success', '<p><strong>Sending your request...</strong></p>');
+    pendingRequestId = v('f-request-id');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.name = 'ap-intake-response';
+      iframe.title = 'Trial request response';
+      iframe.hidden = true;
+      document.body.appendChild(iframe);
+    }
+    form.action = endpoint;
+    form.target = iframe.name;
+    pendingTimer = window.setTimeout(function () {
+      useEmailFallback('I could not confirm receipt from the secure form.');
+    }, 15000);
+    HTMLFormElement.prototype.submit.call(form);
   });
 })();
 </script>
-<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5e65f76cb49d4898942bc1e1e33ce728"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>
