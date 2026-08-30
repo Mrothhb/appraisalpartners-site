@@ -147,6 +147,39 @@
   }
   .notification-preview .preview-choice { color: var(--accent-deep); display: block; font-size: 18px; margin-top: 3px; }
   .notification-preview .preview-text { border-left: 3px solid var(--accent); font-size: 14px; margin: 0; padding-left: 13px; }
+  .status-card {
+    background: var(--paper); border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent); padding: 16px 18px; margin: 16px 0;
+  }
+  .status-card .sc-eyebrow, .status-card .sc-label, .status-card .sc-updated {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    color: var(--muted); letter-spacing: 0.08em; margin: 0;
+  }
+  .status-card .sc-eyebrow { font-size: 10.5px; text-transform: uppercase; }
+  .status-card .sc-label { font-size: 10.5px; text-transform: uppercase; margin-top: 12px; }
+  .status-card .sc-status { font-size: 20px; margin: 4px 0 3px; }
+  .status-card .sc-updated { font-size: 11.5px; letter-spacing: 0.02em; }
+  .status-card dl { display: grid; grid-template-columns: 74px 1fr; gap: 7px 14px; margin: 13px 0 0; }
+  .status-card dt {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); padding-top: 3px;
+  }
+  .status-card dd { margin: 0; font-size: 15.5px; }
+  .notify-opts {
+    display: flex; flex-wrap: wrap; gap: 7px; list-style: none; margin: 7px 0 0; padding: 0;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 12px;
+  }
+  .notify-opts li { border: 1px solid var(--rule); background: var(--paper); padding: 4px 9px; }
+  .notify-opts li.on { border-color: var(--accent); color: var(--accent-deep); font-weight: 500; }
+  .notify-msg {
+    border-left: 3px solid var(--accent); font-size: 14px; margin: 0 0 9px; padding-left: 13px;
+  }
+  .notify-msg:last-child { margin-bottom: 0; }
+  .notify-msg span {
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 10.5px;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); display: block;
+  }
   .scopes { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .scopes article { border: 1px solid var(--rule); border-top: 3px solid var(--accent); padding: 19px 20px 6px; }
   .scopes h3 { margin-bottom: 6px; }
@@ -231,7 +264,7 @@
     <div class="rail" aria-label="Order stages">
       <b>Submitted</b> <span class="arrow">&rarr;</span> Intake review <span class="arrow">&rarr;</span> Accepted &middot; return set <span class="arrow">&rarr;</span> Research <span class="arrow">&rarr;</span> Comparable candidates <span class="arrow">&rarr;</span> Draft production <span class="arrow">&rarr;</span> Matt's review <span class="arrow">&rarr;</span> <b>Ready for your review</b> <span class="arrow">&rarr;</span> Complete
     </div>
-    <p class="fineprint"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">Open the working status demonstration</a>, or read the full process, including acceptance, comp direction, and revisions, on <a href="how-it-works.html">how it works</a>.</p>
+    <p class="fineprint"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">See a report in production</a>, or read the full process, including acceptance, comp direction, and revisions, on <a href="how-it-works.html">how it works</a>.</p>
   </section>
 
   <section>
@@ -256,15 +289,35 @@
   <section>
     <h2 class="eyebrow">You can see where your report is</h2>
     <p>Most production help is a black box: you send an order into the dark and hope it comes back. This desk isn't built that way. Every trial and live order gets its own private-link status page, no login needed, that answers the questions you'd actually ask. Where is it now? What happened last? What happens next? Who needs to act? What return time is showing?</p>
-    <p><strong>You do not have to keep checking it.</strong> At intake, choose email, text, both, or status-page only. I send short one-to-one updates when the report is accepted, if I need something from you, and when the draft is ready for your review. Texts are manual order updates from my business line, not marketing messages. The page never shows your client's name, the property address, or any number from the report. Your report is your business.</p>
+    <p><strong>You do not have to keep checking it, and it gives nothing away.</strong> The page never shows your client's name, the property address, or any number from the report. Your report is your business.</p>
     <div class="status-preview">
-      <p class="status-kicker">Working demonstration &middot; synthetic report &middot; no client data</p>
-      <p><strong>See the same production window an appraiser receives.</strong> Open it on your phone. The current stage, return time, next step, who acts next, and the chosen email/text preference are visible without digging. The demonstration also shows the milestone messages.</p>
-      <div class="notification-preview" aria-label="Example notification preference and text update">
-        <div><span class="preview-label">Update preference</span><strong class="preview-choice">Email + text</strong></div>
-        <p class="preview-text"><span class="preview-label">Example text</span>AP-4827: Research is complete and drafting is underway.</p>
+      <p class="status-kicker">This is what your status page looks like</p>
+      <div class="status-card">
+        <p class="sc-eyebrow">Order AP-4827 &middot; private link, no login</p>
+        <p class="sc-label">Current status</p>
+        <p class="sc-status">Draft production in progress.</p>
+        <p class="sc-updated">Last updated Saturday, August 29 at 7:37 PM CT</p>
+        <dl>
+          <dt>Latest</dt><dd>Comparable candidates were prepared and drafting began.</dd>
+          <dt>Return</dt><dd>Tuesday, September 1 at 3:30 PM CT</dd>
+          <dt>Next</dt><dd>Matt completes the draft and performs his review.</dd>
+        </dl>
       </div>
-      <p><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">See a demonstration report moving through production &rarr;</a></p>
+      <p class="status-kicker" style="margin-top:20px">And this is how you hear from me</p>
+      <div class="notification-preview" aria-label="Notification choices and example messages">
+        <div>
+          <span class="preview-label">You pick at intake</span>
+          <ul class="notify-opts">
+            <li>Email</li><li>Text</li><li class="on">Both</li><li>Page only</li>
+          </ul>
+        </div>
+        <div>
+          <p class="notify-msg"><span>Email, on acceptance</span>AP-4827 accepted. Return committed for Tuesday, September 1 at 3:30 PM CT.</p>
+          <p class="notify-msg"><span>Text, at a milestone</span>AP-4827: Research is complete and drafting is underway.</p>
+        </div>
+      </div>
+      <p>Three moments, not a stream: when I accept the report, if I need something from you, and when the draft is ready. Texts are manual one-to-one order updates from my business line. Never marketing.</p>
+      <p><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>See a report in production &rarr;</strong></a> &nbsp;Working demonstration, synthetic report, no client data.</p>
     </div>
   </section>
 
