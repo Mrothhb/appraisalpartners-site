@@ -1,11 +1,11 @@
 import {
-  NOTIFICATION_MODES,
   SCOPES,
   STAGES,
   WAITING_NOTE,
   decryptStatus,
   formatCentralTime,
   formatPrice,
+  notificationDelivery,
   pageNote,
   parseCapabilityFragment,
   stageDefinition,
@@ -48,13 +48,18 @@ function renderRail(payload) {
 }
 
 function renderNotifications(payload) {
-  setText("notification-mode", NOTIFICATION_MODES[payload.notifications]);
-  const emailEnabled = payload.notifications === "email";
-  setText("email-setting", emailEnabled ? "On" : "Off");
-  byId("research-milestone").hidden = !payload.long_window || !emailEnabled;
+  const delivery = notificationDelivery(payload.notifications);
+  setText("notification-mode", delivery.label);
+  setText("email-setting", delivery.email ? "On" : "Off");
+  setText("text-setting", delivery.text ? "Active" : "Not selected");
+  byId("research-milestone").hidden = !payload.long_window || (!delivery.email && !delivery.text);
 
   if (payload.demo) {
     setText("demo-email", `AP-${payload.order}: research done, drafting now`);
+    setText(
+      "demo-text",
+      `Appraisal Partners AP-${payload.order}: research is complete and drafting has started. Still on track. [private status link] Reply STOP to opt out.`,
+    );
     byId("demo-notification-examples").hidden = false;
   } else {
     byId("demo-notification-examples").hidden = true;

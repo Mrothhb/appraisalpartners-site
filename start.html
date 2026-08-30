@@ -217,10 +217,25 @@
     </fieldset>
 
     <fieldset>
-      <legend>Updates along the way</legend>
-      <div class="opt"><input type="radio" id="n-page" name="notify" value="Status page only" checked><label for="n-page">Status page only, I'll check when I want</label></div>
-      <div class="opt"><input type="radio" id="n-email" name="notify" value="Email milestones"><label for="n-email">Email me at the milestones</label></div>
+      <legend>How should I update you?</legend>
+      <p class="hint">I send a short note when I accept the report, if I need something, and when the draft is ready.</p>
+      <div class="opt"><input type="radio" id="n-email" name="notify" value="Email" checked><label for="n-email">Email</label></div>
+      <div class="opt"><input type="radio" id="n-text" name="notify" value="Text"><label for="n-text">Text</label></div>
+      <div class="opt"><input type="radio" id="n-both" name="notify" value="Both"><label for="n-both">Both email and text</label></div>
+      <div class="opt"><input type="radio" id="n-page" name="notify" value="Status page only"><label for="n-page">Status page only, I'll check when I want</label></div>
     </fieldset>
+
+    <div id="text-update-fields" hidden>
+      <div class="field">
+        <label for="f-mobile">Mobile number for order texts</label>
+        <input type="tel" id="f-mobile" name="mobile" autocomplete="tel" inputmode="tel" aria-describedby="sms-details">
+        <p class="hint" id="sms-details">Matt sends these order updates manually from his business line for now. Your number and consent stay in the private request email and never go in the status-page data.</p>
+      </div>
+      <div class="consent">
+        <input type="checkbox" id="f-sms-consent" name="sms-consent">
+        <label for="f-sms-consent">I agree to receive manual transactional text messages from Appraisal Partners at the mobile number above about my trial or orders. No marketing or automated messages. Message and data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.</label>
+      </div>
+    </div>
 
     <div class="field">
       <label for="f-notes">Anything I should know</label>
@@ -370,6 +385,9 @@
 <script>
 (function () {
   var sel = document.getElementById('f-scenario');
+  var textUpdateFields = document.getElementById('text-update-fields');
+  var mobile = document.getElementById('f-mobile');
+  var smsConsent = document.getElementById('f-sms-consent');
   var panels = {
     'full-interior': 'ck-full-interior',
     'exterior': 'ck-exterior',
@@ -386,13 +404,31 @@
   sel.addEventListener('change', showPanel);
   showPanel();
 
+  function r(name) {
+    var el = document.querySelector('input[name="' + name + '"]:checked');
+    return el ? el.value : '';
+  }
+  function textUpdatesSelected() {
+    var preference = r('notify');
+    return preference === 'Text' || preference === 'Both';
+  }
+  function showTextUpdateFields() {
+    var selected = textUpdatesSelected();
+    textUpdateFields.hidden = !selected;
+    mobile.required = selected;
+    smsConsent.required = selected;
+  }
+  var notificationOptions = document.querySelectorAll('input[name="notify"]');
+  for (var i = 0; i < notificationOptions.length; i++) {
+    notificationOptions[i].addEventListener('change', showTextUpdateFields);
+  }
+  showTextUpdateFields();
+
   document.getElementById('startform').addEventListener('submit', function (e) {
     e.preventDefault();
     function v(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
-    function r(name) {
-      var el = document.querySelector('input[name="' + name + '"]:checked');
-      return el ? el.value : '';
-    }
+    var notificationPreference = r('notify');
+    var includesText = textUpdatesSelected();
     var lines = [
       'Free prior-assignment trial request',
       '',
@@ -404,7 +440,11 @@
       'Trial scope: ' + r('datalane'),
       'Comps: ' + r('compdir'),
       'Draft format: ' + r('format'),
-      'Updates: ' + r('notify'),
+      'Updates: ' + notificationPreference,
+      'Mobile: ' + (includesText ? v('f-mobile') : 'not provided'),
+      'SMS consent: ' + (includesText && smsConsent.checked
+        ? 'Yes: manual transactional trial and order updates only; no marketing or automated messages; message and data rates may apply; reply STOP to opt out; consent is not a condition of purchase.'
+        : 'Not requested'),
       'Notes: ' + (v('f-notes') || 'none'),
       '',
       'I confirm this is a closed prior assignment, not live client work. I have authority to share it for this trial, and it will not be signed, delivered, or relied on.'

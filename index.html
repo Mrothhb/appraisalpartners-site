@@ -136,6 +136,17 @@
     text-transform: uppercase; margin-bottom: 8px;
   }
   .status-preview p:last-child { margin-bottom: 0; }
+  .notification-preview {
+    background: var(--paper); border: 1px solid var(--rule);
+    display: grid; grid-template-columns: .75fr 1.25fr; gap: 18px;
+    margin: 16px 0; padding: 15px 16px;
+  }
+  .notification-preview .preview-label {
+    color: var(--muted); display: block; font: 10.5px/1.4 "IBM Plex Mono", "Courier New", monospace;
+    letter-spacing: .08em; text-transform: uppercase;
+  }
+  .notification-preview .preview-choice { color: var(--accent-deep); display: block; font-size: 18px; margin-top: 3px; }
+  .notification-preview .preview-text { border-left: 3px solid var(--accent); font-size: 14px; margin: 0; padding-left: 13px; }
   .scopes { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .scopes article { border: 1px solid var(--rule); border-top: 3px solid var(--accent); padding: 19px 20px 6px; }
   .scopes h3 { margin-bottom: 6px; }
@@ -168,6 +179,7 @@
   ul.plain li::marker { color: var(--accent); }
   @media (max-width: 600px) {
     .scopes { grid-template-columns: 1fr; }
+    .notification-preview { grid-template-columns: 1fr; }
     .profile { grid-template-columns: 112px 1fr; gap: 18px; }
     .profile img { width: 112px; height: 112px; }
   }
@@ -213,7 +225,7 @@
       <li><span class="n">1.</span><span><strong>Try it on a past report, free.</strong> Use a closed prior assignment you are authorized to share. After I review the request, I reply with a trial number, private status link, and secure folder. No live client, no due-date gamble, no sales call.</span></li>
       <li><span class="n">2.</span><span><strong>Send the packet.</strong> The order, photos, sketch, your notes, the contract if it's a purchase. The <a href="start.html#checklist">start page</a> shows exactly what to send for your kind of assignment, so nothing gets forgotten.</span></li>
       <li><span class="n">3.</span><span><strong>Get a firm acceptance.</strong> Received is not accepted. For the trial, I confirm the $0 scope and an illustrative return time. For live work later, I confirm scope, a flat price, and a committed return time before production begins.</span></li>
-      <li><span class="n">4.</span><span><strong>Watch it move.</strong> Every trial and live order has its own status page: where the report is, what happened last, what happens next, who needs to act, and the return time. Choose email updates at the moments that matter.</span></li>
+      <li><span class="n">4.</span><span><strong>Watch it move, or let me tell you.</strong> Every trial and live order has its own status page: where the report is, what happens next, who needs to act, and the return time. At intake, choose email, text, both, or the status page only.</span></li>
       <li><span class="n">5.</span><span><strong>Review, revise, sign, deliver.</strong> The draft is yours. Accept, change, or reject anything in it. One consolidated, within-scope direction round is included with every accepted trial or live report, and my production errors are fixed free, always.</span></li>
     </ol>
     <div class="rail" aria-label="Order stages">
@@ -244,10 +256,14 @@
   <section>
     <h2 class="eyebrow">You can see where your report is</h2>
     <p>Most production help is a black box: you send an order into the dark and hope it comes back. This desk isn't built that way. Every trial and live order gets its own private-link status page, no login needed, that answers the questions you'd actually ask. Where is it now? What happened last? What happens next? Who needs to act? What return time is showing?</p>
-    <p>If I need something from you, the page says so and you get a short email. You can also choose milestone emails when the report is accepted, when I need something, and when the draft is ready. The page never shows your client's name, the property address, or any number from the report. Your report is your business.</p>
+    <p><strong>You do not have to keep checking it.</strong> At intake, choose email, text, both, or status-page only. I send short one-to-one updates when the report is accepted, if I need something from you, and when the draft is ready for your review. Texts are manual order updates from my business line, not marketing messages. The page never shows your client's name, the property address, or any number from the report. Your report is your business.</p>
     <div class="status-preview">
       <p class="status-kicker">Working demonstration &middot; synthetic report &middot; no client data</p>
-      <p><strong>See the same production window an appraiser receives.</strong> Open it on your phone. The current stage, last update, accepted scope, return time, next step, who acts next, and email-notification setting are all visible in one place.</p>
+      <p><strong>See the same production window an appraiser receives.</strong> Open it on your phone. The current stage, return time, next step, who acts next, and the chosen email/text preference are visible without digging. The demonstration also shows the milestone messages.</p>
+      <div class="notification-preview" aria-label="Example notification preference and text update">
+        <div><span class="preview-label">Update preference</span><strong class="preview-choice">Email + text</strong></div>
+        <p class="preview-text"><span class="preview-label">Example text</span>AP-4827: Research is complete and drafting is underway.</p>
+      </div>
       <p><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">See a demonstration report moving through production &rarr;</a></p>
     </div>
   </section>

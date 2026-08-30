@@ -30,7 +30,7 @@
     font-family: Georgia, "Times New Roman", serif;
     font-size: 17px; line-height: 1.6; margin: 0; padding: 0 20px;
   }
-  .sheet { max-width: 860px; margin: 0 auto; padding: 32px 0 54px; }
+  .sheet { max-width: 780px; margin: 0 auto; padding: 32px 0 54px; }
   .letterhead {
     display: flex; justify-content: space-between; align-items: baseline;
     gap: 18px; border-bottom: 2px solid var(--ink); padding-bottom: 13px;
@@ -40,7 +40,7 @@
   .page-kind { color: var(--muted); font-size: 11.5px; letter-spacing: .08em; }
   .loading, .error { border: 1px solid var(--rule); margin-top: 48px; padding: 26px; }
   .error h1 { margin-top: 0; }
-  h1 { font-size: clamp(31px, 7vw, 48px); line-height: 1.14; margin: 40px 0 8px; }
+  h1 { font-size: clamp(30px, 7vw, 44px); line-height: 1.14; margin: 34px 0 8px; }
   h2 { font-size: 22px; line-height: 1.3; margin: 0 0 16px; }
   p { margin: 0 0 16px; }
   a { color: var(--accent-deep); text-underline-offset: 3px; }
@@ -59,19 +59,29 @@
     font-family: "Courier New", monospace; font-size: 12px; letter-spacing: .08em;
     text-transform: uppercase;
   }
-  .current {
+  .status-summary {
     background: var(--wash); border-left: 5px solid var(--accent);
-    padding: 20px 22px; margin-top: 24px;
+    display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(220px, .8fr);
+    gap: 22px; margin-top: 24px; padding: 21px 22px;
   }
+  .current { min-width: 0; }
   .current .label { color: var(--muted); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
   .current .note { font-size: 22px; line-height: 1.38; margin: 5px 0 8px; }
-  .workflow-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 16px; }
-  .workflow-item { border: 1px solid var(--rule); padding: 17px 18px; min-width: 0; }
-  .workflow-item .label { color: var(--muted); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; }
-  .workflow-item .value { font-size: 15px; line-height: 1.5; margin: 7px 0 0; }
-  .workflow-item.actor { border-color: var(--accent); }
-  .workflow-item.actor .value { color: var(--accent-deep); font-size: 18px; font-weight: 700; }
-  .rail-wrap { margin-top: 36px; }
+  .summary-aside { border-left: 1px solid var(--rule); padding-left: 20px; }
+  .summary-line { margin-bottom: 15px; }
+  .summary-line:last-child { margin-bottom: 0; }
+  .summary-line .label, .latest .label {
+    color: var(--muted); display: block; font-size: 10.5px;
+    letter-spacing: .1em; text-transform: uppercase;
+  }
+  .summary-line .value { font-size: 15px; line-height: 1.45; margin: 3px 0 0; }
+  .summary-line.actor .value { color: var(--accent-deep); font-weight: 700; }
+  .latest { color: var(--muted); font-size: 14px; margin: 12px 5px 0; }
+  .latest .label { display: inline; margin-right: 7px; }
+  .rail-wrap, .order-details { border-top: 1px solid var(--rule); margin-top: 28px; padding-top: 18px; }
+  summary { cursor: pointer; font-weight: 700; }
+  summary::marker { color: var(--accent); }
+  .rail-wrap[open] summary, .order-details[open] summary { margin-bottom: 18px; }
   .rail {
     display: grid; grid-template-columns: repeat(9, minmax(78px, 1fr));
     list-style: none; margin: 0; padding: 0; overflow-x: auto;
@@ -92,25 +102,37 @@
   .rail .active .rail-marker { border-color: var(--accent); color: var(--accent); border-width: 3px; }
   .rail-label { display: block; font-size: 10.5px; line-height: 1.35; margin-top: 8px; color: var(--muted); }
   .rail .active .rail-label { color: var(--ink); font-weight: 700; }
-  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 36px; }
+  .facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
   .fact { border: 1px solid var(--rule); padding: 17px 18px; min-width: 0; }
   .fact .label { color: var(--muted); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; }
   .fact .value { font-size: 17px; margin: 7px 0 0; overflow-wrap: anywhere; }
-  section { border-top: 1px solid var(--rule); margin-top: 36px; padding-top: 28px; }
-  .notification-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 22px; }
-  .notification-row { margin: 0; }
-  .notification-row div { display: flex; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--rule); padding: 9px 0; }
-  .notification-row dt { color: var(--muted); font-size: 12px; }
-  .notification-row dd { margin: 0; }
+  section { border-top: 1px solid var(--rule); margin-top: 30px; padding-top: 24px; }
+  .updates-card {
+    background: var(--wash); border: 1px solid var(--rule); border-top: 4px solid var(--accent);
+    margin-top: 28px; padding: 21px 22px 18px;
+  }
+  .updates-card h2 { margin-bottom: 8px; }
+  .notification-choice { font-size: 18px; margin-bottom: 12px; }
+  .notification-choice strong { color: var(--accent-deep); }
+  .notification-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .delivery-state { display: flex; flex-wrap: wrap; gap: 7px 18px; margin-bottom: 10px; }
+  .delivery-state span { font-size: 14px; }
   .fineprint { color: var(--muted); font-size: 14px; }
-  .message-sample { border: 1px solid var(--rule); padding: 14px 16px; margin: 12px 0 0; }
+  .preference-link { display: inline-block; font-weight: 700; margin-top: 2px; }
+  .example-toggle { border-top: 1px solid var(--rule); margin-top: 12px; padding-top: 12px; }
+  .example-toggle summary { font-size: 14px; }
+  .message-samples { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .message-sample { background: var(--paper); border: 1px solid var(--rule); padding: 13px 14px; margin: 12px 0 0; }
   .message-sample .badge { color: var(--accent); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; }
   .message-sample p { font-size: 14px; margin: 7px 0 0; }
   footer { border-top: 2px solid var(--ink); color: var(--muted); margin-top: 40px; padding-top: 14px; font: 11.5px/1.55 "Courier New", monospace; }
+  .direction { margin-top: 26px; }
+  .direction h2 { font-size: 18px; margin-bottom: 7px; }
   .demo-link { display: inline-block; margin-top: 8px; }
   @media (max-width: 720px) {
-    .facts, .workflow-grid, .notification-grid { grid-template-columns: 1fr; }
+    .status-summary, .facts, .notification-grid, .message-samples { grid-template-columns: 1fr; }
     .sheet { padding-top: 22px; }
+    .summary-aside { border-left: 0; border-top: 1px solid var(--rule); padding: 17px 0 0; }
     .rail { grid-template-columns: 1fr 1fr; gap: 12px 18px; overflow: visible; padding-bottom: 8px; }
     .rail li { display: grid; grid-template-columns: 30px 1fr; align-items: center; min-width: 0; padding: 0; }
     .rail li::after { display: none; }
@@ -137,83 +159,88 @@
 
   <article id="status-panel" hidden aria-live="polite">
     <p class="eyebrow">Order <span id="order-number"></span></p>
-    <h1>Your report, without the black box.</h1>
+    <h1>Here&rsquo;s where your report stands.</h1>
     <div class="demo-banner" id="demo-banner" hidden>Free prior-assignment trial &middot; Not for client reliance</div>
     <div class="waiting-banner" id="waiting-banner" hidden></div>
 
-    <div class="current">
-      <div class="label">Current status</div>
-      <p class="note" id="current-note"></p>
-      <p class="timestamp">Last updated <span id="last-updated"></span></p>
-    </div>
-
-    <div class="workflow-grid" aria-label="Current production handoff">
-      <div class="workflow-item">
-        <div class="label">What happened last</div>
-        <p class="value" id="what-happened"></p>
+    <div class="status-summary">
+      <div class="current">
+        <div class="label">Current status</div>
+        <p class="note" id="current-note"></p>
+        <p class="timestamp">Last updated <span id="last-updated"></span></p>
+        <p class="latest"><span class="label">Latest</span><span id="what-happened"></span></p>
       </div>
-      <div class="workflow-item">
-        <div class="label">What happens next</div>
-        <p class="value" id="what-next"></p>
-      </div>
-      <div class="workflow-item actor">
-        <div class="label">Who needs to act</div>
-        <p class="value" id="who-acts"></p>
-      </div>
-    </div>
-
-    <div class="rail-wrap">
-      <h2>Where the report is</h2>
-      <ol class="rail" id="status-rail" aria-label="Order progress"></ol>
-    </div>
-
-    <div class="facts" aria-label="Accepted order details">
-      <div class="fact">
-        <div class="label">Accepted scope</div>
-        <p class="value" id="scope"></p>
-      </div>
-      <div class="fact">
-        <div class="label">Accepted price</div>
-        <p class="value" id="price"></p>
-      </div>
-      <div class="fact">
-        <div class="label" id="return-label">Return time</div>
-        <p class="value" id="return-time"></p>
+      <div class="summary-aside" aria-label="What happens next">
+        <div class="summary-line">
+          <span class="label" id="return-label">Return time</span>
+          <p class="value" id="return-time"></p>
+        </div>
+        <div class="summary-line">
+          <span class="label">Next</span>
+          <p class="value" id="what-next"></p>
+        </div>
+        <div class="summary-line actor">
+          <span class="label">With</span>
+          <p class="value" id="who-acts"></p>
+        </div>
       </div>
     </div>
 
-    <section>
-      <h2>Milestone notifications</h2>
+    <section class="updates-card" aria-labelledby="updates-heading">
+      <h2 id="updates-heading">How you&rsquo;ll hear from me</h2>
+      <p>At intake, choose email, text, both, or this status page only.</p>
+      <p class="notification-choice">This order: <strong id="notification-mode"></strong></p>
       <div class="notification-grid">
         <div>
-          <p id="notification-mode"></p>
-          <dl class="notification-row">
-            <div><dt>Status page</dt><dd>Updated by Matt at each stage</dd></div>
-            <div><dt>Email milestones</dt><dd id="email-setting"></dd></div>
-          </dl>
-          <p class="fineprint">Accepted, waiting on you, and ready for review are the standard notification points.</p>
+          <p>I send a short manual update when I accept the report, when I need something from you, and when the draft is ready.</p>
+          <p class="delivery-state"><span>Email milestones: <strong id="email-setting"></strong></span><span>Text opt-in: <strong id="text-setting"></strong></span></p>
+          <p class="fineprint">This page is always updated. Texts are one-to-one order updates from my business line, not marketing messages.</p>
           <p class="fineprint" id="research-milestone" hidden>A research-complete update is included because this return window is longer than one business day.</p>
+          <p><a class="preference-link" href="mailto:mrr@appraisalpartners.net?subject=Change%20my%20order%20notification%20preference">Change this preference</a></p>
         </div>
-        <div id="demo-notification-examples" hidden>
-          <p class="fineprint"><strong>Illustrative notifications from this trial</strong></p>
-          <div class="message-sample">
-            <span class="badge">Illustrative email subject</span>
-            <p id="demo-email"></p>
+        <details class="example-toggle" id="demo-notification-examples" hidden>
+          <summary>See the email and text examples</summary>
+          <div class="message-samples">
+            <div class="message-sample">
+              <span class="badge">Example email subject</span>
+              <p id="demo-email"></p>
+            </div>
+            <div class="message-sample">
+              <span class="badge">Example text</span>
+              <p id="demo-text"></p>
+            </div>
           </div>
-        </div>
+        </details>
       </div>
     </section>
 
-    <section>
+    <details class="rail-wrap">
+      <summary>See all 9 production stages</summary>
+      <ol class="rail" id="status-rail" aria-label="Order progress"></ol>
+    </details>
+
+    <details class="order-details">
+      <summary>Order details</summary>
+      <div class="facts" aria-label="Accepted order details">
+        <div class="fact">
+          <div class="label">Accepted scope</div>
+          <p class="value" id="scope"></p>
+        </div>
+        <div class="fact">
+          <div class="label">Accepted price</div>
+          <p class="value" id="price"></p>
+        </div>
+      </div>
+    </details>
+
+    <section class="direction">
       <h2>Need to change direction?</h2>
-      <p>Reply to the existing order email. That keeps your comp direction, corrections, and added evidence with the report.</p>
+      <p>Reply to the existing order email. Your comp direction, corrections, and added evidence stay with the report.</p>
       <p class="fineprint">This page carries production status only. It never displays your client&rsquo;s name, the property address, a value conclusion, report details, or another appraiser&rsquo;s activity.</p>
     </section>
   </article>
 
-  <footer>
-    Treat this capability link like the private order folder. Anyone holding the complete link can open this neutral status page. If it was shared by mistake, ask Matt to replace it.
-  </footer>
+  <footer>Keep this link private. If it was shared by mistake, ask Matt to replace it.</footer>
 </main>
 <script type="module" src="status-app.mjs"></script>
 </body>

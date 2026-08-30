@@ -107,9 +107,9 @@ export const STAGES = Object.freeze([
   }),
 ]);
 
-export const WAITING_NOTE = "Waiting on one item from you. Check your email.";
+export const WAITING_NOTE = "Waiting on one item from you. Check your order thread.";
 export const WAITING_WORKFLOW = workflow(
-  "Matt paused production and sent the specific request in the order email.",
+  "Matt paused production and sent the specific request in the order thread.",
   "Send the requested item in the order thread. Production resumes when it arrives.",
   "You",
 );
@@ -122,8 +122,19 @@ export const SCOPES = Object.freeze({
 
 export const NOTIFICATION_MODES = Object.freeze({
   page: "Status page only",
-  email: "Status page + email milestones",
+  email: "Email",
+  sms: "Text",
+  both: "Email + text",
 });
+
+export function notificationDelivery(mode) {
+  if (!Object.hasOwn(NOTIFICATION_MODES, mode)) throw new Error("Unknown notification mode.");
+  return Object.freeze({
+    label: NOTIFICATION_MODES[mode],
+    email: mode === "email" || mode === "both",
+    text: mode === "sms" || mode === "both",
+  });
+}
 
 const STAGE_BY_CODE = new Map(STAGES.map((stage, index) => [stage.code, { ...stage, index }]));
 const PAYLOAD_KEYS = Object.freeze([
