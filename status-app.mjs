@@ -158,9 +158,80 @@ async function loadStatus() {
     if (raw.length > 20000) throw new Error("Status record is too large.");
     const payload = await decryptStatus(JSON.parse(raw), recordId, keyBytes);
     render(payload);
+    if (payload.demo) setUpReplay(payload);
   } catch {
     showError();
   }
+}
+
+// ---- Demonstration replay -------------------------------------------------
+// Renders the real page through every stage using the real render path. The
+// only value that changes between frames is the stage and the fields a stage
+// legitimately governs. No live order is touched and nothing is fetched again.
+
+function replayFrame(base, index) {
+  const stage = STAGES[index];
+  const acceptedIndex = STAGES.findIndex((s) => s.code === "accepted");
+  const beforeAcceptance = index < acceptedIndex;
+  return {
+    ...base,
+    stage: stage.code,
+    scope: beforeAcceptance ? null : base.scope,
+    price_cents: beforeAcceptance ? null : base.price_cents,
+    committed_return: beforeAcceptance ? null : base.committed_return,
+    waiting_on_you: stage.code === "comparables",
+  };
+}
+
+function setUpReplay(base) {
+  const panel = byId("replay");
+  const play = byId("replay-play");
+  const step = byId("replay-step");
+  const state = byId("replay-state");
+  if (!panel || !play || !step) return;
+  panel.hidden = false;
+
+  const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  let timer = null;
+  let cursor = 0;
+
+  const show = (index) => {
+    cursor = index;
+    render(replayFrame(base, index));
+    panel.hidden = false;
+    state.textContent = `Checkpoint ${index + 1} of ${STAGES.length}`;
+  };
+
+  const stop = (message) => {
+    if (timer) clearInterval(timer);
+    timer = null;
+    play.disabled = false;
+    play.textContent = "Play the nine checkpoints";
+    state.textContent = message;
+  };
+
+  play.addEventListener("click", () => {
+    if (timer) {
+      stop("Paused. Press play to continue.");
+      return;
+    }
+    show(0);
+    play.disabled = false;
+    play.textContent = "Pause";
+    timer = window.setInterval(() => {
+      if (cursor >= STAGES.length - 1) {
+        stop("Replay finished. Reload to see the live record.");
+        return;
+      }
+      show(cursor + 1);
+    }, reduceMotion ? 3200 : 2100);
+  });
+
+  step.addEventListener("click", () => {
+    if (timer) stop("");
+    show(cursor >= STAGES.length - 1 ? 0 : cursor + 1);
+    step.textContent = cursor >= STAGES.length - 1 ? "Start over" : "Next checkpoint";
+  });
 }
 
 loadStatus();

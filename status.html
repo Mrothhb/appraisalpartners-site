@@ -218,6 +218,23 @@
     .preference { align-items: flex-start; flex-direction: column; }
     .page-kind { display: none; }
   }
+  .replay { border: 1px solid var(--rule-strong, #889089); background: var(--wash); padding: 15px 17px; margin: 18px 0 0; }
+  .replay-lede { margin: 0 0 12px; font-size: 15px; }
+  .replay-controls { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; }
+  .replay-btn {
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 12px;
+    letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer;
+    background: var(--accent); color: var(--paper); border: 1.5px solid var(--accent);
+    padding: 10px 16px; min-height: 44px;
+  }
+  .replay-btn:hover, .replay-btn:focus-visible { background: var(--accent-deep); border-color: var(--accent-deep); }
+  .replay-btn-alt { background: transparent; color: var(--accent-deep); }
+  .replay-btn-alt:hover, .replay-btn-alt:focus-visible { background: var(--paper); }
+  .replay-btn[disabled] { opacity: 0.5; cursor: default; }
+  .replay-state {
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11.5px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  }
 </style>
 </head>
 <body>
@@ -265,6 +282,15 @@
           <div class="progress-fill" id="progress-fill"></div>
         </div>
         <ol class="tracker" id="status-tracker" aria-label="Major report milestones"></ol>
+      </div>
+
+      <div class="replay" id="replay" hidden>
+        <p class="replay-lede"><strong>Watch a report move.</strong> This plays the same page through all nine checkpoints, the way an appraiser would see it over a working file. Nothing is moving right now; this is a replay of a demonstration order.</p>
+        <div class="replay-controls">
+          <button type="button" id="replay-play" class="replay-btn">Play the nine checkpoints</button>
+          <button type="button" id="replay-step" class="replay-btn replay-btn-alt">Step through it myself</button>
+          <span class="replay-state" id="replay-state" role="status" aria-live="polite"></span>
+        </div>
       </div>
 
       <div class="status-details" aria-label="What happens next">
