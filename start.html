@@ -94,6 +94,16 @@
   fieldset .opt { display: flex; gap: 10px; align-items: baseline; margin-bottom: 10px; font-size: 15.5px; }
   fieldset .opt input { accent-color: var(--accent); }
   fieldset .opt label { font-family: inherit; font-size: 15.5px; text-transform: none; letter-spacing: 0; color: var(--ink); margin: 0; display: inline; font-weight: 400; }
+  .notify-toggle {
+    display: grid; grid-template-columns: 20px 1fr; gap: 11px;
+    border: 1px solid var(--rule); background: var(--paper);
+    padding: 13px 15px; margin-bottom: 10px; align-items: start;
+  }
+  .notify-toggle:has(input:checked) { border-color: var(--accent); background: var(--wash); }
+  .notify-toggle input { accent-color: var(--accent); margin-top: 4px; }
+  .notify-toggle label { font-family: inherit; text-transform: none; letter-spacing: 0; color: var(--ink); margin: 0; font-weight: 400; }
+  .notify-toggle label strong { display: block; font-size: 16px; font-weight: 700; }
+  .notify-toggle label span { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
   .consent { background: var(--wash); border: 1px solid var(--rule); padding: 16px 18px; margin-bottom: 18px; font-size: 15.5px; display: flex; gap: 10px; align-items: baseline; }
   .consent input { accent-color: var(--accent); }
   button.btn {
@@ -218,11 +228,16 @@
 
     <fieldset>
       <legend>How should I update you?</legend>
-      <p class="hint">I send a short note when I accept the report, if I need something, and when the draft is ready.</p>
-      <div class="opt"><input type="radio" id="n-email" name="notify" value="Email" checked><label for="n-email">Email</label></div>
-      <div class="opt"><input type="radio" id="n-text" name="notify" value="Text"><label for="n-text">Text</label></div>
-      <div class="opt"><input type="radio" id="n-both" name="notify" value="Both"><label for="n-both">Both email and text</label></div>
-      <div class="opt"><input type="radio" id="n-page" name="notify" value="Status page only"><label for="n-page">Status page only, I'll check when I want</label></div>
+      <p class="hint">Three moments only: when I accept the report, if I need something from you, and when the draft is ready.</p>
+      <div class="notify-toggle">
+        <input type="checkbox" id="n-email" name="notify-email" checked>
+        <label for="n-email"><strong>Email me at each milestone</strong><span>Sent to the address above.</span></label>
+      </div>
+      <div class="notify-toggle">
+        <input type="checkbox" id="n-text" name="notify-text">
+        <label for="n-text"><strong>Text me at each milestone</strong><span>One-to-one order updates from Matt's business line. Never marketing.</span></label>
+      </div>
+      <p class="hint">Leave both unchecked and you'll use the status page only. Either way, the status page is always current.</p>
     </fieldset>
 
     <div id="text-update-fields" hidden>
@@ -408,9 +423,20 @@
     var el = document.querySelector('input[name="' + name + '"]:checked');
     return el ? el.value : '';
   }
+  function emailUpdatesSelected() {
+    var el = document.getElementById('n-email');
+    return !!(el && el.checked);
+  }
   function textUpdatesSelected() {
-    var preference = r('notify');
-    return preference === 'Text' || preference === 'Both';
+    var el = document.getElementById('n-text');
+    return !!(el && el.checked);
+  }
+  function notificationPreferenceLabel() {
+    var e = emailUpdatesSelected(), t = textUpdatesSelected();
+    if (e && t) return 'Email + text';
+    if (e) return 'Email only';
+    if (t) return 'Text only';
+    return 'Status page only';
   }
   function showTextUpdateFields() {
     var selected = textUpdatesSelected();
@@ -418,7 +444,7 @@
     mobile.required = selected;
     smsConsent.required = selected;
   }
-  var notificationOptions = document.querySelectorAll('input[name="notify"]');
+  var notificationOptions = document.querySelectorAll('#n-email, #n-text');
   for (var i = 0; i < notificationOptions.length; i++) {
     notificationOptions[i].addEventListener('change', showTextUpdateFields);
   }
@@ -427,7 +453,7 @@
   document.getElementById('startform').addEventListener('submit', function (e) {
     e.preventDefault();
     function v(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
-    var notificationPreference = r('notify');
+    var notificationPreference = notificationPreferenceLabel();
     var includesText = textUpdatesSelected();
     var lines = [
       'Free prior-assignment trial request',

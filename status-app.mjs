@@ -47,6 +47,38 @@ function renderRail(payload) {
   }
 }
 
+const MILESTONES = [
+  { label: "Submitted", codes: ["submitted"] },
+  { label: "Accepted", codes: ["intake", "accepted"] },
+  { label: "In production", codes: ["research", "comparables", "drafting", "review"] },
+  { label: "Ready for you", codes: ["ready"] },
+  { label: "Complete", codes: ["complete"] },
+];
+
+function renderTracker(payload) {
+  const tracker = byId("status-tracker");
+  if (!tracker) return;
+  tracker.replaceChildren();
+  const active = MILESTONES.findIndex((m) => m.codes.includes(payload.stage));
+
+  for (const [index, milestone] of MILESTONES.entries()) {
+    const item = document.createElement("li");
+    item.className = index < active ? "done" : index === active ? "now" : "";
+    if (index === active) item.setAttribute("aria-current", "step");
+
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    dot.setAttribute("aria-hidden", "true");
+
+    const step = document.createElement("span");
+    step.className = "step";
+    step.textContent = milestone.label;
+
+    item.append(dot, step);
+    tracker.append(item);
+  }
+}
+
 function renderNotifications(payload) {
   const delivery = notificationDelivery(payload.notifications);
   setText("notification-mode", delivery.label);
@@ -70,6 +102,7 @@ function render(payload) {
   setText("order-number", `AP-${payload.order}`);
   setText("current-note", pageNote(payload));
   setText("last-updated", formatCentralTime(payload.updated_at));
+  renderTracker(payload);
   renderRail(payload);
   renderNotifications(payload);
 

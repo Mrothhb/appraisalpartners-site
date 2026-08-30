@@ -147,6 +147,33 @@
   }
   .notification-preview .preview-choice { color: var(--accent-deep); display: block; font-size: 18px; margin-top: 3px; }
   .notification-preview .preview-text { border-left: 3px solid var(--accent); font-size: 14px; margin: 0; padding-left: 13px; }
+  .tracker {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    list-style: none; margin: 0 0 16px; padding: 0;
+  }
+  .tracker li { position: relative; text-align: center; padding-top: 22px; }
+  .tracker li::before {
+    content: ""; position: absolute; top: 6px; left: 0; right: 0; height: 4px; background: var(--rule);
+  }
+  .tracker li:first-child::before { left: 50%; }
+  .tracker li:last-child::before { right: 50%; }
+  .tracker li.done::before { background: var(--accent); }
+  .tracker li.now::before { background: linear-gradient(to right, var(--accent) 50%, var(--rule) 50%); }
+  .tracker .dot {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--paper); border: 3px solid var(--rule);
+  }
+  .tracker li.done .dot { background: var(--accent); border-color: var(--accent); }
+  .tracker li.now .dot { border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .tracker .step {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--muted); display: block; line-height: 1.35; padding: 0 3px;
+  }
+  .tracker li.now .step { color: var(--accent-deep); font-weight: 500; }
+  .tracker li.done .step { color: var(--ink); }
+  @media (max-width: 560px) { .tracker .step { font-size: 9px; letter-spacing: 0.02em; } }
   .status-card {
     background: var(--paper); border: 1px solid var(--rule);
     border-left: 4px solid var(--accent); padding: 16px 18px; margin: 16px 0;
@@ -294,6 +321,13 @@
       <p class="status-kicker">This is what your status page looks like</p>
       <div class="status-card">
         <p class="sc-eyebrow">Order AP-4827 &middot; private link, no login</p>
+        <ol class="tracker" aria-label="Order progress: in production, step 3 of 5">
+          <li class="done"><span class="dot" aria-hidden="true"></span><span class="step">Submitted</span></li>
+          <li class="done"><span class="dot" aria-hidden="true"></span><span class="step">Accepted</span></li>
+          <li class="now" aria-current="step"><span class="dot" aria-hidden="true"></span><span class="step">In production</span></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="step">Ready for you</span></li>
+          <li><span class="dot" aria-hidden="true"></span><span class="step">Complete</span></li>
+        </ol>
         <p class="sc-label">Current status</p>
         <p class="sc-status">Draft production in progress.</p>
         <p class="sc-updated">Last updated Saturday, August 29 at 7:37 PM CT</p>

@@ -82,6 +82,40 @@
   summary { cursor: pointer; font-weight: 700; }
   summary::marker { color: var(--accent); }
   .rail-wrap[open] summary, .order-details[open] summary { margin-bottom: 18px; }
+  .tracker {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    list-style: none; margin: 0 0 26px; padding: 0;
+  }
+  .tracker li { position: relative; text-align: center; padding-top: 22px; }
+  .tracker li::before {
+    content: ""; position: absolute; top: 6px; left: 0; right: 0;
+    height: 4px; background: var(--rule);
+  }
+  .tracker li:first-child::before { left: 50%; border-radius: 2px 0 0 2px; }
+  .tracker li:last-child::before { right: 50%; border-radius: 0 2px 2px 0; }
+  .tracker li.done::before, .tracker li.now::before { background: var(--accent); }
+  .tracker li.now::before { background: linear-gradient(to right, var(--accent) 50%, var(--rule) 50%); }
+  .tracker li:first-child.now::before { background: var(--accent); }
+  .tracker .dot {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--paper); border: 3px solid var(--rule);
+  }
+  .tracker li.done .dot { background: var(--accent); border-color: var(--accent); }
+  .tracker li.now .dot {
+    background: var(--paper); border-color: var(--accent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  .tracker .step {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--muted); display: block; line-height: 1.35; padding: 0 3px;
+  }
+  .tracker li.now .step { color: var(--accent-deep); font-weight: 500; }
+  .tracker li.done .step { color: var(--ink); }
+  @media (max-width: 560px) {
+    .tracker .step { font-size: 9px; letter-spacing: 0.02em; }
+  }
   .rail {
     display: grid; grid-template-columns: repeat(9, minmax(78px, 1fr));
     list-style: none; margin: 0; padding: 0; overflow-x: auto;
@@ -162,6 +196,8 @@
     <h1>Here&rsquo;s where your report stands.</h1>
     <div class="demo-banner" id="demo-banner" hidden>Free prior-assignment trial &middot; Not for client reliance</div>
     <div class="waiting-banner" id="waiting-banner" hidden></div>
+
+    <ol class="tracker" id="status-tracker" aria-label="Order progress"></ol>
 
     <div class="status-summary">
       <div class="current">
