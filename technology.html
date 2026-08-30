@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="What runs behind the Appraisal Partners desk: an adapter that writes natively into TOTAL, defined source precedence, deterministic checks, and one human review before anything leaves. Plainly stated, including where AI fits.">
+<link rel="canonical" href="https://appraisalpartners.net/technology.html">
+<meta property="og:title" content="Technology, Data, and Human Review | Appraisal Partners">
+<meta property="og:description" content="Most of this profession has only seen a chat window. This is what a production system looks like instead, described plainly enough to judge.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://appraisalpartners.net/technology.html">
+<meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
+<title>Technology, Data, and Human Review | Appraisal Partners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+  :root {
+    --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
+    --rule: #D9DED9; --rule-strong: #889089;
+    --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
+    --rule: #2A322D; --rule-strong: #606B62;
+    --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
+    --rule: #2A322D; --rule-strong: #606B62;
+    --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
+    font-size: 17px; line-height: 1.68; margin: 0; padding: 0 24px;
+  }
+  .sheet { max-width: 720px; margin: 0 auto; padding: 44px 0 64px; }
+  .letterhead {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 18px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 14px;
+  }
+  .letterhead .name {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-weight: 500; font-size: 14px; letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  .letterhead .cred, .nav {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+  }
+  .nav { width: 100%; display: flex; flex-wrap: wrap; gap: 9px 20px; padding-top: 2px; }
+  .nav a { color: var(--muted); padding: 4px 0; }
+  .nav a, footer a { text-decoration-thickness: 0.5px; text-underline-offset: 2px; }
+  main:focus { outline: none; }
+  h1 {
+    font-size: clamp(32px, 6.5vw, 48px); font-weight: 700; line-height: 1.16;
+    letter-spacing: -0.02em; text-wrap: balance; margin: 40px 0 18px;
+  }
+  h1 .line { color: var(--accent); }
+  h2 { font-size: 24px; line-height: 1.32; margin: 0 0 14px; text-wrap: balance; }
+  h3 { font-size: 18px; line-height: 1.35; margin: 0 0 8px; }
+  .lede { font-size: 20px; line-height: 1.55; margin: 0 0 16px; }
+  p { margin: 0 0 18px; }
+  a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover, a:focus-visible { text-decoration-color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  section { border-top: 1px solid var(--rule); margin-top: 42px; padding-top: 28px; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  ul.plain { margin: 0 0 18px; padding: 0 0 0 1.15em; }
+  ul.plain li { margin-bottom: 10px; }
+  ul.plain li::marker { color: var(--accent); }
+  .split {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px;
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin-bottom: 18px;
+  }
+  .split > div { padding: 18px 0 2px; }
+  .stage { border-left: 3px solid var(--rule); padding: 0 0 2px 18px; margin-bottom: 22px; }
+  .stage:last-child { margin-bottom: 0; }
+  .stage h3 {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 6px;
+  }
+  .stage p { margin: 0 0 8px; font-size: 16px; }
+  .stage p:last-child { margin-bottom: 0; }
+  .stage .mine { color: var(--muted); font-size: 15px; }
+  .callout {
+    border-left: 4px solid var(--accent); background: var(--wash);
+    padding: 17px 19px; margin: 20px 0;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .rulebox {
+    border: 1px solid var(--rule); background: var(--wash);
+    padding: 16px 18px; margin: 18px 0;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 13px; line-height: 1.85;
+  }
+  .rulebox p { margin: 0 0 8px; }
+  .rulebox p:last-child { margin: 0; }
+  .rulebox b { color: var(--accent-deep); font-weight: 500; }
+  .fineprint { font-size: 14.5px; color: var(--muted); margin: 14px 0 0; }
+  a.btn {
+    display: inline-block; background: var(--accent); color: var(--paper);
+    padding: 12px 20px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
+    text-decoration: none; border: 1.5px solid var(--accent);
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px;
+  }
+  a.btn:hover, a.btn:focus-visible { background: var(--accent-deep); border-color: var(--accent-deep); }
+  .cta { border: 1.5px solid var(--ink); padding: 24px 26px; margin-top: 42px; }
+  .cta p:last-child { margin-bottom: 0; }
+  footer {
+    border-top: 2px solid var(--ink); margin-top: 44px; padding-top: 14px;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+    display: flex; justify-content: space-between; gap: 10px 18px; flex-wrap: wrap;
+  }
+  footer .postal-address { flex-basis: 100%; font-style: normal; }
+  @media (max-width: 620px) { .split { grid-template-columns: 1fr; } }
+  .skip {
+    position: absolute; left: -9999px; top: 0;
+    background: var(--accent); color: var(--paper); padding: 10px 16px;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; z-index: 10;
+  }
+  .skip:focus { left: 8px; top: 8px; }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+<div class="sheet">
+  <header class="letterhead">
+    <span class="name">Appraisal Partners</span>
+    <span class="cred">Technology, data, and human review</span>
+    <nav class="nav" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="how-it-works.html">How it works</a>
+      <a href="technology.html">Technology</a>
+      <a href="story.html">Three appraisers</a>
+      <a href="about.html">About Matt</a>
+      <a href="faq.html">FAQ</a>
+      <a href="start.html">Try it free on a past report</a>
+    </nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <p class="eyebrow">What runs behind the desk</p>
+    <h1>Most of this profession has only seen <span class="line">a chat window.</span></h1>
+    <p class="lede">Paste an assignment into a chatbot and you get confident nonsense. That experience is why most appraisers believe AI cannot touch this work, and for a chat window they are right. What runs here is not that. It is a production system with adapters into the report software, source rules, deterministic checks, and a human review that has to pass before anything leaves.</p>
+    <p>The AI models are commercially available to anyone. The system built around them isn't available to the public at this time. I built it for my own reports first, and this page describes it plainly enough that you can judge whether you would trust it with yours.</p>
+
+    <section>
+      <p class="eyebrow">Why it exists</p>
+      <h2>Built by an appraiser who spent a decade as an engineer</h2>
+      <p>I studied mathematics and computer science at UC San Diego, then spent about ten years in engineering and product operations, most of it as a solutions engineer designing systems for people who had to live with the output. I am also a second-generation appraiser who trained through licensure in my father's practice.</p>
+      <p>Those two halves rarely land in the same person, and that is the only reason this exists. Software people who build appraisal tools have never had to defend a value to a reviewer. Appraisers who understand the defense have rarely had the tooling to automate around it. I have had to do both, so the system is built around the part that actually carries risk: the evidence behind every fact in the report.</p>
+    </section>
+
+    <section>
+      <p class="eyebrow">The core of it</p>
+      <h2>An adapter that writes into TOTAL natively</h2>
+      <p>Most automation in this space produces a document beside your software. This writes into it. The adapter maps values into a la mode TOTAL's own field structure and returns the native working file, with data placed and photos routed, so you open your own software and everything is editable exactly where you expect it.</p>
+      <p>That is the hard part, and it is why the draft arrives as a working file rather than a PDF you have to retype. Nothing about your software, your license, or your workflow changes. You open the file and review it.</p>
+      <div class="callout">
+        <p><strong>Every fact carries its source.</strong> The system does not treat all evidence as equal. A sketch is authoritative for gross living area and beats both the tax record and the MLS. An assignment order proves assignment facts only, a sales contract proves transaction facts only, and neither one proves property condition or market behavior. Photos beat a stale listing on whether a pool exists. Where no market-derived rate can be isolated, the limitation gets disclosed rather than papered over, because failing to isolate an effect is not proof there isn't one.</p>
+      </div>
+      <p>Those rules are written down and enforced, not remembered. A fact that cannot be tied to an allowed source does not silently become a fact. It becomes an appraiser decision, flagged for the person signing.</p>
+    </section>
+
+    <section>
+      <p class="eyebrow">Stage by stage</p>
+      <h2>How a report moves, and where I am in it</h2>
+
+      <div class="stage">
+        <h3>Collection</h3>
+        <p>Authorized MLS and public-record pulls, the assignment documents, your packet. Raw exports are retained whole, not just the records that end up in the grid.</p>
+        <p class="mine"><strong>Mine:</strong> I set the market boundary and the search parameters. That is an appraisal judgment and it is not delegated.</p>
+      </div>
+
+      <div class="stage">
+        <h3>Assembly and drafting</h3>
+        <p>Data entry into the report software, comparable candidates assembled for review and selection, and a first draft of the report including the sales grid and commentary. This is the part people mean when they say AI, and yes, that includes the drafting.</p>
+        <p class="mine"><strong>Mine:</strong> I judge the comparable set before it goes anywhere. A machine can assemble candidates. It cannot know that the closest match on paper backs a highway.</p>
+      </div>
+
+      <div class="stage">
+        <h3>Deterministic checks</h3>
+        <p>Field mapping, packing, readback of what actually landed in the file, photo routing, and package-identity verification. These either pass or fail. They are machinery, not judgment, and they never count as a review.</p>
+        <p class="mine"><strong>Mine:</strong> nothing. That is the point. Machines should do the things that have a right answer.</p>
+      </div>
+
+      <div class="stage">
+        <h3>The review</h3>
+        <p>One judgment review against the rendered report as it actually appears, not against the data that was supposed to produce it, plus the sources and the software's own error checks. It produces one consolidated repair list. Repair, repack, re-render, verify. Three passes at most; past that the file is handed over with the unresolved items disclosed rather than quietly buried.</p>
+        <p class="mine"><strong>Mine:</strong> all of it. This is the step the price pays for.</p>
+      </div>
+
+      <div class="stage">
+        <h3>Your review</h3>
+        <p>The draft arrives marked DRAFT, with the documented comparable pool behind the grid and a short list of open items worth your attention.</p>
+        <p class="mine"><strong>Yours:</strong> scope, final comparables, adjustments, reconciliation, value, certification, signature, and delivery. Accept, change, or reject anything in it.</p>
+      </div>
+    </section>
+
+    <section>
+      <p class="eyebrow">The honest part</p>
+      <h2>What goes wrong, and what catches it</h2>
+      <p>Any system that drafts can draft something wrong. Pretending otherwise would tell you more about me than about the software. Three failure modes are real, and each has a control that exists because the failure is expected.</p>
+      <ul class="plain">
+        <li><strong>Machine-drafted commentary can be fluent and wrong.</strong> It reads well, which is exactly what makes it dangerous. The review reads the rendered report the way a reviewer would, not the way an author would.</li>
+        <li><strong>A comparable can look right on paper and be wrong on the ground.</strong> Source rules and my own judgment on the comparable set both sit ahead of the grid, and the full candidate pool ships with the file so you can see what was considered and rejected, not just what was chosen.</li>
+        <li><strong>Source conflicts can get smoothed instead of surfaced.</strong> Precedence is defined in advance, and where evidence genuinely conflicts or cannot support a conclusion, it is disclosed as an open item rather than resolved silently.</li>
+      </ul>
+      <div class="rulebox">
+        <p><b>Standing rules the system operates under:</b></p>
+        <p>Never call a draft final. Never claim the software's error check is clean.</p>
+        <p>Record the evidence, the review result, and the unresolved uncertainties precisely.</p>
+        <p>Values typed or confirmed by the appraiser are never overwritten.</p>
+        <p>Never source a value from a prior report, a cache, or an internal claim.</p>
+      </div>
+      <p>If a draft misses the accepted scope in a way the included revision round cannot fix, that report is not billed. My production errors are corrected without another fee.</p>
+    </section>
+
+    <section>
+      <p class="eyebrow">Data</p>
+      <h2>Where your assignment material goes</h2>
+      <p>Assignment materials move through a private order folder or another secure channel you approve. Credentials are never shared in either direction, no client is ever solicited, and assignment data is never sold. Your private status page carries no property address, borrower, client name, report data, or value, so a forwarded link exposes nothing.</p>
+      <p>The specific providers, the data each one receives, retention and deletion, and the full data path are documented and approved with you at onboarding, before a live report is accepted. That happens in writing, per client, rather than as a claim on a web page, because your client's requirements govern and they are not all the same.</p>
+      <p class="fineprint">If your client prohibits outside assistance or the approved data path, the assignment is not a fit for this desk and I will tell you before we start.</p>
+    </section>
+
+    <section>
+      <p class="eyebrow">Early access</p>
+      <h2>Not available yet</h2>
+      <p>Appraisers keep asking whether they can run this themselves. The answer eventually is yes, deliberately slowly. Installing it is not the hard part. Knowing which judgments the system is allowed to make, and which ones it must hand back to you, is the hard part, and that is not something a download teaches.</p>
+      <p>When it opens, it will be a small number of appraisers onboarded by hand, one at a time, with the training attached. If you want to know when that happens, say so and I'll put you on the list. No pitch will follow.</p>
+      <p><a class="btn" href="mailto:mrr@appraisalpartners.net?subject=Early%20access%20list">Ask about early access</a></p>
+    </section>
+
+    <div class="cta">
+      <p><strong>Or just judge the output.</strong></p>
+      <p>None of this matters if the reports aren't good. Read the <a href="uad36-work-sample.pdf">sample UAD 3.6 report</a>, or run the free trial on a closed prior assignment and compare my draft against a report you already know.</p>
+      <p><a class="btn" href="start.html">Try it free on a past report</a></p>
+    </div>
+  </main>
+
+  <footer>
+    <span>Appraisal Partners of Texas, Inc.</span>
+    <span>TX #1361115-CR &middot; CO #CR200002387</span>
+    <span><a href="how-it-works.html#disclosure">Disclosure</a></span>
+    <span><a href="terms.html">Terms</a></span>
+    <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
+  </footer>
+</div>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5e65f76cb49d4898942bc1e1e33ce728"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

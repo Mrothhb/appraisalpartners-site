@@ -19,19 +19,20 @@
 <style>
   :root {
     --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
-    --rule: #D9DED9; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
+    --rule: #D9DED9; --rule-strong: #889089; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
     --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
     }
   }
   :root[data-theme="dark"] {
     --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
   }
   * { box-sizing: border-box; }
+  main:focus { outline: none; }
   body {
     background: var(--paper); color: var(--ink);
     font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
@@ -166,7 +167,7 @@
 <body>
 
 <a class="skip" href="#main">Skip to content</a>
-<main class="sheet" id="main">
+<div class="sheet">
   <header class="letterhead">
     <span class="name">Appraisal Partners / Production Desk</span>
     <span class="cred">UAD 3.6 report production for signing appraisers</span>
@@ -178,6 +179,8 @@
       <a href="start.html">Try it free on a past report</a>
     </nav>
   </header>
+
+  <main id="main" tabindex="-1">
 
   <h1>In Thursday evening. <span class="line">On your desk Friday afternoon.</span></h1>
   <p class="lede"><strong>This is the second production desk you set up before the week gets away from you.</strong> A typical complete packet comes in Thursday evening and returns as an editable UAD 3.6 draft Friday afternoon. Every accepted live report gets its own committed return time before production begins, and the clock starts when the packet is complete.</p>
@@ -208,7 +211,7 @@
   <p class="fineprint">The sample shows the draft and support package that come back to the signing appraiser, including the assistance disclosure in the certification. The address, borrower, appraiser, firm, and photos are replaced with placeholders.</p>
 
   <section id="benefits">
-    <h2 class="eyebrow">Overflow capacity without another employee</h2>
+    <h2>Overflow capacity without another employee</h2>
     <p>Volume comes in waves. When the inspection calendar fills faster than the reports behind it can be written, send the desk work here instead of turning down the assignment or giving the next several nights to the form.</p>
     <div class="benefits">
       <article>
@@ -238,7 +241,7 @@
   </div>
 
   <section id="line">
-    <h2 class="eyebrow">The responsibility line</h2>
+    <h2>The responsibility line</h2>
     <div class="scope">
       <div>
         <h3>The signing appraiser retains</h3>
@@ -267,10 +270,10 @@
   </section>
 
   <section id="how">
-    <h2 class="eyebrow">The process, start to finish</h2>
+    <h2>The process, start to finish</h2>
     <ol class="steps">
       <li><span class="n">1.</span><span><strong>Try it free on a past report.</strong> Use a closed assignment you are authorized to share, not a current client order. Fill out the <a href="start.html">short form</a>. After I review it, I reply with a trial number, private status link, and secure folder. No call required, and no borrower documents go in the form itself.</span></li>
-      <li><span class="n">2.</span><span><strong>Send the packet.</strong> Drop the order, photos, sketch, notes, and contract into your folder, or reply to the acknowledgment with attachments. The start page's checklist shows exactly what your kind of assignment needs, so there's no guessing and no retyping.</span></li>
+      <li><span class="n">2.</span><span><strong>Send the packet through the private folder.</strong> Put the order, photos, sketch, notes, and contract in the restricted order folder or another client-approved secure channel. Do not send assignment files as ordinary email attachments. The start page's checklist shows exactly what your kind of assignment needs, so there's no guessing and no retyping.</span></li>
       <li><span class="n">3.</span><span><strong>Get a firm acceptance.</strong> Received is not accepted. I check permission, completeness, complexity, scope, software, and my own capacity. A trial acceptance shows a $0 scope and an illustrative return time. A live-order acceptance shows the flat price and committed return time. If something's missing, the page shows "waiting on your input" until it arrives.</span></li>
       <li><span class="n">4.</span><span><strong>Follow the report, and steer it.</strong> Watch the status page, or choose short email updates, text updates, or both. Send corrections, more evidence, or comp direction to the order thread at any point. It all lands in one place.</span></li>
       <li><span class="n">5.</span><span><strong>Review, revise, sign, deliver.</strong> The editable draft comes back with the workfile organized behind it, checked twice: against the source data, then read through the way a reviewer would. One consolidated, within-scope direction round is included with every accepted trial or live report. Accept, change, or reject anything in it. The final judgments, the signature, and the delivery are yours.</span></li>
@@ -278,7 +281,7 @@
   </section>
 
   <section id="window">
-    <h2 class="eyebrow">Private report tracking</h2>
+    <h2>Private report tracking</h2>
     <p>Every trial and live order gets its own status page. The private link arrives with your order number, works from your phone, and has no login to manage. Anyone you forward the link to can open it, so treat it like the order folder. The page never shows your client's name, property address, or any number from the report.</p>
     <p class="proof"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>Open a working demonstration order &rarr;</strong></a> <span>It is synthetic, contains no client data, and uses the same page a real report receives.</span></p>
     <div class="rail" aria-label="Order stages">
@@ -291,7 +294,7 @@
   </section>
 
   <section id="comps">
-    <h2 class="eyebrow">Comps and direction</h2>
+    <h2>Comps and direction</h2>
     <p>At intake you pick one of three ways to run the comparables:</p>
     <ol class="steps">
       <li><span class="n">1.</span><span><strong>Use my comps.</strong> You pulled them, you know the market. I build from your selections and your direction.</span></li>
@@ -302,7 +305,7 @@
   </section>
 
   <section id="revisions">
-    <h2 class="eyebrow">When something needs fixing</h2>
+    <h2>When something needs fixing</h2>
     <p>Four kinds of fixes, four plain answers. The rule behind all of them: I handle the mechanical production work; your job is independent appraisal judgment.</p>
     <ul class="plain">
       <li><strong>My error, my fix.</strong> A transposed number, a mis-mapped field, a missing exhibit, a file that won't validate. Free, first in line, no time limit, no count limit. My errors are mine.</li>
@@ -314,9 +317,9 @@
   </section>
 
   <section id="pricing">
-    <h2 class="eyebrow">Live pricing after the free trial</h2>
+    <h2>Live pricing after the free trial</h2>
     <p><strong>Your appraisal fee stays yours. You pay me for the desk work.</strong> These are not cut-rate appraisal fees. They are separate production fees paid by the signing appraiser on an assignment the appraiser already controls and bills. I do not quote or bill the AMC, lender, borrower, or other end client.</p>
-    <div class="fee-note"><p><strong>Why the desk fee works:</strong> before this desk, I spent about a decade as an engineer, much of it in product operations. I built the software- and AI-assisted production workflow for my own reports first. It removes most re-keying, routine form filling, document collection and organization, and clerical editing. The tools handle repetition, not appraisal decisions. My time stays on research, analysis, judgment, and personally reviewing every report; you keep every final appraisal decision. You have already won the assignment, handled the client, and inspected the property, so I price only the defined work behind you. Speed comes from better tooling, not lower standards or anonymous labor. These are the actual rates for the scopes shown, not introductory prices.</p></div>
+    <div class="fee-note"><p><strong>Why the desk fee works:</strong> before this desk, I spent about a decade as an engineer, much of it in product operations. I built the software- and AI-assisted production workflow for my own reports first. It removes most re-keying, routine form filling, document collection and organization, and clerical editing. The tools draft. They never decide. What they produce gets checked against its sources and read through before it leaves the desk. My time stays on research, analysis, judgment, and personally reviewing every report; you keep every final appraisal decision. You have already won the assignment, handled the client, and inspected the property, so I price only the defined work behind you. Speed comes from better tooling, not lower standards or anonymous labor. These are the actual rates for the scopes shown, not introductory prices.</p></div>
     <div class="benefits">
       <article>
         <h3>Packet-to-Draft</h3>
@@ -334,7 +337,7 @@
   </section>
 
   <section id="sendget">
-    <h2 class="eyebrow">What you send, what comes back</h2>
+    <h2>What you send, what comes back</h2>
     <div class="scope">
       <div>
         <h3>You send</h3>
@@ -359,36 +362,36 @@
         </ul>
       </div>
     </div>
-    <p style="margin-top:20px">On TOTAL, the draft opens in your own software with everything editable and the photos placed. On other software, tell me the product and version at intake and compatibility is confirmed at acceptance, not discovered at delivery. Everything ships marked DRAFT, because it is one until you've made it yours. No shared MLS, portal, or software credentials, in either direction, ever.</p>
+    <p style="margin-top:20px">Current production is in TOTAL. The draft opens in your own TOTAL installation with everything editable and the photos placed. Everything ships marked DRAFT, because it is one until you've made it yours. No shared MLS, portal, or software credentials, in either direction, ever.</p>
   </section>
 
   <section id="boundaries">
-    <h2 class="eyebrow">Markets and current boundaries</h2>
+    <h2>Markets and current boundaries</h2>
     <p>Full research and draft production runs in Dallas&ndash;Fort Worth now, where my MLS access and market competence live. Packet-to-Draft orders from other markets are reviewed individually: client permission, property-state requirements, competence, insurance, authorized data access, software, and capacity all get checked before acceptance. The demonstration report is there for any appraiser, anywhere, who wants to judge the work first.</p>
     <p class="fineprint">Market setup is deliberate. Client permission, licensing, market competence, and authorized MLS and data access are confirmed before production begins; a new market may take one to three weeks to establish. Current scope is conventional and private residential work.</p>
   </section>
 
   <section id="why">
-    <h2 class="eyebrow">Why I am offering this</h2>
+    <h2>Why I am offering this</h2>
     <p>I've spent twenty years in residential appraisal, and I've always gravitated to the desk side: the research, the analysis, the report writing itself. I want a few stable working relationships where the division of work is clear, the signing appraiser stays in control, and the client receives credible work. UAD 3.6 makes that help useful now, but it is not a reason to cut corners or hide who did what. Capacity and delivery timing are agreed before the first report and kept at a level I can personally review.</p>
   </section>
 
   <section id="disclosure">
-    <h2 class="eyebrow">Disclosure, data, and trust</h2>
+    <h2>Disclosure, data, and trust</h2>
     <p>The certification identifies me and describes the assistance provided. When the work is significant real property appraisal assistance, that disclosure is not optional, and I do not remove it. Client, jurisdiction, and licensing requirements are confirmed before an assignment is accepted. UAD 3.6 even gives that disclosure a proper home: the new form has a dedicated place to name report assistance. It's not a workaround. It's the form working as designed.</p>
     <figure class="excerpt">
       <blockquote>
-        <p class="excerpt-head">Assignment Information and Scope of Work Commentary</p>
-        <p>Significant real property appraisal assistance was provided by the Appraisal Partners production desk: data entry, comparable research support, market analysis support, and report preparation, all subject to the appraiser&rsquo;s review and approval.</p>
+        <p class="excerpt-head">Appraisal Assistance</p>
+        <p>Matthew Roth, Texas Certified Residential Appraiser #1361115-CR, provided significant real property appraisal assistance to the appraiser signing this certification. The extent of that assistance was: entry of property and market data into the report software; research and assembly of comparable data for the appraiser&rsquo;s review and selection; drafting of the report, including the sales grid and commentary, for the appraiser&rsquo;s review; and quality checks against source documents. All analyses, opinions, and conclusions, including comparable selection, all adjustments, and the opinion of value, are those of the signing appraiser, who reviewed and approved the report in its entirety. Matthew Roth did not inspect the subject property.</p>
       </blockquote>
-      <figcaption>The assistance block as it appears in the report software, from a desk test draft. <a href="photos/disclosure-excerpt.png">View the screenshot</a>.</figcaption>
+      <figcaption>The assistance block, word for word, from the <a href="uad36-work-sample.pdf">sample report on this page</a>.</figcaption>
     </figure>
-    <p>Files move through a secure channel we agree on at intake. I don't farm your files out to anybody. No client is solicited, no MLS login is shared, and assignment data is never sold.</p>
+    <p>Files move through a secure channel we agree on at intake. No human other than me receives the assignment material unless you approve a written change first. No client is solicited, no MLS login is shared, and assignment data is never sold.</p>
     <p>I use software automation and AI-assisted tools in this work, and yes, that includes the drafting. I direct and review every production file myself; the signing appraiser independently reviews and owns the appraisal judgments. Before live work begins, we identify the software and service providers expected to handle assignment data, along with their available storage, retention, and data-use terms, so you and your client can approve the setup.</p>
     <div class="proof">
       <span><a href="uad36-work-sample.pdf">View Sample UAD 3.6 Report</a> (PDF, 10 MB)</span>
       <a href="terms.html">Report production terms</a>
-      <span>W-9, licenses, E&amp;O evidence, and NDA available at onboarding</span>
+      <span>W-9, licenses, and NDA available at onboarding</span>
     </div>
   </section>
 
@@ -398,6 +401,7 @@
     <p><a class="btn" href="start.html">Try it free on a past report</a></p>
     <p class="fineprint">Questions first? <a href="faq.html">The FAQ</a> covers the client relationship, confidentiality, software, revisions, and what happens when something goes sideways. Or write me: <a href="mailto:mrr@appraisalpartners.net?subject=Production%20desk%20question">mrr@appraisalpartners.net</a>.</p>
   </div>
+  </main>
 
   <footer>
     <span><a href="index.html">Appraisal Partners</a> / Production Desk &middot; Dallas&ndash;Fort Worth</span>
@@ -405,7 +409,7 @@
     <span><a href="terms.html">Report Production Terms</a></span>
     <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
   </footer>
-</main>
+</div>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5e65f76cb49d4898942bc1e1e33ce728"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>

@@ -19,19 +19,20 @@
 <style>
   :root {
     --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
-    --rule: #D9DED9; --accent: #2E5D46; --accent-deep: #24493A;
+    --rule: #D9DED9; --rule-strong: #889089; --accent: #2E5D46; --accent-deep: #24493A;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
     --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6;
     }
   }
   :root[data-theme="dark"] {
     --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6;
   }
   * { box-sizing: border-box; }
+  main:focus { outline: none; }
   body {
     background: var(--paper); color: var(--ink);
     font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
@@ -81,13 +82,14 @@
 <body>
 
 <a class="skip" href="#main">Skip to content</a>
-<main class="sheet" id="main">
+<div class="sheet">
   <header class="letterhead">
     <span class="name">Appraisal Partners / Production Desk</span>
     <span class="cred">Standard terms for appraiser report-production relationships</span>
     <nav class="nav" aria-label="Primary">
       <a href="index.html">Home</a>
       <a href="how-it-works.html">How it works</a>
+      <a href="technology.html">Technology</a>
       <a href="story.html">The story</a>
       <a href="about.html">About Matt</a>
       <a href="faq.html">FAQ</a>
@@ -95,8 +97,10 @@
     </nav>
   </header>
 
+  <main id="main" tabindex="-1">
+
   <h1>Report Production Terms</h1>
-  <p class="vers">Version dated August 29, 2026. Plain-language terms for report-production help between appraisers.</p>
+  <p class="vers">Version dated August 30, 2026. Plain-language terms for report-production help between appraisers.</p>
 
   <div class="stamp">
     <p><strong>When these terms apply:</strong> they govern a free trial once we approve it in writing, and a live report only once we accept it in writing. Filling out the start form, sending a packet, receiving an order number, or getting an acknowledgement is not acceptance. No live production begins before a written acceptance states the scope, flat price, and committed return time, and you authorize the work to begin.</p>
@@ -121,11 +125,12 @@
 
   <h2>4. The work and professional responsibility</h2>
   <p>We prepare editable draft appraisal reports and related support under the accepted scope. Depending on that scope, work may include authorized data collection, public-record and MLS research, comparable candidates and proposed analyses, report data and narrative, maps and exhibits, source organization, and consistency and completion checks.</p>
-  <p>We do not become the appraiser of record, accept the assignment from your client, inspect the subject, sign or deliver the appraisal, or give your client an opinion of value. This is not employment, staffing, a partnership, a co-appraisal, or a supervisor&ndash;trainee arrangement.</p>
+  <p>For accepted live work that constitutes significant real property appraisal assistance, you retain Appraisal Partners as your independent subcontractor for that production assistance, and Matthew Roth performs the work under your assignment-specific direction and supervision. Before directing us to begin, you determine that Matthew is qualified for the requested assistance and that the arrangement is permitted by the engagement, client requirements, applicable law, and assignment program.</p>
+  <p>We do not become the appraiser of record, accept the assignment from your client, inspect the subject, sign or deliver the appraisal, or give your client an opinion of value. This is not employment, a partnership, a co-appraisal, or a supervisor&ndash;trainee relationship, and Matthew is not presented as the signing appraiser.</p>
   <p>You retain the client and engagement relationship, complete and document the inspection, independently review every draft, and accept, change, or reject anything in it. Scope, final comparable selection, final adjustments, analyses, reconciliation, opinion of value, certification, signature, and delivery remain yours. You must independently verify, adopt, revise, or reject the draft before signing.</p>
 
   <h2>5. Disclosure is not optional</h2>
-  <p>For a live report, when our work constitutes significant real property appraisal assistance, the certification identifies Matthew Roth and describes the assistance provided. Client, jurisdiction, and licensing requirements are confirmed before acceptance. You may edit the disclosure for accuracy; removing a required disclosure ends our work together.</p>
+  <p>For a live report, when our work constitutes significant real property appraisal assistance, the report's structured assistance fields and certification identify Matthew Roth and accurately describe the work he performed, including that he did not inspect the property. The credential shown must be current and appropriate for the assignment. You authorize that disclosure and agree not to sign or deliver the report without it. You may edit it for accuracy; removing a required disclosure ends our work together.</p>
 
   <h2>6. Direction, corrections, and changes</h2>
   <p>One consolidated, within-scope direction round is included with every accepted trial or live report. Send the direction as one written list, and we confirm a return time before beginning that round. It is not an open-ended series of revisions.</p>
@@ -135,7 +140,7 @@
 
   <h2>7. Ownership, client relationships, data, and credentials</h2>
   <p>You own the report, working file, and delivered support package. We keep a confidential record of our assistance. We do not solicit your clients, resell assignment information, or reuse the work for another customer.</p>
-  <p>Research uses our own authorized access in the applicable market, or another written arrangement permitted by the data provider. Nobody shares MLS, software, portal, or client credentials in either direction. Before a trial is approved or a live report is accepted, you confirm that the engagement and client permit the requested named assistance.</p>
+  <p>Research uses our own authorized access in the applicable market, or another written arrangement permitted by the data provider. Nobody shares MLS, software, portal, or client credentials in either direction. Before a trial is approved or a live report is accepted, you represent that you reviewed the applicable engagement restrictions and that the client permits both the requested named assistance and the confidential sharing needed to perform it. If permission is prohibited or unclear, do not send the file; we may request the relevant engagement term or written client authorization before beginning.</p>
 
   <h2>8. Delivery, timing, and updates</h2>
   <p>The accepted order states the delivery format and committed return time. The return-time clock begins only when the required packet and information are complete. If information needed for the accepted scope is missing, the clock pauses until it arrives.</p>
@@ -151,18 +156,20 @@
   <p>Each side remains responsible for the work assigned to it. We answer for the accuracy of our entry and drafting against the information and sources available to us. You remain responsible for independently verifying and adopting the final analyses and conclusions, certification, signature, and obligations to your client and regulator. Our total liability on any order is limited to three times the fee for that order. Neither side is liable to the other for consequential, incidental, or punitive damages or lost profits. Services are provided as described in this agreement and the accepted scope.</p>
 
   <h2>11. Confidentiality</h2>
-  <p>Assignment and borrower information remains confidential under the USPAP ETHICS RULE and applicable privacy law. Materials are used only to perform an approved trial or accepted work: no outside human subcontractors, nothing sold, and nothing reused for another customer. The trial approval, accepted order, or onboarding record identifies the software and service providers expected to handle assignment data and their available data-use and retention terms. We do not knowingly place assignment data in public tools or authorize it for training a model used by other customers. Materials beyond our assistance record are deleted on written request, subject to legal and professional recordkeeping obligations.</p>
+  <p>Assignment and borrower information remains confidential under the USPAP ETHICS RULE and applicable privacy law. Materials are used only to perform an approved trial or accepted work: no human other than Matthew receives assignment material unless you approve a written change in advance, nothing is sold, and nothing is reused for another customer. The trial approval, accepted order, or onboarding record identifies the software and service providers expected to handle assignment data and their available data-use and retention terms. We do not knowingly place assignment data in public tools or authorize it for training a model used by other customers. Materials beyond our assistance record are deleted on written request, subject to legal and professional recordkeeping obligations.</p>
 
   <h2>12. The legal basics</h2>
   <p>Texas law governs. If a disagreement arises, both sides first discuss it in good faith. Anything unresolved goes to binding arbitration in Collin County, Texas; small claims court remains available where applicable. If one clause fails, the rest remain effective. These terms, any written trial approval, the onboarding record, and accepted-order emails form the entire agreement unless replaced in writing.</p>
+  </main>
 
   <footer>
+    <span>TX #1361115-CR &middot; CO #CR200002387</span>
     <span><a href="index.html">Appraisal Partners</a> / Production Desk</span>
     <span><a href="start.html">Try it free on a past report</a></span>
     <span>mrr@appraisalpartners.net</span>
     <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
   </footer>
-</main>
+</div>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5e65f76cb49d4898942bc1e1e33ce728"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>

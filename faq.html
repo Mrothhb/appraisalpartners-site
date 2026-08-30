@@ -19,19 +19,20 @@
 <style>
   :root {
     --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
-    --rule: #D9DED9; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
+    --rule: #D9DED9; --rule-strong: #889089; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
     --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
     }
   }
   :root[data-theme="dark"] {
     --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
   }
   * { box-sizing: border-box; }
+  main:focus { outline: none; }
   body {
     background: var(--paper); color: var(--ink);
     font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
@@ -102,18 +103,21 @@
 <body>
 
 <a class="skip" href="#main">Skip to content</a>
-<main class="sheet" id="main">
+<div class="sheet">
   <header class="letterhead">
     <span class="name">Appraisal Partners</span>
     <span class="cred">Questions, answered plainly</span>
     <nav class="nav" aria-label="Primary">
       <a href="index.html">Home</a>
       <a href="how-it-works.html">How it works</a>
+      <a href="technology.html">Technology</a>
       <a href="story.html">The story</a>
       <a href="about.html">About Matt</a>
       <a href="start.html">Try it free on a past report</a>
     </nav>
   </header>
+
+  <main id="main" tabindex="-1">
 
   <h1>The questions worth <span class="line">asking first.</span></h1>
   <p class="lede">Short answers here, longer ones on the <a href="how-it-works.html">how it works</a> page. If yours isn't covered, write me and I'll answer it directly.</p>
@@ -130,17 +134,17 @@
 
   <details>
     <summary>Is this allowed? How does disclosure work?</summary>
-    <div class="a"><p>Named significant appraisal assistance is a normal, USPAP-recognized part of the profession when it's disclosed. My name and the work I performed go in the certification, and I don't remove that disclosure for anyone. UAD 3.6 even gives it a dedicated place on the form. Whether your client permits outside assistance is confirmed before I accept the report, not after.</p></div>
+    <div class="a"><p>For accepted work that constitutes significant appraisal assistance, I work as the signing appraiser's independent subcontractor under that appraiser's assignment-specific direction and supervision. My name, credential information, non-inspection, and the work I actually performed go in the report. The signing appraiser independently reviews the draft and makes every final appraisal decision. The arrangement must also be permitted by the engagement, client, property-state rules, and assignment program before I accept the report.</p></div>
   </details>
 
   <details>
     <summary>Do you use AI?</summary>
-    <div class="a"><p>Yes. The <a href="how-it-works.html#disclosure">disclosure section</a> explains exactly where AI-assisted tools fit, what I personally verify, and which decisions always remain with the signing appraiser.</p></div>
+    <div class="a"><p>Yes. I use software automation and AI-assisted tools, including for drafting and quality checks. I verify the work against its sources; the signing appraiser independently adopts, changes, or rejects the draft and makes every final appraisal decision. Before confidential work begins, the appraiser approves the provider route that will handle the file.</p></div>
   </details>
 
   <details>
     <summary>What software do you work with?</summary>
-    <div class="a"><p>I produce in TOTAL. If you're on TOTAL, you get the native working file, editable in your own install with photos placed. On other software, you get the UAD 3.6 XML, a draft-watermarked PDF, the exhibits, and the organized support package. Tell me your product and version at intake and compatibility is confirmed at acceptance.</p></div>
+    <div class="a"><p>Current production is in TOTAL. You receive the native working file, editable in your own TOTAL installation with the photos placed, plus the agreed draft and support package. Your TOTAL version and delivery formats are confirmed before acceptance.</p></div>
   </details>
 
   <details>
@@ -170,7 +174,7 @@
 
   <details>
     <summary>How can the desk fee be this low?</summary>
-    <div class="a"><p>Before this desk, I spent about a decade as an engineer, much of it in product operations. I built the software- and AI-assisted production workflow for my own appraisal reports first. It removes most re-keying, routine form filling, document collection and organization, and clerical editing. The tools handle repetition, not appraisal decisions. My time stays on research, analysis, judgment, and personally reviewing every report; you keep every final appraisal decision. You have already won the assignment, handled the client, and inspected the property, so I price only the defined work behind you. Speed comes from better tooling, not lower standards or anonymous labor. The $89 and $149 are the actual defined-scope rates, not a low introductory price that changes once you rely on the desk. A report that does not fit is declined or separately scoped before acceptance.</p></div>
+    <div class="a"><p>Before this desk, I spent about a decade as an engineer, much of it in product operations. I built the software- and AI-assisted production workflow for my own appraisal reports first. It removes most re-keying, routine form filling, document collection and organization, and clerical editing. The tools draft. They never decide. What they produce gets checked against its sources and read through before it leaves the desk. My time stays on research, analysis, judgment, and personally reviewing every report; you keep every final appraisal decision. You have already won the assignment, handled the client, and inspected the property, so I price only the defined work behind you. Speed comes from better tooling, not lower standards or anonymous labor. The $89 and $149 are the actual defined-scope rates, not a low introductory price that changes once you rely on the desk. A report that does not fit is declined or separately scoped before acceptance.</p></div>
   </details>
 
   <details>
@@ -208,14 +212,16 @@
     <p>Write me at <a href="mailto:mrr@appraisalpartners.net?subject=Production%20desk%20question">mrr@appraisalpartners.net</a>. I read every note myself and reply directly.</p>
     <p><a class="btn" href="start.html">Try it free on a past report</a></p>
   </div>
+  </main>
 
   <footer>
+    <span>TX #1361115-CR &middot; CO #CR200002387</span>
     <span><a href="index.html">Appraisal Partners of Texas, Inc.</a></span>
     <span><a href="terms.html">Production terms</a></span>
     <span>Dallas&ndash;Fort Worth</span>
     <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
   </footer>
-</main>
+</div>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5e65f76cb49d4898942bc1e1e33ce728"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>

@@ -22,19 +22,20 @@
 <style>
   :root {
     --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
-    --rule: #D9DED9; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
+    --rule: #D9DED9; --rule-strong: #889089; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
     --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
     }
   }
   :root[data-theme="dark"] {
     --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
   }
   * { box-sizing: border-box; }
+  main:focus { outline: none; }
   body {
     background: var(--paper); color: var(--ink);
     font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
@@ -86,7 +87,7 @@
   .field input[type="date"], .field select, .field textarea {
     width: 100%; padding: 10px 12px; font-family: inherit; font-size: 16px;
     color: var(--ink); background: var(--paper);
-    border: 1px solid var(--rule); border-radius: 0;
+    border: 1px solid var(--rule-strong); border-radius: 0;
   }
   .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible {
     outline: 2px solid var(--accent); outline-offset: 1px;
@@ -99,7 +100,7 @@
   fieldset .opt label { font-family: inherit; font-size: 15.5px; text-transform: none; letter-spacing: 0; color: var(--ink); margin: 0; display: inline; font-weight: 400; }
   .notify-toggle {
     display: grid; grid-template-columns: 20px 1fr; gap: 11px;
-    border: 1px solid var(--rule); background: var(--paper);
+    border: 1px solid var(--rule-strong); background: var(--paper);
     padding: 13px 15px; margin-bottom: 10px; align-items: start;
   }
   .notify-toggle:has(input:checked) { border-color: var(--accent); background: var(--wash); }
@@ -158,18 +159,21 @@
 <body>
 
 <a class="skip" href="#main">Skip to content</a>
-<main class="sheet" id="main">
+<div class="sheet">
   <header class="letterhead">
     <span class="name">Appraisal Partners</span>
     <span class="cred">Free prior-assignment trial</span>
     <nav class="nav" aria-label="Primary">
       <a href="index.html">Home</a>
       <a href="how-it-works.html">How it works</a>
+      <a href="technology.html">Technology</a>
       <a href="story.html">The story</a>
       <a href="about.html">About Matt</a>
       <a href="faq.html">FAQ</a>
     </nav>
   </header>
+
+  <main id="main" tabindex="-1">
 
   <h1>Try it free on a <span class="line">past report.</span></h1>
   <p class="lede">No live client. No due-date gamble. Use a closed prior assignment you are authorized to share, and judge my work against a report you already know. The trial is free.</p>
@@ -208,8 +212,8 @@
         <input type="email" id="f-email" name="email" autocomplete="email" maxlength="254" required>
       </div>
       <div class="field">
-        <label for="f-software">Your forms software and version</label>
-        <input type="text" id="f-software" name="software" maxlength="100" placeholder="e.g. TOTAL 2026, ACI, SFREP">
+        <label for="f-software">Your TOTAL version</label>
+        <input type="text" id="f-software" name="software" maxlength="100" placeholder="e.g. TOTAL 2026" required>
       </div>
     </div>
 
@@ -220,7 +224,6 @@
         <option value="exterior">Exterior-only</option>
         <option value="desktop">Desktop / data-supplied</option>
         <option value="rental">Rental income needed (rent schedule or income addendum)</option>
-        <option value="legacy">Legacy or non-GSE form</option>
       </select>
       <p class="hint">The checklist below updates to match.</p>
     </div>
@@ -273,7 +276,7 @@
 
     <div class="consent">
       <input type="checkbox" id="f-permission" name="trial_authority_consent" value="yes" required>
-      <label for="f-permission">This is a closed prior assignment, not live client work. I have authority to share it for this trial, and it will not be signed, delivered, or relied on.</label>
+      <label for="f-permission">This is a closed prior assignment, not live client work. I have reviewed the engagement restrictions and have actual authority and client permission to share it for this trial. It will not be signed, delivered, or relied on.</label>
     </div>
 
     <button class="btn" id="submit-intake" type="submit" disabled>Send my free trial request</button>
@@ -282,7 +285,7 @@
   </form>
 
   <section id="next">
-    <h2 class="eyebrow">What happens after you send the request</h2>
+    <h2>What happens after you send the request</h2>
     <ol class="steps">
       <li><span class="n">1.</span><span><strong>I review the request and reply with a trial number, private status link, and secure folder.</strong> Drop in the original order and inspection packet, but keep your completed report back for now.</span></li>
       <li><span class="n">2.</span><span><strong>I confirm the trial.</strong> Received is not accepted. I check permission, scope, software, and capacity, then tell you exactly what I need. The accepted prior-assignment trial is $0 and has no live-client deadline.</span></li>
@@ -291,7 +294,7 @@
   </section>
 
   <section id="checklist">
-    <h2 class="eyebrow">What to send, by assignment</h2>
+    <h2>What to send, by assignment</h2>
     <p>Pick your scenario above, or browse here. Required is what production needs to start. Helpful is what makes the draft better and your review shorter.</p>
 
     <div class="scenario" id="ck-full-interior">
@@ -378,39 +381,22 @@
       </div>
     </div>
 
-    <div class="scenario" id="ck-legacy" hidden>
-      <div class="checklist">
-        <article>
-          <h3>Required &middot; legacy / non-GSE</h3>
-          <ul class="plain">
-            <li>The order, naming the exact form required</li>
-            <li>The client's engagement requirements or SLA, if they sent one</li>
-            <li>The inspection materials for your scenario</li>
-          </ul>
-        </article>
-        <article>
-          <h3>Helpful</h3>
-          <ul class="plain">
-            <li>A prior example the client accepted, if you have one</li>
-            <li>Any client-specific commentary requirements</li>
-          </ul>
-        </article>
-      </div>
-    </div>
   </section>
 
   <div class="note">
     <p><strong>Not ready to share a past assignment?</strong></p>
     <p><a href="uad36-work-sample.pdf">View Sample UAD 3.6 Report</a> to inspect the deliverable, or <a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">open the working status demonstration</a> to see how the production updates look on your phone. Both use synthetic or sanitized information.</p>
   </div>
+  </main>
 
   <footer>
+    <span>TX #1361115-CR &middot; CO #CR200002387</span>
     <span><a href="index.html">Appraisal Partners of Texas, Inc.</a></span>
     <span><a href="how-it-works.html">How it works</a></span>
     <span>Dallas&ndash;Fort Worth</span>
     <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
   </footer>
-</main>
+</div>
 
 <script>
 (function () {
@@ -426,8 +412,7 @@
     'full-interior': 'ck-full-interior',
     'exterior': 'ck-exterior',
     'desktop': 'ck-desktop',
-    'rental': 'ck-rental',
-    'legacy': 'ck-legacy'
+    'rental': 'ck-rental'
   };
   function showPanel() {
     for (var key in panels) {

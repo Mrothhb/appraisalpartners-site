@@ -19,19 +19,20 @@
 <style>
   :root {
     --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
-    --rule: #D9DED9; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
+    --rule: #D9DED9; --rule-strong: #889089; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
     --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
     }
   }
   :root[data-theme="dark"] {
     --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
   }
   * { box-sizing: border-box; }
+  main:focus { outline: none; }
   body {
     background: var(--paper); color: var(--ink);
     font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
@@ -106,18 +107,21 @@
 <body>
 
 <a class="skip" href="#main">Skip to content</a>
-<main class="sheet" id="main">
+<div class="sheet">
   <header class="letterhead">
     <span class="name">Appraisal Partners</span>
     <span class="cred">The Story</span>
     <nav class="nav" aria-label="Primary">
       <a href="index.html">Home</a>
       <a href="how-it-works.html">How it works</a>
+      <a href="technology.html">Technology</a>
       <a href="about.html">About Matt</a>
       <a href="faq.html">FAQ</a>
       <a href="start.html">Try it free on a past report</a>
     </nav>
   </header>
+
+  <main id="main" tabindex="-1">
 
   <h1>Three appraisers. <span class="line">Three different weeks.</span></h1>
   <p class="lede">These are composite sketches, not testimonials. See if one of the working situations sounds like yours.</p>
@@ -159,7 +163,7 @@
   </section>
 
   <section class="story">
-    <h2 class="eyebrow">What you keep</h2>
+    <h2>What you keep</h2>
     <ul class="plain">
       <li>Your clients and your fee</li>
       <li>Your comps, your adjustments, your opinion of value</li>
@@ -174,14 +178,16 @@
     <p>I prepare and review each desk file myself, and I don't farm your files out to anybody. I hold the desk to what I can personally produce and review, and when the day is full, I tell you before you send. I built this because I didn't want to choose between growing a business and having a life outside it either.</p>
     <p><a class="btn" href="how-it-works.html">How the desk works</a>&nbsp;&nbsp;<a class="btn" href="start.html">Try it free on a past report</a></p>
   </div>
+  </main>
 
   <footer>
+    <span>TX #1361115-CR &middot; CO #CR200002387</span>
     <span><a href="index.html">Appraisal Partners of Texas, Inc.</a></span>
     <span><a href="how-it-works.html">Production Desk</a></span>
     <span>Dallas&ndash;Fort Worth</span>
     <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
   </footer>
-</main>
+</div>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5e65f76cb49d4898942bc1e1e33ce728"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>
