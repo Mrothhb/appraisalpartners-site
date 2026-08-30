@@ -72,6 +72,15 @@
     font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
     color: var(--accent); margin: 0 0 18px;
   }
+  details.sect { border-top: 1px solid var(--rule); margin-top: 0; padding: 0; }
+  details.sect summary {
+    cursor: pointer; list-style-position: outside; padding: 22px 4px 20px;
+  }
+  details.sect summary::marker { color: var(--accent); }
+  details.sect summary h2 { display: inline; font-size: 24px; margin: 0; }
+  details.sect[open] summary h2 { color: var(--accent-deep); }
+  details.sect .sect-body { padding: 0 4px 26px; }
+  details.sect .sect-body > *:first-child { margin-top: 0; }
   .jumpnav {
     font-family: "IBM Plex Mono", "Courier New", monospace;
     font-size: 12px; letter-spacing: 0.04em;
@@ -210,8 +219,9 @@
   <p><strong>Already buried in live work?</strong> Call <a href="tel:+14692968726">(469) 296-8726</a> or <a href="mailto:mrr@appraisalpartners.net?subject=Live%20overflow%20request">request live overflow help by email</a>. I check fit and current capacity before sending a private order folder; no property or borrower information belongs in the first note.</p>
   <p class="fineprint">The sample shows the draft and support package that come back to the signing appraiser, including the assistance disclosure in the certification. The address, borrower, appraiser, firm, and photos are replaced with placeholders.</p>
 
-  <section id="benefits">
-    <h2>Overflow capacity without another employee</h2>
+  <details id="benefits" class="sect">
+    <summary><h2>Overflow capacity without another employee</h2></summary>
+    <div class="sect-body">
     <p>Volume comes in waves. When the inspection calendar fills faster than the reports behind it can be written, send the desk work here instead of turning down the assignment or giving the next several nights to the form.</p>
     <div class="benefits">
       <article>
@@ -232,7 +242,8 @@
       </article>
     </div>
     <p style="margin-top:20px">Not sure it's for you? <a href="story.html">Read the three appraisers</a> and see which one is having your week.</p>
-  </section>
+  </div>
+  </details>
 
   <div class="relationship">
     <p><strong>The Production Desk is appraiser-to-appraiser overflow help.</strong> You already control the assignment and client relationship. I work behind you under a defined scope and written terms; I do not accept the assignment from your client, join your staff, or sign your report.</p>
@@ -280,8 +291,9 @@
     </ol>
   </section>
 
-  <section id="window">
-    <h2>Private report tracking</h2>
+  <details id="window" class="sect">
+    <summary><h2>Private report tracking</h2></summary>
+    <div class="sect-body">
     <p>Every trial and live order gets its own status page. The private link arrives with your order number, works from your phone, and has no login to manage. Anyone you forward the link to can open it, so treat it like the order folder. The page never shows your client's name, property address, or any number from the report.</p>
     <p class="proof"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>Open a working demonstration order &rarr;</strong></a> <span>It is synthetic, contains no client data, and uses the same page a real report receives.</span></p>
     <div class="rail" aria-label="Order stages">
@@ -291,10 +303,12 @@
     <p><strong>Rather be told than check?</strong> At intake, choose Email, Text, Both, or Status page only. You get a short milestone note when the report is accepted with its return time, if I need something from you, and when the draft is ready. A longer report can also get one research-complete update. Three or four useful messages per order, not a drip campaign.</p>
     <p>Texts are manual, one-to-one order updates from my business line for now. They are not marketing messages. You opt in with the mobile number you want me to use, and you can change the preference or stop texts at any time. Email remains the order thread for files, questions, and comp direction.</p>
     <p>And if a committed time is ever at risk, you hear it from me before the deadline, not after. You choose: a revised time, a pause, or a cancellation under the terms.</p>
-  </section>
+  </div>
+  </details>
 
-  <section id="comps">
-    <h2>Comps and direction</h2>
+  <details id="comps" class="sect">
+    <summary><h2>Comps and direction</h2></summary>
+    <div class="sect-body">
     <p>At intake you pick one of three ways to run the comparables:</p>
     <ol class="steps">
       <li><span class="n">1.</span><span><strong>Use my comps.</strong> You pulled them, you know the market. I build from your selections and your direction.</span></li>
@@ -302,10 +316,12 @@
       <li><span class="n">3.</span><span><strong>Candidate memo first.</strong> Before the grid is built, you get a short memo: the pool, the candidates, and why. Reply with direction, or let it proceed as proposed after the stated window. Silence lets production continue; it never means you've adopted the comps. That adoption happens at your review, like always.</span></li>
     </ol>
     <p>Steering means facts and evidence: corrections, include-or-exclude direction with your reasoning, additional market data, a documented change in scope. It never means steering toward a number. If an instruction reads like value pressure, I'll say so and decline it.</p>
-  </section>
+  </div>
+  </details>
 
-  <section id="revisions">
-    <h2>When something needs fixing</h2>
+  <details id="revisions" class="sect">
+    <summary><h2>When something needs fixing</h2></summary>
+    <div class="sect-body">
     <p>Four kinds of fixes, four plain answers. The rule behind all of them: I handle the mechanical production work; your job is independent appraisal judgment.</p>
     <ul class="plain">
       <li><strong>My error, my fix.</strong> A transposed number, a mis-mapped field, a missing exhibit, a file that won't validate. Free, first in line, no time limit, no count limit. My errors are mine.</li>
@@ -314,10 +330,12 @@
       <li><strong>Your client kicks it back.</strong> Underwriter conditions after you've delivered? Send them over. Anything that traces to my production work is fixed free and first in line, for thirty days after delivery.</li>
     </ul>
     <p>If a paid package materially misses something in the accepted scope and I cannot correct it through the included correction process, you do not pay for that report. The <a href="terms.html">terms</a> define that line so neither of us has to guess.</p>
-  </section>
+  </div>
+  </details>
 
-  <section id="pricing">
-    <h2>Live pricing after the free trial</h2>
+  <details id="pricing" class="sect">
+    <summary><h2>Live pricing after the free trial</h2></summary>
+    <div class="sect-body">
     <p><strong>Your appraisal fee stays yours. You pay me for the desk work.</strong> These are not cut-rate appraisal fees. They are separate production fees paid by the signing appraiser on an assignment the appraiser already controls and bills. I do not quote or bill the AMC, lender, borrower, or other end client.</p>
     <div class="fee-note"><p><strong>Why the desk fee works:</strong> before this desk, I spent about a decade as an engineer, much of it in product operations. I built the software- and AI-assisted production workflow for my own reports first. It removes most re-keying, routine form filling, document collection and organization, and clerical editing. The tools draft. They never decide. What they produce gets checked against its sources and read through before it leaves the desk. My time stays on research, analysis, judgment, and personally reviewing every report; you keep every final appraisal decision. You have already won the assignment, handled the client, and inspected the property, so I price only the defined work behind you. Speed comes from better tooling, not lower standards or anonymous labor. These are the actual rates for the scopes shown, not introductory prices.</p></div>
     <div class="benefits">
@@ -334,10 +352,12 @@
     </div>
     <p style="margin-top:20px"><strong>No surprise fees. The price confirmed at acceptance is the price you pay.</strong> A report outside the defined scope gets flagged before acceptance, never billed after. A material scope change you request gets a new quote you can accept or decline. Pay per report. No subscription, minimum, or long-term agreement.</p>
     <p class="fineprint">These are the actual rates for the scopes shown, not introductory rates. The accepted rate is locked to the accepted scope. A material change you request proceeds only after you approve its new price and timing.</p>
-  </section>
+  </div>
+  </details>
 
-  <section id="sendget">
-    <h2>What you send, what comes back</h2>
+  <details id="sendget" class="sect">
+    <summary><h2>What you send, what comes back</h2></summary>
+    <div class="sect-body">
     <div class="scope">
       <div>
         <h3>You send</h3>
@@ -363,21 +383,21 @@
       </div>
     </div>
     <p style="margin-top:20px">Current production is in TOTAL. The draft opens in your own TOTAL installation with everything editable and the photos placed. Everything ships marked DRAFT, because it is one until you've made it yours. No shared MLS, portal, or software credentials, in either direction, ever.</p>
-  </section>
+  </div>
+  </details>
 
-  <section id="boundaries">
-    <h2>Markets and current boundaries</h2>
+  <details id="boundaries" class="sect">
+    <summary><h2>Markets and current boundaries</h2></summary>
+    <div class="sect-body">
     <p>Full research and draft production runs in Dallas&ndash;Fort Worth now, where my MLS access and market competence live. Packet-to-Draft orders from other markets are reviewed individually: client permission, property-state requirements, competence, insurance, authorized data access, software, and capacity all get checked before acceptance. The demonstration report is there for any appraiser, anywhere, who wants to judge the work first.</p>
     <p class="fineprint">Market setup is deliberate. Client permission, licensing, market competence, and authorized MLS and data access are confirmed before production begins; a new market may take one to three weeks to establish. Current scope is conventional and private residential work.</p>
-  </section>
+  </div>
+  </details>
 
-  <section id="why">
-    <h2>Why I am offering this</h2>
-    <p>I've spent twenty years in residential appraisal, and I've always gravitated to the desk side: the research, the analysis, the report writing itself. I want a few stable working relationships where the division of work is clear, the signing appraiser stays in control, and the client receives credible work. UAD 3.6 makes that help useful now, but it is not a reason to cut corners or hide who did what. Capacity and delivery timing are agreed before the first report and kept at a level I can personally review.</p>
-  </section>
 
-  <section id="disclosure">
-    <h2>Disclosure, data, and trust</h2>
+  <details id="disclosure" class="sect">
+    <summary><h2>Disclosure, data, and trust</h2></summary>
+    <div class="sect-body">
     <p>The certification identifies me and describes the assistance provided. When the work is significant real property appraisal assistance, that disclosure is not optional, and I do not remove it. Client, jurisdiction, and licensing requirements are confirmed before an assignment is accepted. UAD 3.6 even gives that disclosure a proper home: the new form has a dedicated place to name report assistance. It's not a workaround. It's the form working as designed.</p>
     <figure class="excerpt">
       <blockquote>
@@ -393,7 +413,8 @@
       <a href="terms.html">Report production terms</a>
       <span>W-9, licenses, and NDA available at onboarding</span>
     </div>
-  </section>
+  </div>
+  </details>
 
   <div class="cta" id="start">
     <p><strong>Try it on work you already know.</strong></p>
