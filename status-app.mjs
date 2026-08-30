@@ -187,66 +187,31 @@ function replayFrame(base, index) {
 }
 
 function setUpReplay(base) {
-  const panel = byId("replay");
-  const play = byId("replay-play");
-  const step = byId("replay-step");
-  const state = byId("replay-state");
-  if (!panel || !play || !step) return;
-  panel.hidden = false;
-
+  // A visitor should see this behave exactly like a real tracker that happens to be
+  // moving. No controls, no demo chrome: the notice at the foot of the page is what
+  // says it is a demonstration.
   const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-  let timer = null;
+  if (reduceMotion) return;
+
+  const STEP_MS = 2100;
+  const HOLD_COMPLETE_MS = 3600;
   let cursor = 0;
 
   const show = (index) => {
     cursor = index;
     render(replayFrame(base, index));
-    panel.hidden = false;
-    state.textContent = `Checkpoint ${index + 1} of ${STAGES.length}`;
   };
 
-  const stop = (message) => {
-    if (timer) clearInterval(timer);
-    timer = null;
-    play.disabled = false;
-    play.textContent = "Play the nine checkpoints";
-    state.textContent = message;
-  };
-
-  const startPlaying = () => {
-    show(0);
-    play.disabled = false;
-    play.textContent = "Pause";
-    timer = window.setInterval(() => {
-      if (cursor >= STAGES.length - 1) {
-        stop("Replay finished. Press play to watch it again.");
-        return;
-      }
-      show(cursor + 1);
-    }, reduceMotion ? 3200 : 2100);
-  };
-
-  play.addEventListener("click", () => {
-    if (timer) {
-      stop("Paused. Press play to continue.");
-      return;
-    }
-    startPlaying();
-  });
-
-  // An arriving visitor should see the report move without pressing anything.
-  // Skipped for reduced-motion visitors, and skipped if they already took control.
-  if (!reduceMotion) {
+  const loop = () => {
+    const atEnd = cursor >= STAGES.length - 1;
     window.setTimeout(() => {
-      if (!timer && cursor === 0) startPlaying();
-    }, 900);
-  }
+      show(atEnd ? 0 : cursor + 1);
+      loop();
+    }, atEnd ? HOLD_COMPLETE_MS : STEP_MS);
+  };
 
-  step.addEventListener("click", () => {
-    if (timer) stop("");
-    show(cursor >= STAGES.length - 1 ? 0 : cursor + 1);
-    step.textContent = cursor >= STAGES.length - 1 ? "Start over" : "Next checkpoint";
-  });
+  show(0);
+  loop();
 }
 
 loadStatus();
