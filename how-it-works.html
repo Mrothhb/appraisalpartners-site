@@ -183,6 +183,7 @@
     <nav class="nav" aria-label="Primary">
       <a href="index.html">Home</a>
       <a href="story.html">The story</a>
+      <a href="technology.html">Technology</a>
       <a href="about.html">About Matt</a>
       <a href="faq.html">FAQ</a>
       <a href="start.html">Try it free on a past report</a>
@@ -295,7 +296,7 @@
     <summary><h2>Private report tracking</h2></summary>
     <div class="sect-body">
     <p>Every trial and live order gets its own status page. The private link arrives with your order number, works from your phone, and has no login to manage.</p>
-    <p><strong>It cannot leak your file, by construction.</strong> Each order has its own encryption key that lives in the link itself, in the part browsers never send to a web server. What sits on the server is an encrypted blob. And the page's data format is only capable of holding an order number, a stage, a scope, a price, a return time, and whether I'm waiting on you. There is no field for your client's name, the property address, the report number, or the value, so those cannot appear even by mistake. Anyone holding the link sees that neutral status and nothing else. If a link is ever forwarded where it shouldn't be, tell me and I'll rotate it, which takes the old one offline.</p>
+    <p><strong>It cannot leak your file, by construction.</strong> Each order has its own encryption key that lives in the link itself, in the part browsers never send to a web server. What sits on the server is an encrypted blob. And the page's data format is only capable of holding an order number, a stage, a scope, a price, a return time, and whether I'm waiting on you. There is no field for your client's name, the property address, the report number, or the value, so those cannot appear even by mistake. Anyone holding the link sees that status, including the scope and the desk fee, so treat it like the order folder. If a link ever reaches someone it shouldn't, tell me and I'll issue a replacement, which retires the old link.</p>
     <p class="proof"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>Open a working demonstration order and watch a report move &rarr;</strong></a> <span>Synthetic, no client data, and the same page a real report receives. Press play and it walks all nine checkpoints.</span></p>
     <div class="rail" aria-label="Order stages">
       <b>Submitted</b> <span class="arrow">&rarr;</span> Intake review <span class="arrow">&rarr;</span> Accepted &middot; return set <span class="arrow">&rarr;</span> Research <span class="arrow">&rarr;</span> Comparable candidates <span class="arrow">&rarr;</span> Draft production <span class="arrow">&rarr;</span> Matt's review <span class="arrow">&rarr;</span> <b>Ready for your review</b> <span class="arrow">&rarr;</span> Complete
@@ -390,7 +391,7 @@
   <details id="boundaries" class="sect">
     <summary><h2>Markets and current boundaries</h2></summary>
     <div class="sect-body">
-    <p><strong>Packet-to-Draft travels beyond my licensed markets.</strong> When you supply the packet, the comps, the data, and the direction, the market is already yours and geography stops being the constraint. Every report is still subject to the property-state, client, and assignment-program rules, and those get confirmed before acceptance.</p>
+    <p><strong>Packet-to-Draft travels beyond my licensed markets.</strong> When you supply the packet, the comps, the data, and the direction, the market is already yours and geography stops being the constraint. Every report is still subject to the property-state, client, and assignment-program rules, and those get confirmed before acceptance. Two exclusions worth knowing up front: no FHA or VA panel assignments, and no Georgia assignments under present desk policy.</p>
     <p><strong>Research + Draft needs a market I can work in.</strong> That means authorized MLS access, market competence, and whatever your state and client require. Dallas&ndash;Fort Worth is established today. New markets get established on request, and I'll tell you at intake whether yours is ready or needs setting up first.</p>
     <p class="fineprint">Setting up a new market is deliberate, not a formality: client permission, licensing, market competence, and authorized MLS and data access are confirmed before production begins, and it usually takes one to three weeks. If you have volume in a market I'm not in yet, say so early and we'll start that clock. Current scope is conventional and private residential work.</p>
   </div>
@@ -425,6 +426,22 @@
     <p class="fineprint">Questions first? <a href="faq.html">The FAQ</a> covers the client relationship, confidentiality, software, revisions, and what happens when something goes sideways. Or write me: <a href="mailto:mrr@appraisalpartners.net?subject=Production%20desk%20question">mrr@appraisalpartners.net</a>.</p>
   </div>
   </main>
+<script>
+  // A deep link to a collapsed section has to open it, or the link goes nowhere.
+  function openTargetSection() {
+    var id = location.hash.slice(1);
+    if (!id) return;
+    var el = document.getElementById(id);
+    if (!el) return;
+    var box = el.closest ? el.closest("details") : null;
+    if (box) box.open = true;
+    if (el.tagName === "DETAILS") el.open = true;
+    el.scrollIntoView();
+  }
+  window.addEventListener("hashchange", openTargetSection);
+  openTargetSection();
+</script>
+
 
   <footer>
     <span><a href="index.html">Appraisal Partners</a> / Production Desk</span>

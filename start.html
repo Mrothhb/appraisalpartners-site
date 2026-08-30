@@ -154,6 +154,8 @@
     font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; z-index: 10;
   }
   .skip:focus { left: 8px; top: 8px; }
+  .hint { font-size: 13.5px; color: var(--muted); margin: 5px 0 0; }
+  .consent .hint { margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -212,8 +214,9 @@
         <input type="email" id="f-email" name="email" autocomplete="email" maxlength="254" required>
       </div>
       <div class="field">
-        <label for="f-software">Your TOTAL version</label>
+        <label for="f-software">Your report software and version</label>
         <input type="text" id="f-software" name="software" maxlength="100" placeholder="e.g. TOTAL 2026" required>
+        <p class="hint">TOTAL is what I deliver into today. Name yours either way; it tells me which adapter to build next.</p>
       </div>
     </div>
 
@@ -231,7 +234,7 @@
     <fieldset>
       <legend>What do you want to test?</legend>
       <div class="opt"><input type="radio" id="d-mine" name="datalane" value="Build from my packet and comps" checked><label for="d-mine">Build from my original packet, comps, data, and direction</label></div>
-      <div class="opt"><input type="radio" id="d-research" name="datalane" value="Research and build it"><label for="d-research">Research and build it independently (eligible DFW assignments)</label></div>
+      <div class="opt"><input type="radio" id="d-research" name="datalane" value="Research and build it"><label for="d-research">Research and build it independently (eligible assignments)</label></div>
     </fieldset>
 
     <fieldset>
@@ -277,6 +280,7 @@
     <div class="consent">
       <input type="checkbox" id="f-permission" name="trial_authority_consent" value="yes" required>
       <label for="f-permission">This is a closed prior assignment, not live client work. I have reviewed the engagement restrictions and have actual authority and client permission to share it for this trial. It will not be signed, delivered, or relied on.</label>
+      <p class="hint">The trial and any later order run under the <a href="terms.html">desk terms</a>.</p>
     </div>
 
     <button class="btn" id="submit-intake" type="submit" disabled>Send my free trial request</button>
@@ -405,6 +409,7 @@
     <span>TX #1361115-CR &middot; CO #CR200002387</span>
     <span><a href="index.html">Appraisal Partners of Texas, Inc.</a></span>
     <span><a href="how-it-works.html">How it works</a></span>
+    <span><a href="terms.html">Terms</a></span>
     <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
   </footer>
 </div>

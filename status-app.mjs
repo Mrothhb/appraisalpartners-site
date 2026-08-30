@@ -130,15 +130,18 @@ function render(payload) {
   setText("price", accepted ? formatPrice(payload.price_cents, payload.scope) : "Pending acceptance");
   setText(
     "return-time",
-    accepted
-      ? formatCentralTime(payload.committed_return)
-      : "Pending acceptance",
+    !accepted
+      ? "Pending acceptance"
+      : payload.demo
+        ? "Next business day, 3:30 PM CT"
+        : formatCentralTime(payload.committed_return),
   );
   setText("return-label", isTrial ? "Illustrative trial return" : accepted ? "Committed return" : "Return time");
 
   byId("waiting-banner").hidden = !payload.waiting_on_you;
   if (payload.waiting_on_you) byId("waiting-banner").textContent = WAITING_NOTE;
   byId("demo-banner").hidden = !isTrial;
+  byId("demo-exit").hidden = !payload.demo;
 
   byId("loading").hidden = true;
   byId("error-panel").hidden = true;
@@ -235,3 +238,8 @@ function setUpReplay(base) {
 }
 
 loadStatus();
+
+// The capability lives in the fragment, so a new link in the same tab must re-read it.
+window.addEventListener("hashchange", () => {
+  window.location.reload();
+});
