@@ -98,16 +98,6 @@ function renderNotifications(payload) {
       : "No email or text alerts are selected. Every checkpoint stays visible on this page.",
   );
 
-  if (payload.demo) {
-    setText("demo-email", `AP-${payload.order}: research done, drafting now`);
-    setText(
-      "demo-text",
-      `Appraisal Partners AP-${payload.order}: research is complete and drafting has started. Still on track. [private status link] Reply STOP to opt out.`,
-    );
-    byId("demo-notification-examples").hidden = false;
-  } else {
-    byId("demo-notification-examples").hidden = true;
-  }
 }
 
 function render(payload) {

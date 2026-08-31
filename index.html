@@ -169,27 +169,73 @@
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
     overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
   }
-  .mini-track { border: 1px solid var(--rule); background: var(--wash); padding: 18px 18px 14px; margin: 20px 0 18px; }
-  .mini-bar { background: var(--rule); height: 6px; overflow: hidden; }
-  .mini-bar span { background: var(--accent); display: block; height: 100%; width: 11%; transition: width .5s ease; }
-  .mini-rail {
+
+
+
     display: flex; flex-wrap: nowrap; gap: 0; list-style: none; margin: 11px 0 0; padding: 0;
     overflow-x: auto; font-family: "IBM Plex Mono", "Courier New", monospace;
     font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
   }
-  .mini-rail li { flex: 1 0 auto; padding-right: 13px; white-space: nowrap; }
-  .mini-rail li.on { color: var(--accent-deep); font-weight: 500; }
-  .mini-now { margin: 12px 0 0; font-size: 14.5px; display: flex; flex-wrap: wrap; gap: 4px 9px; align-items: baseline; }
-  .mini-label {
+
+
+
     font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 10.5px;
     letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
   }
-  #mini-note { color: var(--muted); }
-  @media (max-width: 600px) {
-    /* Wrap rather than scroll: a hidden side-scroll showed five of nine checkpoints
-       with no affordance, so a phone reader thinks that is all there is. */
-    .mini-rail { flex-wrap: wrap; overflow-x: visible; gap: 2px 0; }
-    .mini-rail li { flex: 0 0 auto; padding-right: 11px; }
+  /* Looks like the product, because it uses the product's own fields and wording. */
+  .orderscreen {
+    /* Breaks out of the 680px text column with negative margins rather than 100vw,
+       which overflows by the scrollbar width whenever one is present. */
+    margin-inline: -24px;
+    background: var(--paper); border: 1px solid var(--rule-strong, #889089);
+    box-shadow: 0 1px 0 var(--rule), 0 14px 34px -26px rgba(0,0,0,.5);
+    padding: 20px 24px 22px; margin-top: 22px;
+  }
+  .os-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--rule); padding-bottom: 12px; margin-bottom: 16px;
+  }
+  .os-order {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 13px; letter-spacing: .16em; font-weight: 500;
+  }
+  .os-chip {
+    background: var(--accent); color: var(--paper);
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+    padding: 4px 10px; white-space: nowrap;
+  }
+  .os-k {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 3px; display: block;
+  }
+  .os-stage { font-size: 27px; line-height: 1.15; font-weight: 700; margin: 0 0 5px; }
+  .os-happened { color: var(--muted); margin: 0 0 17px; font-size: 15px; }
+  .os-bar { background: var(--rule); height: 7px; overflow: hidden; }
+  .os-bar span { background: var(--accent); display: block; height: 100%; width: 66.6%; }
+  .os-rail {
+    display: flex; flex-wrap: wrap; gap: 4px 0; list-style: none; margin: 10px 0 20px; padding: 0;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase;
+  }
+  .os-rail li { flex: 0 0 auto; padding-right: 14px; white-space: nowrap; color: var(--rule-strong, #889089); }
+  .os-rail li.done { color: var(--muted); }
+  .os-rail li.done::before { content: "\2713\00a0"; color: var(--accent); }
+  .os-rail li.now { color: var(--accent-deep); font-weight: 500; }
+  .os-rail li.now::before { content: "\25B8\00a0"; }
+  .os-meta {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 15px 26px;
+    border-top: 1px solid var(--rule); padding-top: 16px;
+  }
+  .os-meta strong { font-weight: 400; font-size: 15px; }
+  .os-caption { color: var(--muted); font-size: 12.5px; margin: 12px 0 0; }
+  @media (min-width: 820px) { .orderscreen { margin-inline: -40px; } }
+  @media (min-width: 1060px) { .orderscreen { margin-inline: -130px; } }
+  @media (max-width: 620px) {
+    .orderscreen { padding: 17px 16px 18px; }
+    .os-meta { grid-template-columns: 1fr; gap: 13px; }
+    .os-stage { font-size: 23px; }
   }
 </style>
 </head>
@@ -250,13 +296,34 @@
       <h2>Watch the report move</h2>
       <p>Production help is usually a black box. You send a file and wait. Every order here gets a private tracking page instead.</p>
 
-      <div class="mini-track">
-        <div class="mini-bar"><span id="mini-fill"></span></div>
-        <ol class="mini-rail" id="mini-rail">
-          <li>Submitted</li><li>Intake</li><li>Accepted</li><li>Research</li><li>Comps</li><li>Draft</li><li>My review</li><li>Ready</li><li>Complete</li>
+      <div class="orderscreen" role="img" aria-label="A report tracking page for order AP-4827, currently at Draft production, due Tuesday at 3:30 PM CT, with Matt.">
+        <div class="os-head">
+          <span class="os-order">AP&#8209;4827</span>
+          <span class="os-chip">In production</span>
+        </div>
+        <p class="os-k">Current stage</p>
+        <p class="os-stage">Draft production</p>
+        <p class="os-happened">Comparable candidates were prepared and drafting began.</p>
+        <div class="os-bar"><span></span></div>
+        <ol class="os-rail">
+          <li class="done">Submitted</li>
+          <li class="done">Intake review</li>
+          <li class="done">Accepted</li>
+          <li class="done">Research</li>
+          <li class="done">Comparable candidates</li>
+          <li class="now">Draft production</li>
+          <li class="todo">Matt's review</li>
+          <li class="todo">Ready for your review</li>
+          <li class="todo">Complete</li>
         </ol>
-        <p class="mini-now"><span class="mini-label">Right now</span><strong id="mini-stage">Submitted</strong><span id="mini-note"></span></p>
+        <div class="os-meta">
+          <div><span class="os-k">Committed return</span><strong>Tuesday, 3:30 PM CT</strong></div>
+          <div><span class="os-k">Last updated</span><strong>7:37 PM by Matt</strong></div>
+          <div><span class="os-k">Who has it</span><strong>Matt</strong></div>
+          <div><span class="os-k">What happens next</span><strong>Matt completes the draft and performs his review.</strong></div>
+        </div>
       </div>
+      <p class="os-caption">A demonstration order, not a real file. Every accepted report gets a page like this one.</p>
 
       <p>Where it is, what happened last, what happens next, who has it, when it comes back. No field for your client&rsquo;s name, the property address, the borrower, or the value.</p>
       <p class="docs"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>Open the demonstration order &rarr;</strong></a></p>
@@ -305,37 +372,6 @@
       <p class="fineprint">Prefer to write first? <a href="mailto:mrr@appraisalpartners.net?subject=Production%20desk%20question">mrr@appraisalpartners.net</a>. I read every note myself and reply directly.</p>
     </div>
 </main>
-  <script>
-  (function () {
-    var rail = document.getElementById("mini-rail");
-    if (!rail) return;
-    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    var items = rail.getElementsByTagName("li");
-    var fill = document.getElementById("mini-fill");
-    var stage = document.getElementById("mini-stage");
-    var note = document.getElementById("mini-note");
-    var notes = [
-      "Received. Not accepted yet.",
-      "Checking permission, scope, and capacity.",
-      "Scope, price, and return time confirmed.",
-      "Pulling and verifying the market data.",
-      "Candidates ready for your call.",
-      "Building the editable draft.",
-      "Read against the sources, line by line.",
-      "Back with you, ahead of the committed time.",
-      "Signed and delivered by you."
-    ];
-    var i = 0;
-    function paint() {
-      for (var n = 0; n < items.length; n++) items[n].className = n === i ? "on" : "";
-      fill.style.width = Math.round(((i + 1) / items.length) * 100) + "%";
-      stage.textContent = items[i].textContent;
-      note.textContent = notes[i];
-    }
-    paint();
-    setInterval(function () { i = (i + 1) % items.length; paint(); }, 2100);
-  })();
-  </script>
 
   <footer>
     <span>Appraisal Partners of Texas, Inc.</span>

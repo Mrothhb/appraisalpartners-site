@@ -140,17 +140,9 @@
   .preference-link { font-size: 14px; font-weight: 700; }
   .delivery-state { color: var(--muted); display: flex; flex-wrap: wrap; font-size: 13px; gap: 5px 18px; margin: 11px 0 0; }
   .delivery-state strong { color: var(--ink); }
-  .notify-explainer {
-    display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr);
-    margin: 21px 0 0;
-  }
-  .notify-step { border-top: 2px solid var(--rule); padding-top: 11px; }
-  .notify-step .n {
     color: var(--accent); font: 700 11px/1 "SFMono-Regular", Consolas, monospace;
     letter-spacing: .08em;
   }
-  .notify-step strong { display: block; font-size: 15px; margin: 5px 0 3px; }
-  .notify-step p { color: var(--muted); font-size: 13.5px; line-height: 1.5; margin: 0; }
   .milestones { color: var(--muted); font-size: 13.5px; margin: 18px 0 0; }
   .milestones strong { color: var(--ink); }
   .fineprint { color: var(--muted); font-size: 12.5px; }
@@ -158,13 +150,9 @@
     border-top: 1px solid var(--rule); margin-top: 22px; padding-top: 15px;
   }
   .sublabel { font-size: 14px; font-weight: 700; margin: 0 0 16px; }
-  .message-samples { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
-  .message-sample { background: var(--surface); border: 1px solid var(--rule); padding: 13px 14px; }
-  .message-sample .badge {
     color: var(--accent); font-size: 10px; font-weight: 700;
     letter-spacing: .08em; text-transform: uppercase;
   }
-  .message-sample p { font-size: 13.5px; margin: 7px 0 0; }
   .latest { color: var(--muted); font-size: 14px; margin: 0 0 17px; }
   .latest .label { display: inline; margin-right: 7px; }
   .rail {
@@ -208,12 +196,11 @@
     body { padding: 0 15px; }
     .sheet { padding-top: 20px; }
     .status-card { padding: 21px 18px; }
-    .status-top, .status-details, .notify-explainer, .facts, .message-samples { grid-template-columns: 1fr; }
+    .status-top, .status-details, .facts { grid-template-columns: 1fr; }
     .delivery { border-left: 0; border-top: 3px solid var(--accent); }
     .status-details { gap: 16px; }
     .tracker li { font-size: 11px; }
-    .notify-explainer { gap: 13px; }
-    .preference { align-items: flex-start; flex-direction: column; }
+      .preference { align-items: flex-start; flex-direction: column; }
     .page-kind { display: none; }
   }
 </style>
@@ -279,7 +266,7 @@
 
     <section class="updates" aria-labelledby="updates-heading">
       <h2 id="updates-heading">Follow the report without chasing it.</h2>
-      <p class="updates-lede">This private tracker follows all nine production checkpoints, so you can see more than &ldquo;in progress.&rdquo; Choose email, text, both, or the tracking page alone, and you never have to send a &ldquo;just checking status&rdquo; message.</p>
+      <p class="updates-lede">All nine production checkpoints, so you see more than &ldquo;in progress.&rdquo;</p>
 
       <div class="preference">
         <div>
@@ -290,40 +277,10 @@
         <a class="preference-link" href="mailto:mrr@appraisalpartners.net?subject=Change%20my%20report%20update%20preference">Change update preference</a>
       </div>
 
-      <div class="notify-explainer" aria-label="How report updates work">
-        <div class="notify-step">
-          <span class="n">01</span>
-          <strong>Choose your channel</strong>
-          <p>Email, text, both, or this tracking page only. You choose at intake and can change it anytime.</p>
-        </div>
-        <div class="notify-step">
-          <span class="n">02</span>
-          <strong>Watch every checkpoint</strong>
-          <p>Intake, acceptance, research, comps, drafting, review, and delivery stay visible here.</p>
-        </div>
-        <div class="notify-step">
-          <span class="n">03</span>
-          <strong>Know when to step in</strong>
-          <p>I alert you if I need something, if timing changes, and when the draft is ready for you.</p>
-        </div>
-      </div>
 
       <p class="milestones" id="milestone-copy"></p>
       <p class="fineprint">Updates are short, manual order messages from Matt, not marketing. Contact details and text consent stay with the private order; neither is stored in this tracking link.</p>
 
-      <div class="example-toggle" id="demo-notification-examples" hidden>
-        <p class="sublabel">A sample email and text update</p>
-        <div class="message-samples">
-          <div class="message-sample">
-            <span class="badge">Email subject</span>
-            <p id="demo-email"></p>
-          </div>
-          <div class="message-sample">
-            <span class="badge">Text message</span>
-            <p id="demo-text"></p>
-          </div>
-        </div>
-      </div>
     </section>
 
     <div class="rail-wrap">
