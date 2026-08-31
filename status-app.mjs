@@ -15,7 +15,11 @@ import {
 const byId = (id) => document.getElementById(id);
 
 function setText(id, value) {
-  byId(id).textContent = value;
+  // Never let a markup/script version skew take the whole page down: during a deploy a
+  // visitor can briefly get new HTML with cached JS, and a missing element must not
+  // turn a working order into "this tracking link isn't available".
+  const node = byId(id);
+  if (node) node.textContent = value;
 }
 
 function showError() {
