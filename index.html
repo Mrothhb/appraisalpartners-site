@@ -168,12 +168,6 @@
     margin-top: 24px;
   }
   .status-notifications p { margin-bottom: 0; }
-  .phone-preview { border: 1px solid var(--rule-strong); padding: 14px; background: var(--wash); }
-  .phone-head {
-    display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px;
-    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11px; color: var(--muted);
-  }
-  .phone-bubble { background: var(--paper); border: 1px solid var(--rule); padding: 12px; font-size: 14px; margin: 0; }
   .profile { display: grid; grid-template-columns: 140px 1fr; gap: 24px; align-items: start; }
   .profile img { width: 140px; height: 140px; object-fit: cover; border: 1px solid var(--rule); display: block; }
   .profile p:last-child { margin-bottom: 0; }
@@ -298,7 +292,6 @@
     .lt-top, .lt-details { grid-template-columns: 1fr; gap: 16px; }
     .lt-delivery { border-left: 0; border-top: 3px solid var(--lt-accent); }
   }
-  .phone-preview .thread { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; min-height: 232px; }
   .thread li {
     background: var(--paper); border: 1px solid var(--rule); border-radius: 15px;
     font-size: 13.5px; line-height: 1.38; margin: 0; max-width: 84%; padding: 8px 12px;
@@ -313,6 +306,46 @@
   }
   @keyframes bubble { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .thread li { animation: none; } }
+  /* A Messages screen, not a mockup of one. */
+  .iphone {
+    background: #fff; border: 1px solid #d3d6d2; border-radius: 30px; overflow: hidden;
+    box-shadow: 0 18px 40px -22px rgba(28,36,32,.55); max-width: 300px; margin-left: auto;
+  }
+  .iphone-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 20px 3px; font: 600 12px/1 -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    color: #000;
+  }
+  .ip-icons { letter-spacing: -1px; font-size: 8px; color: #000; }
+  .iphone-head {
+    align-items: center; border-bottom: 1px solid #e4e6e3; display: flex; flex-direction: column;
+    gap: 4px; padding: 6px 12px 9px;
+  }
+  .ip-avatar {
+    align-items: center; background: #b9bfc4; border-radius: 50%; color: #fff; display: flex;
+    font: 600 15px/1 -apple-system, "Helvetica Neue", Arial, sans-serif;
+    height: 34px; justify-content: center; width: 34px;
+  }
+  .ip-who {
+    font: 400 11px/1.2 -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    color: #3c3c43; text-align: center;
+  }
+  .iphone .thread {
+    list-style: none; margin: 0; padding: 11px 10px 16px; display: grid; gap: 3px;
+    min-height: 250px; align-content: start;
+  }
+  .thread li {
+    background: #e9e9eb; border-radius: 18px; color: #000; justify-self: start; margin: 0;
+    max-width: 78%; padding: 8px 13px; position: relative;
+    font: 400 14px/1.32 -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    animation: bubble .26s ease both;
+  }
+  .thread li + li { margin-top: 4px; }
+  .thread li.them { background: #0b84fe; color: #fff; justify-self: end; }
+  .thread li .who { display: none; }
+  @keyframes bubble { from { opacity: 0; transform: translateY(7px) scale(.97); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .thread li { animation: none; } }
+  @media (max-width: 620px) { .iphone { margin: 0 auto; } }
 </style>
 </head>
 <body>
@@ -416,8 +449,12 @@
           <p class="eyebrow">Milestone updates</p>
           <p>Email, text, both or status page only. You hear from me when the order is accepted, when I need something, after research on longer orders and when the report is ready. Real messages from my business line, not a drip campaign. Reply STOP anytime.</p>
         </div>
-        <div class="phone-preview" aria-label="Example text-message thread">
-          <div class="phone-head"><strong>Matt &middot; Appraisal Partners</strong><span>Today</span></div>
+        <div class="iphone" aria-label="Text message thread with Matt">
+          <div class="iphone-bar"><span>9:41</span><span class="ip-icons">&#9679;&#9679;&#9679;&#9679;&#9679;</span></div>
+          <div class="iphone-head">
+            <span class="ip-avatar">M</span>
+            <span class="ip-who">Matt &middot; Appraisal Partners</span>
+          </div>
           <ol class="thread" id="sms-thread"></ol>
         </div>
       </div>
@@ -522,6 +559,8 @@
   import { STAGES, workflowSummary, formatCentralTime } from "./status-core.mjs";
 
   const byId = (id) => document.getElementById(id);
+  // A markup change must never kill the loop: write only if the element is there.
+  const put = (id, value) => { const n = byId(id); if (n) n.textContent = value; };
 
   if (byId("lt-rail")) {
     const now = new Date();
@@ -573,17 +612,15 @@
       const payload = frame(i);
       const flow = workflowSummary(payload);
       const accepted = i >= acceptedAt;
-      byId("lt-count").textContent = "Checkpoint " + (i + 1) + " of " + STAGES.length;
-      byId("lt-stage").textContent = STAGES[i].label;
-      byId("lt-story").textContent = flow.happened;
-      byId("lt-nexttext").textContent = flow.next;
-      byId("lt-actor").textContent = flow.actor;
-      byId("lt-updated").textContent = formatCentralTime(payload.updated_at);
-      byId("lt-return-label").textContent = accepted ? "Illustrative trial return" : "Return time";
-      byId("lt-return").textContent = accepted ? formatCentralTime(payload.committed_return) : "Pending acceptance";
+      put("lt-count", "Checkpoint " + (i + 1) + " of " + STAGES.length);
+      put("lt-stage", STAGES[i].label);
+      put("lt-story", flow.happened);
+      put("lt-nexttext", flow.next);
+      put("lt-actor", flow.actor);
+      put("lt-updated", formatCentralTime(payload.updated_at));
+      put("lt-return-label", accepted ? "Illustrative trial return" : "Return time");
+      put("lt-return", accepted ? formatCentralTime(payload.committed_return) : "Pending acceptance");
       byId("lt-fill").style.width = Math.round(((i + 1) / STAGES.length) * 100) + "%";
-      byId("lt-sms-time").textContent = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/Chicago" }).format(new Date());
-      byId("lt-sms-body").textContent = smsForStage(STAGES[i].code);
 
       const list = byId("lt-rail");
       list.replaceChildren();
