@@ -297,6 +297,21 @@
     .lt-top, .lt-details { grid-template-columns: 1fr; gap: 16px; }
     .lt-delivery { border-left: 0; border-top: 3px solid var(--lt-accent); }
   }
+  .phone-preview .thread { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; min-height: 232px; }
+  .thread li {
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 15px;
+    font-size: 13.5px; line-height: 1.38; margin: 0; max-width: 84%; padding: 8px 12px;
+    justify-self: start; animation: bubble .28s ease both;
+  }
+  .thread li.them {
+    background: var(--accent); border-color: var(--accent); color: var(--paper); justify-self: end;
+  }
+  .thread li .who {
+    display: block; font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 9.5px; letter-spacing: .09em; text-transform: uppercase; opacity: .62; margin-bottom: 2px;
+  }
+  @keyframes bubble { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .thread li { animation: none; } }
 </style>
 </head>
 <body>
@@ -319,7 +334,7 @@
 
   <main id="main" tabindex="-1">
     <p class="audience">UAD 3.6 report help for signing appraisers</p>
-    <h1>UAD 3.6 is here. <span class="line">Keep your volume moving while you learn the new report.</span></h1>
+    <h1>Your first UAD 3.6 reports <span class="line">will be the slow ones. Send me those.</span></h1>
     <p class="lede">Keep inspecting &amp; serving your clients. I complete the UAD 3.6 report, answer questions about the new form as we go &amp; return the editable file for your final review and signature.</p>
     <p class="deadline">UAD 3.6 is required for new UCDP submissions beginning <strong>November 2, 2026</strong>.</p>
     <p class="speed"><strong>Fast turnaround is the point.</strong> You get a committed return time before I accept the order. I still check the sources, comps, math &amp; every page before it leaves.</p>
@@ -350,7 +365,13 @@
 
     <section>
       <p class="eyebrow">The handoff</p>
-      <a class="process-link" href="how-it-works.html"><strong>How does this work?</strong><span>See how it works &rarr;</span></a>
+      <h2>Three steps.</h2>
+      <ol class="steps">
+        <li><span class="n">1.</span><span><strong>Send the order details.</strong> No address or borrower yet. You get an order number, a private tracking link and a secure folder.</span></li>
+        <li><span class="n">2.</span><span><strong>Send the packet.</strong> I check permission, scope, software and capacity, then confirm the desk fee and when you get it back. Submitted is not accepted.</span></li>
+        <li><span class="n">3.</span><span><strong>Review, revise, sign.</strong> One round of changes is included. Accept, change, or reject anything in it.</span></li>
+      </ol>
+      <p class="docs"><a href="how-it-works.html"><strong>The full process &rarr;</strong></a></p>
     </section>
 
     <section>
@@ -390,12 +411,12 @@
       </div>
       <div class="status-notifications">
         <div>
-          <p class="eyebrow">Automatic milestone updates</p>
-          <p>Opt in to email, text, both or status page only. Alerts fire when accepted, when I need something, after research on longer orders &amp; when the report is ready. Reply STOP anytime.</p>
+          <p class="eyebrow">Milestone updates</p>
+          <p>Email, text, both or status page only. You hear from me when the order is accepted, when I need something, after research on longer orders and when the report is ready. Real messages from my business line, not a drip campaign. Reply STOP anytime.</p>
         </div>
-        <div class="phone-preview" aria-label="Example text-message update">
-          <div class="phone-head"><strong>Appraisal Partners</strong><span id="lt-sms-time">Now</span></div>
-          <p class="phone-bubble" id="lt-sms-body">Text alerts begin after acceptance. Your private status page is already available.</p>
+        <div class="phone-preview" aria-label="Example text-message thread">
+          <div class="phone-head"><strong>Matt &middot; Appraisal Partners</strong><span>Today</span></div>
+          <ol class="thread" id="sms-thread"></ol>
         </div>
       </div>
       <p class="docs"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>View the full live tracking demo &rarr;</strong></a></p>
@@ -407,27 +428,21 @@
       <p>Send me the desk work. I only take what I can personally finish.</p>
     </section>
 
-    <section>
-      <h2>A few straight answers.</h2>
-      <dl class="qa-list">
-        <div><dt>Is $149 the appraisal fee?</dt><dd>No. It is what you pay me for the desk work on an appraisal you are billing your own client for.</dd></div>
-        <div><dt>Who does the work?</dt><dd>I do. I do not pass reports to a crew or send them offshore.</dd></div>
-        <div><dt>Why is the fee this low?</dt><dd>I spent years building the tools I use on my own reports. They handle the repetitive form work. I still check the sources, comps, math &amp; every page.</dd></div>
-        <div><dt>Can I track the status of my appraisal report?</dt><dd>Yes. Every accepted report gets a private tracking link. See where it is at each step and opt in to automatic email updates, text updates, both or status page only. <a href="how-it-works.html#tracking">See how it works</a>.</dd></div>
-        <div><dt>Do you take legacy 1004 orders?</dt><dd>No. This desk is UAD 3.6 only. I am not taking legacy UAD 2.6/1004 production orders.</dd></div>
-      </dl>
-    </section>
 
     <section>
       <p class="eyebrow">Before you ask</p>
       <h2>What I&rsquo;ll tell you up front.</h2>
-      <ul class="plain">
-        <li>My assistance is named in the certification. That disclosure is not optional, and I do not remove it.</li>
-        <li>I don&rsquo;t farm your files out to anybody.</li>
-        <li>I use software automation &amp; AI-assisted tools in this work. I check every report against its sources and read it through before it leaves.</li>
-        <li>Your client has to permit outside assistance. You hold that engagement letter.</li>
-        <li>No shared MLS, portal or software credentials, in either direction.</li>
-      </ul>
+      <dl class="qa-list">
+        <div><dt>Is $149 the appraisal fee?</dt><dd>No. It is what you pay me for the desk work on an appraisal you are billing your own client for.</dd></div>
+        <div><dt>Who does the work?</dt><dd>I do. I don&rsquo;t farm your files out to anybody, and I don&rsquo;t send them offshore.</dd></div>
+        <div><dt>Why is the fee this low?</dt><dd>I spent years building the tools I use on my own reports. They handle the repetitive form work. I still check the sources, comps, math &amp; every page.</dd></div>
+        <div><dt>Do you use AI?</dt><dd>I use software automation and AI-assisted tools in this work, and yes, that includes the drafting. I check every report against its sources and read it through before it leaves.</dd></div>
+        <div><dt>Is your help disclosed in the report?</dt><dd>My assistance is named in the certification. That disclosure is not optional, and I do not remove it.</dd></div>
+        <div><dt>Who signs it?</dt><dd>You do. Accept, change, or reject anything in it. The final judgments, the signature and the delivery stay yours.</dd></div>
+        <div><dt>What do you not take?</dt><dd>No FHA or VA panel assignments, and no Georgia assignments under present desk policy. No legacy UAD 2.6/1004 production orders. This desk is UAD 3.6 only.</dd></div>
+        <div><dt>What do you need from me?</dt><dd>Your client has to permit outside assistance; you hold that engagement letter. No shared MLS, portal or software credentials, in either direction.</dd></div>
+        <div><dt>Can I track the report?</dt><dd>Yes. Every accepted report gets a private tracking link. See where it is at each step and choose email updates, text updates, both or status page only. <a href="how-it-works.html#tracking">See how it works</a>.</dd></div>
+      </dl>
     </section>
 
     <section>
@@ -464,6 +479,41 @@
       <p>No referral program or affiliate pitch. If the desk helps, pass the site to an appraiser whose reports are stacking up.</p>
     </section>
 </main>
+  <script>
+  (function () {
+    var list = document.getElementById("sms-thread");
+    if (!list) return;
+    // A real exchange, not a broadcast: the appraiser answers, and Matt answers back.
+    var thread = [
+      { who: "Matt",  text: "AP-4827 accepted. Back to you Tuesday by 3:30 PM CT. Tracking link is in your email." },
+      { them: true,   who: "You", text: "Perfect. I'll send my comps tonight, use mine." },
+      { who: "Matt",  text: "Will do. I'll flag anything that doesn't verify rather than swap it." },
+      { who: "Matt",  text: "Comps in hand. Report preparation started." },
+      { who: "Matt",  text: "Ready for your review. Editable file, XML and PDF are in your folder." },
+      { them: true,   who: "You", text: "Got it, looks good. Signing tonight." }
+    ];
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function draw(upTo) {
+      list.replaceChildren();
+      thread.slice(0, upTo).forEach(function (m) {
+        var li = document.createElement("li");
+        if (m.them) li.className = "them";
+        var who = document.createElement("span");
+        who.className = "who"; who.textContent = m.who;
+        li.append(who, document.createTextNode(m.text));
+        list.append(li);
+      });
+    }
+    if (reduce) { draw(thread.length); return; }
+    var n = 0;
+    (function tick() {
+      n = n >= thread.length ? 1 : n + 1;   // never render an empty phone
+      draw(n);
+      window.setTimeout(tick, n === thread.length ? 4200 : 1500);
+    })();
+  })();
+  </script>
+
 
   <script type="module">
   // Imports the product's own stage data, so this panel can never drift from the real page.
