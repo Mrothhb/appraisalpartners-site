@@ -157,6 +157,15 @@
   .skip:focus { left: 8px; top: 8px; }
   .hint { font-size: 13.5px; color: var(--muted); margin: 5px 0 0; }
   .consent .hint { margin-top: 8px; }
+  .modepick { border: 1px solid var(--rule); margin: 0 0 18px; padding: 15px 17px 13px; }
+  .modepick legend {
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11px;
+    letter-spacing: .13em; text-transform: uppercase; color: var(--accent); padding: 0 6px;
+  }
+  .modepick .opt { align-items: start; display: flex; gap: 10px; margin-bottom: 9px; }
+  .modepick .opt:last-child { margin-bottom: 0; }
+  .modepick label { display: block; }
+  .modepick label span { display: block; color: var(--muted); font-size: 14.5px; }
 </style>
 </head>
 <body>
@@ -179,12 +188,15 @@
 
   <main id="main" tabindex="-1">
 
-  <h1>Test the handoff on a <span class="line">past assignment.</span></h1>
-    <p class="fineprint"><strong>Buried right now?</strong> Live work doesn&rsquo;t need the trial first. Call <a href="tel:+14692968726">(469) 296-8726</a> or email <a href="mailto:mrr@appraisalpartners.net">mrr@appraisalpartners.net</a>.</p>
-  <p class="lede">No live client. No due-date gamble. Use a closed prior assignment you are authorized to share, and judge my work against a report you already know. The trial is free.</p>
-  <p><strong>Use the trial to test the handoff before you need it.</strong> Judge the private report tracking, completed report and correction loop while your calendar is calm. If we fit, you will already know the intake process when inspections stack up and the reports behind them all have due dates.</p>
-  <p>This page submits only a short request, so you do not have to compose an email or get on a call. After I review it, I reply with a trial number, private status link, restricted upload folder &amp; checklist. Hold back your finished report until mine comes back so the comparison is real.</p>
-  <p class="fineprint">Keep the property address, borrower names, and assignment documents out of this form. Those go in the private folder after I confirm the trial. Redaction by itself does not create permission to share a client file.</p>
+  <h1>Send me a report.</h1>
+  <p class="lede">One short request. No property address, borrower name or assignment file at this stage. I reply with an order number, a private tracking link and a restricted upload folder.</p>
+
+  <fieldset class="modepick">
+    <legend>What are you sending?</legend>
+    <div class="opt"><input type="radio" id="m-trial" name="ordermode" value="Free trial on a past assignment" checked><label for="m-trial"><strong>A past assignment, free</strong><span>A closed file you are authorized to share. No live client, no due date, no charge.</span></label></div>
+    <div class="opt"><input type="radio" id="m-live" name="ordermode" value="Live UAD 3.6 order"><label for="m-live"><strong>A live UAD 3.6 order</strong><span>Buried right now. You do not need the trial first.</span></label></div>
+  </fieldset>
+  <p class="fineprint">Keep the property address, borrower names and assignment documents out of this form. Those go in the restricted folder after I confirm the order. Redaction by itself does not create permission to share a client file. Prefer to talk? Call <a href="tel:+14692968726">(469) 296-8726</a>.</p>
 
   <form id="startform" action="start.html" method="post">
     <noscript>
@@ -280,10 +292,15 @@
       </div>
     </div>
 
-    <div class="consent">
+    <div class="consent" id="consent-trial">
       <input type="checkbox" id="f-permission" name="trial_authority_consent" value="yes" required>
       <label for="f-permission">This is a closed prior assignment, not live client work. I have reviewed the engagement restrictions and have actual authority and client permission to share it for this trial. It will not be signed, delivered, or relied on.</label>
       <p class="hint">The trial and any later order run under the <a href="terms.html">desk terms</a>.</p>
+    </div>
+    <div class="consent" id="consent-live" hidden>
+      <input type="checkbox" id="f-live-permission" name="live_authority_consent" value="yes">
+      <label for="f-live-permission">I am the signing appraiser on this assignment. My client and engagement permit outside production assistance, and I will make every final appraisal decision, sign and deliver the report myself.</label>
+      <p class="hint">Nothing enters production until I confirm scope, price and a return time in writing, and you accept. Live orders run under the <a href="terms.html">desk terms</a>.</p>
     </div>
 
     <button class="btn" id="submit-intake" type="submit" disabled>Submit my trial request</button>
@@ -427,6 +444,20 @@
   var textUpdateFields = document.getElementById('text-update-fields');
   var mobile = document.getElementById('f-mobile');
   var smsConsent = document.getElementById('f-sms-consent');
+  var modeInputs = document.querySelectorAll('input[name="ordermode"]');
+  var trialConsent = document.getElementById('consent-trial');
+  var liveConsent = document.getElementById('consent-live');
+  var trialBox = document.getElementById('f-permission');
+  var liveBox = document.getElementById('f-live-permission');
+  function isLive() { return document.getElementById('m-live').checked; }
+  function showMode() {
+    var live = isLive();
+    trialConsent.hidden = live; liveConsent.hidden = !live;
+    trialBox.required = !live; liveBox.required = live;
+    if (live) { trialBox.checked = false; } else { liveBox.checked = false; }
+    submitButton.textContent = live ? 'Submit my live order request' : 'Submit my trial request';
+  }
+  for (var mi = 0; mi < modeInputs.length; mi += 1) modeInputs[mi].addEventListener('change', showMode);
   var panels = {
     'full-interior': 'ck-full-interior',
     'exterior': 'ck-exterior',
@@ -440,6 +471,7 @@
     }
   }
   sel.addEventListener('change', showPanel);
+  showMode();
   showPanel();
 
   function r(name) {
@@ -494,14 +526,15 @@
     var includesText = textUpdatesSelected();
     var id = v('f-request-id');
     var lines = [
-      'Free prior-assignment trial request',
+      isLive() ? 'Live UAD 3.6 order request' : 'Free prior-assignment trial request',
       'Request ID: ' + id,
       '',
       'Name: ' + v('f-name'),
       'License: ' + v('f-license'),
       'Email: ' + v('f-email'),
       'Software: ' + v('f-software'),
-      'Past assignment type: ' + sel.options[sel.selectedIndex].text,
+      'Request type: ' + r('ordermode'),
+      'Assignment type: ' + sel.options[sel.selectedIndex].text,
       'Trial scope: ' + r('datalane'),
       'Comps: ' + r('compdir'),
       'Working format: ' + r('format'),
@@ -511,10 +544,12 @@
         ? 'Yes (' + v('f-sms-consent-version') + '): automatic transactional trial and order updates only; no marketing messages; message and data rates may apply; reply STOP to opt out; consent is not a condition of purchase.'
         : 'Not requested'),
       '',
-      'Trial authority consent (' + v('f-trial-consent-version') + '): This is a closed prior assignment, not live client work. I have reviewed the engagement restrictions and have actual authority and client permission to share it for this trial. It will not be signed, delivered, or relied on.',
+      (isLive()
+        ? 'Live order authority consent: I am the signing appraiser on this assignment. My client and engagement permit outside production assistance, and I will make every final appraisal decision, sign and deliver the report myself.'
+        : 'Trial authority consent (' + v('f-trial-consent-version') + '): This is a closed prior assignment, not live client work. I have reviewed the engagement restrictions and have actual authority and client permission to share it for this trial. It will not be signed, delivered, or relied on.'),
       'Consent source: ' + v('f-consent-source')
     ];
-    var subject = 'Free past-report trial ' + id + ': ' + v('f-name');
+    var subject = (isLive() ? 'Live UAD 3.6 order ' : 'Free past-report trial ') + id + ': ' + v('f-name');
     return 'mailto:mrr@appraisalpartners.net?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
   }
 

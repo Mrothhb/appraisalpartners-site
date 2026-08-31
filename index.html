@@ -371,7 +371,7 @@
     <h1>Your first UAD 3.6 reports <span class="line">will be the slow ones. Send me those.</span></h1>
     <p class="lede">Keep inspecting &amp; serving your clients. Send me the desk work. I complete the report, answer your questions about the new form as we go &amp; return the editable file for your final review and signature.</p>
     <p class="deadline">UAD 3.6 is required for new UCDP submissions beginning <strong>November 2, 2026</strong>.</p>
-    <p class="speed"><strong>You&rsquo;ll learn the form on my reports.</strong> Ask me anything about 3.6 while I&rsquo;m building it. By the time you&rsquo;re comfortable with the new form, you&rsquo;ll have watched it done a dozen times.</p>
+    <p class="speed"><strong>You&rsquo;ll learn the form on my reports.</strong> Ask me anything about 3.6 while the report is with me. Ask questions in the order thread; I answer against the fields and sources in your report. By the time you&rsquo;re comfortable with the new form, you&rsquo;ll have watched it done a dozen times.</p>
     <p class="speed"><strong>Fast turnaround is the point.</strong> You get a committed return time before I accept the order.</p>
 
     <div class="actions">
@@ -403,7 +403,7 @@
       <h2>Three steps.</h2>
       <ol class="steps">
         <li><span class="n">1.</span><span><strong>Send the order details.</strong> No address or borrower yet. You get an order number, a private tracking link and a secure folder.</span></li>
-        <li><span class="n">2.</span><span><strong>Send the packet.</strong> I check permission, scope, software and capacity, then confirm the desk fee and when you get it back. Submitted is not accepted.</span></li>
+        <li><span class="n">2.</span><span><strong>Upload the order &amp; inspection materials.</strong> I check permission, scope, software and capacity, then confirm the desk fee and when you get it back. Submitted is not accepted.</span></li>
         <li><span class="n">3.</span><span><strong>Review, revise, sign.</strong> Accept, change, or reject anything in it. Send changes as one list; anything I got wrong, I fix at no charge.</span></li>
       </ol>
       <p class="docs"><a href="how-it-works.html"><strong>The full process &rarr;</strong></a></p>
@@ -632,7 +632,9 @@
       });
     }
 
-    let i = 0;
+    // Open mid-production: a live-looking order with a return time already set and
+    // an alert already sent reads as real; "Submitted" reads as empty.
+    let i = STAGES.findIndex((stage) => stage.code === "drafting");
     paint(i);
     (function step() {
       const atEnd = i >= STAGES.length - 1;
