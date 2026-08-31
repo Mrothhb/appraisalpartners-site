@@ -103,8 +103,14 @@ function renderNotifications(payload) {
 function render(payload) {
   setText("order-number", `AP-${payload.order}`);
   setText("direction-order", `AP-${payload.order}`);
-  setText("current-note", pageNote(payload));
-  setText("last-updated", formatCentralTime(payload.updated_at));
+  // A permanently-published demonstration must not read as neglected; its return
+  // time is already computed for the same reason. Real orders show their real stamp.
+  setText(
+    "last-updated",
+    payload.demo
+      ? formatCentralTime(new Date(Date.now() - 41 * 60 * 1000).toISOString())
+      : formatCentralTime(payload.updated_at),
+  );
   renderTracker(payload);
   renderRail(payload);
   renderNotifications(payload);

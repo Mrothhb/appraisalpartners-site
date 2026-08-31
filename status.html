@@ -55,8 +55,8 @@
   .error h1 { font: 700 32px/1.18 Georgia, "Times New Roman", serif; margin: 0 0 12px; }
   h1, h2, p { margin-top: 0; }
   h1 {
-    font-family: Georgia, "Times New Roman", serif; font-size: clamp(35px, 7vw, 50px);
-    letter-spacing: -.02em; line-height: 1.08; margin: 5px 0 10px;
+    font-family: Georgia, "Times New Roman", serif; font-size: clamp(26px, 3.6vw, 33px);
+    letter-spacing: -.015em; line-height: 1.14; margin: 4px 0 8px;
   }
   h2 { font: 700 24px/1.25 Georgia, "Times New Roman", serif; margin: 0 0 9px; }
   p { margin-bottom: 14px; }
@@ -197,6 +197,13 @@
       .preference { align-items: flex-start; flex-direction: column; }
     .page-kind { display: none; }
   }
+  .updates-strip {
+    align-items: baseline; border-top: 1px solid var(--rule); display: flex; flex-wrap: wrap;
+    gap: 6px 16px; margin-top: 22px; padding-top: 14px; font-size: 13px;
+  }
+  .updates-strip .label { display: inline; }
+  .updates-strip .delivery-state { display: flex; flex-wrap: wrap; gap: 5px 16px; margin: 0; }
+  .updates-strip .preference-link { margin-left: auto; }
 </style>
 </head>
 <body>
@@ -258,28 +265,15 @@
       </div>
     </section>
 
-    <section class="updates" aria-labelledby="updates-heading">
-      <h2 id="updates-heading">Follow the report without chasing it.</h2>
-      <p class="updates-lede">All ten production checkpoints, so you see more than &ldquo;in progress.&rdquo;</p>
-
-      <div class="preference">
-        <div>
-          <span class="label">Updates for this report</span>
-          <strong id="notification-mode"></strong>
-          <p class="delivery-state"><span>Tracking page: <strong>Included</strong></span><span>Email: <strong id="email-setting"></strong></span><span>Text: <strong id="text-setting"></strong></span></p>
-        </div>
-        <a class="preference-link" href="mailto:mrr@appraisalpartners.net?subject=Change%20my%20report%20update%20preference">Change update preference</a>
-      </div>
-
-
-      <p class="milestones" id="milestone-copy"></p>
-      <p class="fineprint">Updates are short, manual order messages from Matt, not marketing. Contact details and text consent stay with the private order; neither is stored in this tracking link.</p>
-
-    </section>
+    <div class="updates-strip">
+      <span class="label">Updates</span>
+      <span class="delivery-state"><span>Page: <strong>Included</strong></span><span>Email: <strong id="email-setting"></strong></span><span>Text: <strong id="text-setting"></strong></span></span>
+      <a class="preference-link" href="mailto:mrr@appraisalpartners.net?subject=Change%20my%20report%20update%20preference">Change</a>
+      <span id="notification-mode" hidden></span>
+      <span id="milestone-copy" hidden></span>
+    </div>
 
     <div class="rail-wrap">
-      <p class="sublabel">All ten report checkpoints</p>
-      <p class="latest"><span class="label">Latest checkpoint</span><span id="current-note"></span></p>
       <ol class="rail" id="status-rail" aria-label="All report production checkpoints"></ol>
     </div>
 
