@@ -57,7 +57,7 @@ function renderRail(payload) {
 const MILESTONES = [
   { label: "Submitted", codes: ["submitted", "intake"] },
   { label: "Accepted", codes: ["accepted"] },
-  { label: "In production", codes: ["research", "comparables", "drafting", "review"] },
+  { label: "In production", codes: ["research", "comparables", "drafting", "validation", "review"] },
   { label: "Ready for you", codes: ["ready"] },
   { label: "Complete", codes: ["complete"] },
 ];
