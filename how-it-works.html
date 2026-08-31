@@ -62,6 +62,15 @@
   .skip { background:var(--accent); color:var(--paper); font-family:"IBM Plex Mono","Courier New",monospace; font-size:13px; left:-9999px; padding:10px 16px; position:absolute; top:0; z-index:10; }
   .skip:focus { left:8px; top:8px; }
   @media (max-width:600px) { .scopes { grid-template-columns:1fr; } }
+  .phases { display: grid; gap: 15px 26px; margin: 18px 0; }
+  .phase { border-left: 2px solid var(--accent); padding: 1px 0 1px 13px; }
+  .phase-name {
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11px;
+    letter-spacing: .13em; text-transform: uppercase; color: var(--accent); margin: 0 0 5px;
+  }
+  .phase ul { margin: 0; padding-left: 1.05em; font-size: 15px; color: var(--muted); }
+  .phase li { margin-bottom: 2px; }
+  @media (min-width: 700px) { .phases { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
 <body>
@@ -123,6 +132,31 @@
       <p>Open one private link whenever you want. It shows the current checkpoint, last update, committed return time, what happens next &amp; whether I need anything from you.</p>
       <p><strong>Opt in once at intake.</strong> Choose email, text, both or status page only. You hear from me at acceptance, when I need something from you, at research completion on longer orders and when the report is ready. Reply STOP anytime.</p>
       <p class="proof"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>View the full live tracking demo &rarr;</strong></a><span>Synthetic. No client data. The full page walks through the same ten checkpoints as a live order.</span></p>
+      <div class="phases">
+        <div class="phase"><p class="phase-name">Intake</p><ul>
+          <li>Engagement letter &amp; client instructions read</li>
+          <li>Assignment conditions noted</li>
+          <li>Effective date, due date &amp; turn time confirmed</li></ul></div>
+        <div class="phase"><p class="phase-name">Research</p><ul>
+          <li>MLS &amp; county records pulled</li>
+          <li>Sales history &amp; prior transfers checked</li>
+          <li>Comps gathered &amp; cross-checked, or yours loaded instead</li></ul></div>
+        <div class="phase"><p class="phase-name">Draft</p><ul>
+          <li>Subject, site &amp; improvements from your inspection notes</li>
+          <li>Sketch, photos &amp; maps placed</li>
+          <li>Grid built out; the adjustments stay yours</li></ul></div>
+        <div class="phase"><p class="phase-name">Checks</p><ul>
+          <li>Built-in rules check over every section</li>
+          <li>UAD 3.6 formatting &amp; completeness</li>
+          <li>Repair laps until it comes back clean</li></ul></div>
+        <div class="phase"><p class="phase-name">Second set of eyes</p><ul>
+          <li>Page-by-page read: math, photos, sketch, consistency</li>
+          <li>Open items marked for your decision</li></ul></div>
+        <div class="phase"><p class="phase-name">Ready</p><ul>
+          <li>Editable file in your folder</li>
+          <li>Research &amp; source data for your workfile</li>
+          <li>Your changes in one list</li></ul></div>
+      </div>
       <div class="rail" aria-label="Order stages"><b>Submitted</b> &rarr; Scope review &rarr; Accepted &middot; due date set &rarr; Market research &rarr; Comp set in hand &rarr; Report preparation &rarr; Validation and rules check &rarr; Second set of eyes &rarr; <b>Ready for your review</b> &rarr; Report delivered</div>
     </section>
 
@@ -142,6 +176,16 @@
         <li>UAD 3.6 XML and PDF when those formats are part of the accepted order</li>
       </ul>
       <p>Give me one round of changes as one list. I correct my production errors without another fee. You make the final appraisal decisions, sign &amp; deliver to your client.</p>
+    </section>
+
+    <section id="boundaries">
+      <h2>What I don&rsquo;t take.</h2>
+      <ul class="plain">
+        <li>No FHA or VA panel assignments</li>
+        <li>No Georgia assignments under present desk policy</li>
+        <li>No legacy UAD 2.6/1004 production orders. This desk is UAD 3.6 only.</li>
+      </ul>
+      <p><strong>Your data &amp; comps travels outside my licensed markets</strong>, because when you supply the packet and the comps the market is already yours. <strong>Research &amp; report needs a market I can work in</strong>: authorized MLS access, competence, and whatever your state and client require. Dallas&ndash;Fort Worth is established today. Tell me where you work and I&rsquo;ll tell you straight whether it&rsquo;s ready or needs setting up first.</p>
     </section>
 
     <div class="cta">
