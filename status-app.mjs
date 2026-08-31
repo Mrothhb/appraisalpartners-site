@@ -59,7 +59,7 @@ const MILESTONES = [
   { label: "Accepted", codes: ["accepted"] },
   { label: "In production", codes: ["research", "comparables", "drafting", "validation", "review"] },
   { label: "Ready for you", codes: ["ready"] },
-  { label: "Complete", codes: ["complete"] },
+  { label: "Delivered", codes: ["complete"] },
 ];
 
 function renderTracker(payload) {
