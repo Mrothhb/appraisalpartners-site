@@ -87,8 +87,8 @@ export const STAGES = Object.freeze([
   }),
   Object.freeze({
     code: "review",
-    label: "Second set of eyes",
-    note: "Second set of eyes on the report.",
+    label: "Matt's read-through",
+    note: "Matt is reading the report page by page against the sources.",
     workflow: workflow(
       "The rules check came back clean and the read-through began.",
       "Matt returns the report for your own review.",

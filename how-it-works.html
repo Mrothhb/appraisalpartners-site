@@ -24,7 +24,7 @@
   body { background:var(--paper); color:var(--ink); font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:17px; line-height:1.68; margin:0; padding:0 24px; }
   .sheet { max-width:720px; margin:0 auto; padding:44px 0 64px; }
   .letterhead { align-items:baseline; border-bottom:2px solid var(--ink); display:flex; flex-wrap:wrap; gap:18px; justify-content:space-between; padding-bottom:14px; }
-  .name { font-family:"IBM Plex Mono","Courier New",monospace; font-size:14px; font-weight:500; letter-spacing:.22em; text-transform:uppercase; }
+  .name { font-family:"IBM Plex Mono","Courier New",monospace; font-size:14px; font-weight:500; letter-spacing:.22em; text-transform:uppercase; color:var(--ink); text-decoration:none; }
   .cred,.nav,footer { color:var(--muted); font-family:"IBM Plex Mono","Courier New",monospace; font-size:11.5px; letter-spacing:.04em; }
   .nav { display:flex; flex-wrap:wrap; gap:9px 20px; padding-top:2px; width:100%; }
   .nav a { color:var(--muted); padding:4px 0; }
@@ -78,16 +78,16 @@
 <a class="skip" href="#main">Skip to content</a>
 <div class="sheet">
   <header class="letterhead">
-    <span class="name">Appraisal Partners</span>
+    <a class="name" href="index.html">Appraisal Partners</a>
     <span class="cred">Matthew Roth &middot; Certified Residential Appraiser</span>
     <nav class="nav" aria-label="Primary">
-      <a href="index.html">Home</a>
       <a href="uad36.html">UAD 3.6</a>
       <a href="how-it-works.html" aria-current="page">How it works</a>
       <a href="technology.html">Technology</a>
-      <a href="story.html">The story</a>
+      <a href="story.html">Three appraisers</a>
       <a href="about.html">About Matt</a>
       <a href="faq.html">FAQ</a>
+      <a href="start.html">Try it free</a>
     </nav>
   </header>
 
@@ -102,13 +102,13 @@
       <h2>Choose the handoff.</h2>
       <div class="scopes">
         <article>
-          <p class="price">Research &amp; report &middot; $149 desk fee</p>
-          <h3>No comp set to assemble.</h3>
+          <h3>$149 &middot; No comp set to assemble</h3>
+          <p class="price">I handle the research</p>
           <p>Upload the order, engagement letter and contract if applicable. After inspection, add the raw photos, sketch &amp; field notes. I handle the subject and market data, comp search, grid, commentary &amp; exhibits.</p>
         </article>
         <article>
-          <p class="price">Your data &amp; comps &middot; $89 desk fee</p>
-          <h3>Complete it from your file.</h3>
+          <h3>$89 &middot; Complete it from your file</h3>
+          <p class="price">You send data &amp; comps</p>
           <p>Upload the completed inspection material, subject data, comp set, supporting market data &amp; any direction you want reflected. I complete the report in the working format we confirmed.</p>
         </article>
       </div>
@@ -117,7 +117,7 @@
     <section id="process">
       <h2>The handoff, start to finish.</h2>
       <ol class="steps">
-        <li><span class="n">01</span><span><strong>Submit the short request.</strong> No confidential assignment files in the opening form.</span></li>
+        <li><span class="n">01</span><span><strong><a href="start.html">Submit the short request.</a></strong> No confidential assignment files in the opening form.</span></li>
         <li><span class="n">02</span><span><strong>Open the private intake.</strong> You get an AP order number, private tracker, restricted upload folder &amp; order-type checklist.</span></li>
         <li><span class="n">03</span><span><strong>Upload the checklist items.</strong> The checklist changes with the assignment and the amount of research you want me to handle.</span></li>
         <li><span class="n">04</span><span><strong>I review the package.</strong> I check permission, completeness, conflicts, data access, UAD 3.6 fit &amp; capacity.</span></li>
@@ -149,7 +149,7 @@
           <li>Built-in rules check over every section</li>
           <li>UAD 3.6 formatting &amp; completeness</li>
           <li>Repair laps until it comes back clean</li></ul></div>
-        <div class="phase"><p class="phase-name">Second set of eyes</p><ul>
+        <div class="phase"><p class="phase-name">Matt's read-through</p><ul>
           <li>Page-by-page read: math, photos, sketch, consistency</li>
           <li>Open items marked for your decision</li></ul></div>
         <div class="phase"><p class="phase-name">Ready</p><ul>
@@ -157,7 +157,7 @@
           <li>Research &amp; source data for your workfile</li>
           <li>Your changes in one list</li></ul></div>
       </div>
-      <div class="rail" aria-label="Order stages"><b>Submitted</b> &rarr; Scope review &rarr; Accepted &middot; due date set &rarr; Market research &rarr; Comp set in hand &rarr; Report preparation &rarr; Validation and rules check &rarr; Second set of eyes &rarr; <b>Ready for your review</b> &rarr; Report delivered</div>
+      <div class="rail" aria-label="Order stages"><b>Submitted</b> &rarr; Scope review &rarr; Accepted &middot; due date set &rarr; Market research &rarr; Comp set in hand &rarr; Report preparation &rarr; Validation and rules check &rarr; Matt's read-through &rarr; <b>Ready for your review</b> &rarr; Report delivered</div>
     </section>
 
     <section id="comps">
