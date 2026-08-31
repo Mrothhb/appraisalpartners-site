@@ -204,6 +204,15 @@
   .updates-strip .label { display: inline; }
   .updates-strip .delivery-state { display: flex; flex-wrap: wrap; gap: 5px 16px; margin: 0; }
   .updates-strip .preference-link { margin-left: auto; }
+  .nextline {
+    align-items: baseline; border-top: 1px solid var(--rule); display: flex; flex-wrap: wrap;
+    gap: 4px 10px; margin-top: 20px; padding-top: 15px;
+  }
+  .nextline .label { display: inline; }
+  .nextline p { margin: 0; font-size: 15.5px; }
+  .nextline p:last-of-type { color: var(--accent-deep); font-weight: 750; }
+  .nextline p:first-of-type { flex: 1 1 260px; }
+  .status-card .rail { margin-top: 13px; }
 </style>
 </head>
 <body>
@@ -246,22 +255,17 @@
       </div>
 
       <div class="progress-wrap">
-        <div class="progress-meta"><span>Submitted</span><span>Complete</span></div>
-        <div class="progress-track" id="progress-track" role="progressbar" aria-label="Report production progress" aria-valuemin="1" aria-valuemax="9">
+        <div class="progress-track" id="progress-track" role="progressbar" aria-label="Report production progress" aria-valuemin="1" aria-valuemax="10">
           <div class="progress-fill" id="progress-fill"></div>
         </div>
-        <ol class="tracker" id="status-tracker" aria-label="Major report milestones"></ol>
+        <ol class="rail" id="status-rail" aria-label="All report production checkpoints"></ol>
       </div>
 
-      <div class="status-details" aria-label="What happens next">
-        <div class="detail">
-          <span class="label">What happens next</span>
-          <p id="what-next"></p>
-        </div>
-        <div class="detail owner">
-          <span class="label">Who has it</span>
-          <p id="who-acts"></p>
-        </div>
+      <div class="nextline">
+        <span class="label">Next</span>
+        <p id="what-next"></p>
+        <span class="label">With</span>
+        <p id="who-acts"></p>
       </div>
     </section>
 
@@ -273,9 +277,6 @@
       <span id="milestone-copy" hidden></span>
     </div>
 
-    <div class="rail-wrap">
-      <ol class="rail" id="status-rail" aria-label="All report production checkpoints"></ol>
-    </div>
 
     <div class="order-details">
       <p class="sublabel">Order details</p>

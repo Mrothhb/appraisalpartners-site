@@ -225,18 +225,33 @@
     font-weight: 700; line-height: 1.35; margin: 6px 0 0;
   }
   .lt-progress { margin-top: 27px; }
-  .lt-meta {
-    color: var(--lt-muted); display: flex; font-size: 12px;
-    justify-content: space-between; margin-bottom: 8px;
-  }
   .lt-track { background: var(--lt-rule); height: 8px; overflow: hidden; }
   .lt-fill { background: var(--lt-accent); height: 100%; transition: width .45s ease; width: 0; }
-  .lt-tracker { display: grid; grid-template-columns: repeat(5, 1fr); list-style: none; margin: 12px 0 0; padding: 0; }
-  .lt-tracker li { color: var(--lt-muted); font-size: 11px; text-align: center; }
-  .lt-tracker li:first-child { text-align: left; }
-  .lt-tracker li:last-child { text-align: right; }
-  .lt-tracker li.done { color: var(--lt-ink); }
-  .lt-tracker li.now { color: var(--lt-deep); font-weight: 750; }
+  .lt-rail {
+    display: grid; grid-template-columns: repeat(10, minmax(64px, 1fr));
+    list-style: none; margin: 13px 0 0; padding: 0; overflow-x: auto;
+  }
+  .lt-rail li {
+    color: var(--lt-muted); font-size: 10.5px; line-height: 1.28; padding-right: 8px; position: relative;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+  }
+  .lt-rail li::before {
+    align-items: center; background: var(--lt-surface); border: 1.5px solid var(--lt-rule);
+    border-radius: 50%; color: var(--lt-muted); content: counter(ltstep); counter-increment: ltstep;
+    display: flex; font-size: 9.5px; height: 19px; justify-content: center; margin-bottom: 6px; width: 19px;
+  }
+  .lt-rail { counter-reset: ltstep; }
+  .lt-rail li.done::before { background: var(--lt-accent); border-color: var(--lt-accent); color: #fff; content: "\2713"; }
+  .lt-rail li.now::before { border-color: var(--lt-accent); border-width: 2.5px; color: var(--lt-deep); }
+  .lt-rail li.now { color: var(--lt-deep); font-weight: 700; }
+  .lt-next {
+    align-items: baseline; border-top: 1px solid var(--lt-rule); display: flex; flex-wrap: wrap;
+    gap: 4px 10px; margin-top: 20px; padding-top: 15px;
+  }
+  .lt-next p { margin: 0; font-size: 15px; }
+  .lt-next p:first-of-type { flex: 1 1 240px; }
+  .lt-next p:last-of-type { color: var(--lt-deep); font-weight: 750; }
+  .lt-next .lt-label { display: inline; }
   .lt-details {
     border-top: 1px solid var(--lt-rule); display: grid; gap: 24px;
     grid-template-columns: 1.45fr .55fr; margin-top: 23px; padding-top: 20px;
@@ -311,7 +326,7 @@
 
       <div class="livetrack">
         <div class="lt-header">
-          <p class="lt-eyebrow">Report tracking &middot; <span class="lt-order" id="lt-order">AP-4827</span></p>
+          <p class="lt-eyebrow">Report tracking &middot; <span class="lt-order">AP&#8209;4827</span></p>
           <div class="lt-banner">Free prior-assignment trial &middot; Not for client reliance</div>
         </div>
         <div class="lt-card">
@@ -328,13 +343,14 @@
             </div>
           </div>
           <div class="lt-progress">
-            <div class="lt-meta"><span>Submitted</span><span>Complete</span></div>
             <div class="lt-track"><div class="lt-fill" id="lt-fill"></div></div>
-            <ol class="lt-tracker" id="lt-tracker"></ol>
+            <ol class="lt-rail" id="lt-rail"></ol>
           </div>
-          <div class="lt-details">
-            <div class="lt-detail"><span class="lt-label">What happens next</span><p id="lt-next"></p></div>
-            <div class="lt-detail lt-owner"><span class="lt-label">Who has it</span><p id="lt-actor"></p></div>
+          <div class="lt-next">
+            <span class="lt-label">Next</span>
+            <p id="lt-nexttext"></p>
+            <span class="lt-label">With</span>
+            <p id="lt-actor"></p>
           </div>
         </div>
       </div>
@@ -392,16 +408,9 @@
   // Imports the product's own stage data, so this panel can never drift from the real page.
   import { STAGES, workflowSummary, formatCentralTime } from "./status-core.mjs";
 
-  const MILESTONES = [
-    { label: "Submitted", codes: ["submitted", "intake"] },
-    { label: "Accepted", codes: ["accepted"] },
-    { label: "In production", codes: ["research", "comparables", "drafting", "validation", "review"] },
-    { label: "Ready for you", codes: ["ready"] },
-    { label: "Delivered", codes: ["complete"] },
-  ];
   const byId = (id) => document.getElementById(id);
 
-  if (byId("lt-tracker")) {
+  if (byId("lt-rail")) {
     const now = new Date();
     // A committed return has to look like a real deadline: next business day, 3:30 PM CT.
     const dayFmt = new Intl.DateTimeFormat("en-CA", {
@@ -448,20 +457,19 @@
       byId("lt-count").textContent = "Checkpoint " + (i + 1) + " of " + STAGES.length;
       byId("lt-stage").textContent = STAGES[i].label;
       byId("lt-story").textContent = flow.happened;
-      byId("lt-next").textContent = flow.next;
+      byId("lt-nexttext").textContent = flow.next;
       byId("lt-actor").textContent = flow.actor;
       byId("lt-updated").textContent = formatCentralTime(payload.updated_at);
       byId("lt-return-label").textContent = accepted ? "Illustrative trial return" : "Return time";
       byId("lt-return").textContent = accepted ? formatCentralTime(payload.committed_return) : "Pending acceptance";
       byId("lt-fill").style.width = Math.round(((i + 1) / STAGES.length) * 100) + "%";
 
-      const active = MILESTONES.findIndex((m) => m.codes.includes(STAGES[i].code));
-      const list = byId("lt-tracker");
+      const list = byId("lt-rail");
       list.replaceChildren();
-      MILESTONES.forEach((m, n) => {
+      STAGES.forEach((stage, n) => {
         const li = document.createElement("li");
-        li.className = n < active ? "done" : n === active ? "now" : "";
-        li.textContent = m.label;
+        li.className = n < i ? "done" : n === i ? "now" : "";
+        li.textContent = stage.label;
         list.append(li);
       });
     }
