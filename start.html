@@ -215,6 +215,7 @@
     <input type="hidden" id="f-consent-source" name="consent_source" value="https://appraisalpartners.net/start.html">
     <input type="hidden" id="f-request-id" name="request_id" value="">
     <input type="hidden" id="f-started-at" name="started_at" value="">
+    <input type="hidden" id="f-ordermode" name="ordermode" value="Free trial on a past assignment">
     <div class="grid2">
       <div class="field">
         <label for="f-name">Your name</label>
@@ -449,9 +450,11 @@
   var liveConsent = document.getElementById('consent-live');
   var trialBox = document.getElementById('f-permission');
   var liveBox = document.getElementById('f-live-permission');
+  var orderModeField = document.getElementById('f-ordermode');
   function isLive() { return document.getElementById('m-live').checked; }
   function showMode() {
     var live = isLive();
+    orderModeField.value = live ? 'Live UAD 3.6 order' : 'Free trial on a past assignment';
     trialConsent.hidden = live; liveConsent.hidden = !live;
     trialBox.required = !live; liveBox.required = live;
     if (live) { trialBox.checked = false; } else { liveBox.checked = false; }
@@ -583,6 +586,7 @@
     pendingTimer = null;
     if (data.ok) {
       form.reset();
+      showMode();
       showPanel();
       showTextUpdateFields();
       submitButton.textContent = 'Request received';
