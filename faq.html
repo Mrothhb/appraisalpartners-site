@@ -12,87 +12,44 @@
 <meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
-<title>FAQ | Appraisal Partners Production Desk</title>
+<title>FAQ | Appraisal Partners</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
 <style>
-  :root {
-    --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
-    --rule: #D9DED9; --rule-strong: #889089; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
-    }
-  }
-  :root[data-theme="dark"] {
-    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
-  }
-  * { box-sizing: border-box; }
-  main:focus { outline: none; }
-  body {
-    background: var(--paper); color: var(--ink);
-    font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
-    font-size: 17px; line-height: 1.68; margin: 0; padding: 0 24px;
-  }
-  .sheet { max-width: 680px; margin: 0 auto; padding: 44px 0 64px; }
-  .letterhead {
-    display: flex; justify-content: space-between; align-items: baseline;
-    gap: 18px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 14px;
-  }
-  .letterhead .name {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-weight: 500; font-size: 14px; letter-spacing: 0.22em; text-transform: uppercase;
-  }
-  .letterhead .cred, .nav {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
-  }
-  .nav { width: 100%; display: flex; flex-wrap: wrap; gap: 9px 20px; padding-top: 2px; }
-  .nav a { color: var(--muted); }
-  .nav a, footer a { text-decoration-thickness: 0.5px; text-underline-offset: 2px; }
-  h1 {
-    font-size: clamp(32px, 6.5vw, 46px); font-weight: 700; line-height: 1.16;
-    letter-spacing: -0.02em; text-wrap: balance; margin: 46px 0 14px;
-  }
-  h1 .line { color: var(--accent); }
-  .lede { font-size: 19px; line-height: 1.55; margin: 0 0 24px; color: var(--muted); }
-  p { margin: 0 0 16px; }
-  a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-  a:hover, a:focus-visible { text-decoration-color: var(--accent); }
-  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-  .qa { border-top: 1px solid var(--rule); padding: 4px 0; }
-  .qa:last-of-type { border-bottom: 1px solid var(--rule); }
-  .qa > h2 {
-    padding: 14px 4px 8px; font-weight: 700; font-size: 18px; line-height: 1.4; margin: 0;
-  }
-  .qa .a { padding: 0 4px 14px; }
-  .qa .a p:last-child { margin-bottom: 0; }
-  .note { border: 1.5px solid var(--ink); padding: 21px 23px; margin-top: 36px; }
-  .note p:last-child { margin-bottom: 0; }
-  a.btn {
-    display: inline-block; background: var(--accent); color: var(--paper);
-    padding: 10px 16px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
-    text-decoration: none; border: 1.5px solid var(--accent);
-    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 12.5px;
-  }
-  a.btn:hover, a.btn:focus-visible { background: var(--accent-deep); border-color: var(--accent-deep); }
-  footer {
-    border-top: 2px solid var(--ink); margin-top: 44px; padding-top: 14px;
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
-    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-  }
-  footer .postal-address { flex-basis: 100%; font-style: normal; }
-  .skip {
-    position: absolute; left: -9999px; top: 0;
-    background: var(--accent); color: var(--paper); padding: 10px 16px;
-    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; z-index: 10;
-  }
-  .skip:focus { left: 8px; top: 8px; }
+  :root { --paper:#FAFAF7; --ink:#1C2420; --muted:#5C6660; --rule:#D9DED9; --accent:#2E5D46; --accent-deep:#24493A; --wash:#F1F3EF; }
+  @media (prefers-color-scheme:dark) { :root:not([data-theme="light"]) { --paper:#141917; --ink:#E8EAE6; --muted:#97A19A; --rule:#2A322D; --accent:#6FA98C; --accent-deep:#8FBFA6; --wash:#1B211E; } }
+  :root[data-theme="dark"] { --paper:#141917; --ink:#E8EAE6; --muted:#97A19A; --rule:#2A322D; --accent:#6FA98C; --accent-deep:#8FBFA6; --wash:#1B211E; }
+  * { box-sizing:border-box; }
+  body { background:var(--paper); color:var(--ink); font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:17px; line-height:1.68; margin:0; padding:0 24px; }
+  .sheet { max-width:720px; margin:0 auto; padding:44px 0 64px; }
+  .letterhead { align-items:baseline; border-bottom:2px solid var(--ink); display:flex; flex-wrap:wrap; gap:18px; justify-content:space-between; padding-bottom:14px; }
+  .name { font-family:"IBM Plex Mono","Courier New",monospace; font-size:14px; font-weight:500; letter-spacing:.22em; text-transform:uppercase; }
+  .cred,.nav,footer { color:var(--muted); font-family:"IBM Plex Mono","Courier New",monospace; font-size:11.5px; letter-spacing:.04em; }
+  .nav { display:flex; flex-wrap:wrap; gap:9px 20px; padding-top:2px; width:100%; }
+  .nav a { color:var(--muted); padding:4px 0; }
+  main:focus { outline:none; }
+  h1 { font-size:clamp(34px,7vw,52px); font-weight:700; letter-spacing:-.02em; line-height:1.15; margin:46px 0 20px; text-wrap:balance; }
+  h1 .line { color:var(--accent); }
+  h2 { font-size:25px; line-height:1.3; margin:0 0 16px; }
+  .lede { font-size:20px; line-height:1.55; margin:0 0 14px; }
+  p { margin:0 0 18px; }
+  a { color:var(--accent-deep); text-decoration-color:currentColor; text-decoration-thickness:1px; text-underline-offset:3px; }
+  a:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  .questions { border-top:1px solid var(--rule); margin-top:36px; }
+  details { border-bottom:1px solid var(--rule); }
+  summary { cursor:pointer; font-size:18px; font-weight:700; list-style:none; padding:18px 38px 16px 0; position:relative; }
+  summary::-webkit-details-marker { display:none; }
+  summary::after { color:var(--accent); content:"+"; font-family:"IBM Plex Mono","Courier New",monospace; font-size:20px; font-weight:400; position:absolute; right:4px; top:16px; }
+  details[open] summary::after { content:"−"; }
+  .answer { color:var(--muted); padding:0 32px 4px 0; }
+  .answer strong { color:var(--ink); }
+  .cta { border:1.5px solid var(--ink); margin-top:44px; padding:24px 26px; }
+  a.btn { background:var(--accent); border:1.5px solid var(--accent); color:var(--paper); display:inline-block; font-family:"IBM Plex Mono","Courier New",monospace; font-size:13px; font-weight:500; letter-spacing:.07em; padding:11px 18px; text-decoration:none; text-transform:uppercase; }
+  footer { border-top:2px solid var(--ink); display:flex; flex-wrap:wrap; gap:10px 18px; justify-content:space-between; margin-top:44px; padding-top:14px; }
+  footer .postal-address { flex-basis:100%; font-style:normal; }
+  .skip { background:var(--accent); color:var(--paper); font-family:"IBM Plex Mono","Courier New",monospace; font-size:13px; left:-9999px; padding:10px 16px; position:absolute; top:0; z-index:10; }
+  .skip:focus { left:8px; top:8px; }
 </style>
 </head>
 <body>
@@ -101,118 +58,57 @@
 <div class="sheet">
   <header class="letterhead">
     <span class="name">Appraisal Partners</span>
-    <span class="cred">Questions, answered plainly</span>
+    <span class="cred">Matthew Roth &middot; Certified Residential Appraiser</span>
     <nav class="nav" aria-label="Primary">
       <a href="index.html">Home</a>
+      <a href="uad36.html">UAD 3.6</a>
       <a href="how-it-works.html">How it works</a>
       <a href="technology.html">Technology</a>
       <a href="story.html">The story</a>
       <a href="about.html">About Matt</a>
-      <a href="start.html">Try it free on a past report</a>
+      <a href="faq.html" aria-current="page">FAQ</a>
     </nav>
   </header>
 
   <main id="main" tabindex="-1">
+    <h1>Questions <span class="line">I&rsquo;d ask too.</span></h1>
+    <p class="lede">Short answers. If yours is not here, email me and I&rsquo;ll answer it directly.</p>
 
-  <h1>The questions worth <span class="line">asking first.</span></h1>
-  <p class="lede">Short answers here, longer ones on the <a href="how-it-works.html">how it works</a> page. If yours isn't covered, write me and I'll answer it directly.</p>
+    <div class="questions">
+      <details open>
+        <summary>What do I upload?</summary>
+        <div class="answer"><p><strong>Research &amp; report &middot; $149:</strong> Upload the order, engagement letter, contract if applicable, raw photos, sketch &amp; field notes through the private checklist. You do not have to assemble the subject data or select comps first.</p><p><strong>Your data &amp; comps &middot; $89:</strong> Upload the order, inspection material, subject data, comp set, supporting data &amp; market direction.</p></div>
+      </details>
+      <details><summary>Whose client is it?</summary><div class="answer"><p>Yours. I work behind you. I do not contact, invoice or solicit your client. You keep the engagement and appraisal fee.</p></div></details>
+      <details><summary>Who is responsible for the appraisal?</summary><div class="answer"><p>You are. You make the final calls on scope, comps, adjustments, reconciliation &amp; value. I return an editable working report for you to review, change and sign.</p></div></details>
+      <details><summary>Is this allowed? How does disclosure work?</summary><div class="answer"><p>Only when your engagement, client, state &amp; assignment program allow it. When my work is significant appraisal assistance, the report identifies me, my credential, that I did not inspect &amp; what I did. I do not accept an assignment that cannot be handled that way.</p></div></details>
+      <details><summary>Do you use AI?</summary><div class="answer"><p>Yes. I built software &amp; AI-assisted tools to cut re-keying, form filling &amp; clerical work. I check the source documents and read every report myself. AI does not inspect, make the final comp or value decisions, or sign.</p></div></details>
+      <details><summary>What format comes back?</summary><div class="answer"><p>An editable working report file with the agreed photos &amp; exhibits placed. I confirm the file format and delivery route before accepting the order.</p></div></details>
+      <details><summary>How fast is it?</summary><div class="answer"><p>Fast turnaround is the point. I give you a return time before you say go. The clock starts when everything needed is in. If timing is at risk, I tell you before the due date.</p></div></details>
+      <details><summary>Can I track the status of my appraisal report?</summary><div class="answer"><p>Yes. Every accepted report gets a private tracking link. See where it is at each step and opt in to automatic email updates, text updates, both or status page only. <a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">View the full live tracking demo &rarr;</a></p></div></details>
+      <details><summary>What if I do not like the comps?</summary><div class="answer"><p>Upload your selected set, ask to see candidates before I complete the grid, or review my choices with the report. You make the final selection. I will not chase a predetermined value.</p></div></details>
+      <details><summary>What if something is wrong?</summary><div class="answer"><p>Give me one round of changes as one list. I correct my production errors at no charge. Client or underwriter conditions tied to my work are handled for 30 days. New scope is quoted before I touch it.</p></div></details>
+      <details><summary>What does it cost?</summary><div class="answer"><p>$89 with your data &amp; comps. $149 when I handle the research. These are desk fees paid by you, not appraisal fees billed to your AMC, lender, borrower or client. No subscription or minimum. The accepted price does not change later.</p></div></details>
+      <details><summary>How can the fee be that low?</summary><div class="answer"><p>I spent about a decade in engineering and built this workflow for my own reports. It cuts re-keying, form filling &amp; file chasing. I still do the research, analysis and read-through myself. These are standing rates for defined scopes, not teaser prices.</p></div></details>
+      <details><summary>What kind of past assignment can I use for the trial?</summary><div class="answer"><p>Use only a closed prior assignment you have actual authority and the original client&rsquo;s explicit permission to share. If a lender or AMC prohibits sharing, that file is not eligible. A closed estate, divorce or other private-use assignment may work, but the assignment type alone does not make it shareable. Redaction alone is not permission.</p></div></details>
+      <details><summary>Do you take legacy 1004/UAD 2.6 orders?</summary><div class="answer"><p>No. This desk is UAD 3.6 only. It is built to keep your workflow moving while you learn the new report.</p></div></details>
+      <details><summary>Can I use this only when reports stack up?</summary><div class="answer"><p>Yes. Upload one when you are buried in reports and none when you are not. There is no subscription or minimum. I take only what I can personally complete and review.</p></div></details>
+      <details><summary>Where can you work?</summary><div class="answer"><p>With your data &amp; comps, I can often help outside my licensed markets when the client, state &amp; data rules permit it. Research &amp; report requires authorized data access and market competence. DFW is ready now. Ask before uploading assignment materials.</p></div></details>
+      <details><summary>What about confidential information?</summary><div class="answer"><p>Keep client and property information out of the opening form. Report files move through a private order folder; the tracking page never shows the borrower, property address or report data. I confirm the provider route before confidential files move, and you must be authorized to share them.</p></div></details>
+      <details><summary>How do I start?</summary><div class="answer"><p>Submit the short request without confidential assignment files. If I can take it, you receive the AP order number, private tracker, restricted upload folder &amp; checklist. Nothing enters production until I confirm the fee and return time and you approve the terms.</p></div></details>
+    </div>
 
-  <section class="qa" id="q-whose-client-is-it">
-    <h2>Whose client is it?</h2>
-    <div class="a"><p>Yours. Always. The engagement is yours, the relationship is yours, the fee is yours. I work for you, not for your client, and I never solicit your clients. The desk only exists because that line holds.</p></div>
-  </section>
-
-  <section class="qa" id="q-whos-responsible-for-the-appraisal">
-    <h2>Who's responsible for the appraisal?</h2>
-    <div class="a"><p>You are, and nothing about this service changes that. You keep scope, final comp selection, adjustments, reconciliation, the opinion of value, the certification, and the signature. I produce the draft and the support file for your independent review. You accept, change, or reject anything in it.</p></div>
-  </section>
-
-  <section class="qa" id="q-is-this-allowed-how-does-disclosure-work">
-    <h2>Is this allowed? How does disclosure work?</h2>
-    <div class="a"><p>For accepted work that constitutes significant appraisal assistance, I work as the signing appraiser's independent subcontractor under that appraiser's assignment-specific direction and supervision. My name, credential information, non-inspection, and the work I actually performed go in the report. The signing appraiser independently reviews the draft and makes every final appraisal decision. The arrangement must also be permitted by the engagement, client, property-state rules, and assignment program before I accept the report.</p></div>
-  </section>
-
-  <section class="qa" id="q-do-you-use-ai">
-    <h2>Do you use AI?</h2>
-    <div class="a"><p>Yes. I use software automation and AI-assisted tools, including for drafting and quality checks. I verify the work against its sources; the signing appraiser independently adopts, changes, or rejects the draft and makes every final appraisal decision. Before confidential work begins, the appraiser approves the provider route that will handle the file.</p></div>
-  </section>
-
-  <section class="qa" id="q-what-software-do-you-work-with">
-    <h2>What software do you work with?</h2>
-    <div class="a"><p>Current production is in TOTAL. You receive the native working file, editable in your own TOTAL installation with the photos placed, plus the agreed draft and support package. Your TOTAL version and delivery formats are confirmed before acceptance.</p></div>
-  </section>
-
-  <section class="qa" id="q-how-fast-is-it-really">
-    <h2>How fast is it, really?</h2>
-    <div class="a"><p>Every accepted live report gets a committed return time before production begins, and that's the number that matters. A typical complete packet might come in Thursday evening and be ready for your review Friday afternoon. The free past-report trial has an illustrative return time, not a client deadline. If a live commitment is ever at risk, you hear it from me before the deadline, not after.</p></div>
-  </section>
-
-  <section class="qa" id="q-how-do-i-know-where-my-report-is">
-    <h2>How do I know where my report is?</h2>
-    <div class="a"><p>Every trial and live order gets a private-link status page showing the current stage, last update, accepted scope, return time, next step, and who needs to act. At intake, choose Email, Text, Both, or Status page only. Text or Both requires your mobile number and explicit consent. Matt sends those transactional order updates manually from his business line for now. No marketing and no automated campaign. Message and data rates may apply; reply STOP to opt out. Text consent is not a condition of purchase. <a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">Open the working demonstration order</a> and see the status page exactly as an appraiser would.</p></div>
-  </section>
-
-  <section class="qa" id="q-what-if-i-dont-like-the-comps">
-    <h2>What if I don't like the comps?</h2>
-    <div class="a"><p>You steer. At intake you choose: use your comps, let me prepare candidates and judge them at review, or get a candidate memo before the grid is built. Steering means evidence and direction with reasons. It never means steering toward a number, and I'll decline an instruction that reads like value pressure.</p></div>
-  </section>
-
-  <section class="qa" id="q-what-if-somethings-wrong-with-the-draft">
-    <h2>What if something's wrong with the draft?</h2>
-    <div class="a"><p>My production errors are fixed without another fee. One round of within-scope changes is included with every accepted trial or live report. For thirty days after a live report is delivered, client conditions that trace to my production work are also corrected without another fee. If a paid package materially misses the accepted scope and I cannot correct it through that process, the report is not billed.</p></div>
-  </section>
-
-  <section class="qa" id="q-what-does-it-cost">
-    <h2>What does it cost?</h2>
-    <div class="a"><p>Your first accepted prior-assignment trial is free. After that, the $89 or $149 is an appraiser-paid desk fee, not the appraisal fee. Your appraisal fee and client relationship stay yours; I do not bill your AMC, lender, borrower, or end client. You pay $89 when you supply the packet, comps, and data, or $149 when I run the research on an eligible assignment. These are the actual rates for those defined scopes, not introductory rates. The desk fee confirmed at acceptance is the desk fee you pay. No subscription, minimum, or long-term agreement.</p></div>
-  </section>
-
-  <section class="qa" id="q-how-can-the-desk-fee-be-this-low">
-    <h2>How can the desk fee be this low?</h2>
-    <div class="a"><p>Before this desk, I spent about a decade as an engineer, much of it in product operations. I built the software- and AI-assisted production workflow for my own appraisal reports first. It removes most re-keying, routine form filling, document collection and organization, and clerical editing. The tools draft. They never decide. What they produce gets checked against its sources and read through before it leaves the desk. My time stays on research, analysis, judgment, and personally reviewing every report; you keep every final appraisal decision. You have already won the assignment, handled the client, and inspected the property, so I price only the defined work behind you. Speed comes from better tooling, not lower standards or anonymous labor. The $89 and $149 are the actual defined-scope rates, not a low introductory price that changes once you rely on the desk. A report that does not fit is declined or separately scoped before acceptance.</p></div>
-  </section>
-
-  <section class="qa" id="q-do-i-have-to-risk-a-live-order-to-try-it">
-    <h2>Do I have to risk a live order to try it?</h2>
-    <div class="a"><p>No. Use a closed prior assignment you are authorized to share. Keep your finished report back while I work from the original packet, then compare the two. The accepted trial is free, has no live-client deadline, and is never signed, delivered, or relied on. Client permission still matters; redaction alone does not create it.</p></div>
-  </section>
-
-  <section class="qa" id="q-can-i-use-the-desk-only-when-volume-spikes">
-    <h2>Can I use the desk only when volume spikes?</h2>
-    <div class="a"><p>Yes. That is one of the main reasons it exists. Appraisal volume comes in waves, while hiring and payroll do not. Send one report when your own production desk is full and nothing when it is not; there is no subscription, minimum volume, or staffing commitment. The free past-report trial lets us rehearse the handoff before the wave hits. Every live report still depends on my available capacity and receives a written acceptance and committed return time before production begins.</p></div>
-  </section>
-
-  <section class="qa" id="q-how-much-can-you-take-on">
-    <h2>How much can you take on?</h2>
-    <div class="a"><p>Less than a mill, on purpose. The goal is a small number of appraisers whose work and handoff I know before the next market-wide wave arrives. I hold the desk to what I can personally produce and review, and when the day is full, I tell you before accepting a report. I don't farm your files out to anybody, so capacity is honest and so are the return times.</p></div>
-  </section>
-
-  <section class="qa" id="q-where-do-you-work">
-    <h2>Where do you work?</h2>
-    <div class="a"><p>Packet-to-Draft travels outside my licensed markets, because when you supply the packet and the comps the market is already yours. Two current exceptions, so you don't waste a packet finding out: I'm not taking FHA or VA panel assignments, and I'm not taking Georgia assignments under present desk policy. Research + Draft needs a market I can work in, meaning authorized MLS access, competence, and whatever your state and client require. Dallas&ndash;Fort Worth is established now, and I set up new markets on request, usually one to three weeks. Tell me where you work and I'll tell you straight whether it's ready or needs setting up. Either way the checks are real: client permission, property-state requirements, competence, insurance, data rights, software.</p></div>
-  </section>
-
-  <section class="qa" id="q-what-about-my-clients-confidential-information">
-    <h2>What about my client's confidential information?</h2>
-    <div class="a"><p>Keep it out of the first form entirely. Documents move through the agreed private workflow, and status pages never show client names, addresses, report numbers, email addresses, or mobile numbers. Notification contact details and consent stay in the private order email and records, never in the status-page data. Assignment data is never sold or disclosed outside the service providers and workflow agreed for the work. If you want to judge the output before sharing anything at all, <a href="uad36-work-sample.pdf">View Sample UAD 3.6 Report</a>. We also confirm you're authorized to share a past assignment or engage assistance on live work before anything starts.</p></div>
-  </section>
-
-  <section class="qa" id="q-how-do-i-start">
-    <h2>How do I start?</h2>
-    <div class="a"><p>Use the <a href="start.html">short form</a> to request a free trial on an authorized past assignment. You get a trial number, private status link, and secure folder back. No call, no live-client deadline, and no commitment to send live work afterward.</p></div>
-  </section>
-
-  <div class="note">
-    <p><strong>Didn't find yours?</strong></p>
-    <p>Write me at <a href="mailto:mrr@appraisalpartners.net?subject=Production%20desk%20question">mrr@appraisalpartners.net</a>. I read every note myself and reply directly.</p>
-    <p><a class="btn" href="start.html">Try it free on a past report</a></p>
-  </div>
+    <div class="cta">
+      <h2>Still have a question?</h2>
+      <p>Email <a href="mailto:mrr@appraisalpartners.net">mrr@appraisalpartners.net</a> or call <a href="tel:+14692968726">(469) 296-8726</a>. I read every note and answer every call myself.</p>
+      <p><a class="btn" href="start.html">Test it on a past assignment</a></p>
+    </div>
   </main>
 
   <footer>
+    <span><a href="index.html">Appraisal Partners</a></span>
     <span>TX #1361115-CR &middot; CO #CR200002387</span>
-    <span><a href="index.html">Appraisal Partners of Texas, Inc.</a></span>
-    <span><a href="terms.html">Production terms</a></span>
+    <span><a href="terms.html">Terms</a></span>
     <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
   </footer>
 </div>

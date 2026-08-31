@@ -15,7 +15,7 @@ export const STAGES = Object.freeze([
     note: "Submitted. Waiting for scope review.",
     workflow: workflow(
       "Your request was received.",
-      "Matt reviews the request and packet before deciding whether to accept it.",
+      "Matt reviews the request and intake checklist items before deciding whether to accept it.",
       "Matt",
     ),
   }),
@@ -100,7 +100,7 @@ export const STAGES = Object.freeze([
     label: "Ready for your review",
     note: "Ready for your independent review.",
     workflow: workflow(
-      "The draft was placed in the private order folder for your review.",
+      "The editable report was placed in the private order folder for your review.",
       "Review it, send your changes in one list, then adopt or revise and sign in your software.",
       "You",
     ),
@@ -125,8 +125,8 @@ export const WAITING_WORKFLOW = workflow(
 );
 
 export const SCOPES = Object.freeze({
-  "packet-to-draft": "Packet-to-Draft",
-  "research-and-draft": "Research + Draft",
+  "packet-to-draft": "Your data & comps",
+  "research-and-draft": "Research & report",
   "prior-assignment-trial": "Prior-assignment trial",
 });
 
@@ -134,7 +134,7 @@ export const NOTIFICATION_MODES = Object.freeze({
   page: "Status page only",
   email: "Email",
   sms: "Text",
-  both: "Email + text",
+  both: "Email & text",
 });
 
 export function notificationDelivery(mode) {

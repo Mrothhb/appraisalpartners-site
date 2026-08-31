@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="A second UAD 3.6 production desk when your own is full. Keep inspecting and serving clients while Matt personally prepares an editable draft with private report tracking.">
+<meta name="description" content="UAD 3.6 report help for signing appraisers. Keep inspecting and serving clients while Matt completes an editable report with private tracking and automatic milestone updates.">
 <link rel="canonical" href="https://appraisalpartners.net/">
 <meta property="og:title" content="UAD 3.6 Overflow Desk for Appraisers | Appraisal Partners">
-<meta property="og:description" content="When volume hits, keep the assignments and send the desk work to Matt. Try the handoff free on an authorized past report before trusting a live order.">
+<meta property="og:description" content="Keep your volume moving while you learn UAD 3.6. Test the handoff on an authorized past assignment before trusting a live order.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/">
 <meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
@@ -142,6 +142,37 @@
   }
   .scopes p { font-size: 15.5px; margin: 0; }
   .fineprint { font-size: 14.5px; color: var(--muted); margin: 14px 0 0; }
+  .speed {
+    border-left: 3px solid var(--accent); margin: 24px 0 0; padding: 3px 0 3px 16px;
+    font-size: 16px;
+  }
+  .speed strong { display: block; font-size: 18px; margin-bottom: 3px; }
+  .process-link {
+    align-items: baseline; display: flex; flex-wrap: wrap; gap: 7px 18px;
+    font-size: 22px; font-weight: 700; text-decoration-thickness: 1px;
+  }
+  .process-link span {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;
+  }
+  .qa-list { border-top: 1px solid var(--rule); margin: 4px 0 0; }
+  .qa-list > div {
+    border-bottom: 1px solid var(--rule); display: grid; gap: 12px 24px;
+    grid-template-columns: minmax(170px, .7fr) minmax(0, 1.3fr); padding: 17px 0 14px;
+  }
+  .qa-list dt { font-weight: 700; }
+  .qa-list dd { color: var(--muted); margin: 0; }
+  .status-notifications {
+    align-items: start; display: grid; gap: 18px 28px; grid-template-columns: 1fr 250px;
+    margin-top: 24px;
+  }
+  .status-notifications p { margin-bottom: 0; }
+  .phone-preview { border: 1px solid var(--rule-strong); padding: 14px; background: var(--wash); }
+  .phone-head {
+    display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11px; color: var(--muted);
+  }
+  .phone-bubble { background: var(--paper); border: 1px solid var(--rule); padding: 12px; font-size: 14px; margin: 0; }
   .profile { display: grid; grid-template-columns: 140px 1fr; gap: 24px; align-items: start; }
   .profile img { width: 140px; height: 140px; object-fit: cover; border: 1px solid var(--rule); display: block; }
   .profile p:last-child { margin-bottom: 0; }
@@ -158,6 +189,7 @@
     .scopes { grid-template-columns: 1fr; }
     .profile { grid-template-columns: 1fr; gap: 16px; }
     .profile img { width: 132px; height: 132px; }
+    .qa-list > div, .status-notifications { grid-template-columns: 1fr; }
   }
   .skip {
     position: absolute; left: -9999px; top: 0;
@@ -275,54 +307,56 @@
     <span class="name">Appraisal Partners</span>
     <span class="cred">Matthew Roth &middot; Certified Residential Appraiser</span>
     <nav class="nav" aria-label="Primary">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="uad36.html">UAD 3.6</a>
       <a href="how-it-works.html">How it works</a>
       <a href="technology.html">Technology</a>
-      <a href="story.html">Three appraisers</a>
+      <a href="story.html">The story</a>
       <a href="about.html">About Matt</a>
       <a href="faq.html">FAQ</a>
-      <a href="start.html">Try it free on a past report</a>
     </nav>
   </header>
 
   <main id="main" tabindex="-1">
-    <p class="audience">For signing residential appraisers</p>
-    <h1>You walk the property. <span class="line">I write the report.</span></h1>
-    <p class="deadline">UAD 3.6 is mandatory for new UCDP submissions on <strong>November 2, 2026</strong>.</p>
-    <p class="lede">Volume comes in waves and reports stack up behind the inspections. Send me the desk work. I build and personally review the draft; you keep the client, the fee, every judgment, and the signature.</p>
-
-    <div class="answers">
-      <h2 class="sr-only">The short answers</h2>
-      <div>
-        <h3>What it costs</h3>
-        <p><strong>$89</strong> with your packet and comps. <strong>$149</strong> when I do the research. Never billed to your client.</p>
-      </div>
-      <div>
-        <h3>What comes back</h3>
-        <p>An editable UAD 3.6 draft in TOTAL with its support package. Written scope, flat price, and committed return time before production starts.</p>
-      </div>
-      <div>
-        <h3>Who signs it</h3>
-        <p>You do. Accept, change, or reject anything in it.</p>
-      </div>
-      <div>
-        <h3>How much I take on</h3>
-        <p>I hold the desk to what I can personally produce and review, and when the day is full, I tell you before you send.</p>
-      </div>
-    </div>
+    <p class="audience">UAD 3.6 report help for signing appraisers</p>
+    <h1>UAD 3.6 is here. <span class="line">Keep your volume moving while you learn the new report.</span></h1>
+    <p class="lede">Keep inspecting &amp; serving your clients. I complete the UAD 3.6 report, answer questions about the new form as we go &amp; return the editable file for your final review and signature.</p>
+    <p class="deadline">UAD 3.6 is required for new UCDP submissions beginning <strong>November 2, 2026</strong>.</p>
+    <p class="speed"><strong>Fast turnaround is the point.</strong> You get a committed return time before I accept the order. I still check the sources, comps, math &amp; every page before it leaves.</p>
 
     <div class="actions">
-      <a class="btn" href="start.html">Try it free on a past report</a>
+      <a class="btn" href="start.html">Test it on a past assignment</a>
       <a class="btn btn-alt" href="uad36-work-sample.pdf">View Sample UAD 3.6 Report</a>
     </div>
-    <p class="docs">
-      Sanitized sample, no client data &middot; <a href="how-it-works.html">The full process</a><br>
-      <strong>Buried right now?</strong> Live work doesn&rsquo;t need the trial first. Call <a href="tel:+14692968726">(469) 296-8726</a> or email <a href="mailto:mrr@appraisalpartners.net">mrr@appraisalpartners.net</a>.
-    </p>
+    <p class="fineprint">No charge. No live order. No due date. Use an authorized past assignment through the private order intake &amp; compare my report with yours.</p>
+
+    <section>
+      <h2>Choose how much you want me to handle.</h2>
+      <div class="scopes">
+        <article>
+          <p class="price">Research &amp; report &middot; $149 desk fee</p>
+          <h3>Send the order &amp; inspection work.</h3>
+          <p>Follow the checklist in your restricted AP order folder. Upload the order, engagement letter, contract if applicable, raw photos, sketch &amp; field notes. I handle the authorized research, pull the comps, complete the report &amp; return the editable report file.</p>
+          <p class="fineprint">Available where I have the authorized data access and can accept the market.</p>
+        </article>
+        <article>
+          <p class="price">Your data &amp; comps &middot; $89 desk fee</p>
+          <h3>Upload your data &amp; comp set.</h3>
+          <p>Use the private checklist to upload the order, inspection material, subject data, comps, supporting data &amp; market direction. I complete the report &amp; return the editable report file.</p>
+        </article>
+      </div>
+      <p class="fineprint"><strong>These are desk fees paid by the appraiser.</strong> They are not appraisal fees billed to your AMC, lender or client. Your appraisal fee stays yours.</p>
+    </section>
+
+    <section>
+      <p class="eyebrow">The handoff</p>
+      <a class="process-link" href="how-it-works.html"><strong>How does this work?</strong><span>See how it works &rarr;</span></a>
+    </section>
 
     <section>
       <p class="eyebrow">While it&rsquo;s with me</p>
-      <h2>Live Tracking of your Report status</h2>
-      <p>Production help is usually a black box. You send a file and wait. Every order here gets a private tracking page instead.</p>
+      <h2>Track the report from intake to delivery.</h2>
+      <p>Every accepted order gets a private tracking page. See the current checkpoint, what just finished, what happens next, who needs to act &amp; the committed return time.</p>
 
       <div class="livetrack">
         <div class="lt-header">
@@ -354,54 +388,81 @@
           </div>
         </div>
       </div>
-      <p class="os-caption">A demonstration order, not a real file. This is the page every accepted report gets.</p>
-
-      <p>Where it is, what happened last, what happens next, who has it, when it comes back. No field for your client&rsquo;s name, the property address, the borrower, or the value.</p>
-      <p class="docs"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>Open the demonstration order &rarr;</strong></a></p>
+      <div class="status-notifications">
+        <div>
+          <p class="eyebrow">Automatic milestone updates</p>
+          <p>Opt in to email, text, both or status page only. Alerts fire when accepted, when I need something, after research on longer orders &amp; when the report is ready. Reply STOP anytime.</p>
+        </div>
+        <div class="phone-preview" aria-label="Example text-message update">
+          <div class="phone-head"><strong>Appraisal Partners</strong><span id="lt-sms-time">Now</span></div>
+          <p class="phone-bubble" id="lt-sms-body">Text alerts begin after acceptance. Your private status page is already available.</p>
+        </div>
+      </div>
+      <p class="docs"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>View the full live tracking demo &rarr;</strong></a></p>
+      <p class="os-caption">Synthetic demonstration. No client or property data. The full page uses the same ten checkpoints.</p>
     </section>
 
+    <section>
+      <h2>If you&rsquo;re filling out reports after dinner, this is what I&rsquo;m here for.</h2>
+      <p>Send me the desk work. I only take what I can personally finish.</p>
+    </section>
 
     <section>
-      <p class="eyebrow">The handoff</p>
-      <h2>Three steps</h2>
-      <ol class="steps">
-        <li><span class="n">1.</span><span><strong>Send a short fit note.</strong> No address or borrower yet. You get an order number, a tracking link, and a secure folder.</span></li>
-        <li><span class="n">2.</span><span><strong>Send the packet.</strong> I check permission, scope, software, and capacity, then quote the scope, price, and return time. Submitted is not accepted.</span></li>
-        <li><span class="n">3.</span><span><strong>Follow it, then finish it.</strong> One round of changes is included, and anything I entered or wrote incorrectly is my fix.</span></li>
-      </ol>
-      <p class="fineprint">Flat price per report, quoted before production. No subscription or minimum. <a href="how-it-works.html">The full process and what each scope includes</a></p>
+      <h2>A few straight answers.</h2>
+      <dl class="qa-list">
+        <div><dt>Is $149 the appraisal fee?</dt><dd>No. It is what you pay me for the desk work on an appraisal you are billing your own client for.</dd></div>
+        <div><dt>Who does the work?</dt><dd>I do. I do not pass reports to a crew or send them offshore.</dd></div>
+        <div><dt>Why is the fee this low?</dt><dd>I spent years building the tools I use on my own reports. They handle the repetitive form work. I still check the sources, comps, math &amp; every page.</dd></div>
+        <div><dt>Can I track the status of my appraisal report?</dt><dd>Yes. Every accepted report gets a private tracking link. See where it is at each step and opt in to automatic email updates, text updates, both or status page only. <a href="how-it-works.html#tracking">See how it works</a>.</dd></div>
+        <div><dt>Do you take legacy 1004 orders?</dt><dd>No. This desk is UAD 3.6 only. I am not taking legacy UAD 2.6/1004 production orders.</dd></div>
+      </dl>
     </section>
 
     <section>
       <p class="eyebrow">Before you ask</p>
-      <h2>What I&rsquo;ll tell you up front</h2>
+      <h2>What I&rsquo;ll tell you up front.</h2>
       <ul class="plain">
         <li>My assistance is named in the certification. That disclosure is not optional, and I do not remove it.</li>
         <li>I don&rsquo;t farm your files out to anybody.</li>
-        <li>I use software automation and AI-assisted tools in this work, and yes, that includes the drafting. I check every draft against its sources and read it through before it leaves.</li>
+        <li>I use software automation &amp; AI-assisted tools in this work. I check every report against its sources and read it through before it leaves.</li>
         <li>Your client has to permit outside assistance. You hold that engagement letter.</li>
-        <li>No shared MLS, portal, or software credentials, in either direction.</li>
+        <li>No shared MLS, portal or software credentials, in either direction.</li>
       </ul>
     </section>
 
     <section>
       <p class="eyebrow">Who you would be working with</p>
-      <h2>Who&rsquo;s behind the desk</h2>
+      <h2>I&rsquo;m Matt Roth.</h2>
       <div class="profile">
         <img src="photos/matt.jpg" alt="Matt Roth" width="140" height="140">
         <div>
-          <p>I&rsquo;m Matt Roth, second-generation appraiser, Certified Residential in Texas and Colorado, twenty years across three states. The appraisal comes before the form. That&rsquo;s the standard I was raised on, and the one the desk runs on.</p>
-          <p class="docs"><a href="about.html">About Matt</a> &middot; <a href="story.html">Three appraisers, three different weeks</a></p>
+          <p>I&rsquo;m a second-generation Certified Residential Appraiser. I started in my dad&rsquo;s Southern California shop in 2006, then ran appraisal practices in California, Colorado &amp; Texas.</p>
+          <p><strong>TX #1361115-CR &middot; CO #CR200002387</strong><br>Trained under Tim Roth, MAI, SRA, from trainee through licensure.</p>
+          <p class="docs"><a href="about.html">About Matt</a> &middot; <a href="story.html">The story</a></p>
         </div>
       </div>
     </section>
 
+    <section>
+      <p class="eyebrow">Why I built the desk</p>
+      <h2>The work I want to do.</h2>
+      <p>I&rsquo;ve run appraisal shops and know the whole job. The part I love begins back at the desk: finding the right data, working through paired sales, testing what the market is saying &amp; writing the what, why, where &amp; how so the conclusion makes sense.</p>
+      <p>You keep the client, inspection &amp; final judgment. I focus on the production behind you. That&rsquo;s why this is a desk fee, not an appraisal fee.</p>
+    </section>
+
     <div class="cta">
-      <p><strong>Try it on a report you already know.</strong></p>
-      <p>Use a closed prior assignment you&rsquo;re authorized to share. I work from the original packet, you hold your finished report back, then compare. No live client, no due date, no cost.</p>
-      <p><a class="btn" href="start.html">Try it free on a past report</a></p>
-      <p class="fineprint">Prefer to write first? <a href="mailto:mrr@appraisalpartners.net?subject=Production%20desk%20question">mrr@appraisalpartners.net</a>. I read every note myself and reply directly.</p>
+      <h2>Don&rsquo;t trust me with a live order yet.</h2>
+      <p>I wouldn&rsquo;t either. I&rsquo;ll complete a past assignment at no charge so you can compare the work before a live client or due date is involved.</p>
+      <p>Not every past report can be used. If a lender or AMC does not permit sharing, do not upload that file. A closed estate, divorce or other private-use assignment may work only when you have the original client&rsquo;s explicit permission. Redaction alone is not permission.</p>
+      <p><a class="btn" href="start.html">Test it on a past assignment</a></p>
+      <p class="fineprint">No shareable past assignment? Call <a href="tel:+14692968726">(469) 296-8726</a> before using a live order.</p>
     </div>
+
+    <section>
+      <p class="eyebrow">Know another appraiser?</p>
+      <h2>Send them appraisalpartners.net.</h2>
+      <p>No referral program or affiliate pitch. If the desk helps, pass the site to an appraiser whose reports are stacking up.</p>
+    </section>
 </main>
 
   <script type="module">
@@ -438,6 +499,12 @@
       notifications: "both", long_window: false, demo: true,
     };
     const acceptedAt = STAGES.findIndex((stage) => stage.code === "accepted");
+    const smsForStage = (code) => {
+      if (code === "accepted") return "AP-4827 accepted. Your return time is set. Open your private tracking link for the full order status. Reply STOP to opt out.";
+      if (["research", "comparables", "drafting", "validation", "review"].includes(code)) return "AP-4827 update: research is complete and report preparation is underway. Open your private tracking link for details. Reply STOP to opt out.";
+      if (code === "ready" || code === "complete") return "AP-4827 is ready for your review. Open the private order folder and tracking link for delivery details. Reply STOP to opt out.";
+      return "Text alerts begin after acceptance. Your private status page is already available.";
+    };
 
     const frame = (i) => {
       const before = i < acceptedAt;
@@ -463,6 +530,8 @@
       byId("lt-return-label").textContent = accepted ? "Illustrative trial return" : "Return time";
       byId("lt-return").textContent = accepted ? formatCentralTime(payload.committed_return) : "Pending acceptance";
       byId("lt-fill").style.width = Math.round(((i + 1) / STAGES.length) * 100) + "%";
+      byId("lt-sms-time").textContent = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/Chicago" }).format(new Date());
+      byId("lt-sms-body").textContent = smsForStage(STAGES[i].code);
 
       const list = byId("lt-rail");
       list.replaceChildren();

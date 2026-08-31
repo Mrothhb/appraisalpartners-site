@@ -8,14 +8,14 @@
 <!-- Public configuration; the Apps Script deployment passed the private accepted/duplicate/rejected smoke test. -->
 <meta name="ap-intake-endpoint" content="https://script.google.com/macros/s/AKfycbyf_YUnCq8lWuJSCl8fYXuMvBDX8CJ48oLRHhP-tpTZI6X-bjal_IhAy7gduJFC2GkWQg/exec">
 <link rel="canonical" href="https://appraisalpartners.net/start.html">
-<meta property="og:title" content="Try It Free on a Past Report | Appraisal Partners">
+<meta property="og:title" content="Test It on a Past Assignment | Appraisal Partners">
 <meta property="og:description" content="Use an authorized closed prior assignment to judge the work without risking a live client report or deadline.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/start.html">
 <meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
-<title>Try It Free on a Past Report | Appraisal Partners</title>
+<title>Test It on a Past Assignment | Appraisal Partners</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
@@ -167,6 +167,7 @@
     <span class="cred">Free prior-assignment trial</span>
     <nav class="nav" aria-label="Primary">
       <a href="index.html">Home</a>
+      <a href="uad36.html">UAD 3.6</a>
       <a href="how-it-works.html">How it works</a>
       <a href="technology.html">Technology</a>
       <a href="story.html">The story</a>
@@ -177,10 +178,10 @@
 
   <main id="main" tabindex="-1">
 
-  <h1>Try it free on a <span class="line">past report.</span></h1>
+  <h1>Test the handoff on a <span class="line">past assignment.</span></h1>
   <p class="lede">No live client. No due-date gamble. Use a closed prior assignment you are authorized to share, and judge my work against a report you already know. The trial is free.</p>
-  <p><strong>Use the trial to test the handoff before you need it.</strong> Judge the private report tracking, draft quality, and correction loop while your calendar is calm. If we fit, you will already know where to send the next packet when inspections stack up and the reports behind them all have due dates.</p>
-  <p>This page sends me a short trial request, so you do not have to compose an email or get on a call. After I review it, I reply with a trial number, private status link, and secure folder. Hold back your finished report until my draft comes back so the comparison is real.</p>
+  <p><strong>Use the trial to test the handoff before you need it.</strong> Judge the private report tracking, completed report and correction loop while your calendar is calm. If we fit, you will already know the intake process when inspections stack up and the reports behind them all have due dates.</p>
+  <p>This page submits only a short request, so you do not have to compose an email or get on a call. After I review it, I reply with a trial number, private status link, restricted upload folder &amp; checklist. Hold back your finished report until mine comes back so the comparison is real.</p>
   <p class="fineprint">Keep the property address, borrower names, and assignment documents out of this form. Those go in the private folder after I confirm the trial. Redaction by itself does not create permission to share a client file.</p>
 
   <form id="startform" action="start.html" method="post">
@@ -214,9 +215,9 @@
         <input type="email" id="f-email" name="email" autocomplete="email" maxlength="254" required>
       </div>
       <div class="field">
-        <label for="f-software">Your report software and version</label>
-        <input type="text" id="f-software" name="software" maxlength="100" placeholder="e.g. TOTAL 2026" required>
-        <p class="hint">TOTAL is what I deliver into today. Name yours either way; it tells me which adapter to build next.</p>
+        <label for="f-software">Your report software &amp; version</label>
+        <input type="text" id="f-software" name="software" maxlength="100" placeholder="Your current UAD 3.6 report software" required>
+        <p class="hint">Name it so I can confirm the working-file format and delivery route before acceptance.</p>
       </div>
     </div>
 
@@ -233,8 +234,8 @@
 
     <fieldset>
       <legend>What do you want to test?</legend>
-      <div class="opt"><input type="radio" id="d-mine" name="datalane" value="Build from my packet and comps" checked><label for="d-mine">Build from my original packet, comps, data, and direction</label></div>
-      <div class="opt"><input type="radio" id="d-research" name="datalane" value="Research and build it"><label for="d-research">Research and build it independently (eligible assignments)</label></div>
+      <div class="opt"><input type="radio" id="d-mine" name="datalane" value="My data and comps" checked><label for="d-mine">Complete it from my inspection material, data, comps &amp; direction</label></div>
+      <div class="opt"><input type="radio" id="d-research" name="datalane" value="Research and report"><label for="d-research">Handle the authorized research &amp; complete the report (eligible assignments)</label></div>
     </fieldset>
 
     <fieldset>
@@ -245,22 +246,22 @@
     </fieldset>
 
     <fieldset>
-      <legend>The draft comes back as</legend>
-      <div class="opt"><input type="radio" id="fmt-zap" name="format" value="Native TOTAL file" checked><label for="fmt-zap">Native TOTAL working file (plus the support package)</label></div>
-      <div class="opt"><input type="radio" id="fmt-zip" name="format" value="XML/PDF package"><label for="fmt-zip">UAD 3.6 XML + draft PDF + exhibits package</label></div>
+      <legend>The report comes back as</legend>
+      <div class="opt"><input type="radio" id="fmt-zap" name="format" value="Editable working file" checked><label for="fmt-zap">Editable report file with the agreed support package</label></div>
+      <div class="opt"><input type="radio" id="fmt-zip" name="format" value="XML/PDF package"><label for="fmt-zip">UAD 3.6 XML, PDF &amp; exhibits package</label></div>
       <div class="opt"><input type="radio" id="fmt-unsure" name="format" value="Not sure"><label for="fmt-unsure">Not sure, let's confirm at acceptance</label></div>
     </fieldset>
 
     <fieldset>
       <legend>How should I update you?</legend>
-      <p class="hint">The private tracker shows every checkpoint. Alerts call out acceptance, anything needed from you, and when the draft is ready; longer turns can also include research completion.</p>
+      <p class="hint">The private tracker shows every checkpoint. Automatic alerts call out acceptance, anything needed from you, and when the report is ready; longer turns can also include research completion.</p>
       <div class="notify-toggle">
         <input type="checkbox" id="n-email" name="notify-email" checked>
         <label for="n-email"><strong>Email me the milestone alerts</strong><span>Sent to the address above.</span></label>
       </div>
       <div class="notify-toggle">
         <input type="checkbox" id="n-text" name="notify-text">
-        <label for="n-text"><strong>Text me the milestone alerts</strong><span>One-to-one order updates from Matt's business line. Never marketing.</span></label>
+        <label for="n-text"><strong>Text me the milestone alerts</strong><span>Automatic order updates from Matt's business line. Never marketing.</span></label>
       </div>
       <p class="hint">Leave both unchecked and you'll use the status page only. Either way, the page is included and updated as the report moves.</p>
     </fieldset>
@@ -269,11 +270,11 @@
       <div class="field">
         <label for="f-mobile">Mobile number for order texts</label>
         <input type="tel" id="f-mobile" name="mobile" autocomplete="tel" inputmode="tel" maxlength="30" aria-describedby="sms-details">
-        <p class="hint" id="sms-details">Matt sends these order updates manually from his business line for now. Your number and consent stay in the private request email and never go in the status-page data.</p>
+        <p class="hint" id="sms-details">These transactional updates follow the order milestones you selected. Your number and consent stay in the private request record and never go in the status-page data.</p>
       </div>
       <div class="consent">
         <input type="checkbox" id="f-sms-consent" name="sms_consent" value="yes">
-        <label for="f-sms-consent">I agree to receive manual transactional text messages from Appraisal Partners at the mobile number above about my trial or orders. No marketing or automated messages. Message and data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.</label>
+        <label for="f-sms-consent">I agree to receive automatic transactional text messages from Appraisal Partners at the mobile number above about my trial or orders. No marketing messages. Message and data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.</label>
       </div>
     </div>
 
@@ -283,7 +284,7 @@
       <p class="hint">The trial and any later order run under the <a href="terms.html">desk terms</a>.</p>
     </div>
 
-    <button class="btn" id="submit-intake" type="submit" disabled>Send my free trial request</button>
+    <button class="btn" id="submit-intake" type="submit" disabled>Submit my trial request</button>
     <div class="form-result" id="intake-result" role="status" aria-live="polite" hidden></div>
     <p class="fineprint">This sends only the contact, trial-scope, software, and update choices shown above. It cannot accept a property address, borrower name, report, photo, or assignment file. One accepted trial per appraiser or firm, subject to scope and capacity. If the secure form is unavailable, I will open the same request in your mail app instead; nothing is sent until you press Send. Prefer to write directly? <a id="email-fallback" href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a> works too.</p>
   </form>
@@ -291,15 +292,15 @@
   <section id="next">
     <h2>What happens after you send the request</h2>
     <ol class="steps">
-      <li><span class="n">1.</span><span><strong>I review the request and reply with a trial number, private status link, and secure folder.</strong> Drop in the original order and inspection packet, but keep your completed report back for now.</span></li>
+      <li><span class="n">1.</span><span><strong>I review the request and reply with a trial number, private status link, restricted upload folder &amp; checklist.</strong> Upload the required items through that private intake, but keep your completed report back for now.</span></li>
       <li><span class="n">2.</span><span><strong>I confirm the trial.</strong> Received is not accepted. I check permission, scope, software, and capacity, then tell you exactly what I need. The accepted prior-assignment trial is $0 and has no live-client deadline.</span></li>
-      <li><span class="n">3.</span><span><strong>You watch the trial move on its status page.</strong> When the draft comes back, compare it with the report you completed. One round of changes is included, and anything I entered or wrote incorrectly is my fix. You can judge the research, writing, organization, and corrections without putting a current assignment at risk.</span></li>
+      <li><span class="n">3.</span><span><strong>You watch the trial move on its status page.</strong> When the report comes back, compare it with the one you completed. One round of changes is included, and anything I entered or wrote incorrectly is my fix. You can judge the research, writing, organization &amp; corrections without putting a current assignment at risk.</span></li>
     </ol>
   </section>
 
   <section id="checklist">
-    <h2>What to send, by assignment</h2>
-    <p>Pick your scenario above, or browse here. Required is what production needs to start. Helpful is what makes the draft better and your review shorter.</p>
+    <h2>What to upload, by assignment</h2>
+    <p>Pick your scenario above, or browse here. Required is what production needs to start. Helpful is what makes the report better and your review shorter.</p>
 
     <div class="scenario" id="ck-full-interior">
       <div class="checklist">
@@ -453,7 +454,7 @@
   }
   function notificationPreferenceLabel() {
     var e = emailUpdatesSelected(), t = textUpdatesSelected();
-    if (e && t) return 'Email + text';
+    if (e && t) return 'Email & text';
     if (e) return 'Email only';
     if (t) return 'Text only';
     return 'Status page only';
@@ -501,11 +502,11 @@
       'Past assignment type: ' + sel.options[sel.selectedIndex].text,
       'Trial scope: ' + r('datalane'),
       'Comps: ' + r('compdir'),
-      'Draft format: ' + r('format'),
+      'Working format: ' + r('format'),
       'Updates: ' + notificationPreference,
       'Mobile: ' + (includesText ? v('f-mobile') : 'not provided'),
       'SMS consent: ' + (includesText && smsConsent.checked
-        ? 'Yes (' + v('f-sms-consent-version') + '): manual transactional trial and order updates only; no marketing or automated messages; message and data rates may apply; reply STOP to opt out; consent is not a condition of purchase.'
+        ? 'Yes (' + v('f-sms-consent-version') + '): automatic transactional trial and order updates only; no marketing messages; message and data rates may apply; reply STOP to opt out; consent is not a condition of purchase.'
         : 'Not requested'),
       '',
       'Trial authority consent (' + v('f-trial-consent-version') + '): This is a closed prior assignment, not live client work. I have reviewed the engagement restrictions and have actual authority and client permission to share it for this trial. It will not be signed, delivered, or relied on.',
