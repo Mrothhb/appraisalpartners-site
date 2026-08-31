@@ -206,8 +206,8 @@
       </div>
     </noscript>
     <div class="honeypot" aria-hidden="true">
-      <label for="f-company-website">Company website</label>
-      <input type="text" id="f-company-website" name="company_website" tabindex="-1" autocomplete="off">
+      <label for="f-apx-verify">Leave this field empty</label>
+      <input type="text" id="f-apx-verify" name="apx_verify" tabindex="-1" autocomplete="off">
     </div>
     <input type="hidden" id="f-form-version" name="form_version" value="ap-intake-v1">
     <input type="hidden" id="f-trial-consent-version" name="trial_consent_version" value="trial-authority-2026-08-30">
@@ -603,6 +603,8 @@
   if (!allowedEndpoint) submitButton.textContent = 'Prepare my free trial request';
 
   form.addEventListener('submit', function (e) {
+    var trap = document.getElementById('f-apx-verify');
+    if (trap) trap.value = '';
     e.preventDefault();
     if (!form.reportValidity()) return;
     emailFallback.href = preparedEmailHref();
