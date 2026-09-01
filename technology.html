@@ -132,6 +132,7 @@
     font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; z-index: 10;
   }
   .skip:focus { left: 8px; top: 8px; }
+  @media (max-width: 600px) { .sheet { padding-top: 28px; } .nav { gap: 5px 14px; } }
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-pNkpzZuFyeVpLVvH7hc8w.js"></script>
@@ -152,7 +153,7 @@
       <a href="how-it-works.html">How it works</a>
       <a href="technology.html" aria-current="page">Technology</a>
       <a href="story.html">Three appraisers</a>
-      <a href="about.html">About Matt</a>
+      <a href="about.html">About us</a>
       <a href="faq.html">FAQ</a>
       <a href="start.html">Try it free</a>
     </nav>
@@ -161,21 +162,21 @@
   <main id="main" tabindex="-1">
     <p class="eyebrow">What runs behind the desk</p>
     <h1>Most AI you've been shown <span class="line">is a chat window.</span></h1>
-    <p class="lede">Paste an assignment into a chatbot and you get confident nonsense. That experience is why most appraisers believe AI cannot touch this work, and for a chat window they are right. What runs here is not that. It is a production system with adapters into the report software, source rules, deterministic checks, and a human review that has to pass before anything leaves.</p>
-    <p>What runs here is a production system I built for my own reports first, and this page describes it plainly enough that you can judge whether you would trust it with yours.</p>
+    <p class="lede">Paste an assignment into a chatbot and you get confident nonsense. That experience is why most appraisers believe AI cannot touch this work, and for a chat window they are right. What runs here is not that. It is a production system with adapters into the report software, source rules, deterministic checks, and a named human read that has to pass before anything leaves.</p>
+    <p>Matt built it for his own reports first. This page describes it plainly enough that you can judge whether you would trust it with yours.</p>
 
     <section>
       <p class="eyebrow">Why it exists</p>
       <h2>Built by an appraiser who spent a decade as an engineer</h2>
-      <p>I studied mathematics and computer science at UC San Diego, then spent about ten years in engineering and product operations, most of it as a solutions engineer designing systems for people who had to live with the output. I am also a second-generation appraiser who trained through licensure in my father's practice.</p>
-      <p>Those two halves rarely land in the same person, and that is the only reason this exists. Software people who build appraisal tools have never had to defend a value to a reviewer. Appraisers who understand the defense have rarely had the tooling to automate around it. I have had to do both, so the system is built around the part that actually carries risk: the evidence behind every fact in the report.</p>
+      <p>Matt studied mathematics and computer science at UC San Diego, then spent about ten years in engineering and product operations, designing systems for people who had to live with the output. He is also a second-generation appraiser who trained through licensure in Tim's practice.</p>
+      <p>Those two halves rarely land at the same desk, and that is the only reason this exists. Software people who build appraisal tools have never had to defend a value to a reviewer. Appraisers who understand the defense have rarely had the tooling to automate around it. This desk has had to do both, so the system is built around the part that actually carries risk: the evidence behind every fact in the report.</p>
     </section>
 
     <section>
       <p class="eyebrow">The core of it</p>
       <h2>It writes into your software, not beside it</h2>
       <p>Most automation in this space hands you a document to copy from. This writes into the report itself through an adapter, so the report returns as a working file with the data placed and the photos routed. You open your own software and everything is editable exactly where you expect it, rather than retyping from a PDF.</p>
-      <p>Your working-file format and delivery route are confirmed at intake. I will not promise compatibility with software I have not tested, so the handoff is settled before you upload assignment material.</p>
+      <p>Your working-file format and delivery route are confirmed at intake. We will not promise compatibility with software we have not tested, so the handoff is settled before you upload assignment material.</p>
       <div class="callout">
         <p><strong>Every fact carries its source.</strong> The system does not treat all evidence as equal. A sketch is authoritative for gross living area and beats both the tax record and the MLS. An assignment order proves assignment facts only, a sales contract proves transaction facts only, and neither one proves property condition or market behavior. Photos beat a stale listing on whether a pool exists. Where no market-derived rate can be isolated, the limitation gets disclosed rather than papered over, because failing to isolate an effect is not proof there isn't one.</p>
       </div>
@@ -185,37 +186,37 @@
     <section>
       <p class="eyebrow">Stage by stage</p>
       <h2>A second appraiser at the next desk, not an autopilot</h2>
-      <p>The word people expect here is automation, and it's the wrong word. Nothing on an assignment runs off on its own and hands me a finished report to bless. The system works alongside me at every stage, the way a second appraiser at the next desk would, and I am present at each one.</p>
-      <p>What that buys is not speed at the expense of thought. It's the opposite. I am not typing, clicking, entering data, or moving between screens, so the hours go where they belong: the market, the boundary, the comparables, and the judgment underneath all three. The work I do on your assignment is the work only an appraiser can do.</p>
+      <p>The word people expect here is automation, and it's the wrong word. Nothing on an assignment runs off on its own and hands back a finished report to bless. The system works alongside Matt at every stage, the way a second appraiser at the next desk would, and he is present at each one.</p>
+      <p>What that buys is not speed at the expense of thought. It's the opposite. Nobody here is typing, clicking, entering data, or moving between screens, so the hours go where they belong: the market, the boundary, the comparables, and the judgment underneath all three. The work we do on your assignment is the work only an appraiser can do.</p>
 
       <div class="stage">
         <h3>Intake and audit</h3>
         <p>The moment an assignment is accepted, before any production starts, the workfile and order folder are built out and the property gets a full audit. Public record, prior transfers, the assignment documents, anything that contradicts anything else. Surprises are cheap to handle now and expensive to handle in the grid.</p>
-        <p class="mine"><strong>My part:</strong> I read the audit before work begins. If something in it changes the assignment, you hear from me then, not on delivery day.</p>
+        <p class="mine"><strong>Matt's part:</strong> he reads the audit before work begins. If something in it changes the assignment, you hear from us then, not on delivery day.</p>
       </div>
 
       <div class="stage">
         <h3>Market work, side by side</h3>
-        <p>This is the part that decides whether the report is any good, so this is where I sit down. The market analysis, the boundary, and the comparable selection get worked through with the system alongside me. It assembles candidates and tests them against the data. I set the market boundary and choose the comparable set. Every fact bound for the workfile is settled here, with its source, before anything is filled.</p>
-        <p class="mine"><strong>My part:</strong> the analytical work behind the report. I set the boundary I propose and pick the comparable set I recommend, and I document the reasoning and the whole candidate pool so you can judge both. What goes in the signed report is yours. A machine can find nine candidates. It cannot know the closest one on paper backs a highway.</p>
+        <p>This is the part that decides whether the report is any good, so this is where Matt sits down. The market analysis, the boundary, and the comparable selection get worked through with the system alongside him. It assembles candidates and tests them against the data. He sets the market boundary and chooses the comparable set. Every fact bound for the workfile is settled here, with its source, before anything is filled.</p>
+        <p class="mine"><strong>Matt's part:</strong> the analytical work behind the report. He documents the reasoning and the whole candidate pool so you can judge both, and what goes in the signed report is yours. A machine can find nine candidates. It cannot know the closest one on paper backs a highway.</p>
       </div>
 
       <div class="stage">
         <h3>Collection and fill</h3>
         <p>With the analysis settled, the authorized data is collected and the report is filled and packed into the native file. Field mapping, readback of what actually landed, photo routing, and package-identity checks. These either pass or fail. They are machinery, and machinery should do the things that have a right answer.</p>
-        <p class="mine"><strong>My part:</strong> almost none, deliberately. This is the stage that used to eat the evening.</p>
+        <p class="mine"><strong>Matt's part:</strong> almost none, deliberately. This is the stage that used to eat the evening.</p>
       </div>
 
       <div class="stage">
         <h3>Adversarial review</h3>
         <p>A separate review pass reads the filled report the way a staff appraiser would on a bad day: critical, analytical, and actively looking for the weak line. It has not seen the work sympathetically, because it did not do the work. It produces one consolidated repair list. Repair, repack, re-render, verify. Three passes at most, and past that the file comes to you with the unresolved items named rather than quietly buried.</p>
-        <p class="mine"><strong>My part:</strong> I set what it is looking for, and I rule on what it finds. Not every objection is right.</p>
+        <p class="mine"><strong>Matt's part:</strong> he sets what it is looking for, and he rules on what it finds. Not every objection is right.</p>
       </div>
 
       <div class="stage">
-        <h3>My pass</h3>
-        <p>Then I read the whole report myself, on the rendered page as you will see it, against the sources. This is the step the price pays for and the one nothing else substitutes for.</p>
-        <p class="mine"><strong>My part:</strong> all of it. Nothing leaves this desk that I have not read.</p>
+        <h3>Matt's pass</h3>
+        <p>Then Matt reads the whole report, on the rendered page as you will see it, against the sources. This is the step the price pays for and the one nothing else substitutes for.</p>
+        <p class="mine"><strong>Matt's part:</strong> all of it. Nothing leaves this desk that he has not read.</p>
       </div>
 
       <div class="stage">
@@ -228,10 +229,10 @@
     <section>
       <p class="eyebrow">The honest part</p>
       <h2>What goes wrong, and what catches it</h2>
-      <p>Any system that writes can write something wrong. Pretending otherwise would tell you more about me than about the software. Three failure modes are real, and each has a control that exists because the failure is expected.</p>
+      <p>Any system that writes can write something wrong. Pretending otherwise would tell you more about us than about the software. Three failure modes are real, and each has a control that exists because the failure is expected.</p>
       <ul class="plain">
         <li><strong>Machine-written commentary can be fluent and wrong.</strong> It reads well, which is exactly what makes it dangerous. The review reads the rendered report the way a reviewer would, not the way an author would.</li>
-        <li><strong>A comparable can look right on paper and be wrong on the ground.</strong> Source rules and my own judgment on the comparable set both sit ahead of the grid, and the full candidate pool ships with the file so you can see what was considered and rejected, not just what was chosen.</li>
+        <li><strong>A comparable can look right on paper and be wrong on the ground.</strong> Source rules and an appraiser's judgment on the comparable set both sit ahead of the grid, and the full candidate pool ships with the file so you can see what was considered and rejected, not just what was chosen.</li>
         <li><strong>Source conflicts can get smoothed instead of surfaced.</strong> Precedence is defined in advance, and where evidence genuinely conflicts or cannot support a conclusion, it is disclosed as an open item rather than resolved silently.</li>
       </ul>
       <div class="rulebox">
@@ -241,7 +242,7 @@
         <p>Values typed or confirmed by the appraiser are never overwritten.</p>
         <p>Never source a value from a prior report, a cache, or an internal claim.</p>
       </div>
-      <p>If a report misses the accepted scope in a way the included revision round cannot fix, that report is not billed. My production errors are corrected without another fee.</p>
+      <p>If a report misses the accepted scope in a way the included revision round cannot fix, that report is not billed. Our production errors are corrected without another fee.</p>
     </section>
 
     <section>
@@ -249,14 +250,14 @@
       <h2>Where your assignment material goes</h2>
       <p>Assignment materials move through a private order folder or another secure channel you approve. Credentials are never shared in either direction, no client is ever solicited, and assignment data is never sold. Your private status page carries no property address, borrower, client name, report data, or value. It does carry the scope and the desk fee, so it belongs in the order folder rather than a group thread.</p>
       <p>The specific providers, the data each one receives, retention and deletion, and the full data path are documented and approved with you at onboarding, before a live report is accepted. That happens in writing, per client, rather than as a claim on a web page, because your client's requirements govern and they are not all the same.</p>
-      <p class="fineprint">If your client prohibits outside assistance or the approved data path, the assignment is not a fit for this desk and I will tell you before we start.</p>
+      <p class="fineprint">If your client prohibits outside assistance or the approved data path, the assignment is not a fit for this desk and we will tell you before we start.</p>
     </section>
 
     <section>
       <p class="eyebrow">Early access</p>
       <h2>Not available yet</h2>
-      <p>The system I built isn't available to the public at this time. Appraisers keep asking whether they can run it themselves, and the answer eventually is yes, deliberately slowly. Installing it is not the hard part. Knowing which judgments the system is allowed to make, and which ones it must hand back to you, is the hard part, and that is not something a download teaches.</p>
-      <p>When it opens, it will be a small number of appraisers onboarded by hand, one at a time, with the training attached. If you want to know when that happens, say so and I'll put you on the list. No pitch will follow.</p>
+      <p>The system isn't available to the public at this time. Appraisers keep asking whether they can run it themselves, and the answer eventually is yes, deliberately slowly. Installing it is not the hard part. Knowing which judgments the system is allowed to make, and which ones it must hand back to you, is the hard part, and that is not something a download teaches.</p>
+      <p>When it opens, it will be a small number of appraisers onboarded by hand, one at a time, with the training attached. If you want to know when that happens, say so and we'll put you on the list. No pitch will follow.</p>
       <p><a class="btn" href="mailto:mrr@appraisalpartners.net?subject=Early%20access%20list">Ask about early access</a></p>
     </section>
 
