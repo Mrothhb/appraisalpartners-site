@@ -126,11 +126,14 @@
     font-family: "IBM Plex Mono", "Courier New", monospace;
     font-size: 13px; margin: 14px 0 0; color: var(--muted); line-height: 1.9;
   }
-  ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 15px; }
-  ol.steps li { display: grid; grid-template-columns: 30px 1fr; gap: 12px; }
+  ol.steps { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  ol.steps li { border-top: 2px solid var(--accent); padding-top: 11px; }
+  ol.steps strong { display: block; margin-bottom: 3px; }
+  ol.steps li > span:last-child { color: var(--muted); font-size: 15.5px; }
   ol.steps .n {
+    display: block; margin-bottom: 7px;
     font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 14px; color: var(--accent); padding-top: 3px;
+    font-size: 12px; letter-spacing: .1em; color: var(--accent);
   }
   ul.plain { margin: 0 0 18px; padding: 0 0 0 1.15em; }
   ul.plain li { margin-bottom: 10px; }
@@ -156,6 +159,7 @@
     font-family: "IBM Plex Mono", "Courier New", monospace;
     font-size: 12px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;
   }
+  .turn { margin: 10px 0 6px; }
   .qa-list { border-top: 1px solid var(--rule); margin: 4px 0 0; }
   .qa-list > div {
     border-bottom: 1px solid var(--rule); display: grid; gap: 12px 24px;
@@ -181,7 +185,7 @@
   }
   footer .postal-address { flex-basis: 100%; font-style: normal; }
   @media (max-width: 600px) {
-    .scopes { grid-template-columns: 1fr; }
+    .scopes, ol.steps { grid-template-columns: 1fr; }
     .profile { grid-template-columns: 96px 1fr; gap: 14px; }
     .profile img { width: 96px; height: 96px; }
     .qa-list > div, .status-notifications { grid-template-columns: 1fr; }
@@ -348,6 +352,27 @@
   @keyframes bubble { from { opacity: 0; transform: translateY(7px) scale(.97); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .thread li { animation: none; } }
   @media (max-width: 620px) { .iphone { margin: 0 auto; } }
+  .convert-band {
+    border: 2px solid var(--accent); background: var(--wash);
+    padding: 24px 26px 22px; margin-top: 30px;
+  }
+  .band-badge {
+    display: inline-block; background: var(--accent); color: var(--paper);
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase;
+    padding: 5px 10px; margin: 0 0 15px;
+  }
+  .band-kicker {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: clamp(19px, 4.4vw, 26px); font-weight: 500; letter-spacing: .05em;
+    color: var(--accent-deep); margin: 0 0 8px;
+  }
+  .band-h { font-size: clamp(25px, 5vw, 34px); line-height: 1.16; margin: 0 0 12px; text-wrap: balance; }
+  .band-sub { font-size: 16.5px; margin: 0 0 18px; }
+  .band-links {
+    align-items: center; display: flex; flex-wrap: wrap; gap: 12px 20px; margin: 0;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px;
+  }
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-pNkpzZuFyeVpLVvH7hc8w.js"></script>
@@ -365,6 +390,7 @@
     <span class="cred">Matt Roth, Certified Residential &middot; Tim Roth, MAI, SRA</span>
     <nav class="nav" aria-label="Primary">
       <a href="uad36.html">UAD 3.6</a>
+      <a href="convert.html">Convert</a>
       <a href="how-it-works.html">How it works</a>
       <a href="technology.html">Technology</a>
       <a href="story.html">Three appraisers</a>
@@ -377,16 +403,15 @@
   <main id="main" tabindex="-1">
     <p class="audience">UAD 3.6 report help for signing appraisers</p>
     <h1>Your first UAD 3.6 reports <span class="line">will be the slow ones. Send us those.</span></h1>
-    <p class="lede">Keep inspecting &amp; serving your clients. Send us the desk work. We complete the report, answer your questions about the new form as we go &amp; return the editable file for your final review and signature.</p>
+    <p class="lede">If you&rsquo;re filling out reports after dinner, this is what we&rsquo;re here for. Send us the overflow. We only take what we can personally finish.</p>
     <p class="deadline">UAD 3.6 is required for new UCDP submissions beginning <strong>November 2, 2026</strong>.</p>
-    <p class="speed"><strong>You&rsquo;ll learn the form on our reports.</strong> Ask anything about 3.6; we answer against the fields in your own report. By the time you&rsquo;re comfortable, you&rsquo;ll have watched it done a dozen times.</p>
-    <p class="speed"><strong>Fast turnaround is the point.</strong> You get a committed return time before we accept the order.</p>
 
     <div class="actions">
       <a class="btn" href="start.html">Test it on a past assignment</a>
       <a class="btn btn-alt" href="uad36-work-sample.pdf" target="_blank" rel="noopener">See a finished UAD 3.6 report</a>
     </div>
-    <p class="fineprint">See one of your own closed reports rebuilt in UAD 3.6, before you have to write one on a deadline. No charge, no live order, no due date.</p>
+    <p class="fineprint">See one of your own closed reports rebuilt in UAD 3.6. No charge, no live order, no due date.</p>
+    <p class="speed"><strong>You keep inspecting. We complete the report</strong> and return the editable file for your final review and signature. Ask anything about 3.6 along the way.</p>
 
     <section>
       <h2>Choose how much you want us to handle.</h2>
@@ -394,33 +419,42 @@
         <article>
           <h3>$149 &middot; We do the research</h3>
           <p class="price">You send the order &amp; inspection work</p>
-          <p>Upload the order, engagement letter, contract if applicable, raw photos, sketch &amp; field notes through your restricted AP order folder. We handle the authorized research, pull the comps, complete the report &amp; return the editable file.</p>
-          <p class="fineprint">Available where we have authorized data access and geographic competency.</p>
+          <p>We pull the data and comps &amp; complete the report.</p>
+          <p class="turn"><strong>Most orders: back the next business day.</strong></p>
+          <p class="fineprint">DFW ready now. New markets, about two weeks.</p>
         </article>
         <article>
           <h3>$89 &middot; You send the comps</h3>
           <p class="price">Your data, comp set &amp; market direction</p>
-          <p>Upload the order, inspection material, subject data, comps, supporting data &amp; market direction. We complete the report &amp; return the editable file.</p>
+          <p>Your packet, your comps, your direction.</p>
+          <p class="turn"><strong>Most orders: back the next business day.</strong></p>
         </article>
       </div>
-      <p class="fineprint"><strong>These are desk fees paid by the appraiser</strong>, separate from the appraisal fee you bill your own client. Your appraisal fee stays yours.</p>
+      <p class="fineprint"><strong>These are desk fees paid by the appraiser</strong>, separate from the appraisal fee you bill your own client. Your exact return time comes in writing before you say go.</p>
+
+      <div class="convert-band">
+        <p class="band-badge">Coming soon</p>
+        <h3 class="band-h">Convert your report to UAD 3.6.</h3>
+        <p class="band-sub">Upload your file and get back a deliverable UAD 3.6 to review and sign.</p>
+        <p class="band-links"><a class="btn" href="convert.html">How conversion works &rarr;</a><a href="mailto:orders@appraisalpartners.net?subject=Conversion%20list">Join the list</a></p>
+      </div>
     </section>
 
     <section>
       <p class="eyebrow">The handoff</p>
       <h2>Three steps.</h2>
       <ol class="steps">
-        <li><span class="n">1.</span><span><strong>Send the order details.</strong> No address or borrower yet. You get an order number, a private tracking link and a secure folder.</span></li>
-        <li><span class="n">2.</span><span><strong>Upload the order &amp; inspection materials.</strong> We check permission, scope, software and capacity, then confirm the desk fee and when you get it back. Submitted is not accepted.</span></li>
-        <li><span class="n">3.</span><span><strong>Review, revise, sign.</strong> Accept, change, or reject anything in it. Send changes as one list; anything we got wrong, we fix at no charge.</span></li>
+        <li><span class="n">01</span><strong>Submit the request.</strong><span>An order number, tracker &amp; secure folder come back.</span></li>
+        <li><span class="n">02</span><strong>Upload the materials.</strong><span>Submitted is not accepted.</span></li>
+        <li><span class="n">03</span><strong>Review, revise, sign.</strong><span>Anything we got wrong, we fix free.</span></li>
       </ol>
       <p class="docs"><a href="how-it-works.html"><strong>The full process &rarr;</strong></a></p>
     </section>
 
     <section>
       <p class="eyebrow">While it&rsquo;s with us</p>
-      <h2>Track the report from intake to delivery.</h2>
-      <p>Every accepted order gets a private tracking page, like this one:</p>
+      <h2>We have tracking!</h2>
+      <p>Track the report from intake to delivery. Every accepted order gets a private page:</p>
 
       <div class="livetrack">
         <div class="lt-header">
@@ -470,25 +504,18 @@
       <p class="os-caption">Synthetic demonstration. No client or property data. The full page uses the same ten checkpoints.</p>
     </section>
 
-    <section>
-      <h2>If you&rsquo;re filling out reports after dinner, this is what we&rsquo;re here for.</h2>
-      <p>Send us the overflow. We only take what we can personally finish.</p>
-    </section>
 
 
     <section>
       <p class="eyebrow">Before you ask</p>
       <h2>What we&rsquo;ll tell you up front.</h2>
       <dl class="qa-list">
-        <div><dt>Is $149 the appraisal fee?</dt><dd>No. It is what you pay us for the desk work on an appraisal you are billing your own client for.</dd></div>
-        <div><dt>Who does the work?</dt><dd>We do. We don&rsquo;t farm your files out to anybody, and we don&rsquo;t send them offshore. Matt runs the production and reads every report before it leaves.</dd></div>
-        <div><dt>What if it comes back with conditions?</dt><dd>Send them to us. Client or underwriter conditions tied to our work are handled for 30 days, no new fee. You are not troubleshooting a new form alone.</dd></div>
-        <div><dt>Do you use AI?</dt><dd>We use software automation and AI-assisted tools in this work, and yes, that includes the drafting. Every report is checked against its sources and read through before it leaves.</dd></div>
+        <div><dt>Is $149 the appraisal fee?</dt><dd>No. It is what you pay us for the desk work on an appraisal you bill your own client for.</dd></div>
+        <div><dt>Do you use AI?</dt><dd>Yes. <a href="technology.html">What runs behind the desk &rarr;</a></dd></div>
         <div><dt>Is your help disclosed in the report?</dt><dd>Yes, by name. When our assistance is significant, the report&rsquo;s certification names Matthew Roth and the work he performed. That disclosure is not optional, and we do not remove it.</dd></div>
         <div><dt>Who signs it?</dt><dd>You do. Accept, change, or reject anything in it. The final judgments, the signature and the delivery stay yours.</dd></div>
-        <div><dt>What do you not take?</dt><dd>No FHA or VA panel assignments, and no Georgia assignments under present desk policy. No legacy UAD 2.6/1004 production orders. This desk is UAD 3.6 only.</dd></div>
-        <div><dt>What do you need from me?</dt><dd>Your client has to permit outside assistance; you hold that engagement letter. No shared MLS, portal or software credentials, in either direction.</dd></div>
       </dl>
+      <p class="docs"><a href="faq.html"><strong>More straight answers &rarr;</strong></a> Conditions handling, what we don&rsquo;t take, what your client must permit.</p>
     </section>
 
     <section>
@@ -497,24 +524,17 @@
       <div class="profile">
         <img src="photos/matt.jpg" alt="Matt Roth" width="140" height="140">
         <div>
-          <p><strong>Matt</strong> is a second-generation Certified Residential Appraiser. He started in Tim&rsquo;s Southern California shop in 2006, ran appraisal practices in California, Colorado &amp; Texas, and runs this desk day to day.</p>
+          <p><strong>Matt</strong> is a second-generation Certified Residential Appraiser, trained in Tim&rsquo;s Southern California shop from 2006. He runs this desk day to day.</p>
           <p><strong>TX #1361115-CR &middot; CO #CR200002387</strong></p>
         </div>
       </div>
       <div class="profile" style="margin-top:24px">
         <img src="photos/tim.jpg" alt="Tim Roth" width="140" height="140">
         <div>
-          <p><strong>Tim Roth, MAI, SRA</strong>, built the California practice where Matt trained from trainee through licensure. His standard was simple: define the appraisal problem before opening the form. That standard still runs this desk.</p>
+          <p><strong>Tim Roth, MAI, SRA</strong>, built that practice. His standard was simple: define the appraisal problem before opening the form. That standard still runs this desk.</p>
           <p class="docs"><a href="about.html">More about us</a> &middot; <a href="story.html">Three appraisers</a></p>
         </div>
       </div>
-    </section>
-
-    <section>
-      <p class="eyebrow">Why we run the desk</p>
-      <h2>The work we want to do.</h2>
-      <p>We&rsquo;ve run appraisal shops and know the whole job. The part we love begins back at the desk: finding the right data, working through paired sales, testing what the market is saying &amp; writing the what, why, where &amp; how so the conclusion makes sense.</p>
-      <p>You keep the client, inspection &amp; final judgment. We focus on the production behind you. That&rsquo;s why this is a desk fee, not an appraisal fee.</p>
     </section>
 
     <div class="cta">

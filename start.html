@@ -109,7 +109,14 @@
   .notify-toggle label { font-family: inherit; text-transform: none; letter-spacing: 0; color: var(--ink); margin: 0; font-weight: 400; }
   .notify-toggle label strong { display: block; font-size: 16px; font-weight: 700; }
   .notify-toggle label span { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
-  .consent { background: var(--wash); border: 1px solid var(--rule); padding: 16px 18px; margin-bottom: 18px; font-size: 15.5px; display: flex; gap: 10px; align-items: baseline; }
+  .consent {
+    background: var(--wash); border: 1px solid var(--rule); padding: 16px 18px;
+    margin-bottom: 18px; font-size: 15.5px;
+    display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: start;
+  }
+  .consent[hidden] { display: none; }
+  .consent input { margin-top: 5px; }
+  .consent label, .consent .hint { grid-column: 2; }
   .consent input { accent-color: var(--accent); }
   .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
   .form-result { border: 1.5px solid var(--ink); padding: 16px 18px; margin: 18px 0 0; }
@@ -156,7 +163,7 @@
   }
   .skip:focus { left: 8px; top: 8px; }
   .hint { font-size: 13.5px; color: var(--muted); margin: 5px 0 0; }
-  .consent .hint { margin-top: 8px; }
+  .consent .hint { margin-top: 6px; }
   .modepick { border: 1px solid var(--rule); margin: 0 0 18px; padding: 15px 17px 13px; }
   .modepick legend {
     font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11px;
@@ -167,6 +174,21 @@
   .modepick label { display: block; }
   .modepick label span { display: block; color: var(--muted); font-size: 14.5px; }
   @media (max-width: 600px) { .sheet { padding-top: 28px; } .nav { gap: 5px 14px; } }
+  .optional { border: 1px solid var(--rule); margin: 0 0 18px; padding: 0 15px; }
+  .optional > summary {
+    cursor: pointer; list-style: none; padding: 13px 0; position: relative;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11px;
+    letter-spacing: .13em; text-transform: uppercase; color: var(--accent);
+  }
+  .optional > summary::-webkit-details-marker { display: none; }
+  .optional > summary::after {
+    content: "+"; position: absolute; right: 2px; top: 10px;
+    font-size: 17px; color: var(--accent);
+  }
+  .optional[open] > summary::after { content: "\2212"; }
+  .optional fieldset { border: 0; margin: 0 0 12px; padding: 0; }
+  .optional fieldset legend { padding-left: 0; }
+  .optional .hint { padding-bottom: 12px; }
 </style>
 </head>
 <body>
@@ -178,6 +200,7 @@
     <span class="cred">Free prior-assignment trial</span>
     <nav class="nav" aria-label="Primary">
       <a href="uad36.html">UAD 3.6</a>
+      <a href="convert.html">Convert</a>
       <a href="how-it-works.html">How it works</a>
       <a href="technology.html">Technology</a>
       <a href="story.html">Three appraisers</a>
@@ -194,10 +217,10 @@
 
   <fieldset class="modepick">
     <legend>What are you sending?</legend>
-    <div class="opt"><input type="radio" id="m-trial" name="ordermode" value="Free trial on a past assignment" checked><label for="m-trial"><strong>A past assignment, free</strong><span>A closed file you are authorized to share. No live client, no due date, no charge.</span></label></div>
+    <div class="opt"><input type="radio" id="m-trial" name="ordermode" value="Free trial on a past assignment" checked><label for="m-trial"><strong>Trial run (free)</strong><span>A closed file you are authorized to share. No live client, no due date, no charge.</span></label></div>
     <div class="opt"><input type="radio" id="m-live" name="ordermode" value="Live UAD 3.6 order"><label for="m-live"><strong>A live UAD 3.6 order</strong><span>Buried right now. You do not need the trial first.</span></label></div>
   </fieldset>
-  <p class="fineprint">Keep the property address, borrower names and assignment documents out of this form. Those go in the restricted folder after we confirm the order. Redaction by itself does not create permission to share a client file. Prefer to talk? Call <a href="tel:+14692968726">(469) 296-8726</a>.</p>
+  <p class="fineprint">Assignment documents go in the restricted folder after we confirm the order. Redaction by itself does not create permission to share a client file. Prefer to talk? Call <a href="tel:+14692968726">(469) 296-8726</a>.</p>
 
   <form id="startform" action="start.html" method="post">
     <noscript>
@@ -238,15 +261,14 @@
     </div>
 
     <div class="field">
-      <label for="f-scenario">What kind of past assignment was it?</label>
+      <label for="f-scenario">What kind of assignment?</label>
       <select id="f-scenario" name="scenario">
         <option value="full-interior">Full interior inspection (I walked the property)</option>
         <option value="exterior">Exterior-only</option>
         <option value="desktop">Desktop / data-supplied</option>
         <option value="rental">Rental income needed (rent schedule or income addendum)</option>
       </select>
-      <p class="hint">The checklist below updates to match.</p>
-    </div>
+          </div>
 
     <fieldset>
       <legend>What do you want to test?</legend>
@@ -254,23 +276,26 @@
       <div class="opt"><input type="radio" id="d-research" name="datalane" value="Research and report"><label for="d-research">Handle the authorized research &amp; complete the report (eligible assignments)</label></div>
     </fieldset>
 
-    <fieldset>
-      <legend>The comps</legend>
-      <div class="opt"><input type="radio" id="c-mine" name="compdir" value="Use my comps" checked><label for="c-mine">Use my comps and direction</label></div>
-      <div class="opt"><input type="radio" id="c-proceed" name="compdir" value="Prepare candidates and proceed"><label for="c-proceed">Prepare candidates and proceed; I'll judge them at review</label></div>
-      <div class="opt"><input type="radio" id="c-memo" name="compdir" value="Candidate memo before the grid"><label for="c-memo">Send me a candidate memo before building the grid</label></div>
-    </fieldset>
-
-    <fieldset>
-      <legend>The report comes back as</legend>
-      <div class="opt"><input type="radio" id="fmt-zap" name="format" value="Editable working file" checked><label for="fmt-zap">Editable report file with the agreed support package</label></div>
-      <div class="opt"><input type="radio" id="fmt-zip" name="format" value="XML/PDF package"><label for="fmt-zip">UAD 3.6 XML, PDF &amp; exhibits package</label></div>
-      <div class="opt"><input type="radio" id="fmt-unsure" name="format" value="Not sure"><label for="fmt-unsure">Not sure, let's confirm at acceptance</label></div>
-    </fieldset>
+    <details class="optional">
+      <summary>Comps &amp; delivery format</summary>
+      <fieldset>
+        <legend>The comps</legend>
+        <div class="opt"><input type="radio" id="c-mine" name="compdir" value="Use my comps" checked><label for="c-mine">Use my comps and direction</label></div>
+        <div class="opt"><input type="radio" id="c-proceed" name="compdir" value="Prepare candidates and proceed"><label for="c-proceed">Prepare candidates and proceed; I'll judge them at review</label></div>
+        <div class="opt"><input type="radio" id="c-memo" name="compdir" value="Candidate memo before the grid"><label for="c-memo">Send me a candidate memo before building the grid</label></div>
+      </fieldset>
+      <fieldset>
+        <legend>The report comes back as</legend>
+        <div class="opt"><input type="radio" id="fmt-zap" name="format" value="Editable working file" checked><label for="fmt-zap">Editable report file with the agreed support package</label></div>
+        <div class="opt"><input type="radio" id="fmt-zip" name="format" value="XML/PDF package"><label for="fmt-zip">UAD 3.6 XML, PDF &amp; exhibits package</label></div>
+        <div class="opt"><input type="radio" id="fmt-unsure" name="format" value="Not sure"><label for="fmt-unsure">Not sure, let's confirm at acceptance</label></div>
+      </fieldset>
+      <p class="hint">Skip these and we&rsquo;ll confirm both at acceptance.</p>
+    </details>
 
     <fieldset>
       <legend>How should we update you?</legend>
-      <p class="hint">The private tracker shows every checkpoint. Automatic alerts call out acceptance, anything needed from you, and when the report is ready; longer turns can also include research completion.</p>
+      <p class="hint">Every order gets a private tracker. Alerts call out acceptance, anything we need from you, and when the report is ready.</p>
       <div class="notify-toggle">
         <input type="checkbox" id="n-email" name="notify-email" checked>
         <label for="n-email"><strong>Email me the milestone alerts</strong><span>Sent to the address above.</span></label>
@@ -279,7 +304,7 @@
         <input type="checkbox" id="n-text" name="notify-text">
         <label for="n-text"><strong>Text me the milestone alerts</strong><span>Automatic order updates from our business line. Never marketing.</span></label>
       </div>
-      <p class="hint">Leave both unchecked and you'll use the status page only. Either way, the page is included and updated as the report moves.</p>
+      <p class="hint">Leave both unchecked to use the status page only.</p>
     </fieldset>
 
     <div id="text-update-fields" hidden>
@@ -307,123 +332,22 @@
 
     <button class="btn" id="submit-intake" type="submit" disabled>Submit my trial request</button>
     <div class="form-result" id="intake-result" role="status" aria-live="polite" hidden></div>
-    <p class="fineprint">This sends only the contact, trial-scope, software, and update choices shown above. It cannot accept a property address, borrower name, report, photo, or assignment file. One accepted trial per appraiser or firm, subject to scope and capacity. If the secure form is unavailable, the same request opens in your mail app instead; nothing is sent until you press Send. Prefer to write directly? <a id="email-fallback" href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a> works too.</p>
+    <p class="fineprint">This sends only what you see above. It cannot accept a property address, borrower name, report, photo or assignment file. One accepted trial per appraiser or firm, subject to scope and capacity. Prefer to write directly? <a id="email-fallback" href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a> works too.</p>
   </form>
 
   <section id="next">
-    <h2>What happens after you send the request</h2>
+    <h2>What happens next</h2>
     <ol class="steps">
-      <li><span class="n">1.</span><span><strong>We review the request and reply with a trial number, private status link, restricted upload folder &amp; checklist.</strong> Upload the required items through that private intake, but keep your completed report back for now.</span></li>
-      <li><span class="n">2.</span><span><strong>We confirm the trial.</strong> Received is not accepted. We check permission, scope, software, and capacity, then tell you exactly what we need. The accepted prior-assignment trial is $0 and has no live-client deadline.</span></li>
-      <li><span class="n">3.</span><span><strong>You watch the trial move on its status page.</strong> When the report comes back, compare it with the one you completed. One round of changes is included, and anything we entered or wrote incorrectly is our fix. You can judge the research, writing, organization &amp; corrections without putting a current assignment at risk.</span></li>
+      <li><span class="n">1.</span><span><strong>We reply with your order number, private tracker, restricted folder &amp; the checklist for your assignment type.</strong></span></li>
+      <li><span class="n">2.</span><span><strong>We confirm scope, price &amp; return time in writing.</strong> Submitted is not accepted. A prior-assignment trial is $0 with no client deadline.</span></li>
+      <li><span class="n">3.</span><span><strong>You track it, review the editable report, then sign.</strong> One round of changes is included; anything we got wrong is our fix.</span></li>
     </ol>
   </section>
 
-  <section id="checklist">
-    <h2>What to upload, by assignment</h2>
-    <p>Pick your scenario above, or browse here. Required is what production needs to start. Helpful is what makes the report better and your review shorter.</p>
 
-    <div class="scenario" id="ck-full-interior">
-      <div class="checklist">
-        <article>
-          <h3>Required &middot; full interior</h3>
-          <ul class="plain">
-            <li>The order or engagement letter</li>
-            <li>Photos: front, rear, street, every room, mechanicals, any deficiency you noted</li>
-            <li>Sketch or measurement file, or your dimensions</li>
-            <li>Your condition and quality notes from the walk</li>
-            <li>Contract, if it's a purchase</li>
-          </ul>
-        </article>
-        <article>
-          <h3>Helpful</h3>
-          <ul class="plain">
-            <li>Voice memo from the drive home, we'll take it over typed notes any day</li>
-            <li>Updates and remodel history the owner mentioned</li>
-            <li>HOA info, if applicable</li>
-            <li>Anything odd: easements, additions, the neighbor's goats</li>
-          </ul>
-        </article>
-      </div>
-    </div>
-
-    <div class="scenario" id="ck-exterior" hidden>
-      <div class="checklist">
-        <article>
-          <h3>Required &middot; exterior-only</h3>
-          <ul class="plain">
-            <li>The order or engagement letter</li>
-            <li>Front and street photos</li>
-            <li>Your exterior condition notes</li>
-          </ul>
-        </article>
-        <article>
-          <h3>Helpful</h3>
-          <ul class="plain">
-            <li>Rear or side shots if you could get them</li>
-            <li>Anything you observed that records won't show</li>
-          </ul>
-        </article>
-      </div>
-    </div>
-
-    <div class="scenario" id="ck-desktop" hidden>
-      <div class="checklist">
-        <article>
-          <h3>Required &middot; desktop</h3>
-          <ul class="plain">
-            <li>The order or engagement letter</li>
-            <li>The data sources you're authorizing us to use</li>
-            <li>Floor plan or sketch source, if the scope requires one</li>
-          </ul>
-        </article>
-        <article>
-          <h3>Helpful</h3>
-          <ul class="plain">
-            <li>Prior listing or inspection material you're authorized to share</li>
-            <li>Your read on the neighborhood, if you know it</li>
-          </ul>
-        </article>
-      </div>
-    </div>
-
-    <div class="scenario" id="ck-rental" hidden>
-      <div class="checklist">
-        <article>
-          <h3>Required &middot; rental income</h3>
-          <ul class="plain">
-            <li>Everything for the base scenario above</li>
-            <li>Current lease or leases, if any</li>
-            <li>Rent roll or rental history, if known</li>
-          </ul>
-        </article>
-        <article>
-          <h3>Helpful</h3>
-          <ul class="plain">
-            <li>What the owner says it rents for, so we can check it against the market</li>
-            <li>Furnished or unfurnished, and any included utilities</li>
-          </ul>
-        </article>
-      </div>
-    </div>
-
-  </section>
-
-  <section id="after">
-    <h2>After the trial, if it went well</h2>
-    <p>There is no contract to sign and nothing to join. The trial ends, you decide, and live work starts whenever you have a report worth sending.</p>
-    <ol class="steps">
-      <li><span class="n">1.</span><span><strong>Send your first live report through the thread, not this form.</strong> The form's consent says the file is a closed prior assignment, so live work starts with a reply in the order thread we already have open, or a call. You do not start over as a stranger.</span></li>
-      <li><span class="n">2.</span><span><strong>Each live report still gets its own written acceptance.</strong> Scope, flat price, and committed return time before production begins, every time. That does not change once you are a regular. It is the thing that protects you.</span></li>
-      <li><span class="n">3.</span><span><strong>Sending more than one at a time.</strong> Tell us what is coming and when. We hold the desk to what we can personally produce and review, so volume gets planned rather than assumed, and we will tell you what we can take before you send it.</span></li>
-      <li><span class="n">4.</span><span><strong>Standing arrangements.</strong> If the desk becomes part of how your week runs, we set one up: your markets, your client mix and their restrictions, expected volume, the data path, software and delivery formats, and terms in writing. That conversation is worth having once, not once per file.</span></li>
-    </ol>
-    <p class="fineprint">We keep the roster small on purpose, because the review is the product and it does not scale by wishing. If the desk is full when you want to start, we will say so directly instead of taking the work and running late.</p>
-  </section>
 
   <div class="note">
-    <p><strong>Not ready to share a past assignment?</strong></p>
-    <p><a href="uad36-work-sample.pdf">View Sample UAD 3.6 Report</a> to inspect the deliverable, or <a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">open the working status demonstration</a> to see how the production updates look on your phone. Both use synthetic or sanitized information.</p>
+    <p><strong>Not ready to share a past assignment?</strong> Look at the <a href="uad36-work-sample.pdf">sample UAD 3.6 report</a> or the <a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">live tracking demo</a> first. Both use synthetic or sanitized information.</p>
   </div>
   </main>
 
