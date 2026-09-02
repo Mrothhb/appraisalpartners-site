@@ -15,8 +15,8 @@ export const STAGES = Object.freeze([
     note: "Submitted. Waiting for scope review.",
     workflow: workflow(
       "Your request was received.",
-      "Matt reviews the request and intake checklist items before deciding whether to accept it.",
-      "Matt",
+      "We review the request and intake checklist items before deciding whether to accept it.",
+      "Appraisal Partners",
     ),
   }),
   Object.freeze({
@@ -24,9 +24,9 @@ export const STAGES = Object.freeze([
     label: "Scope review",
     note: "Scope review in progress.",
     workflow: workflow(
-      "Matt started the scope review.",
-      "Matt confirms the scope, price, and return time, or asks for what is missing.",
-      "Matt",
+      "We started the scope review.",
+      "We confirm the scope, price, and return time, or ask for what is missing.",
+      "Appraisal Partners",
     ),
   }),
   Object.freeze({
@@ -37,12 +37,12 @@ export const STAGES = Object.freeze([
     workflow: workflow(
       "Scope, desk fee, and the committed turn time were confirmed.",
       "Subject & market research begins.",
-      "Matt",
+      "Appraisal Partners",
     ),
     trialWorkflow: workflow(
       "The $0 trial scope and illustrative return were confirmed.",
       "Subject & market research begins.",
-      "Matt",
+      "Appraisal Partners",
     ),
   }),
   Object.freeze({
@@ -51,8 +51,8 @@ export const STAGES = Object.freeze([
     note: "Subject & market research in progress.",
     workflow: workflow(
       "The order was accepted and research began.",
-      "Matt pulls the comp set.",
-      "Matt",
+      "We pull the comp set.",
+      "Appraisal Partners",
     ),
   }),
   Object.freeze({
@@ -62,7 +62,7 @@ export const STAGES = Object.freeze([
     workflow: workflow(
       "The comp set was gathered and cross-checked.",
       "The write-up begins. Reply in the order thread if you want a comp swapped.",
-      "Matt",
+      "Appraisal Partners",
     ),
   }),
   Object.freeze({
@@ -71,8 +71,8 @@ export const STAGES = Object.freeze([
     note: "Write-up in progress.",
     workflow: workflow(
       "The comp set was settled and the write-up began.",
-      "Matt finishes the write-up, then runs the UAD & rules check.",
-      "Matt",
+      "We finish the write-up, then begin the UAD & rules check.",
+      "Appraisal Partners",
     ),
   }),
   Object.freeze({
@@ -81,18 +81,18 @@ export const STAGES = Object.freeze([
     note: "UAD & rules check in progress.",
     workflow: workflow(
       "The write-up finished and the UAD & rules check began.",
-      "Matt clears any findings, then reads the report page by page.",
-      "Matt",
+      "We clear or classify every finding, then complete the final read-through.",
+      "Appraisal Partners",
     ),
   }),
   Object.freeze({
     code: "review",
     label: "Final read-through",
-    note: "Matt is reading the report page by page against the sources.",
+    note: "We are reading the report page by page against the sources.",
     workflow: workflow(
-      "The rules check came back clean and the read-through began.",
-      "Matt returns the report for your own review.",
-      "Matt",
+      "Findings were cleared or classified and the final read-through began.",
+      "We prepare and return the report for your review.",
+      "Appraisal Partners",
     ),
   }),
   Object.freeze({
@@ -119,7 +119,7 @@ export const STAGES = Object.freeze([
 
 export const WAITING_NOTE = "Waiting on one item from you. Check your order thread.";
 export const WAITING_WORKFLOW = workflow(
-  "Matt paused production and sent the specific request in the order thread.",
+  "We paused production and sent the specific request in the order thread.",
   "Send the requested item in the order thread. Production resumes when it arrives.",
   "You",
 );
