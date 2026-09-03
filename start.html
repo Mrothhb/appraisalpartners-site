@@ -221,7 +221,7 @@
   <main id="main" tabindex="-1">
 
   <h1>Tell us what you need.</h1>
-  <p class="lede">Choose a free UAD 3.6 tryout or a live order. This first step collects no property address, borrower name or assignment documents. Your confirmation email includes the Restricted upload folder.</p>
+  <p class="lede">Choose a free UAD 3.6 tryout or a live order. This first step collects no property address, borrower name or assignment documents. Matt reviews the request before emailing the Restricted upload folder.</p>
 
   <fieldset class="modepick">
     <legend>Choose one</legend>
@@ -305,10 +305,10 @@
 
     <fieldset>
       <legend>Report updates</legend>
-      <p class="hint">Every accepted report gets a private tracker. Email updates are on. Add text updates if you want them.</p>
+      <p class="hint">Every accepted report gets a private tracker. Select how you want later report milestones sent.</p>
       <div class="notify-toggle">
         <input type="checkbox" id="n-email" name="notify-email" checked>
-        <label for="n-email"><strong>Email updates</strong><span>Request receipt &amp; report milestones.</span></label>
+        <label for="n-email"><strong>Email updates</strong><span>Private order thread &amp; report milestones.</span></label>
       </div>
       <div class="notify-toggle">
         <input type="checkbox" id="n-text" name="notify-text">
@@ -325,7 +325,7 @@
       </div>
       <div class="consent">
         <input type="checkbox" id="f-sms-consent" name="sms_consent" value="yes">
-        <label for="f-sms-consent">I agree to receive automatic transactional text messages from Appraisal Partners at the mobile number above about my trial or orders. No marketing messages. Message and data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.</label>
+        <label for="f-sms-consent">I agree to receive transactional text messages from Appraisal Partners at the mobile number above about my trial or orders. No marketing messages. Message and data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.</label>
       </div>
     </div>
 
@@ -348,8 +348,8 @@
   <section id="next">
     <h2>After you submit</h2>
     <ol class="steps">
-      <li><span class="n">1.</span><span><strong>Your confirmation email has the AP order number, Restricted upload folder, private tracker &amp; the right checklist.</strong> This confirms receipt only.</span></li>
-      <li><span class="n">2.</span><span><strong>You upload the checklist items and reply to the confirmation email when finished.</strong> Matt reviews fit, scope, software &amp; capacity; there is no separate packet-receipt email.</span></li>
+      <li><span class="n">1.</span><span><strong>Matt reviews your request.</strong> If it may fit, he emails your AP order number, Restricted upload folder, private tracker &amp; the right checklist. The website does not send an automatic confirmation email.</span></li>
+      <li><span class="n">2.</span><span><strong>You upload the checklist items and reply UPLOAD COMPLETE when finished.</strong> Matt reviews fit, scope, software &amp; capacity; there is no separate packet-receipt email.</span></li>
       <li><span class="n">3.</span><span><strong>If we can take it, we send the fee &amp; return time.</strong> Nothing enters production until you accept in writing. The tryout is $0.</span></li>
     </ol>
   </section>
@@ -466,7 +466,7 @@
       'Updates: ' + notificationPreference,
       'Mobile: ' + (includesText ? v('f-mobile') : 'not provided'),
       'SMS consent: ' + (includesText && smsConsent.checked
-        ? 'Yes (' + v('f-sms-consent-version') + '): automatic transactional trial and order updates only; no marketing messages; message and data rates may apply; reply STOP to opt out; consent is not a condition of purchase.'
+        ? 'Yes (' + v('f-sms-consent-version') + '): transactional trial and order updates only; no marketing messages; message and data rates may apply; reply STOP to opt out; consent is not a condition of purchase.'
         : 'Not requested'),
       '',
       (isLive()
@@ -512,7 +512,7 @@
       showTextUpdateFields();
       submitButton.textContent = 'Request received';
       submitButton.disabled = true;
-      showResult('success', '<p><strong>Your request was received.</strong></p><p>Watch for an email from orders@appraisalpartners.net with your AP order number, upload folder, and private tracker. Keep the property address, names, and files out of email.</p>');
+      showResult('success', '<p><strong>Your request was received.</strong></p><p>Matt will review it and email the next step from orders@appraisalpartners.net. The website does not send an automatic confirmation. Keep the property address, names, and files out of email until Matt sends the Restricted upload folder.</p>');
     } else {
       useEmailFallback('The secure form could not confirm your request.');
     }
