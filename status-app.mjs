@@ -140,7 +140,6 @@ function render(payload) {
 
   byId("waiting-banner").hidden = !payload.waiting_on_you;
   if (payload.waiting_on_you) byId("waiting-banner").textContent = WAITING_NOTE;
-  byId("demo-banner").hidden = !isTrial;
   byId("demo-exit").hidden = !payload.demo;
 
   byId("loading").hidden = true;
