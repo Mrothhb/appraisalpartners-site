@@ -403,7 +403,7 @@
   <main id="main" tabindex="-1">
     <p class="audience">UAD 3.6 report help for signing appraisers</p>
     <h1>UAD 3.6 is here. <span class="line">We want to help.</span></h1>
-    <p class="lede">You give us the order and the engagement letter. We hand back a completed UAD 3.6: checked for errors and omissions, <strong class="hit">ready for your review and signature</strong>. Every report is researched, and every line is read by a <strong class="hit">Certified Residential appraiser with twenty years in the business</strong> before it comes back to you.</p>
+    <p class="lede">You send the order. We return a completed UAD 3.6: checked for errors and omissions, <strong class="hit">ready for your review and signature</strong>. Every report is researched, and every line is read by a <strong class="hit">Certified Residential appraiser with twenty years in the business</strong> before it comes back to you.</p>
 
     <section>
       <h2>Choose how much you want us to handle.</h2>
@@ -444,7 +444,7 @@
 
     <section>
       <p class="eyebrow">While it&rsquo;s with us</p>
-      <h2>Live tracking for your reports. Watch progress live.</h2>
+      <h2>Live-track your reports. Watch them move, live.</h2>
       <p>Every accepted order gets a private page:</p>
 
       <div class="livetrack">
@@ -566,18 +566,31 @@
       { them: true,   who: "You", text: "Got it, looks good. Signing tonight." }
     ];
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function build(m) {
+      var li = document.createElement("li");
+      if (m.them) li.className = "them";
+      var who = document.createElement("span");
+      who.className = "who"; who.textContent = m.who;
+      li.append(who, document.createTextNode(m.text));
+      return li;
+    }
+    // Append only the newest bubble; earlier ones stay put instead of re-animating every tick.
+    var shown = 0;
     function draw(upTo) {
-      list.replaceChildren();
-      thread.slice(0, upTo).forEach(function (m) {
-        var li = document.createElement("li");
-        if (m.them) li.className = "them";
-        var who = document.createElement("span");
-        who.className = "who"; who.textContent = m.who;
-        li.append(who, document.createTextNode(m.text));
-        list.append(li);
-      });
+      if (upTo < shown) { list.replaceChildren(); shown = 0; }
+      for (; shown < upTo; shown++) list.append(build(thread[shown]));
+    }
+    // Reserve the full thread's height up front so the page below never moves as bubbles arrive.
+    function reserve() {
+      var keep = shown;
+      list.style.minHeight = "";
+      draw(thread.length);
+      list.style.minHeight = list.offsetHeight + "px";
+      draw(keep);
     }
     if (reduce) { draw(thread.length); return; }
+    reserve();
+    window.addEventListener("resize", reserve);
     var n = 0;
     (function tick() {
       n = n >= thread.length ? 1 : n + 1;   // never render an empty phone
@@ -666,10 +679,23 @@
       });
     }
 
+    // Reserve the tallest frame's height so the card never changes size as the demo advances,
+    // and the page below it never moves while someone is reading.
+    const card = document.querySelector(".lt-card");
+    function reserve() {
+      if (!card) return;
+      card.style.minHeight = "";
+      let max = 0;
+      for (let k = 0; k < STAGES.length; k++) { paint(k); max = Math.max(max, card.offsetHeight); }
+      card.style.minHeight = max + "px";
+    }
+    reserve();
+
     // Open mid-production: a live-looking order with a return time already set and
     // an alert already sent reads as real; "Submitted" reads as empty.
     let i = STAGES.findIndex((stage) => stage.code === "drafting");
     paint(i);
+    window.addEventListener("resize", () => { reserve(); paint(i); });
     (function step() {
       const atEnd = i >= STAGES.length - 1;
       window.setTimeout(() => { i = atEnd ? 0 : i + 1; paint(i); step(); }, atEnd ? 3600 : 2100);
