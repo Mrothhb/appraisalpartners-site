@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Request a legacy UAD 2.6 to UAD 3.6 conversion. Name, email and license only; Matt reviews the request and emails a private link to upload the report.">
+<meta name="referrer" content="no-referrer">
+<!-- Public configuration; the Apps Script deployment passed the private accepted/duplicate/rejected smoke test. -->
+<meta name="ap-intake-endpoint" content="https://script.google.com/macros/s/AKfycbyf_YUnCq8lWuJSCl8fYXuMvBDX8CJ48oLRHhP-tpTZI6X-bjal_IhAy7gduJFC2GkWQg/exec">
+<link rel="canonical" href="https://appraisalpartners.net/convert-request.html">
+<meta property="og:title" content="Request a Legacy Conversion | Appraisal Partners">
+<meta property="og:description" content="Send a finished 2.6, get back an editable native UAD 3.6. Your info here; the private upload link comes by email.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://appraisalpartners.net/convert-request.html">
+<meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
+<title>Request a Legacy Conversion | Appraisal Partners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+  :root {
+    --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
+    --rule: #D9DED9; --rule-strong: #889089; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+  }
+  * { box-sizing: border-box; }
+  main:focus { outline: none; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
+    font-size: 17px; line-height: 1.68; margin: 0; padding: 0 24px;
+  }
+  .sheet { max-width: 720px; margin: 0 auto; padding: 44px 0 64px; }
+  .letterhead {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 18px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 14px;
+  }
+  .letterhead .name {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-weight: 500; font-size: 14px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ink); text-decoration: none;
+  }
+  .letterhead .cred, .nav {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+  }
+  .nav { width: 100%; display: flex; flex-wrap: wrap; gap: 9px 20px; padding-top: 2px; }
+  .nav a { color: var(--muted); }
+  .nav a, footer a { text-decoration-thickness: 0.5px; text-underline-offset: 2px; }
+  h1 {
+    font-size: clamp(34px, 7vw, 50px); font-weight: 700; line-height: 1.16;
+    letter-spacing: -0.02em; text-wrap: balance; margin: 46px 0 20px;
+  }
+  h1 .line { color: var(--accent); }
+  h2 { font-size: 24px; line-height: 1.35; margin: 0 0 14px; }
+  h3 { font-size: 18px; line-height: 1.35; margin: 0 0 10px; }
+  .lede { font-size: 20px; line-height: 1.55; margin: 0 0 14px; }
+  p { margin: 0 0 18px; }
+  a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover, a:focus-visible { text-decoration-color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  section { border-top: 1px solid var(--rule); margin-top: 44px; padding-top: 30px; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 18px;
+  }
+  form { margin-top: 6px; }
+  .field { margin-bottom: 18px; }
+  .field label, fieldset legend {
+    display: block;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent-deep); margin-bottom: 6px;
+  }
+  .field input[type="text"], .field input[type="email"], .field input[type="tel"],
+  .field input[type="date"], .field select, .field textarea {
+    width: 100%; padding: 10px 12px; font-family: inherit; font-size: 16px;
+    color: var(--ink); background: var(--paper);
+    border: 1px solid var(--rule-strong); border-radius: 0;
+  }
+  .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px;
+  }
+  .field .hint { font-size: 13.5px; color: var(--muted); margin: 6px 0 0; font-family: "IBM Plex Mono", "Courier New", monospace; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+  fieldset { border: 1px solid var(--rule); padding: 16px 18px 6px; margin: 0 0 18px; }
+  fieldset .opt { display: flex; gap: 10px; align-items: baseline; margin-bottom: 10px; font-size: 15.5px; }
+  fieldset .opt input { accent-color: var(--accent); }
+  fieldset .opt label { font-family: inherit; font-size: 15.5px; text-transform: none; letter-spacing: 0; color: var(--ink); margin: 0; display: inline; font-weight: 400; }
+  .notify-toggle {
+    display: grid; grid-template-columns: 20px 1fr; gap: 11px;
+    border: 1px solid var(--rule-strong); background: var(--paper);
+    padding: 13px 15px; margin-bottom: 10px; align-items: start;
+  }
+  .notify-toggle:has(input:checked) { border-color: var(--accent); background: var(--wash); }
+  .notify-toggle input { accent-color: var(--accent); margin-top: 4px; }
+  .notify-toggle label { font-family: inherit; text-transform: none; letter-spacing: 0; color: var(--ink); margin: 0; font-weight: 400; }
+  .notify-toggle label strong { display: block; font-size: 16px; font-weight: 700; }
+  .notify-toggle label span { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
+  .consent {
+    background: var(--wash); border: 1px solid var(--rule); padding: 16px 18px;
+    margin-bottom: 18px; font-size: 15.5px;
+    display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: start;
+  }
+  .consent[hidden] { display: none; }
+  .consent input { margin-top: 5px; }
+  .consent label, .consent .hint { grid-column: 2; }
+  .consent input { accent-color: var(--accent); }
+  .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .form-result { border: 1.5px solid var(--ink); padding: 16px 18px; margin: 18px 0 0; }
+  .form-result[data-state="success"] { border-color: var(--accent); background: var(--wash); }
+  .form-result[data-state="error"] { border-color: #8A3F35; }
+  .form-result p:last-child { margin-bottom: 0; }
+  button.btn {
+    display: inline-block; background: var(--accent); color: var(--paper);
+    padding: 12px 22px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
+    border: 1.5px solid var(--accent); cursor: pointer;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px;
+  }
+  button.btn:hover, button.btn:focus-visible { background: var(--accent-deep); border-color: var(--accent-deep); }
+  .fineprint { font-size: 14.5px; color: var(--muted); margin: 12px 0 0; }
+  ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 15px; }
+  ol.steps li { display: grid; grid-template-columns: 34px 1fr; gap: 14px; }
+  ol.steps .n {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 14px; color: var(--accent); padding-top: 4px;
+  }
+  ul.plain { margin: 0 0 16px; padding: 0 0 0 1.15em; }
+  ul.plain li { margin-bottom: 8px; font-size: 15.5px; }
+  ul.plain li::marker { color: var(--accent); }
+  .note { border: 1.5px solid var(--ink); padding: 21px 23px; margin-top: 36px; }
+  .note p:last-child { margin-bottom: 0; }
+  footer {
+    border-top: 2px solid var(--ink); margin-top: 44px; padding-top: 14px;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+  footer .postal-address { flex-basis: 100%; font-style: normal; }
+  @media (max-width: 620px) { .grid2 { grid-template-columns: 1fr; } }
+  .skip {
+    position: absolute; left: -9999px; top: 0;
+    background: var(--accent); color: var(--paper); padding: 10px 16px;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; z-index: 10;
+  }
+  .skip:focus { left: 8px; top: 8px; }
+  .hint { font-size: 13.5px; color: var(--muted); margin: 5px 0 0; }
+  .consent .hint { margin-top: 6px; }
+  .modepick { border: 1px solid var(--rule); margin: 0 0 18px; padding: 15px 17px 13px; }
+  .modepick legend {
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11px;
+    letter-spacing: .13em; text-transform: uppercase; color: var(--accent); padding: 0 6px;
+  }
+  .modepick .opt { align-items: start; display: flex; gap: 10px; margin-bottom: 9px; }
+  .modepick .opt:last-child { margin-bottom: 0; }
+  .modepick label { display: block; }
+  .modepick label span { display: block; color: var(--muted); font-size: 14.5px; }
+  .modepick .opt {
+    border: 1px solid var(--rule); padding: 14px 15px; margin: 0 0 10px;
+  }
+  .modepick .opt:has(input:checked) { border-color: var(--accent); background: var(--wash); }
+  .modepick .opt input { margin-top: 5px; }
+  .form-heading {
+    border-top: 1px solid var(--rule); margin: 28px 0 18px; padding-top: 22px;
+    font-size: 21px;
+  }
+  .choice-label strong { display: block; font-size: 16px; }
+  .choice-label span { display: block; color: var(--muted); font-size: 14px; margin-top: 2px; }
+  .human-help { margin: -2px 0 24px; font-size: 15px; color: var(--muted); }
+  @media (max-width: 600px) { .sheet { padding-top: 28px; } .nav { gap: 5px 14px; } }
+  .optional { border: 1px solid var(--rule); margin: 0 0 18px; padding: 0 15px; }
+  .optional > summary {
+    cursor: pointer; list-style: none; padding: 13px 0; position: relative;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11px;
+    letter-spacing: .13em; text-transform: uppercase; color: var(--accent);
+  }
+  .optional > summary::-webkit-details-marker { display: none; }
+  .optional > summary::after {
+    content: "+"; position: absolute; right: 2px; top: 10px;
+    font-size: 17px; color: var(--accent);
+  }
+  .optional[open] > summary::after { content: "\2212"; }
+  .optional fieldset { border: 0; margin: 0 0 12px; padding: 0; }
+  .optional fieldset legend { padding-left: 0; }
+  .optional .hint { padding-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+<div class="sheet">
+  <header class="letterhead">
+    <a class="name" href="index.html">Appraisal Partners</a>
+    <span class="cred">Secure report request</span>
+    <nav class="nav" aria-label="Primary">
+      <a href="uad36.html">UAD 3.6</a>
+      <a href="convert.html">Convert</a>
+      <a href="how-it-works.html">How it works</a>
+      <a href="how-it-works.html#pricing">Pricing</a>
+      <a href="technology.html">Technology</a>
+      <a href="portrait.html">The portrait</a>
+      <a href="story.html">Four appraisers</a>
+      <a href="about.html">About us</a>
+      <a href="faq.html">FAQ</a>
+      <a href="start.html">Start with one report</a>
+    </nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+
+  <h1>Request a conversion.</h1>
+  <p class="lede">Your name, email and license. This step collects no property address, borrower name or report documents. Matt confirms the price and return time before you decide, then emails you a private link to upload the 2.6.</p>
+  <p class="human-help">Questions? Call or text Matt at <a href="tel:+14692968726">(469) 296-8726</a>.</p>
+
+  <form id="startform" action="convert-request.html" method="post">
+    <noscript>
+      <div class="note">
+        <p><strong>JavaScript is off, so this form will not send.</strong></p>
+        <p>Nothing has been submitted. Email <a href="mailto:orders@appraisalpartners.net?subject=Legacy%20conversion%20request">orders@appraisalpartners.net</a> with the subject &ldquo;Legacy conversion request&rdquo; instead.</p>
+      </div>
+    </noscript>
+    <div class="honeypot" aria-hidden="true">
+      <label for="f-apx-verify">Leave this field empty</label>
+      <input type="text" id="f-apx-verify" name="apx_verify" tabindex="-1" autocomplete="off">
+    </div>
+    <input type="hidden" id="f-form-version" name="form_version" value="ap-intake-v1">
+    <input type="hidden" id="f-trial-consent-version" name="trial_consent_version" value="conversion-authority-2026-09-05">
+    <input type="hidden" id="f-sms-consent-version" name="sms_consent_version" value="sms-transactional-2026-08-30">
+    <input type="hidden" id="f-consent-source" name="consent_source" value="https://appraisalpartners.net/convert-request.html">
+    <input type="hidden" id="f-request-id" name="request_id" value="">
+    <input type="hidden" id="f-started-at" name="started_at" value="">
+    <input type="hidden" id="f-ordermode" name="ordermode" value="Legacy conversion">
+    <input type="hidden" name="scenario" value="desktop">
+    <input type="hidden" name="datalane" value="My data and comps">
+    <input type="hidden" name="compdir" value="Use my comps">
+    <input type="hidden" name="format" value="Editable working file">
+    <input type="hidden" name="notify-email" value="on">
+
+    <h2 class="form-heading">About you</h2>
+    <div class="grid2">
+      <div class="field">
+        <label for="f-name">Your name</label>
+        <input type="text" id="f-name" name="name" autocomplete="name" maxlength="100" required>
+      </div>
+      <div class="field">
+        <label for="f-license">License # and state</label>
+        <input type="text" id="f-license" name="license" maxlength="80" placeholder="e.g. TX 1234567-CR">
+      </div>
+      <div class="field">
+        <label for="f-email">Email</label>
+        <input type="email" id="f-email" name="email" autocomplete="email" maxlength="254" required>
+      </div>
+      <div class="field">
+        <label for="f-software">Your report software &amp; version</label>
+        <input type="text" id="f-software" name="software" maxlength="100" placeholder="e.g. TOTAL" required>
+        <p class="hint">Currently for TOTAL. Tell us the version you run.</p>
+      </div>
+    </div>
+
+    <div class="consent" id="consent-trial">
+      <input type="checkbox" id="f-permission" name="trial_authority_consent" value="yes" required>
+      <label for="f-permission">I have the authority and any client permission needed to share this report for conversion, and it is not a file a lender or AMC prohibits sharing. The converted file is a working draft for my review: I check it against my original, make every final appraisal decision, and sign only in my own software. Assistance is disclosed in the certification the same way as every desk report.</label>
+      <p class="hint">Conversions run under the <a href="terms.html">desk terms</a>.</p>
+    </div>
+
+    <button class="btn" id="submit-intake" type="submit" disabled>Submit conversion request</button>
+    <div class="form-result" id="intake-result" role="status" aria-live="polite" hidden></div>
+    <p class="fineprint">This submits the request only, not the report. Matt emails the private upload link after review. If the form cannot send, email <a id="email-fallback" href="mailto:orders@appraisalpartners.net?subject=Legacy%20conversion%20request">orders@appraisalpartners.net</a>.</p>
+  </form>
+  </main>
+
+  <footer>
+    <span>TX #1361115-CR &middot; CO #CR200002387</span>
+    <span><a href="index.html">Appraisal Partners of Texas, Inc.</a></span>
+    <span><a href="how-it-works.html">How it works</a>
+      <a href="how-it-works.html#pricing">Pricing</a></span>
+    <span><a href="terms.html">Terms</a></span>
+    <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
+  </footer>
+</div>
+<script>
+(function () {
+  var form = document.getElementById('startform');
+  var submitButton = document.getElementById('submit-intake');
+  var result = document.getElementById('intake-result');
+  var emailFallback = document.getElementById('email-fallback');
+
+  function requestId() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return 'TR-' + window.crypto.randomUUID();
+    }
+    var bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    return 'TR-' + Array.prototype.map.call(bytes, function (b) {
+      return b.toString(16).padStart(2, '0');
+    }).join('');
+  }
+  function v(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  }
+  function preparedEmailHref() {
+    var id = v('f-request-id');
+    var lines = [
+      'Legacy conversion request',
+      'Request ID: ' + id,
+      '',
+      'Name: ' + v('f-name'),
+      'License: ' + v('f-license'),
+      'Email: ' + v('f-email'),
+      'Software: ' + v('f-software'),
+      'Request type: Legacy conversion',
+      '',
+      'Authority consent (' + v('f-trial-consent-version') + '): I have actual authority and client permission to share this closed report.',
+      'Consent source: ' + v('f-consent-source')
+    ];
+    var subject = 'Legacy conversion request ' + id + ': ' + v('f-name');
+    return 'mailto:orders@appraisalpartners.net?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
+  }
+  function showResult(state, html) {
+    result.dataset.state = state;
+    result.innerHTML = html;
+    result.hidden = false;
+    result.focus();
+  }
+
+  var endpointMeta = document.querySelector('meta[name="ap-intake-endpoint"]');
+  var endpoint = endpointMeta ? endpointMeta.content.trim() : '';
+  var allowedEndpoint = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(endpoint);
+  var iframe = null;
+  var pendingTimer = null;
+  var pendingRequestId = '';
+
+  function useEmailFallback(message) {
+    var href = preparedEmailHref();
+    emailFallback.href = href;
+    submitButton.disabled = false;
+    submitButton.textContent = 'Open request in my email';
+    showResult('error', '<p><strong>' + message + '</strong></p><p>We cannot confirm a website submission. <a id="result-email-fallback" href="' + href.replace(/"/g, '&quot;') + '">Open the prepared request in your email</a> and send it to orders@appraisalpartners.net.</p>');
+  }
+
+  window.addEventListener('message', function (event) {
+    var trustedOrigin = event.origin === 'https://script.google.com' || /^https:\/\/[A-Za-z0-9.-]+\.googleusercontent\.com$/.test(event.origin);
+    var data = event.data || {};
+    if (!trustedOrigin || data.type !== 'ap-intake-result' || data.requestId !== pendingRequestId) return;
+    window.clearTimeout(pendingTimer);
+    pendingTimer = null;
+    if (data.ok) {
+      form.reset();
+      submitButton.textContent = 'Request received';
+      submitButton.disabled = true;
+      showResult('success', '<p><strong>Your request was received.</strong></p><p>Matt will review it and email your private upload link from orders@appraisalpartners.net.</p>');
+    } else {
+      useEmailFallback('The secure form could not confirm your request.');
+    }
+  });
+
+  document.getElementById('f-request-id').value = requestId();
+  document.getElementById('f-started-at').value = String(Date.now());
+  submitButton.disabled = false;
+  if (!allowedEndpoint) submitButton.textContent = 'Prepare conversion request';
+
+  form.addEventListener('submit', function (e) {
+    var trap = document.getElementById('f-apx-verify');
+    if (trap) trap.value = '';
+    e.preventDefault();
+    if (!form.reportValidity()) return;
+    emailFallback.href = preparedEmailHref();
+    if (!allowedEndpoint) {
+      window.location.href = preparedEmailHref();
+      showResult('success', '<p><strong>Your mail app should open with the request prepared.</strong></p><p>Nothing has been submitted yet. Review the note and send it.</p>');
+      return;
+    }
+    submitButton.disabled = true;
+    submitButton.textContent = 'Sending securely...';
+    showResult('success', '<p><strong>Sending your request...</strong></p>');
+    pendingRequestId = v('f-request-id');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.name = 'ap-intake-response';
+      iframe.title = 'Conversion request response';
+      iframe.hidden = true;
+      document.body.appendChild(iframe);
+    }
+    form.action = endpoint;
+    form.target = iframe.name;
+    pendingTimer = window.setTimeout(function () {
+      useEmailFallback('We could not confirm receipt from the secure form.');
+    }, 15000);
+    HTMLFormElement.prototype.submit.call(form);
+  });
+})();
+</script>
+</body>
+</html>
