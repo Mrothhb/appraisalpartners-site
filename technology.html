@@ -42,7 +42,7 @@
   .lede { font-size:20px; max-width:790px; }
   .workflow { margin:38px 0 0; padding-top:28px; border-top:1px solid var(--rule); }
   .workflow-intro { max-width:760px; color:var(--muted); font-size:16px; }
-  .privacy-rail { display:flex; align-items:center; gap:10px; max-width:820px; color:var(--muted); font-size:13px; margin:17px 0 0; padding:11px 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); }
+  .privacy-rail { display:flex; align-items:center; gap:10px; max-width:820px; color:var(--muted); font-size:13px; margin:20px 0 0; padding:13px 0 0; border-top:1px solid var(--rule); }
   .privacy-rail::before { content:""; flex:0 0 auto; width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 5px var(--wash); }
 
   .profiles { margin:24px 0 32px; border-top:2px solid var(--ink); border-bottom:1px solid var(--rule); }
@@ -72,7 +72,7 @@
   .profile-key span { display:inline-flex; align-items:center; gap:7px; }
   .swatch { display:inline-block; width:14px; height:28px; border-radius:8px 8px 2px 2px; background:var(--conventional); }
   .swatch.appraiser { background:var(--accent); }
-  .profile-note { color:var(--muted); font-size:14px; margin:0 0 28px; }
+  .profile-note { color:var(--muted); font-size:14px; margin:18px 0 30px; }
   .reasoning-map { display:grid; grid-template-columns:190px 1fr; gap:24px; align-items:center; padding:15px 0; margin:-16px 0 28px; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); }
   .reasoning-map strong { font:500 12px/1.4 "IBM Plex Mono",monospace; }
   .reasoning-map strong span { display:block; color:var(--muted); font:12px/1.4 "Libre Caslon Text",Georgia,serif; margin-top:3px; }
@@ -211,7 +211,6 @@
     <figure class="workflow" id="workflow" aria-labelledby="workflow-title">
       <h2 id="workflow-title">A clear view into how a report gets built.</h2>
       <p class="workflow-intro">One appraisal moves through seven controlled stages. In the pipeline below, each stage shows what enters, what processes it, and what leaves for the next handoff.</p>
-      <p class="privacy-rail">The handoffs and controls are visible. Client identities, property data, credentials, exact model routing, and internal control details remain private.</p>
       <p class="profile-note"><strong>Workflow shown:</strong> Research &amp; Report. With Your Data &amp; Comps, the signing appraiser supplies more of the subject, market, comp, and analysis inputs.</p>
 
       <div class="profiles" aria-label="Qualitative workload comparison by phase">
@@ -303,6 +302,7 @@
         </div>
         <p class="total-note">Bar length shows the general contrast—not exact hours, percentages, or promised savings. Assignment complexity still controls the clock.</p>
       </section>
+      <p class="privacy-rail">The handoffs and controls are visible. Client identities, property data, credentials, exact model routing, and internal control details remain private.</p>
       <figcaption>Qualitative workflow illustration, not measured industry averages, promised savings, or a turnaround comparison. Actual time varies by assignment, evidence, access, inspection, software, and revisions. Conventional production includes staff, vendors, and established software where used.</figcaption>
     </figure>
 
