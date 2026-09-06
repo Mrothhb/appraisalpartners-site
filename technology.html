@@ -54,9 +54,9 @@
   .brand-row { display:flex; flex-wrap:wrap; align-items:center; gap:7px; }
   .brand { display:inline-flex; align-items:center; gap:6px; min-height:34px; padding:5px 9px; border:1px solid var(--rule); background:var(--paper); color:var(--ink); font:700 11px/1 "IBM Plex Mono",monospace; white-space:nowrap; }
   .brand img { display:block; width:22px; height:22px; border-radius:4px; object-fit:contain; background:#fff; }
-  .profile-bars { display:grid; grid-template-columns:repeat(7,minmax(48px,1fr)); gap:8px; list-style:none; margin:0; padding:0; }
+  .profile-bars { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; list-style:none; margin:0; padding:0; }
   .profile-bars li { min-width:0; text-align:center; }
-  .bar-pair { display:flex; height:98px; align-items:flex-end; justify-content:center; gap:8px; padding:0 4px 7px; border-bottom:2px solid var(--rule); }
+  .bar-pair { display:flex; height:120px; align-items:flex-end; justify-content:center; gap:8px; padding:0 4px 7px; border-bottom:2px solid var(--rule); }
   .bar-pair i { display:block; width:18px; min-height:20px; border-radius:10px 10px 2px 2px; box-shadow:0 0 0 1px color-mix(in srgb,currentColor 12%,transparent); transform-origin:bottom; animation:rise .65s ease both; }
   .profile-bars li:nth-child(2) i { animation-delay:.05s; }
   .profile-bars li:nth-child(3) i { animation-delay:.1s; }
@@ -66,7 +66,8 @@
   .profile-bars li:nth-child(7) i { animation-delay:.3s; }
   .bar-pair .phase-time { height:calc(var(--phase) * 27px); background:var(--conventional); }
   .bar-pair .appraiser-time { height:calc(var(--appraiser) * 27px); background:var(--accent); }
-  .profile-bars small { display:block; color:var(--muted); font:11px/1.25 "IBM Plex Mono",monospace; margin-top:7px; overflow-wrap:anywhere; }
+  .profile-bars small { display:block; color:var(--muted); font:11px/1.25 "IBM Plex Mono",monospace; margin-top:7px; overflow-wrap:normal; hyphens:none; }
+  .lbl-tight { display:none; }
   .profile-key { display:flex; flex-wrap:wrap; gap:8px 22px; color:var(--muted); font-size:13px; margin:-17px 0 28px; }
   .profile-key span { display:inline-flex; align-items:center; gap:7px; }
   .swatch { display:inline-block; width:14px; height:28px; border-radius:8px 8px 2px 2px; background:var(--conventional); }
@@ -164,8 +165,12 @@
     .lane-label { display:block; margin:0 0 7px; color:var(--ink); }
     .lane.system .lane-label { color:var(--accent-deep); }
   }
+  @media(max-width:620px) {
+    .lbl-full { display:none; }
+    .lbl-tight { display:block; }
+    .profile-bars { gap:5px; }
+  }
   @media(max-width:500px) {
-    .profile-bars { gap:3px; }
     .profile-bars small { font-size:9px; }
     .stage { grid-template-columns:1fr; gap:18px; }
     .stage-title { grid-column:auto; }
@@ -213,29 +218,29 @@
         <section class="profile conventional" aria-labelledby="conventional-profile">
           <div class="profile-heading"><h3 id="conventional-profile">Conventional appraisal tools</h3></div>
           <ol class="profile-bars">
-            <li aria-label="Intake: moderate phase time and moderate appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:2" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Intake</small></li>
-            <li aria-label="Subject and market: high phase time and high appraiser time"><span class="bar-pair" style="--phase:3;--appraiser:3" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Subject<br>market</small></li>
-            <li aria-label="Comparables and data: moderate phase time and moderate appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:2" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Comps<br>data</small></li>
-            <li aria-label="Appraisal analysis: high phase time and high appraiser time"><span class="bar-pair" style="--phase:3;--appraiser:3" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Analysis</small></li>
-            <li aria-label="Fill and pack: moderate phase time and moderate appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:2" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Fill<br>pack</small></li>
-            <li aria-label="Rules and quality control: high phase time and high appraiser time"><span class="bar-pair" style="--phase:3;--appraiser:3" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Rules<br>QC</small></li>
-            <li aria-label="Signing appraiser review: high phase time and high appraiser time"><span class="bar-pair" style="--phase:3;--appraiser:3" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Appraiser</small></li>
+            <li aria-label="Order intake: low phase time and low appraiser time"><span class="bar-pair" style="--phase:1;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">Order<br>intake</span><span class="lbl-tight">Intake</span></small></li>
+            <li aria-label="Subject and neighborhood research: low phase time and low appraiser time"><span class="bar-pair" style="--phase:1;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">Subject &<br>neighborhood</span><span class="lbl-tight">Subject</span></small></li>
+            <li aria-label="Comparable search: moderate phase time and moderate appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:2" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">Comp<br>search</span><span class="lbl-tight">Comps</span></small></li>
+            <li aria-label="Grid and adjustments: the highest phase time and the highest appraiser time"><span class="bar-pair" style="--phase:4;--appraiser:4" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">Grid &<br>adjustments</span><span class="lbl-tight">Grid</span></small></li>
+            <li aria-label="Report assembly: the highest phase time and the highest appraiser time"><span class="bar-pair" style="--phase:4;--appraiser:4" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">Form<br>fill</span><span class="lbl-tight">Form</span></small></li>
+            <li aria-label="Errors, omissions and compliance: high phase time and high appraiser time"><span class="bar-pair" style="--phase:3;--appraiser:3" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">QC &<br>compliance</span><span class="lbl-tight">QC</span></small></li>
+            <li aria-label="Signing appraiser review: moderate phase time and moderate appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:2" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">Review &<br>sign</span><span class="lbl-tight">Sign</span></small></li>
           </ol>
         </section>
         <section class="profile system" aria-labelledby="system-profile">
           <div class="profile-heading"><h3 id="system-profile">Our desk</h3></div>
           <ol class="profile-bars">
-            <li aria-label="Intake: moderate phase time and low signing-appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Intake</small></li>
-            <li aria-label="Subject and market: high phase time and low signing-appraiser time before final review"><span class="bar-pair" style="--phase:3;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Subject<br>market</small></li>
-            <li aria-label="Comparables and data: moderate phase time and low signing-appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Comps<br>data</small></li>
-            <li aria-label="Appraisal analysis: high phase time and low signing-appraiser production time before final review"><span class="bar-pair" style="--phase:3;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Analysis</small></li>
-            <li aria-label="Fill and pack: low phase time and low signing-appraiser time once inputs are ready"><span class="bar-pair" style="--phase:1;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Fill<br>pack</small></li>
-            <li aria-label="Rules and quality control: high phase time and low signing-appraiser time before final review"><span class="bar-pair" style="--phase:3;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Rules<br>QC</small></li>
-            <li aria-label="Signing appraiser review: moderate phase time and low signing-appraiser hands-on time with a prepared draft"><span class="bar-pair" style="--phase:2;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Appraiser</small></li>
+            <li aria-label="Order intake: moderate phase time and low signing-appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">Assignment<br>prep</span><span class="lbl-tight">Prep</span></small></li>
+            <li aria-label="Subject and neighborhood research: high phase time and moderate signing-appraiser time steering the research"><span class="bar-pair" style="--phase:3;--appraiser:2" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">Subject &amp; market<br>research</span><span class="lbl-tight">Subject</span></small></li>
+            <li aria-label="Comparable search: moderate phase time and low signing-appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">Pull<br>comps</span><span class="lbl-tight">Comps</span></small></li>
+            <li aria-label="Grid and adjustments: high phase time and low signing-appraiser production time before final review"><span class="bar-pair" style="--phase:3;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">Data gather<br>&amp; analysis</span><span class="lbl-tight">Analyze</span></small></li>
+            <li aria-label="Report assembly: low phase time and low signing-appraiser time once inputs are ready"><span class="bar-pair" style="--phase:1;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">Assemble<br>report</span><span class="lbl-tight">Build</span></small></li>
+            <li aria-label="Errors, omissions and compliance: high phase time and low signing-appraiser time before final review"><span class="bar-pair" style="--phase:3;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">Errors &amp;<br>omissions</span><span class="lbl-tight">E&amp;O</span></small></li>
+            <li aria-label="Signing appraiser review: moderate phase time and high signing-appraiser hands-on time on a prepared draft"><span class="bar-pair" style="--phase:2;--appraiser:3" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small><span class="lbl-full">Final appraiser<br>review</span><span class="lbl-tight">Review</span></small></li>
           </ol>
         </section>
       </div>
-      <div class="profile-key" aria-label="Chart key"><span><i class="swatch" aria-hidden="true"></i>How long this step takes</span><span><i class="swatch appraiser" aria-hidden="true"></i>Appraiser-human hands-on time</span><span>Bars show low · medium · high</span></div>
+      <div class="profile-key" aria-label="Chart key"><span><i class="swatch" aria-hidden="true"></i>How long this step takes</span><span><i class="swatch appraiser" aria-hidden="true"></i>Appraiser-human hands-on time</span><span>Taller bars mean more time</span></div>
       <p class="profile-note">Gray is the total time for the step. Green is the hands-on time required from the human appraiser. These are simple guides, not exact hours or percentages. The rest is carried by the desk: agents, automation and an internal review. These stages run side by side rather than one file after another, which is how the last report of the day gets the same attention as the first.</p>
 
       <div class="role-key" aria-label="Pipeline role key"><strong>Who is active</strong><span class="role human">Human</span><span class="role agent">Specialized agents</span><span class="role automation">Software automation</span></div>
