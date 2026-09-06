@@ -93,6 +93,8 @@
   .lede { font-size: 20px; line-height: 1.55; margin: 0 0 16px; max-width: 670px; }
   .lede .hit, .lede-list .hit, .hero-body .hit { color: var(--accent); font-weight: 700; }
   .hero-body { font-size: 18px; line-height: 1.55; margin: 0 0 16px; max-width: 670px; }
+  .beat { max-width: 660px; margin: 0 0 11px; }
+  .beat.close { margin-top: 16px; }
   .actions .btn { text-transform: none; letter-spacing: .01em; padding: 11px 16px; }
   .lede-list { font-size: 19px; line-height: 1.5; margin: 0 0 16px; padding: 0 0 0 22px; max-width: 670px; }
   .lede-list li { margin: 0 0 6px; }
@@ -171,6 +173,8 @@
     font-size: 12px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;
   }
   .turn { margin: 10px 0 6px; }
+  .turn .soon { color: var(--accent); font-weight: 700; letter-spacing: -.005em; }
+  .readline { color: var(--muted); font-size: 14px; margin: 3px 0 0; }
   .qa-list { border-top: 1px solid var(--rule); margin: 4px 0 0; }
   .qa-list > div {
     border-bottom: 1px solid var(--rule); display: grid; gap: 12px 24px;
@@ -422,19 +426,32 @@
     <p class="fineprint">Use a past assignment you have permission to share.</p>
 
     <section>
+      <p class="eyebrow">Revision requests and report conditions</p>
+      <h2>The underwriter is asking an appraisal question. Can your trainee or VA answer it?</h2>
+      <p class="beat">It lands while you&rsquo;re out on an inspection. A file you closed three weeks ago.</p>
+      <p class="beat">You stop what you&rsquo;re doing, open the workfile, and spend an hour getting back inside a property you last stood in a month ago &mdash; enough to defend a comp you chose back then, <strong class="hit">on a twenty-four hour clock</strong>.</p>
+      <p class="beat">Then it comes back a second time. And a third.</p>
+      <p class="beat">Your trainee is in the same spot you are. That file went cold for them too.</p>
+      <p class="beat">Forward it to us instead. The research case behind that report is <strong class="hit">still open on our desk</strong>: the comps we ran, the ones we passed on and why, every source. Answering the underwriter is a lookup, not an afternoon.</p>
+      <p class="beat close"><strong>Back same or next business day. Every loop, no charge. Your review, your signature.</strong></p>
+    </section>
+
+    <section>
       <h2>Choose how much you want us to handle.</h2>
       <div class="scopes">
         <article>
           <h3>$149 &middot; Research &amp; report</h3>
           <p class="price">You send the order &amp; inspection work</p>
           <p>We handle the research and comp search, then complete the report from your inspection work.</p>
-          <p class="turn"><strong>Most orders: back the next business day.</strong></p>
+          <p class="turn"><strong>Most orders: back the next business day.</strong> <span class="soon">Often sooner.</span></p>
+          <p class="readline">We read every line first.</p>
         </article>
         <article>
           <h3>$89 &middot; You send the comps</h3>
           <p class="price">Your data, comp set &amp; market direction</p>
           <p>We complete the report from what you send.</p>
-          <p class="turn"><strong>Most orders: back the next business day.</strong></p>
+          <p class="turn"><strong>Most orders: back the next business day.</strong> <span class="soon">Often sooner.</span></p>
+          <p class="readline">We read every line first.</p>
         </article>
       </div>
       <p class="fineprint"><strong>These are desk fees</strong> you pay separately from the appraisal fee you charge your client. No subscription or minimum.</p>
@@ -459,9 +476,36 @@
       <ol class="steps">
         <li><span class="n">01</span><strong>Submit the request.</strong><span>An order number, tracker &amp; secure folder come back.</span></li>
         <li><span class="n">02</span><strong>Upload the materials.</strong><span>We confirm the fee and return time before anything starts.</span></li>
-        <li><span class="n">03</span><strong>Review, revise, sign.</strong><span>Anything we got wrong, we fix free.</span></li>
+        <li><span class="n">03</span><strong>Review, revise, sign.</strong><span>You make every final appraisal decision.</span></li>
       </ol>
       <p class="docs"><a href="how-it-works.html"><strong>The full process &rarr;</strong></a></p>
+    </section>
+
+
+
+    <section>
+      <p class="eyebrow">Before you ask</p>
+      <h2>Straight answers, up front.</h2>
+      <p>The fee, the AI, the disclosure, who signs, what we don&rsquo;t take. <a href="faq.html"><strong>Every common question, answered plainly &rarr;</strong></a></p>
+    </section>
+
+    <section>
+      <p class="eyebrow">Who you would be working with</p>
+      <h2>We&rsquo;re Matt &amp; Tim Roth.</h2>
+      <div class="profile">
+        <img src="photos/matt.jpg" alt="Matt Roth" width="140" height="140">
+        <div>
+          <p><strong>Matt</strong> is a second-generation Certified Residential Appraiser, trained in Tim&rsquo;s Southern California shop from 2006. He runs this desk day to day.</p>
+          <p><strong>TX #1361115-CR &middot; CO #CR200002387</strong></p>
+        </div>
+      </div>
+      <div class="profile" style="margin-top:24px">
+        <img src="photos/tim.jpg" alt="Tim Roth" width="140" height="140">
+        <div>
+          <p><strong>Tim Roth, MAI, SRA</strong>, built that practice. His standard was simple: define the appraisal problem before opening the form. That standard still runs this desk.</p>
+          <p class="docs"><a href="about.html">More about us</a> &middot; <a href="story.html">Four appraisers</a></p>
+        </div>
+      </div>
     </section>
 
     <section>
@@ -514,33 +558,6 @@
       </div>
       <p class="docs"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>View the full live tracking demo &rarr;</strong></a></p>
       <p class="os-caption">Synthetic demonstration. No client or property data. The full page uses the same ten checkpoints.</p>
-    </section>
-
-
-
-    <section>
-      <p class="eyebrow">Before you ask</p>
-      <h2>Straight answers, up front.</h2>
-      <p>The fee, the AI, the disclosure, who signs, what we don&rsquo;t take. <a href="faq.html"><strong>Every common question, answered plainly &rarr;</strong></a></p>
-    </section>
-
-    <section>
-      <p class="eyebrow">Who you would be working with</p>
-      <h2>We&rsquo;re Matt &amp; Tim Roth.</h2>
-      <div class="profile">
-        <img src="photos/matt.jpg" alt="Matt Roth" width="140" height="140">
-        <div>
-          <p><strong>Matt</strong> is a second-generation Certified Residential Appraiser, trained in Tim&rsquo;s Southern California shop from 2006. He runs this desk day to day.</p>
-          <p><strong>TX #1361115-CR &middot; CO #CR200002387</strong></p>
-        </div>
-      </div>
-      <div class="profile" style="margin-top:24px">
-        <img src="photos/tim.jpg" alt="Tim Roth" width="140" height="140">
-        <div>
-          <p><strong>Tim Roth, MAI, SRA</strong>, built that practice. His standard was simple: define the appraisal problem before opening the form. That standard still runs this desk.</p>
-          <p class="docs"><a href="about.html">More about us</a> &middot; <a href="story.html">Four appraisers</a></p>
-        </div>
-      </div>
     </section>
 
     <div class="cta">
