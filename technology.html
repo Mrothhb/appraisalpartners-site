@@ -3,136 +3,182 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="What runs behind the Appraisal Partners desk: structured report preparation, defined source precedence, deterministic checks, and one human review before anything leaves. Plainly stated, including where AI fits.">
+<meta name="description" content="How our system works: compare research, data collection, drafting, assembly, and review with an appraiser-led workflow. Qualitative time and reasoning demands, stage by stage.">
 <link rel="canonical" href="https://appraisalpartners.net/technology.html">
-<meta property="og:title" content="Technology, Data, and Human Review | Appraisal Partners">
-<meta property="og:description" content="Most AI you've been shown is a chat window. This is a production system instead, described plainly enough to judge.">
+<meta property="og:title" content="How Our System Works | Appraisal Partners">
+<meta property="og:description" content="Most AI you've been shown is a chat window. See how this system organizes appraisal work, and where time and reasoning are involved.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/technology.html">
 <meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
-<title>Technology, Data, and Human Review | Appraisal Partners</title>
+<title>How Our System Works | Appraisal Partners</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
 <style>
-  :root {
-    --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
-    --rule: #D9DED9; --rule-strong: #889089;
-    --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
+  :root { --paper:#FAFAF7; --ink:#1C2420; --muted:#5C6660; --rule:#D9DED9; --accent:#2E5D46; --accent-deep:#24493A; --agent:#66739A; --wash:#F1F3EF; --conventional:#8E9992; }
+  @media (prefers-color-scheme:dark) { :root:not([data-theme="light"]) { --paper:#141917; --ink:#E8EAE6; --muted:#A4AEA7; --rule:#354039; --accent:#80B69A; --accent-deep:#A4CFB7; --agent:#AAB7E1; --wash:#1B211E; --conventional:#667169; } }
+  :root[data-theme="dark"] { --paper:#141917; --ink:#E8EAE6; --muted:#A4AEA7; --rule:#354039; --accent:#80B69A; --accent-deep:#A4CFB7; --agent:#AAB7E1; --wash:#1B211E; --conventional:#667169; }
+  * { box-sizing:border-box; }
+  body { background:var(--paper); color:var(--ink); font-family:"Libre Caslon Text",Georgia,serif; font-size:17px; line-height:1.62; margin:0; padding:0 24px; }
+  .sheet { max-width:1040px; margin:auto; padding:36px 0 48px; }
+  .letterhead { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:12px; border-bottom:2px solid var(--ink); padding-bottom:16px; }
+  .name { color:var(--ink); font-family:"IBM Plex Mono",monospace; font-size:14px; font-weight:500; letter-spacing:.16em; text-decoration:none; text-transform:uppercase; }
+  .cred { color:var(--muted); font-size:13px; }
+  .nav { display:flex; flex-wrap:wrap; gap:6px 18px; width:100%; font-family:"IBM Plex Mono",monospace; font-size:13px; }
+  .nav a { color:var(--muted); padding:4px 0; }
+  .nav a[aria-current] { color:var(--ink); }
+  h1 { font-size:clamp(38px,6.5vw,58px); line-height:1.11; letter-spacing:-.04em; margin:12px 0 18px; text-wrap:balance; }
+  h1 span { color:var(--accent); }
+  h2 { font-size:27px; line-height:1.28; margin:0 0 8px; text-wrap:balance; }
+  h3 { font-size:21px; line-height:1.32; margin:0; }
+  p { margin:0 0 16px; }
+  a { color:var(--accent-deep); text-underline-offset:4px; }
+  a:focus-visible { outline:2px solid var(--accent); outline-offset:5px; }
+  .skip { position:absolute; left:-9999px; top:8px; padding:12px; background:var(--accent); color:var(--paper); }
+  .skip:focus { left:8px; }
+  .eyebrow { color:var(--accent); font-family:"IBM Plex Mono",monospace; font-size:13px; letter-spacing:.12em; text-transform:uppercase; margin:40px 0 0; }
+  .lede { font-size:20px; max-width:790px; }
+  .workflow { margin:38px 0 0; padding-top:28px; border-top:1px solid var(--rule); }
+  .workflow-intro { max-width:760px; color:var(--muted); font-size:16px; }
+  .privacy-rail { display:flex; align-items:center; gap:10px; max-width:820px; color:var(--muted); font-size:13px; margin:17px 0 0; padding:11px 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); }
+  .privacy-rail::before { content:""; flex:0 0 auto; width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 5px var(--wash); }
+
+  .profiles { margin:24px 0 32px; border-top:2px solid var(--ink); border-bottom:1px solid var(--rule); }
+  .profile { display:grid; grid-template-columns:1fr; gap:14px; padding:20px 0; }
+  .profile + .profile { border-top:1px solid var(--rule); }
+  .profile h3 { font:700 19px/1.25 "IBM Plex Mono",monospace; letter-spacing:-.025em; margin:0; }
+  .profile.system h3 { color:var(--accent-deep); }
+  .profile-heading { display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px; }
+  .brand-row { display:flex; flex-wrap:wrap; align-items:center; gap:7px; }
+  .brand { display:inline-flex; align-items:center; gap:6px; min-height:34px; padding:5px 9px; border:1px solid var(--rule); background:var(--paper); color:var(--ink); font:700 11px/1 "IBM Plex Mono",monospace; white-space:nowrap; }
+  .brand img { display:block; width:22px; height:22px; border-radius:4px; object-fit:contain; background:#fff; }
+  .profile-bars { display:grid; grid-template-columns:repeat(7,minmax(48px,1fr)); gap:8px; list-style:none; margin:0; padding:0; }
+  .profile-bars li { min-width:0; text-align:center; }
+  .bar-pair { display:flex; height:98px; align-items:flex-end; justify-content:center; gap:8px; padding:0 4px 7px; border-bottom:2px solid var(--rule); }
+  .bar-pair i { display:block; width:18px; min-height:20px; border-radius:10px 10px 2px 2px; box-shadow:0 0 0 1px color-mix(in srgb,currentColor 12%,transparent); transform-origin:bottom; animation:rise .65s ease both; }
+  .profile-bars li:nth-child(2) i { animation-delay:.05s; }
+  .profile-bars li:nth-child(3) i { animation-delay:.1s; }
+  .profile-bars li:nth-child(4) i { animation-delay:.15s; }
+  .profile-bars li:nth-child(5) i { animation-delay:.2s; }
+  .profile-bars li:nth-child(6) i { animation-delay:.25s; }
+  .profile-bars li:nth-child(7) i { animation-delay:.3s; }
+  .bar-pair .phase-time { height:calc(var(--phase) * 27px); background:var(--conventional); }
+  .bar-pair .appraiser-time { height:calc(var(--appraiser) * 27px); background:var(--accent); }
+  .profile-bars small { display:block; color:var(--muted); font:11px/1.25 "IBM Plex Mono",monospace; margin-top:7px; overflow-wrap:anywhere; }
+  .profile-key { display:flex; flex-wrap:wrap; gap:8px 22px; color:var(--muted); font-size:13px; margin:-17px 0 28px; }
+  .profile-key span { display:inline-flex; align-items:center; gap:7px; }
+  .swatch { display:inline-block; width:14px; height:28px; border-radius:8px 8px 2px 2px; background:var(--conventional); }
+  .swatch.appraiser { background:var(--accent); }
+  .profile-note { color:var(--muted); font-size:14px; margin:0 0 28px; }
+  .reasoning-map { display:grid; grid-template-columns:190px 1fr; gap:24px; align-items:center; padding:15px 0; margin:-16px 0 28px; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); }
+  .reasoning-map strong { font:500 12px/1.4 "IBM Plex Mono",monospace; }
+  .reasoning-map strong span { display:block; color:var(--muted); font:12px/1.4 "Libre Caslon Text",Georgia,serif; margin-top:3px; }
+  .reasoning-levels { display:grid; grid-template-columns:repeat(7,minmax(48px,1fr)); gap:8px; }
+  .reasoning-levels span { display:flex; min-height:30px; align-items:center; justify-content:center; border-bottom:3px solid var(--rule); color:var(--muted); font:11px "IBM Plex Mono",monospace; }
+  .reasoning-levels .high { border-color:var(--accent); color:var(--accent-deep); font-weight:500; }
+  @keyframes rise { from { transform:scaleY(.15); opacity:.2; } to { transform:scaleY(1); opacity:1; } }
+
+  .lane-head { display:grid; grid-template-columns:210px .82fr 1.18fr; gap:28px; padding:13px 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); font:500 13px "IBM Plex Mono",monospace; }
+  .lane-head span:first-child { color:var(--muted); }
+  .lane-head span:last-child { color:var(--accent-deep); }
+  .stages { list-style:none; margin:0; padding:0; }
+  .stage { display:grid; grid-template-columns:210px .82fr 1.18fr; gap:28px; position:relative; padding:25px 0 27px; border-bottom:1px solid var(--rule); transition:background .25s ease; }
+  .stage.is-active { background:linear-gradient(90deg,transparent 20%,var(--wash)); }
+  .stage-title { display:grid; grid-template-columns:42px 1fr; gap:13px; align-content:start; }
+  .stage-index { display:flex; width:42px; height:42px; align-items:center; justify-content:center; border:1px solid var(--rule); border-radius:50%; color:var(--accent); font:13px "IBM Plex Mono",monospace; transition:transform .25s ease,border-color .25s ease; }
+  .stage.is-active .stage-index { transform:scale(1.07); border-color:var(--accent); }
+  .stage-title p { color:var(--muted); font-size:13px; line-height:1.42; margin:5px 0 0; }
+  .lane { min-width:0; }
+  .lane.system { position:relative; border-left:2px solid var(--accent); padding:15px 18px 16px 25px; margin:-15px 0 -16px; background:linear-gradient(115deg,var(--wash),transparent 88%); }
+  .lane.system::after { content:""; position:absolute; left:-5px; top:14px; width:8px; height:8px; border-radius:50%; background:var(--accent); opacity:0; }
+  .stage.is-active .lane.system::after { animation:signal 1.5s ease-in-out both; }
+  .lane-label { display:none; font:500 12px "IBM Plex Mono",monospace; }
+  .lane-summary { display:grid; gap:13px; }
+  .summary-line { display:grid; grid-template-columns:48px 1fr; gap:10px; align-items:start; }
+  .summary-label { color:var(--muted); padding-top:5px; font:500 9px/1.2 "IBM Plex Mono",monospace; letter-spacing:.11em; text-transform:uppercase; }
+  .action-flow { font-size:15px; line-height:1.5; margin:1px 0 0; }
+  .action-flow b { color:var(--accent); padding:0 3px; font-family:"IBM Plex Mono",monospace; font-weight:400; }
+  .role-key,.role-row { display:flex; flex-wrap:wrap; gap:7px; }
+  .role-key { align-items:center; margin:0 0 14px; padding:12px 0; border-bottom:1px solid var(--rule); }
+  .role-key > strong { margin-right:5px; font:500 12px "IBM Plex Mono",monospace; }
+  .role { display:inline-flex; align-items:center; gap:6px; padding:4px 7px; border:1px solid var(--rule); background:var(--paper); font:11px/1.2 "IBM Plex Mono",monospace; }
+  .role::before { content:""; width:7px; height:7px; border-radius:50%; background:var(--conventional); }
+  .role.human::before { background:var(--accent); }
+  .role.agent::before { background:var(--agent); }
+  .role.automation::before { border-radius:1px; background:var(--muted); }
+  .role-row { margin:0 0 12px; }
+  .machine-flow { display:grid; grid-template-columns:1fr 14px 1.15fr 14px 1fr; gap:5px; align-items:stretch; }
+  .machine-node { display:flex; min-width:0; flex-direction:column; justify-content:center; min-height:76px; padding:9px 8px; border:1px solid var(--rule); background:var(--paper); text-align:center; }
+  .machine-node.process { border-color:color-mix(in srgb,var(--accent) 48%,var(--rule)); background:var(--wash); }
+  .machine-node small { color:var(--muted); font:9px "IBM Plex Mono",monospace; letter-spacing:.1em; margin-bottom:5px; }
+  .machine-node strong { font-size:12px; line-height:1.3; font-weight:400; }
+  .machine-node.process strong { color:var(--accent-deep); font-weight:700; }
+  .flow-arrow { display:flex; align-items:center; justify-content:center; color:var(--accent); font-family:"IBM Plex Mono",monospace; }
+  @keyframes signal { 0% { top:14px; opacity:0; } 20% { opacity:1; } 80% { opacity:1; } 100% { top:calc(100% - 22px); opacity:0; } }
+  .shift { margin:28px 0 0; padding:24px 0; border-top:2px solid var(--ink); border-bottom:1px solid var(--rule); display:grid; grid-template-columns:1fr 1fr; gap:32px; }
+  .shift article:last-child { border-left:2px solid var(--accent); padding-left:28px; }
+  .shift h3 { font-size:18px; margin-bottom:7px; }
+  .shift article:last-child h3 { color:var(--accent-deep); }
+  .shift p { color:var(--muted); font-size:15px; margin:0; }
+  .assignment-total { margin:28px 0 0; padding:24px 0; border-top:2px solid var(--ink); border-bottom:1px solid var(--rule); }
+  .assignment-total > header { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:6px 18px; margin-bottom:17px; }
+  .assignment-total h3 { font-size:20px; }
+  .assignment-total > header p { color:var(--muted); font-size:13px; margin:0; }
+  .total-compare { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  .total-card { padding:18px; border:1px solid var(--rule); background:var(--paper); }
+  .total-card.system { border-left:4px solid var(--accent); background:linear-gradient(115deg,var(--wash),transparent 88%); }
+  .total-card h4 { margin:0 0 15px; font:500 13px "IBM Plex Mono",monospace; }
+  .total-card.system h4 { color:var(--accent-deep); }
+  .total-measure { padding:13px 0; border-top:1px solid var(--rule); }
+  .total-measure:first-of-type { border-top:0; padding-top:0; }
+  .total-measure span { display:block; color:var(--muted); font:500 11px/1.3 "IBM Plex Mono",monospace; letter-spacing:.06em; text-transform:uppercase; }
+  .total-measure strong { display:block; min-height:2.7em; margin:4px 0 10px; font-size:16px; line-height:1.35; font-weight:400; }
+  .total-meter { height:14px; overflow:hidden; border-radius:2px; background:var(--rule); }
+  .total-meter i { display:block; width:var(--amount); height:100%; border-radius:2px; background:var(--conventional); }
+  .total-meter.human i { background:var(--accent); }
+  .assignment-total .total-note { color:var(--muted); font-size:12px; margin:14px 0 0; }
+  .workflow figcaption { color:var(--muted); font-size:12px; line-height:1.55; margin-top:15px; }
+  .responsibility { max-width:790px; margin-top:34px; padding-top:27px; border-top:1px solid var(--rule); }
+  .responsibility p { font-size:16px; }
+  .reference-links { display:flex; flex-wrap:wrap; gap:12px 24px; margin-top:24px; font-size:15px; }
+  footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; border-top:1px solid var(--rule); padding-top:20px; margin-top:36px; color:var(--muted); font-size:13px; }
+  footer address { width:100%; font-style:normal; }
+
+  @media(max-width:820px) {
+    .profile { grid-template-columns:1fr; gap:14px; }
+    .profile-key { margin:-17px 0 28px; }
+    .reasoning-map { grid-template-columns:1fr; gap:12px; }
+    .lane-head { grid-template-columns:175px .8fr 1.2fr; gap:20px; }
+    .stage { grid-template-columns:175px .8fr 1.2fr; gap:20px; }
+    .lane.system { padding-left:20px; }
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --rule-strong: #606B62;
-    --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
-    }
+  @media(max-width:680px) {
+    body { padding:0 20px; }
+    .sheet { padding-top:24px; }
+    .cred { display:none; }
+    .lane-head { display:none; }
+    .stage { grid-template-columns:1fr 1fr; gap:20px; }
+    .stage-title { grid-column:1 / -1; }
+    .lane-label { display:block; margin:0 0 7px; color:var(--ink); }
+    .lane.system .lane-label { color:var(--accent-deep); }
   }
-  :root[data-theme="dark"] {
-    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --rule-strong: #606B62;
-    --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
+  @media(max-width:500px) {
+    .profile-bars { gap:3px; }
+    .profile-bars small { font-size:9px; }
+    .stage { grid-template-columns:1fr; gap:18px; }
+    .stage-title { grid-column:auto; }
+    .lane.system { border-left:0; border-top:2px solid var(--accent); padding:17px 12px 12px; margin:0; }
+    .lane.system::after { display:none; }
+    .machine-flow { grid-template-columns:1fr 12px 1fr 12px 1fr; gap:3px; }
+    .machine-node { min-height:70px; padding:7px 5px; }
+    .machine-node strong { font-size:11px; }
+    .shift { grid-template-columns:1fr; gap:20px; }
+    .shift article:last-child { border-left:0; border-top:2px solid var(--accent); padding:18px 0 0; }
+    .total-compare { grid-template-columns:1fr; }
   }
-  * { box-sizing: border-box; }
-  body {
-    background: var(--paper); color: var(--ink);
-    font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
-    font-size: 17px; line-height: 1.68; margin: 0; padding: 0 24px;
-  }
-  .sheet { max-width: 720px; margin: 0 auto; padding: 44px 0 64px; }
-  .letterhead {
-    display: flex; justify-content: space-between; align-items: baseline;
-    gap: 18px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 14px;
-  }
-  .letterhead .name {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-weight: 500; font-size: 14px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--ink); text-decoration: none;
-  }
-  .letterhead .cred, .nav {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
-  }
-  .nav { width: 100%; display: flex; flex-wrap: wrap; gap: 9px 20px; padding-top: 2px; }
-  .nav a { color: var(--muted); padding: 4px 0; }
-  .nav a, footer a { text-decoration-thickness: 0.5px; text-underline-offset: 2px; }
-  main:focus { outline: none; }
-  h1 {
-    font-size: clamp(32px, 6.5vw, 48px); font-weight: 700; line-height: 1.16;
-    letter-spacing: -0.02em; text-wrap: balance; margin: 40px 0 18px;
-  }
-  h1 .line { color: var(--accent); }
-  h2 { font-size: 24px; line-height: 1.32; margin: 0 0 14px; text-wrap: balance; }
-  h3 { font-size: 18px; line-height: 1.35; margin: 0 0 8px; }
-  .lede { font-size: 20px; line-height: 1.55; margin: 0 0 16px; }
-  p { margin: 0 0 18px; }
-  a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-  a:hover, a:focus-visible { text-decoration-color: var(--accent); }
-  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-  section { border-top: 1px solid var(--rule); margin-top: 42px; padding-top: 28px; }
-  .eyebrow {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--accent); margin: 0 0 10px;
-  }
-  ul.plain { margin: 0 0 18px; padding: 0 0 0 1.15em; }
-  ul.plain li { margin-bottom: 10px; }
-  ul.plain li::marker { color: var(--accent); }
-  .split {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px;
-    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin-bottom: 18px;
-  }
-  .split > div { padding: 18px 0 2px; }
-  .stage { border-left: 3px solid var(--rule); padding: 0 0 2px 18px; margin-bottom: 22px; }
-  .stage:last-child { margin-bottom: 0; }
-  .stage h3 {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--accent); margin: 0 0 6px;
-  }
-  .stage p { margin: 0 0 8px; font-size: 16px; }
-  .stage p:last-child { margin-bottom: 0; }
-  .stage .mine { color: var(--muted); font-size: 15px; }
-  .callout {
-    border-left: 4px solid var(--accent); background: var(--wash);
-    padding: 17px 19px; margin: 20px 0;
-  }
-  .callout p:last-child { margin-bottom: 0; }
-  .rulebox {
-    border: 1px solid var(--rule); background: var(--wash);
-    padding: 16px 18px; margin: 18px 0;
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 13px; line-height: 1.85;
-  }
-  .rulebox p { margin: 0 0 8px; }
-  .rulebox p:last-child { margin: 0; }
-  .rulebox b { color: var(--accent-deep); font-weight: 500; }
-  .fineprint { font-size: 14.5px; color: var(--muted); margin: 14px 0 0; }
-  a.btn {
-    display: inline-block; background: var(--accent); color: var(--paper);
-    padding: 12px 20px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
-    text-decoration: none; border: 1.5px solid var(--accent);
-    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px;
-  }
-  a.btn:hover, a.btn:focus-visible { background: var(--accent-deep); border-color: var(--accent-deep); }
-  .cta { border: 1.5px solid var(--ink); padding: 24px 26px; margin-top: 42px; }
-  .cta p:last-child { margin-bottom: 0; }
-  footer {
-    border-top: 2px solid var(--ink); margin-top: 44px; padding-top: 14px;
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
-    display: flex; justify-content: space-between; gap: 10px 18px; flex-wrap: wrap;
-  }
-  footer .postal-address { flex-basis: 100%; font-style: normal; }
-  @media (max-width: 620px) { .split { grid-template-columns: 1fr; } }
-  .skip {
-    position: absolute; left: -9999px; top: 0;
-    background: var(--accent); color: var(--paper); padding: 10px 16px;
-    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; z-index: 10;
-  }
-  .skip:focus { left: 8px; top: 8px; }
-  @media (max-width: 600px) { .sheet { padding-top: 28px; } .nav { gap: 5px 14px; } }
+  @media(prefers-reduced-motion:reduce) { .stage,.stage-index { transition:none; } .stage.is-active .lane.system::after,.bar-pair i { animation:none; } }
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-pNkpzZuFyeVpLVvH7hc8w.js"></script>
@@ -142,142 +188,138 @@
 </script>
 </head>
 <body>
-
 <a class="skip" href="#main">Skip to content</a>
 <div class="sheet">
   <header class="letterhead">
     <a class="name" href="index.html">Appraisal Partners</a>
-    <span class="cred">Technology, data, and human review</span>
+    <span class="cred">Research · production · review</span>
     <nav class="nav" aria-label="Primary">
-      <a href="uad36.html">UAD 3.6</a>
-      <a href="convert.html">Convert</a>
-      <a href="how-it-works.html">How it works</a>
-      <a href="how-it-works.html#pricing">Pricing</a>
-      <a href="technology.html" aria-current="page">Technology</a>
-      <a href="portrait.html">The portrait</a>
-      <a href="story.html">Four appraisers</a>
-      <a href="about.html">About us</a>
-      <a href="faq.html">FAQ</a>
-      <a href="start.html">Start with one report</a>
+      <a href="uad36.html">UAD 3.6</a><a href="convert.html">Convert</a><a href="how-it-works.html">How it works</a><a href="how-it-works.html#pricing">Pricing</a><a href="technology.html" aria-current="page">Behind the desk</a><a href="portrait.html">The portrait</a><a href="story.html">Four appraisers</a><a href="about.html">About us</a><a href="faq.html">FAQ</a><a href="start.html">Start with one report</a>
     </nav>
   </header>
 
   <main id="main" tabindex="-1">
-    <p class="eyebrow">What runs behind the desk</p>
-    <h1>Most AI you've been shown <span class="line">is a chat window.</span></h1>
-    <p class="lede">Paste an assignment into a chatbot and you get fluent text with nothing behind it. That experience is why many appraisers doubt AI can touch this work, and for a chat window they are right. What runs here is different. It is a production system with adapters into the report software, source rules, deterministic checks, and a named human read that has to pass before anything leaves.</p>
-    <p>Matt built it for his own reports first. We use software automation and AI-assisted tools in this work, and yes, that includes the drafting. This page describes it plainly enough that you can judge whether you would trust it with yours.</p>
+    <p class="eyebrow">How our system works</p>
+    <h1>Most AI you've been shown<br><span>is a chat window.</span></h1>
+    <p class="lede">Ours is a production pipeline, not a chat window. Software agents research the subject and market, gather the evidence, draft the analysis and challenge the draft. Fixed tools assemble the native report. The signing appraiser makes every decision.</p>
 
-    <section>
-      <p class="eyebrow">Why it exists</p>
-      <h2>Built by an appraiser who spent a decade as an engineer</h2>
-      <p>Matt studied mathematics and computer science at UC San Diego, then spent about ten years in engineering and product operations, designing systems for people who had to live with the output. He is also a second-generation appraiser who trained through licensure in Tim's practice.</p>
-      <p>Those two halves rarely land at the same desk, and that is why this exists. Building the tooling and defending a value to a reviewer are different skills, and this desk has had to do both. So the system is built around the part that actually carries risk: the evidence behind every fact in the report.</p>
+    <figure class="workflow" id="workflow" aria-labelledby="workflow-title">
+      <h2 id="workflow-title">A clear view into how a report gets built.</h2>
+      <p class="workflow-intro">One appraisal moves through seven controlled stages. In the pipeline below, each stage shows what enters, what processes it, and what leaves for the next handoff.</p>
+      <p class="privacy-rail">The handoffs and controls are visible. Client identities, property data, credentials, exact model routing, and internal control details remain private.</p>
+      <p class="profile-note"><strong>Workflow shown:</strong> Research &amp; Report. With Your Data &amp; Comps, the signing appraiser supplies more of the subject, market, comp, and analysis inputs.</p>
+
+      <div class="profiles" aria-label="Qualitative workload comparison by phase">
+        <section class="profile conventional" aria-labelledby="conventional-profile">
+          <div class="profile-heading"><h3 id="conventional-profile">Conventional appraisal tools</h3></div>
+          <ol class="profile-bars">
+            <li aria-label="Intake: moderate phase time and moderate appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:2" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Intake</small></li>
+            <li aria-label="Subject and market: high phase time and high appraiser time"><span class="bar-pair" style="--phase:3;--appraiser:3" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Subject<br>market</small></li>
+            <li aria-label="Comparables and data: moderate phase time and moderate appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:2" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Comps<br>data</small></li>
+            <li aria-label="Appraisal analysis: high phase time and high appraiser time"><span class="bar-pair" style="--phase:3;--appraiser:3" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Analysis</small></li>
+            <li aria-label="Fill and pack: moderate phase time and moderate appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:2" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Fill<br>pack</small></li>
+            <li aria-label="Rules and quality control: high phase time and high appraiser time"><span class="bar-pair" style="--phase:3;--appraiser:3" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Rules<br>QC</small></li>
+            <li aria-label="Signing appraiser review: high phase time and high appraiser time"><span class="bar-pair" style="--phase:3;--appraiser:3" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Appraiser</small></li>
+          </ol>
+        </section>
+        <section class="profile system" aria-labelledby="system-profile">
+          <div class="profile-heading"><h3 id="system-profile">Our desk</h3></div>
+          <ol class="profile-bars">
+            <li aria-label="Intake: moderate phase time and low signing-appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Intake</small></li>
+            <li aria-label="Subject and market: high phase time and low signing-appraiser time before final review"><span class="bar-pair" style="--phase:3;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Subject<br>market</small></li>
+            <li aria-label="Comparables and data: moderate phase time and low signing-appraiser time"><span class="bar-pair" style="--phase:2;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Comps<br>data</small></li>
+            <li aria-label="Appraisal analysis: high phase time and low signing-appraiser production time before final review"><span class="bar-pair" style="--phase:3;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Analysis</small></li>
+            <li aria-label="Fill and pack: low phase time and low signing-appraiser time once inputs are ready"><span class="bar-pair" style="--phase:1;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Fill<br>pack</small></li>
+            <li aria-label="Rules and quality control: high phase time and low signing-appraiser time before final review"><span class="bar-pair" style="--phase:3;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Rules<br>QC</small></li>
+            <li aria-label="Signing appraiser review: moderate phase time and low signing-appraiser hands-on time with a prepared draft"><span class="bar-pair" style="--phase:2;--appraiser:1" aria-hidden="true"><i class="phase-time"></i><i class="appraiser-time"></i></span><small>Appraiser</small></li>
+          </ol>
+        </section>
+      </div>
+      <div class="profile-key" aria-label="Chart key"><span><i class="swatch" aria-hidden="true"></i>How long this step takes</span><span><i class="swatch appraiser" aria-hidden="true"></i>Appraiser-human hands-on time</span><span>Bars show low · medium · high</span></div>
+      <p class="profile-note">Gray is the total time for the step. Green is the hands-on time required from the human appraiser. These are simple guides, not exact hours or percentages. The rest is carried by the desk: agents, automation and an internal review.</p>
+
+      <div class="role-key" aria-label="Pipeline role key"><strong>Who is active</strong><span class="role human">Human</span><span class="role agent">Specialized agents</span><span class="role automation">Software automation</span></div>
+      <div class="lane-head" aria-hidden="true"><span>Seven stages</span><span>Conventional tools</span><span>Our desk</span></div>
+      <ol class="stages">
+        <li class="stage">
+          <header class="stage-title"><span class="stage-index">01</span><div><h3>Intake &amp; assignment audit</h3></div></header>
+          <article class="lane conventional"><p class="lane-label">Conventional tools</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role human">Appraiser + staff</span><span class="role automation">Order software</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Read order <b>&rarr;</b> build workfile <b>&rarr;</b> find missing items</p></div></div></article>
+          <article class="lane system"><p class="lane-label">Our desk</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role human">Desk reviewer</span><span class="role automation">Intake controls</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Approve scope <b>&rarr;</b> audit uploaded files <b>&rarr;</b> open ready workfile</p></div></div></article>
+        </li>
+        <li class="stage">
+          <header class="stage-title"><span class="stage-index">02</span><div><h3>Subject, market &amp; comp strategy</h3></div></header>
+          <article class="lane conventional"><p class="lane-label">Conventional tools</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role human">Appraiser</span><span class="role automation">MLS + research tools</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Research subject <b>&rarr;</b> define market <b>&rarr;</b> choose comp strategy</p></div></div></article>
+          <article class="lane system"><p class="lane-label">Our desk</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role agent">Research agents</span><span class="role human">Desk oversight</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Build subject picture <b>&rarr;</b> analyze market <b>&rarr;</b> prepare comp strategy</p></div></div></article>
+        </li>
+        <li class="stage">
+          <header class="stage-title"><span class="stage-index">03</span><div><h3>MLS, records &amp; evidence collection</h3></div></header>
+          <article class="lane conventional"><p class="lane-label">Conventional tools</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role human">Appraiser + staff</span><span class="role automation">Data services</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Search MLS + records <b>&rarr;</b> gather exhibits <b>&rarr;</b> resolve gaps</p></div></div></article>
+          <article class="lane system"><p class="lane-label">Our desk</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role agent">Collection agents</span><span class="role automation">Data tools</span><span class="role human">Source controls</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Follow search plan <b>&rarr;</b> gather evidence <b>&rarr;</b> verify sources</p></div></div></article>
+        </li>
+        <li class="stage">
+          <header class="stage-title"><span class="stage-index">04</span><div><h3>Adjustments, reconciliation &amp; narrative</h3></div></header>
+          <article class="lane conventional"><p class="lane-label">Conventional tools</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role human">Appraiser</span><span class="role automation">Forms + templates</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Set adjustments <b>&rarr;</b> write analysis <b>&rarr;</b> reconcile value</p></div></div></article>
+          <article class="lane system"><p class="lane-label">Our desk</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role agent">Appraisal agents</span><span class="role human">Decision controls</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Propose adjustments <b>&rarr;</b> draft analysis <b>&rarr;</b> record the basis</p></div></div></article>
+        </li>
+        <li class="stage">
+          <header class="stage-title"><span class="stage-index">05</span><div><h3>Native UAD 3.6 report assembly</h3></div></header>
+          <article class="lane conventional"><p class="lane-label">Conventional tools</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role human">Appraiser + staff</span><span class="role automation">Form software</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Enter fields <b>&rarr;</b> place exhibits <b>&rarr;</b> check transfer</p></div></div></article>
+          <article class="lane system"><p class="lane-label">Our desk</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role automation">Report automation</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Fill native TOTAL fields <b>&rarr;</b> pack exhibits <b>&rarr;</b> read back report</p></div></div></article>
+        </li>
+        <li class="stage">
+          <header class="stage-title"><span class="stage-index">06</span><div><h3>Errors, omissions, rules &amp; independent review</h3></div></header>
+          <article class="lane conventional"><p class="lane-label">Conventional tools</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role human">Appraiser / reviewer</span><span class="role automation">Validation tools</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Run checks <b>&rarr;</b> fix findings <b>&rarr;</b> check again</p></div></div></article>
+          <article class="lane system"><p class="lane-label">Our desk</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role automation">Rules engine</span><span class="role agent">Review agent</span><span class="role human">Internal appraiser</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Detect issues <b>&rarr;</b> challenge draft <b>&rarr;</b> verify corrections</p></div></div></article>
+        </li>
+        <li class="stage">
+          <header class="stage-title"><span class="stage-index">07</span><div><h3>Signing-appraiser review</h3></div></header>
+          <article class="lane conventional"><p class="lane-label">Conventional tools</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role human">Signing appraiser</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Review report <b>&rarr;</b> resolve issues <b>&rarr;</b> sign + deliver</p></div></div></article>
+          <article class="lane system"><p class="lane-label">Our desk</p><div class="lane-summary"><div class="summary-line"><span class="summary-label">Who</span><div class="role-row"><span class="role human">Signing appraiser</span></div></div><div class="summary-line"><span class="summary-label">What</span><p class="action-flow">Review prepared draft <b>&rarr;</b> adopt or change judgments <b>&rarr;</b> sign + deliver</p></div></div></article>
+        </li>
+      </ol>
+
+      <div class="shift">
+        <article><h3>What moves into the system</h3><p>Packet audit, research preparation, source gathering, draft proposals, report assembly, repeatable checks, and an independent first review.</p></article>
+        <article><h3>What stays with the appraiser</h3><p>Inspection, adoption of appraisal judgments, final analysis and value, certification, signature, and client delivery.</p></article>
+      </div>
+      <section class="assignment-total" aria-labelledby="assignment-total-title">
+        <header><h3 id="assignment-total-title">The overall difference</h3><p>Same appraisal work. Different workload.</p></header>
+        <div class="total-compare">
+          <article class="total-card">
+            <h4>Conventional appraisal tools</h4>
+            <div class="total-measure"><span>Total time</span><strong>Longer, with most work completed step by step.</strong><div class="total-meter" style="--amount:100%" role="img" aria-label="Longer total time"><i></i></div></div>
+            <div class="total-measure"><span>Human appraiser effort</span><strong>The appraiser works through most stages.</strong><div class="total-meter human" style="--amount:100%" role="img" aria-label="Human appraiser effort across most stages"><i></i></div></div>
+          </article>
+          <article class="total-card system">
+            <h4>Our desk</h4>
+            <div class="total-measure"><span>Total time</span><strong>Compressed through coordinated and parallel work.</strong><div class="total-meter" style="--amount:66%" role="img" aria-label="Compressed total time through coordinated and parallel work"><i></i></div></div>
+            <div class="total-measure"><span>Human appraiser effort</span><strong>Focused on key judgments and final review.</strong><div class="total-meter human" style="--amount:36%" role="img" aria-label="Human appraiser effort focused on key judgments and final review"><i></i></div></div>
+          </article>
+        </div>
+        <p class="total-note">Bar length shows the general contrast—not exact hours, percentages, or promised savings. Assignment complexity still controls the clock.</p>
+      </section>
+      <figcaption>Qualitative workflow illustration, not measured industry averages, promised savings, or a turnaround comparison. Actual time varies by assignment, evidence, access, inspection, software, and revisions. Conventional production includes staff, vendors, and established software where used.</figcaption>
+    </figure>
+
+    <section class="responsibility">
+      <h2>The decision boundary stays human.</h2>
+      <p>The appraisal thinking the assignment requires does not go away; it moves to the front, where it belongs. Our agents prepare and challenge the work. Fixed software assembles and checks it. An internal appraisal reviewer reads the draft against its sources. The signing appraiser retains the inspection, final appraisal judgment, value, certification, signature, and delivery. Data handling and required assistance disclosures are agreed before production.</p>
     </section>
-
-    <section>
-      <p class="eyebrow">The core of it</p>
-      <h2>It writes into your software, not beside it</h2>
-      <p>Most automation in this space hands you a document to copy from. This writes into the report itself through an adapter, so the report returns as a working file with the data placed and the photos routed. You open your own software and everything is editable exactly where you expect it, rather than retyping from a PDF.</p>
-      <p>Your working-file format and delivery route are confirmed at intake. We will not promise compatibility with software we have not tested, so the handoff is settled before you upload assignment material.</p>
-      <div class="callout">
-        <p><strong>Every fact carries its source.</strong> The system does not treat all evidence as equal. A sketch is authoritative for gross living area and beats both the tax record and the MLS. An assignment order proves assignment facts only, a sales contract proves transaction facts only, and neither one proves property condition or market behavior. Photos beat a stale listing on whether a pool exists. Where no market-derived rate can be isolated, the limitation gets disclosed rather than papered over, because failing to isolate an effect is not proof there isn't one.</p>
-      </div>
-      <p>Those rules are written down and enforced, not remembered. A fact that cannot be tied to an allowed source does not silently become a fact. It becomes an appraiser decision, flagged for the person signing.</p>
-    </section>
-
-    <section>
-      <p class="eyebrow">Stage by stage</p>
-      <h2>A second appraiser at the next desk, not an autopilot</h2>
-      <p>The word people expect here is automation, and it's the wrong word. Nothing on an assignment runs off on its own and hands back a finished report to bless. The system works alongside Matt at every stage, the way a second appraiser at the next desk would, and he is present at each one.</p>
-      <p>What that buys is not speed at the expense of thought. It's the opposite. Nobody here is typing, clicking, entering data, or moving between screens, so the hours go where they belong: the market, the boundary, the comparables, and the judgment underneath all three. The work we do on your assignment is the work only an appraiser can do.</p>
-
-      <div class="stage">
-        <h3>Intake and audit</h3>
-        <p>The moment an assignment is accepted, before any production starts, the workfile and order folder are built out and the property gets a full audit. Public record, prior transfers, the assignment documents, anything that contradicts anything else. Surprises are cheap to handle now and expensive to handle in the grid.</p>
-        <p class="mine"><strong>Matt's part:</strong> he reads the audit before work begins. If something in it changes the assignment, you hear from us then, not on delivery day.</p>
-      </div>
-
-      <div class="stage">
-        <h3>Market work, side by side</h3>
-        <p>This is the part that decides whether the report is any good, so this is where Matt sits down. The market analysis, the boundary, and the comparable selection get worked through with the system alongside him. It assembles candidates and tests them against the data. He sets the market boundary and chooses the comparable set. Every fact bound for the workfile is settled here, with its source, before anything is filled.</p>
-        <p class="mine"><strong>Matt's part:</strong> the analytical work behind the report. He documents the reasoning and the whole candidate pool so you can judge both, and what goes in the signed report is yours. A machine can find nine candidates. It cannot know the closest one on paper backs a highway.</p>
-      </div>
-
-      <div class="stage">
-        <h3>Collection and fill</h3>
-        <p>With the analysis settled, the authorized data is collected and the report is filled and packed into the native file. Field mapping, a readback of what actually landed in the file, photo placement, and file-identity checks. These either pass or fail. They are machinery, and machinery should do the things that have a right answer.</p>
-        <p class="mine"><strong>Matt's part:</strong> almost none, deliberately. This is the stage that used to eat the evening.</p>
-      </div>
-
-      <div class="stage">
-        <h3>Adversarial review</h3>
-        <p>A separate review pass reads the filled report the way a careful reviewer would: critical, analytical, and looking for the weak line. It did not do the work, so it does not read the work sympathetically. It produces one consolidated list of corrections. The corrections are made and checked, three passes at most, and past that the file comes to you with the unresolved items named rather than quietly buried.</p>
-        <p class="mine"><strong>Matt's part:</strong> he sets what it is looking for, and he rules on what it finds. Not every objection is right.</p>
-      </div>
-
-      <div class="stage">
-        <h3>Matt's pass</h3>
-        <p>Then Matt reads the whole report, on the rendered page as you will see it, against the sources. This is the step the price pays for and the one nothing else substitutes for.</p>
-        <p class="mine"><strong>Matt's part:</strong> all of it. Nothing leaves this desk that he has not read.</p>
-      </div>
-
-      <div class="stage">
-        <h3>Your review</h3>
-        <p>The editable report arrives for your review, with the documented comparable pool behind the grid and a short list of open items worth your attention.</p>
-        <p class="mine"><strong>Yours:</strong> scope, final comparables, adjustments, reconciliation, value, certification, signature, and delivery. Accept, change, or reject anything in it.</p>
-      </div>
-    </section>
-
-    <section>
-      <p class="eyebrow">The honest part</p>
-      <h2>What goes wrong, and what catches it</h2>
-      <p>Any system that writes can write something wrong. Pretending otherwise would tell you more about us than about the software. Three failure modes are real, and each has a control that exists because the failure is expected.</p>
-      <ul class="plain">
-        <li><strong>Machine-written commentary can be fluent and wrong.</strong> It reads well, which is exactly what makes it dangerous. The review reads the rendered report the way a reviewer would, not the way an author would.</li>
-        <li><strong>A comparable can look right on paper and be wrong on the ground.</strong> Source rules and an appraiser's judgment on the comparable set both sit ahead of the grid, and the full candidate pool ships with the file so you can see what was considered and rejected, not just what was chosen.</li>
-        <li><strong>Source conflicts can get smoothed instead of surfaced.</strong> Precedence is defined in advance, and where evidence genuinely conflicts or cannot support a conclusion, it is disclosed as an open item rather than resolved silently.</li>
-      </ul>
-      <div class="rulebox">
-        <p><b>Standing rules the system operates under:</b></p>
-        <p>Never call unfinished work final. Never claim the software's error check is clean.</p>
-        <p>Record the evidence, the review result, and the unresolved uncertainties precisely.</p>
-        <p>Values typed or confirmed by the appraiser are never overwritten.</p>
-        <p>Never source a value from a prior report, a cache, or an internal claim.</p>
-      </div>
-      <p>If a report misses the accepted scope in a way the revision process cannot fix, that report is not billed. Our production errors are corrected without another fee.</p>
-    </section>
-
-    <section>
-      <p class="eyebrow">Data</p>
-      <h2>Where your assignment material goes</h2>
-      <p>Assignment materials move through a private order folder or another secure channel you approve. Credentials are never shared in either direction, no client is ever solicited, and assignment data is never sold. Your private status page carries no property address, borrower, client name, report data, or value. It does carry the scope and the desk fee, so it belongs in the order folder rather than a group thread.</p>
-      <p>The specific providers, the data each one receives, retention and deletion, and the full data path are documented and approved with you at onboarding, before a live report is accepted. That happens in writing, per client, rather than as a claim on a web page, because your client's requirements govern and they are not all the same.</p>
-      <p class="fineprint">If your client prohibits outside assistance or the approved data path, the assignment is not a fit for this desk and we will tell you before we start.</p>
-    </section>
-
-    <section>
-      <p class="eyebrow">Early access</p>
-      <h2>Not available yet</h2>
-      <p>The system isn't available to the public at this time. Appraisers keep asking whether they can run it themselves, and the answer eventually is yes, deliberately slowly. Installing it is not the hard part. Knowing which judgments the system is allowed to make, and which ones it must hand back to you, is the hard part, and that is not something a download teaches.</p>
-      <p>When it opens, it will be a small number of appraisers onboarded by hand, one at a time, with the training attached. If you want to know when that happens, say so and we'll put you on the list. No pitch will follow.</p>
-      <p><a class="btn" href="mailto:mrr@appraisalpartners.net?subject=Early%20access%20list">Ask about early access</a></p>
-    </section>
-
-    <div class="cta">
-      <p><strong>Or just judge the output.</strong></p>
-      <p>None of this matters if the reports aren't good. Read the <a href="uad36-work-sample.pdf">sample UAD 3.6 report</a>, or test the handoff on a closed prior assignment and compare the work against a report you already know.</p>
-      <p><a class="btn" href="start.html">Let&rsquo;s try one</a></p>
-    </div>
+    <nav class="reference-links" aria-label="Related information"><a href="how-it-works.html">Order process &amp; pricing</a><a href="uad36-work-sample.pdf">Sample report</a><a href="terms.html">Data &amp; service terms</a></nav>
   </main>
 
-  <footer>
-    <span>Appraisal Partners of Texas, Inc.</span>
-    <span>TX #1361115-CR &middot; CO #CR200002387</span>
-    <span><a href="faq.html">FAQ</a></span>
-    <span><a href="terms.html">Terms</a></span>
-    <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
-  </footer>
+  <footer><span><a href="index.html">Appraisal Partners</a></span><span>TX #1361115-CR &middot; CO #CR200002387</span><span><a href="terms.html">Terms</a></span><address>Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address></footer>
 </div>
+
+<script>
+(() => {
+  const stages = [...document.querySelectorAll('.stage')];
+  if (!stages.length || !('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => entry.target.classList.toggle('is-active', entry.isIntersecting));
+  }, { rootMargin:'-34% 0px -48% 0px', threshold:0 });
+  stages.forEach(stage => observer.observe(stage));
+})();
+</script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="How the appraiser-only UAD 3.6 desk works: secure intake, firm acceptance, flat price, committed return time, private tracking, comp direction you control, and an editable report.">
+<meta name="description" content="Request, upload, approve, review. A simple handoff for an editable UAD 3.6 report, with scope, fee, format, and return time agreed before production.">
 <link rel="canonical" href="https://appraisalpartners.net/how-it-works.html">
 <meta property="og:title" content="How the Production Desk Works | Appraisal Partners">
 <meta property="og:description" content="Test the desk on an authorized past assignment, then track accepted UAD 3.6 reports stage by stage.">
@@ -17,71 +17,57 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
 <style>
-  :root { --paper:#FAFAF7; --ink:#1C2420; --muted:#5C6660; --rule:#D9DED9; --rule-strong:#889089; --accent:#2E5D46; --accent-deep:#24493A; --wash:#F1F3EF; }
-  @media (prefers-color-scheme:dark) { :root:not([data-theme="light"]) { --paper:#141917; --ink:#E8EAE6; --muted:#97A19A; --rule:#2A322D; --rule-strong:#606B62; --accent:#6FA98C; --accent-deep:#8FBFA6; --wash:#1B211E; } }
-  :root[data-theme="dark"] { --paper:#141917; --ink:#E8EAE6; --muted:#97A19A; --rule:#2A322D; --rule-strong:#606B62; --accent:#6FA98C; --accent-deep:#8FBFA6; --wash:#1B211E; }
+  :root { --paper:#FAFAF7; --ink:#1C2420; --muted:#5C6660; --rule:#D9DED9; --accent:#2E5D46; --accent-deep:#24493A; --wash:#F1F3EF; }
+  @media (prefers-color-scheme:dark) { :root:not([data-theme="light"]) { --paper:#141917; --ink:#E8EAE6; --muted:#A4AEA7; --rule:#354039; --accent:#80B69A; --accent-deep:#A4CFB7; --wash:#1B211E; } }
+  :root[data-theme="dark"] { --paper:#141917; --ink:#E8EAE6; --muted:#A4AEA7; --rule:#354039; --accent:#80B69A; --accent-deep:#A4CFB7; --wash:#1B211E; }
   * { box-sizing:border-box; }
-  body { background:var(--paper); color:var(--ink); font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:17px; line-height:1.68; margin:0; padding:0 24px; }
-  .sheet { max-width:720px; margin:0 auto; padding:44px 0 64px; }
-  .letterhead { align-items:baseline; border-bottom:2px solid var(--ink); display:flex; flex-wrap:wrap; gap:18px; justify-content:space-between; padding-bottom:14px; }
-  .name { font-family:"IBM Plex Mono","Courier New",monospace; font-size:14px; font-weight:500; letter-spacing:.22em; text-transform:uppercase; color:var(--ink); text-decoration:none; }
-  .cred,.nav,footer { color:var(--muted); font-family:"IBM Plex Mono","Courier New",monospace; font-size:11.5px; letter-spacing:.04em; }
-  .nav { display:flex; flex-wrap:wrap; gap:9px 20px; padding-top:2px; width:100%; }
+  body { background:var(--paper); color:var(--ink); font-family:"Libre Caslon Text",Georgia,serif; font-size:17px; line-height:1.65; margin:0; padding:0 24px; }
+  .sheet { max-width:820px; margin:auto; padding:36px 0 48px; }
+  .letterhead { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:12px; border-bottom:2px solid var(--ink); padding-bottom:16px; }
+  .name { color:var(--ink); font-family:"IBM Plex Mono",monospace; font-size:14px; font-weight:500; letter-spacing:.16em; text-decoration:none; text-transform:uppercase; }
+  .cred { color:var(--muted); font-size:13px; }
+  .nav { display:flex; flex-wrap:wrap; gap:6px 18px; width:100%; font-family:"IBM Plex Mono",monospace; font-size:13px; }
   .nav a { color:var(--muted); padding:4px 0; }
-  main:focus { outline:none; }
-  h1 { font-size:clamp(34px,7vw,52px); font-weight:700; letter-spacing:-.02em; line-height:1.15; margin:46px 0 20px; text-wrap:balance; }
-  h1 .line { color:var(--accent); }
-  h2 { font-size:25px; line-height:1.3; margin:0 0 16px; text-wrap:balance; }
-  h3 { font-size:18px; line-height:1.35; margin:0 0 6px; }
-  .lede { font-size:20px; line-height:1.55; margin:0 0 14px; }
-  .eyebrow { color:var(--accent); font-family:"IBM Plex Mono","Courier New",monospace; font-size:12px; font-weight:500; letter-spacing:.18em; margin:44px 0 0; text-transform:uppercase; }
-  p { margin:0 0 18px; }
-  a { color:var(--accent-deep); text-decoration-color:currentColor; text-decoration-thickness:1px; text-underline-offset:3px; }
-  a:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
-  section { border-top:1px solid var(--rule); margin-top:44px; padding-top:30px; }
-  .scopes { display:grid; gap:20px; grid-template-columns:1fr 1fr; }
-  .scopes article { border:1px solid var(--rule); border-top:3px solid var(--accent); padding:18px 20px 12px; }
-  .price { color:var(--accent-deep); font-family:"IBM Plex Mono","Courier New",monospace; font-size:12.5px; font-weight:500; }
-  .scopes p { font-size:15.5px; }
-  ol.steps { display:flex; flex-direction:column; gap:0; list-style:none; margin:0; padding:0; }
-  ol.steps li { border-top:1px solid var(--rule); display:grid; gap:16px; grid-template-columns:44px 1fr; padding:17px 0 15px; }
-  ol.steps li:last-child { border-bottom:1px solid var(--rule); }
-  ol.steps .n { color:var(--accent); font-family:"IBM Plex Mono","Courier New",monospace; font-size:13px; padding-top:3px; }
-  .fineprint { color:var(--muted); font-size:14.5px; margin-top:15px; }
-  .rail { border-left:3px solid var(--accent); color:var(--muted); font-family:"IBM Plex Mono","Courier New",monospace; font-size:12px; line-height:2; margin:20px 0; padding:12px 16px; }
-  .rail b { color:var(--ink); }
-  .proof { background:var(--wash); border-left:3px solid var(--accent); padding:16px 18px; }
-  .proof span { color:var(--muted); display:block; font-size:14px; margin-top:4px; }
-  ul.plain { margin:0 0 18px; padding-left:1.2em; }
-  ul.plain li { margin-bottom:9px; }
-  ul.plain li::marker { color:var(--accent); }
-  .cta { border:1.5px solid var(--ink); margin-top:44px; padding:24px 26px; }
-  a.btn { background:var(--accent); border:1.5px solid var(--accent); color:var(--paper); display:inline-block; font-family:"IBM Plex Mono","Courier New",monospace; font-size:13px; font-weight:500; letter-spacing:.07em; padding:11px 18px; text-decoration:none; text-transform:uppercase; }
-  footer { border-top:2px solid var(--ink); display:flex; flex-wrap:wrap; gap:10px 18px; justify-content:space-between; margin-top:44px; padding-top:14px; }
-  footer .postal-address { flex-basis:100%; font-style:normal; }
-  .skip { background:var(--accent); color:var(--paper); font-family:"IBM Plex Mono","Courier New",monospace; font-size:13px; left:-9999px; padding:10px 16px; position:absolute; top:0; z-index:10; }
-  .skip:focus { left:8px; top:8px; }
-  @media (max-width:600px) { .scopes { grid-template-columns:1fr; } }
-  .phases { display: grid; gap: 15px 26px; margin: 18px 0; }
-  .phase { border-left: 2px solid var(--accent); padding: 1px 0 1px 13px; }
-  .phase-name {
-    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11px;
-    letter-spacing: .13em; text-transform: uppercase; color: var(--accent); margin: 0 0 5px;
-  }
-  .turn { margin: 8px 0 4px; }
-  .turn .soon { color: var(--accent); font-weight: 700; letter-spacing: -.005em; }
-  .readline { color: var(--muted); font-size: 14px; margin: 3px 0 0; }
-  .scopes + p { margin-top: 16px; }
-  .ways { margin: 26px 0 0; padding-top: 18px; border-top: 1px solid var(--rule); max-width: 720px; }
-  .ways h3 { margin: 0 0 6px; }
-  .ways p { margin: 0; }
-  .ways p + p { margin-top: 12px; }
-  .scopes ul.lanes { margin: 8px 0 0; padding: 0 0 0 18px; }
-  .scopes ul.lanes li { margin: 0 0 5px; }
-  .phase ul { margin: 0; padding-left: 1.05em; font-size: 15px; color: var(--muted); }
-  .phase li { margin-bottom: 2px; }
-  @media (min-width: 700px) { .phases { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 600px) { .sheet { padding-top: 28px; } .nav { gap: 5px 14px; } }
+  .nav a[aria-current] { color:var(--ink); }
+  h1 { font-size:clamp(36px,6.5vw,54px); line-height:1.13; letter-spacing:-.035em; margin:12px 0 18px; text-wrap:balance; }
+  h1 span { color:var(--accent); }
+  h2 { font-size:26px; line-height:1.3; margin:0 0 18px; text-wrap:balance; }
+  h3 { font-size:20px; line-height:1.35; margin:0 0 8px; }
+  p { margin:0 0 16px; }
+  a { color:var(--accent-deep); text-underline-offset:4px; }
+  a:focus-visible, summary:focus-visible { outline:2px solid var(--accent); outline-offset:5px; }
+  .eyebrow { color:var(--accent); font-family:"IBM Plex Mono",monospace; font-size:13px; letter-spacing:.12em; text-transform:uppercase; margin:40px 0 0; }
+  .lede { font-size:20px; max-width:650px; }
+  .technology-link { display:flex; gap:18px; align-items:center; justify-content:space-between; padding:20px 0; margin:24px 0 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); text-decoration:none; }
+  .technology-link strong { display:block; color:var(--ink); font-size:18px; }
+  .technology-link span span { font-size:15px; }
+  .technology-link .arrow { font-size:28px; transition:transform .2s ease; }
+  .technology-link:hover .arrow { transform:translateX(5px); }
+  section { margin-top:40px; }
+  .steps { padding:0; margin:0; list-style:none; }
+  .steps li { display:grid; grid-template-columns:42px 1fr; gap:16px; padding:19px 0; border-bottom:1px solid var(--rule); }
+  .steps .n { color:var(--accent); font-family:"IBM Plex Mono",monospace; font-size:14px; padding-top:3px; }
+  .steps p { margin:0; color:var(--muted); font-size:16px; }
+  .scopes { display:grid; grid-template-columns:1fr 1fr; gap:28px; }
+  .scopes article { padding:20px 0 0; border-top:3px solid var(--accent); }
+  .price { display:block; color:var(--accent); font-size:32px; margin-bottom:12px; }
+  .scopes p { color:var(--muted); font-size:16px; }
+  .fineprint { color:var(--muted); font-size:14px; }
+  .delivery { background:var(--wash); padding:26px; }
+  .delivery ul { padding-left:20px; margin:0 0 16px; }
+  .delivery li { margin-bottom:5px; }
+  details { border-bottom:1px solid var(--rule); padding:16px 0; }
+  summary { cursor:pointer; font-weight:700; }
+  details p { color:var(--muted); font-size:16px; margin:12px 0 0; }
+  .cta { margin-top:40px; padding-top:28px; border-top:2px solid var(--ink); }
+  .btn { display:inline-block; background:var(--accent); color:var(--paper); padding:12px 20px; text-decoration:none; font-family:"IBM Plex Mono",monospace; font-size:14px; }
+  .contact { font-size:15px; margin-top:18px; }
+  footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; border-top:1px solid var(--rule); padding-top:20px; margin-top:36px; color:var(--muted); font-size:13px; }
+  footer address { width:100%; font-style:normal; }
+  .skip { position:absolute; left:-9999px; top:8px; padding:12px; background:var(--accent); color:var(--paper); }
+  .skip:focus { left:8px; }
+  @media(max-width:560px) { body { padding:0 20px; } .sheet { padding-top:24px; } .scopes { grid-template-columns:1fr; gap:12px; } .cred { display:none; } .delivery { padding:22px; } }
+  @media(prefers-reduced-motion:reduce) { .technology-link .arrow { transition:none; } }
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-pNkpzZuFyeVpLVvH7hc8w.js"></script>
@@ -91,161 +77,62 @@
 </script>
 </head>
 <body>
-
 <a class="skip" href="#main">Skip to content</a>
 <div class="sheet">
   <header class="letterhead">
     <a class="name" href="index.html">Appraisal Partners</a>
-    <span class="cred">Matt Roth, Certified Residential &middot; Tim Roth, MAI, SRA</span>
+    <span class="cred">An appraiser at the other end.</span>
     <nav class="nav" aria-label="Primary">
-      <a href="uad36.html">UAD 3.6</a>
-      <a href="convert.html">Convert</a>
-      <a href="how-it-works.html" aria-current="page">How it works</a>
-      <a href="how-it-works.html#pricing">Pricing</a>
-      <a href="technology.html">Technology</a>
-      <a href="portrait.html">The portrait</a>
-      <a href="story.html">Four appraisers</a>
-      <a href="about.html">About us</a>
-      <a href="faq.html">FAQ</a>
-      <a href="start.html">Start with one report</a>
+      <a href="uad36.html">UAD 3.6</a><a href="convert.html">Convert</a><a href="how-it-works.html" aria-current="page">How it works</a><a href="#pricing">Pricing</a><a href="technology.html">Behind the desk</a><a href="portrait.html">The portrait</a><a href="story.html">Four appraisers</a><a href="about.html">About us</a><a href="faq.html">FAQ</a><a href="start.html">Start with one report</a>
     </nav>
   </header>
-
   <main id="main" tabindex="-1">
     <p class="eyebrow">How it works</p>
-    <h1>Here&rsquo;s exactly <span class="line">what happens.</span></h1>
-    <p class="lede">Start with a short request. No property, borrower, client documents or report files yet. If we can take it, you get an AP order number, private tracker, restricted upload folder &amp; a checklist for that order type.</p>
-    <p>Upload through that private intake. We review the package and confirm the exact desk fee &amp; return time. Nothing starts until we accept it and you approve the terms.</p>
-    <p><strong>Prefer to talk first?</strong> Call <a href="tel:+14692968726">(469) 296-8726</a>.</p>
-
-    <section id="pricing">
-      <h2>Choose the handoff.</h2>
-      <div class="scopes">
-        <article>
-          <h3>$149 &middot; Research &amp; report</h3>
-          <p class="price">We handle the research</p>
-          <p class="turn"><strong>Most orders: back the next business day.</strong> <span class="soon">Often sooner.</span></p>
-          <p class="readline">We read every line first.</p>
-          <p>Upload the order, engagement letter and contract if applicable. After inspection, add the raw photos, sketch &amp; field notes. We handle the subject and market data, comp search, grid, commentary &amp; exhibits.</p>
-          <p>Dallas&ndash;Fort Worth is ready now. We confirm other markets before accepting a report.</p>
-        </article>
-        <article>
-          <h3>$89 &middot; You send the comps</h3>
-          <p class="price">Your data, comp set &amp; market direction</p>
-          <p class="turn"><strong>Most orders: back the next business day.</strong> <span class="soon">Often sooner.</span></p>
-          <p class="readline">We read every line first.</p>
-          <p>Upload the completed inspection material, subject data, comp set, supporting market data &amp; any direction you want reflected. We complete the report in the working format we confirmed.</p>
-        </article>
-      </div>
-      <div class="ways">
-        <h3>Start online, or work directly with Matt.</h3>
-        <p>Send your request online, upload through your private link, and follow your report&rsquo;s progress. If you prefer to talk through the assignment or handle things by email, call or write Matt directly: <a href="tel:+14692968726">(469) 296-8726</a> or <a href="mailto:orders@appraisalpartners.net">orders@appraisalpartners.net</a>. You can use both whenever it suits you.</p>
-        <p>For regular work, Matt talks through your markets, report preferences and expected volume with you.</p>
-      </div>
-    </section>
+    <h1>Your assignment.<br><span>A lighter workload.</span></h1>
+    <p class="lede">Send the materials. We prepare the editable UAD 3.6 report. You review it, make the final decisions, and sign.</p>
+    <a class="technology-link" href="technology.html"><span><strong>Curious what happens behind our desk?</strong><span>See the technology &amp; human review.</span></span><span class="arrow" aria-hidden="true">&rarr;</span></a>
 
     <section id="process">
-      <h2>The handoff, start to finish.</h2>
+      <h2>Four simple steps.</h2>
       <ol class="steps">
-        <li><span class="n">01</span><span><strong><a href="start.html">Submit the short request.</a></strong> No confidential assignment files in the opening form.</span></li>
-        <li><span class="n">02</span><span><strong>Open the private intake.</strong> You get an AP order number, private tracker, restricted upload folder &amp; order-type checklist.</span></li>
-        <li><span class="n">03</span><span><strong>Upload the checklist items.</strong> The checklist changes with the assignment and the amount of research you want us to handle.</span></li>
-        <li><span class="n">04</span><span><strong>We review the package.</strong> We check permission, completeness, conflicts, data access, UAD 3.6 fit &amp; capacity.</span></li>
-        <li><span class="n">05</span><span><strong>Approve the exact terms.</strong> Scope, desk fee &amp; return time are in writing. Uploading alone never starts production.</span></li>
-        <li><span class="n">06</span><span><strong>We complete the report. You review &amp; sign.</strong> Track it as it moves, review the editable report, change anything you want &amp; make every final appraisal decision.</span></li>
+        <li><span class="n">01</span><div><h3>Send a request.</h3><p>Tell us what you need. No confidential assignment files in the opening form.</p></div></li>
+        <li><span class="n">02</span><div><h3>Upload privately.</h3><p>After we confirm fit, we send your upload link and checklist. We check the packet and flag anything missing.</p></div></li>
+        <li><span class="n">03</span><div><h3>Approve the handoff.</h3><p>Scope, fixed fee, file format, and return time are agreed in writing. Uploading alone never starts production.</p></div></li>
+        <li><span class="n">04</span><div><h3>Review your report.</h3><p>We prepare and check the draft; Matt reads it before it comes back. You keep the final appraisal decisions.</p></div></li>
       </ol>
-      <p class="fineprint">A complete standard order might come in Thursday evening and be back Friday afternoon. Your actual return time is confirmed before we accept it.</p>
+      <p class="fineprint" id="tracking">Follow progress through your private tracker, with optional email or text updates. <a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">See a sample tracker &rarr;</a></p>
     </section>
 
-    <section id="tracking">
-      <h2>Report tracking is included.</h2>
-      <p>Open one private link whenever you want. It shows the current checkpoint, last update, committed return time, what happens next &amp; whether we need anything from you.</p>
-      <p><strong>Opt in once at intake.</strong> Choose email, text, both or status page only. You hear from us at acceptance, when we need something from you, at research completion on longer orders and when the report is ready. Reply STOP anytime.</p>
-      <p class="proof"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>View the full live tracking demo &rarr;</strong></a><span>Synthetic. No client data. The full page walks through the same ten checkpoints as a live order.</span></p>
-      <div class="phases">
-        <div class="phase"><p class="phase-name">Intake</p><ul>
-          <li>Engagement letter &amp; client instructions read</li>
-          <li>Assignment conditions noted</li>
-          <li>Effective date, due date &amp; turn time confirmed</li></ul></div>
-        <div class="phase"><p class="phase-name">Research</p><ul>
-          <li>MLS &amp; county records pulled</li>
-          <li>Sales history &amp; prior transfers checked</li>
-          <li>Comps gathered &amp; cross-checked, or yours loaded instead</li></ul></div>
-        <div class="phase"><p class="phase-name">Write-up</p><ul>
-          <li>Subject, site &amp; improvements from your inspection notes</li>
-          <li>Sketch, photos &amp; maps placed</li>
-          <li>Grid built out; the adjustments stay yours</li></ul></div>
-        <div class="phase"><p class="phase-name">Checks</p><ul>
-          <li>Built-in rules check over every section</li>
-          <li>UAD 3.6 formatting &amp; completeness</li>
-          <li>Repair laps until it comes back clean</li></ul></div>
-        <div class="phase"><p class="phase-name">Final read-through</p><ul>
-          <li>Page-by-page read: math, photos, sketch, consistency</li>
-          <li>Open items marked for your decision</li></ul></div>
-        <div class="phase"><p class="phase-name">Ready</p><ul>
-          <li>Editable file in your folder</li>
-          <li>Research &amp; source data for your workfile</li>
-          <li>Your changes in one list</li></ul></div>
+    <section id="pricing">
+      <h2>Choose how much to hand off.</h2>
+      <div class="scopes">
+        <article><span class="price">$149</span><h3>Research &amp; report</h3><p>Send the order, inspection materials, and contract if applicable. We handle the subject and market research, comp search, and report.</p></article>
+        <article><span class="price">$89</span><h3>You send the comps</h3><p>Send your inspection packet, subject data, selected comps, supporting market data, and direction. We prepare the report.</p></article>
       </div>
-      <div class="rail" aria-label="Order stages"><b>Submitted</b> &rarr; Scope review &rarr; Accepted &middot; turn time set &rarr; Subject &amp; market research &rarr; Comp set in hand &rarr; Write-up &rarr; UAD &amp; rules check &rarr; Final read-through &rarr; <b>Ready for your review</b> &rarr; Report delivered</div>
+      <p class="fineprint">Per accepted report. These are desk fees, separate from your appraisal fee. Market fit and the exact return time are confirmed before acceptance.</p>
     </section>
 
-    <section id="comps">
-      <h2>Want to steer the comps?</h2>
-      <p>Upload your selected set, ask to see candidates before we complete the grid, or review our choices with the report. If you want a sale added, dropped or swapped, say so in the order thread.</p>
-      <p>You make the final selection. We will not chase a predetermined value.</p>
+    <section class="delivery" id="return">
+      <h2>A working report. Not more homework.</h2>
+      <ul><li>Editable report, with agreed photos and exhibits in place</li><li>Organized sources and support for your workfile</li><li>Open items clearly marked for your decision</li></ul>
+      <p>You retain the inspection, final analysis, signature, and delivery to your client. XML and PDF are included when part of the accepted order.</p>
+      <p class="fineprint">Software automation and AI assist the production work. Matt personally reviews each report before return.</p>
     </section>
 
-    <section id="return">
-      <h2>What comes back.</h2>
-      <ul class="plain">
-        <li>The editable report file</li>
-        <li>Photos, maps &amp; exhibits in place</li>
-        <li>Source material &amp; adjustment support organized</li>
-        <li>Questions and unresolved facts marked for your decision</li>
-        <li>UAD 3.6 XML and PDF when those formats are part of the accepted order</li>
-      </ul>
-      <p>Send your own changes as one list. We correct our production errors without another fee. You make the final appraisal decisions, sign &amp; deliver to your client.</p>
+    <section aria-label="A few practical details">
+      <details id="comps"><summary>Can I steer the comps?</summary><p>Yes. Send your set, ask to see candidates, or request changes in the order thread. You make the final selection. We do not work toward a predetermined value.</p></details>
+      <details id="revisions"><summary>What if a revision comes back?</summary><p>Forward it to us. Revisions within the report as delivered are included, with one additional comparable per revision event. Materially new scope is quoted before work begins. <a href="terms.html">Full revision terms &rarr;</a></p></details>
+      <details id="boundaries"><summary>Which assignments fit?</summary><p>UAD 3.6 production only. Dallas&ndash;Fort Worth research is established; other markets and packet-based work are checked individually for access, competence, and client and state requirements. No FHA/VA panel or Georgia assignments under current desk policy. Have a legacy report? <a href="convert.html">See conversion &rarr;</a></p><p>Your authority to share materials and the approved data-provider route are confirmed before production. Required assistance disclosures remain part of the handoff. <a href="terms.html">Read the terms &rarr;</a></p></details>
     </section>
-
-    <section id="revisions">
-      <h2>We still have the file.</h2>
-      <p>Three weeks after delivery, we still have it: the comps we ran, the ones we passed on and why, every source behind every line. So when the condition lands on a twenty-four hour clock, you forward it and keep working. We answer it from the record.</p>
-      <ul class="plain">
-        <li>Every loop, no additional fee, on the report as we delivered it</li>
-        <li>Back the same or next business day, with a summary of what changed</li>
-        <li>Revisions go to the front of the queue, ahead of new production</li>
-        <li>We don&rsquo;t sort them by whose error it was</li>
-        <li>One additional comparable per revision event is included, on either scope</li>
-      </ul>
-      <p>A materially new research assignment, a new effective date, an added form or ROV work gets a quote and a return time before we start. We keep the research case for five years. Revisions are handled on reports this desk produced.</p>
-    </section>
-
-    <section id="boundaries">
-      <h2>What we don&rsquo;t take.</h2>
-      <ul class="plain">
-        <li>No FHA or VA panel assignments</li>
-        <li>No Georgia assignments under present desk policy</li>
-        <li>No legacy UAD 2.6/1004 deliverables. We produce UAD 3.6 only; a 2.6 draft or a past report can come in through <a href="convert.html">conversion</a>.</li>
-      </ul>
-      <p><strong>Your data &amp; comps can travel outside our licensed markets</strong> when your client, state and data rules allow it. We confirm fit before accepting any report. <strong>Research &amp; report needs a market we can work in</strong>: authorized MLS access, competence, and whatever your state and client require. Dallas&ndash;Fort Worth is established today. Tell us where you work and we&rsquo;ll tell you straight whether it&rsquo;s ready or needs setting up first.</p>
-    </section>
-
 
     <div class="cta">
-      <h2>Try the handoff before a live due date is involved.</h2>
-      <p>Use a past assignment you know well and are authorized to upload. Keep your finished report, then compare.</p>
-      <p><a class="btn" href="start.html">Let&rsquo;s try one</a></p>
-      <p class="fineprint"><a href="uad36.html">How the UAD 3.6 transition service works</a> &middot; <a href="faq.html">Straight answers</a></p>
+      <h2>Start with a report you know.</h2>
+      <p>Try an authorized, closed prior assignment for internal evaluation before bringing us live work.</p>
+      <a class="btn" href="start.html">Let&rsquo;s try one &rarr;</a>
+      <p class="contact">Prefer to talk? <a href="tel:+14692968726">(469) 296-8726</a> &middot; <a href="mailto:orders@appraisalpartners.net">Email Matt</a></p>
     </div>
   </main>
-
-  <footer>
-    <span><a href="index.html">Appraisal Partners</a></span>
-    <span>TX #1361115-CR &middot; CO #CR200002387</span>
-    <span><a href="terms.html">Terms</a></span>
-    <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
-  </footer>
+  <footer><span><a href="index.html">Appraisal Partners</a></span><span>TX #1361115-CR &middot; CO #CR200002387</span><span><a href="terms.html">Terms</a></span><address>Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address></footer>
 </div>
 </body>
 </html>
