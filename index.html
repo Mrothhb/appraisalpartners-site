@@ -82,7 +82,7 @@
     font-size: clamp(34px, 7vw, 52px); font-weight: 700; line-height: 1.15;
     letter-spacing: -0.02em; text-wrap: balance; margin: 22px 0 20px;
   }
-  h1 .line { color: var(--accent); }
+  h1 .line { color: var(--accent); display: block; }
   h2 { font-size: 25px; line-height: 1.3; margin: 0 0 16px; text-wrap: balance; }
   h3 { font-size: 18px; line-height: 1.35; margin: 0 0 6px; }
   .deadline {
@@ -91,8 +91,17 @@
     border-left: 2px solid var(--accent); padding: 2px 0 2px 11px; margin: 0 0 14px;
   }
   .lede { font-size: 20px; line-height: 1.55; margin: 0 0 16px; max-width: 670px; }
-  .lede .hit { color: var(--accent); font-weight: 700; }
+  .lede .hit, .lede-list .hit, .hero-body .hit { color: var(--accent); font-weight: 700; }
+  .hero-body { font-size: 18px; line-height: 1.55; margin: 0 0 16px; max-width: 670px; }
+  .actions .btn { text-transform: none; letter-spacing: .01em; padding: 11px 16px; }
+  .lede-list { font-size: 19px; line-height: 1.5; margin: 0 0 16px; padding: 0 0 0 22px; max-width: 670px; }
+  .lede-list li { margin: 0 0 6px; }
   .scopes + p { margin-top: 16px; }
+  .ways { margin: 26px 0 0; padding-top: 18px; border-top: 1px solid var(--rule); max-width: 720px; }
+  .ways h3 { margin: 0 0 6px; }
+  .ways p { margin: 0; }
+  .scopes ul.lanes { margin: 8px 0 0; padding: 0 0 0 18px; }
+  .scopes ul.lanes li { margin: 0 0 5px; }
   p { margin: 0 0 18px; }
   a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
   a:hover, a:focus-visible { text-decoration-color: var(--accent); }
@@ -402,16 +411,23 @@
 
   <main id="main" tabindex="-1">
     <p class="audience">UAD 3.6 report help for signing appraisers</p>
-    <h1>UAD 3.6 is here. <span class="line">We want to help.</span></h1>
-    <p class="lede">You send the order. We return a completed UAD 3.6: checked for errors and omissions, <strong class="hit">ready for your review and signature</strong>. Every report is researched, and every line is read by a <strong class="hit">Certified Residential appraiser with twenty years in the business</strong> before it comes back to you.</p>
+    <h1>UAD 3.6 is here. <span class="line">We want to help appraisers.</span></h1>
+    <p class="lede">You don&rsquo;t have to do all the report work alone.</p>
+    <p class="hero-body">Get help with the research and report writing, with every report <strong class="hit">personally checked by Matt</strong> before it comes back to you. <strong class="hit">You keep your clients</strong> and make the final appraisal decisions.</p>
+    <p class="hero-body">Get help with one report, or work with Matt regularly. Start online or call him directly.</p>
+    <div class="actions">
+      <a class="btn" href="start.html">Try a report on us</a>
+      <a class="btn btn-alt" href="tel:+14692968726">Talk to Matt</a>
+    </div>
+    <p class="fineprint">Use a past assignment you have permission to share.</p>
 
     <section>
       <h2>Choose how much you want us to handle.</h2>
       <div class="scopes">
         <article>
-          <h3>$149 &middot; We do it all</h3>
+          <h3>$149 &middot; Research &amp; report</h3>
           <p class="price">You send the order &amp; inspection work</p>
-          <p>You get a final draft Matt and Tim would put their signatures on.</p>
+          <p>We handle the research and comp search, then complete the report from your inspection work.</p>
           <p class="turn"><strong>Most orders: back the next business day.</strong></p>
         </article>
         <article>
@@ -421,11 +437,17 @@
           <p class="turn"><strong>Most orders: back the next business day.</strong></p>
         </article>
       </div>
-      <p class="fineprint"><strong>These are desk fees paid by the appraiser</strong>, separate from the appraisal fee you bill your own client. Your exact return time comes in writing before you say go.</p>
+      <p class="fineprint"><strong>These are desk fees</strong> you pay separately from the appraisal fee you charge your client. No subscription or minimum.</p>
+      <p>Need it faster? Text <a href="tel:+14692968726">(469) 296-8726</a> or email <a href="mailto:orders@appraisalpartners.net?subject=Rush%20request">orders@appraisalpartners.net</a> to ask about a rush.</p>
+
+      <div class="ways">
+        <h3>Start online, or work directly with Matt.</h3>
+        <p>Send your request online, upload through your private link, and follow your report&rsquo;s progress. If you prefer to talk through the assignment or handle things by email, call or write Matt directly: <a href="tel:+14692968726">(469) 296-8726</a> or <a href="mailto:orders@appraisalpartners.net">orders@appraisalpartners.net</a>. You can use both whenever it suits you.</p>
+      </div>
 
       <div class="convert-band">
         <p class="band-badge">New</p>
-        <h3 class="band-h">Instantly convert your report to UAD 3.6.</h3>
+        <h3 class="band-h">Bring your existing report into UAD 3.6.</h3>
         <p class="band-sub">Send us the 2.6 and get back an editable UAD 3.6 to review and sign.</p>
         <p class="band-links"><a class="btn" href="convert-request.html">Request a conversion</a><a href="convert.html">How conversion works &rarr;</a></p>
       </div>
@@ -444,7 +466,7 @@
 
     <section>
       <p class="eyebrow">While it&rsquo;s with us</p>
-      <h2>Live-track your reports. Watch them move, live.</h2>
+      <h2>See where your report stands.</h2>
       <p>Every accepted order gets a private page:</p>
 
       <div class="livetrack">
@@ -519,23 +541,6 @@
           <p class="docs"><a href="about.html">More about us</a> &middot; <a href="story.html">Four appraisers</a></p>
         </div>
       </div>
-    </section>
-
-    <section>
-      <h2>Two ways to work with us.</h2>
-      <div class="scopes">
-        <article>
-          <h3>Self-service, start to finish</h3>
-          <p>Some appraisers want a desk they never have to talk to, and this is it. <a href="start.html">Send the order</a> and your files through the site, follow the report on your private tracking link, and most orders are back the next business day.</p>
-          <p class="turn"><strong>No calls, no email chain, nothing to chase.</strong></p>
-        </article>
-        <article>
-          <h3>White glove, start to finish</h3>
-          <p>Some appraisers want a person, and that person is Matt. Call or email him directly. He answers himself, talks the assignment through with you, and stays on the file from the first question to the finished report.</p>
-          <p class="turn"><strong>Matt&rsquo;s direct line: <a href="tel:+14692968726">(469) 296-8726</a></strong></p>
-        </article>
-      </div>
-      <p>Either way, or some of both. Same desk, same report, same read-through by Matt before it comes back to you. All styles served.</p>
     </section>
 
     <div class="cta">
