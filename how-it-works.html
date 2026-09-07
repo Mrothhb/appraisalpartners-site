@@ -50,6 +50,7 @@
   .steps p { margin:0; color:var(--muted); font-size:16px; }
   .scopes { display:grid; grid-template-columns:1fr 1fr; gap:28px; }
   .scopes article { padding:20px 0 0; border-top:3px solid var(--accent); }
+  .scopes .lane { font-family:"IBM Plex Mono","Courier New",monospace; font-size:11.5px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin:0 0 8px; }
   .price { display:block; color:var(--accent); font-size:32px; margin-bottom:12px; }
   .scopes p { color:var(--muted); font-size:16px; }
   .fineprint { color:var(--muted); font-size:14px; }
@@ -107,8 +108,8 @@
     <section id="pricing">
       <h2>Choose how much to hand off.</h2>
       <div class="scopes">
-        <article><span class="price">$149</span><h3>Research &amp; report</h3><p>Send the order, inspection materials, and contract if applicable. We handle the subject and market research, comp search, and report.</p></article>
-        <article><span class="price">$89</span><h3>You send the comps</h3><p>Send your inspection packet, subject data, selected comps, supporting market data, and direction. We prepare the report.</p></article>
+        <article><p class="lane">Full desk</p><span class="price">$149</span><h3>Research &amp; report</h3><p>Send the order, inspection materials, and contract if applicable. We handle the subject and market research, comp search, and report.</p></article>
+        <article><p class="lane">Partial desk</p><span class="price">$89</span><h3>You send the comps</h3><p>Send your inspection packet, subject data, selected comps, supporting market data, and direction. We prepare the report.</p></article>
       </div>
       <p class="fineprint">Per accepted report. These are desk fees, separate from your appraisal fee. Market fit and the exact return time are confirmed before acceptance.</p>
     </section>
