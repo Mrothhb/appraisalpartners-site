@@ -229,7 +229,7 @@
     <noscript>
       <div class="note">
         <p><strong>JavaScript is off, so this form will not send.</strong></p>
-        <p>Nothing has been submitted. Email <a href="mailto:orders@appraisalpartners.net?subject=Legacy%20conversion%20request">orders@appraisalpartners.net</a> with the subject &ldquo;Legacy conversion request&rdquo; instead.</p>
+        <p>Nothing has been submitted. Email <a href="mailto:mrr@appraisalpartners.net?subject=Legacy%20conversion%20request">mrr@appraisalpartners.net</a> with the subject &ldquo;Legacy conversion request&rdquo; instead.</p>
       </div>
     </noscript>
     <div class="honeypot" aria-hidden="true">
@@ -278,7 +278,7 @@
 
     <button class="btn" id="submit-intake" type="submit" disabled>Submit conversion request</button>
     <div class="form-result" id="intake-result" role="status" aria-live="polite" hidden></div>
-    <p class="fineprint">This submits the request only, not the report. Matt emails the private upload link after review. If the form cannot send, email <a id="email-fallback" href="mailto:orders@appraisalpartners.net?subject=Legacy%20conversion%20request">orders@appraisalpartners.net</a>.</p>
+    <p class="fineprint">This submits the request only, not the report. Matt emails the private upload link after review. If the form cannot send, email <a id="email-fallback" href="mailto:mrr@appraisalpartners.net?subject=Legacy%20conversion%20request">mrr@appraisalpartners.net</a>.</p>
   </form>
   </main>
 
@@ -328,7 +328,7 @@
       'Consent source: ' + v('f-consent-source')
     ];
     var subject = 'Legacy conversion request ' + id + ': ' + v('f-name');
-    return 'mailto:orders@appraisalpartners.net?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
+    return 'mailto:mrr@appraisalpartners.net?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
   }
   function showResult(state, html) {
     result.dataset.state = state;
@@ -349,7 +349,7 @@
     emailFallback.href = href;
     submitButton.disabled = false;
     submitButton.textContent = 'Open request in my email';
-    showResult('error', '<p><strong>' + message + '</strong></p><p>We cannot confirm a website submission. <a id="result-email-fallback" href="' + href.replace(/"/g, '&quot;') + '">Open the prepared request in your email</a> and send it to orders@appraisalpartners.net.</p>');
+    showResult('error', '<p><strong>' + message + '</strong></p><p>We cannot confirm a website submission. <a id="result-email-fallback" href="' + href.replace(/"/g, '&quot;') + '">Open the prepared request in your email</a> and send it to mrr@appraisalpartners.net.</p>');
   }
 
   window.addEventListener('message', function (event) {
@@ -362,7 +362,7 @@
       form.reset();
       submitButton.textContent = 'Request received';
       submitButton.disabled = true;
-      showResult('success', '<p><strong>Your request was received.</strong></p><p>Matt will review it and email your private upload link from orders@appraisalpartners.net.</p>');
+      showResult('success', '<p><strong>Your request was received.</strong></p><p>Matt will review it and email your private upload link from mrr@appraisalpartners.net.</p>');
     } else {
       useEmailFallback('The secure form could not confirm your request.');
     }

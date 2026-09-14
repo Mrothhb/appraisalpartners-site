@@ -235,7 +235,7 @@
     <noscript>
       <div class="note">
         <p><strong>JavaScript is off, so this form will not send.</strong></p>
-        <p>Nothing has been submitted. Email <a href="mailto:orders@appraisalpartners.net?subject=Free%20past-report%20trial">orders@appraisalpartners.net</a> with the subject &ldquo;Free past-report trial&rdquo; instead.</p>
+        <p>Nothing has been submitted. Email <a href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a> with the subject &ldquo;Free past-report trial&rdquo; instead.</p>
       </div>
     </noscript>
     <div class="honeypot" aria-hidden="true">
@@ -343,7 +343,7 @@
 
     <button class="btn" id="submit-intake" type="submit" disabled>Submit free tryout request</button>
     <div class="form-result" id="intake-result" role="status" aria-live="polite" hidden></div>
-    <p class="fineprint">This submits the request only, not the assignment documents. Uploading to the Restricted folder authorizes storage for intake; it does not start production. One free tryout per appraiser or firm, subject to scope &amp; capacity. Prefer email? <a id="email-fallback" href="mailto:orders@appraisalpartners.net?subject=Free%20past-report%20trial">orders@appraisalpartners.net</a>.</p>
+    <p class="fineprint">This submits the request only, not the assignment documents. Uploading to the Restricted folder authorizes storage for intake; it does not start production. One free tryout per appraiser or firm, subject to scope &amp; capacity. Prefer email? <a id="email-fallback" href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a>.</p>
   </form>
 
   <section id="next">
@@ -476,7 +476,7 @@
       'Consent source: ' + v('f-consent-source')
     ];
     var subject = (isLive() ? 'Live UAD 3.6 order ' : 'Free past-report trial ') + id + ': ' + v('f-name');
-    return 'mailto:orders@appraisalpartners.net?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
+    return 'mailto:mrr@appraisalpartners.net?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
   }
 
   function showResult(state, html) {
@@ -513,7 +513,7 @@
       showTextUpdateFields();
       submitButton.textContent = 'Request received';
       submitButton.disabled = true;
-      showResult('success', '<p><strong>Your request was received.</strong></p><p>Matt will review it and email the next step from orders@appraisalpartners.net. The website does not send an automatic confirmation. Keep the property address, names, and files out of email until Matt sends the Restricted upload folder.</p>');
+      showResult('success', '<p><strong>Your request was received.</strong></p><p>Matt will review it and email the next step from mrr@appraisalpartners.net. The website does not send an automatic confirmation. Keep the property address, names, and files out of email until Matt sends the Restricted upload folder.</p>');
     } else {
       useEmailFallback('The secure form could not confirm your request.');
     }
