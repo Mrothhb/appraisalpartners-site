@@ -77,6 +77,16 @@
 <script>
   window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
   plausible.init()
+  // Phone and email contacts were invisible in analytics: nothing fired on tel:, sms: or mailto:.
+  document.addEventListener("click", function (event) {
+    var link = event.target.closest && event.target.closest('a[href^="tel:"], a[href^="sms:"], a[href^="mailto:"]');
+    if (!link) return;
+    var href = link.getAttribute("href") || "";
+    var name = href.indexOf("tel:") === 0 ? "Call Click"
+             : href.indexOf("sms:") === 0 ? "Text Click"
+             : "Email Click";
+    plausible(name, { props: { page: location.pathname } });
+  }, true);
 </script>
 </head>
 <body>

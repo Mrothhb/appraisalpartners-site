@@ -398,6 +398,16 @@
 <script>
   window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
   plausible.init()
+  // Phone and email contacts were invisible in analytics: nothing fired on tel:, sms: or mailto:.
+  document.addEventListener("click", function (event) {
+    var link = event.target.closest && event.target.closest('a[href^="tel:"], a[href^="sms:"], a[href^="mailto:"]');
+    if (!link) return;
+    var href = link.getAttribute("href") || "";
+    var name = href.indexOf("tel:") === 0 ? "Call Click"
+             : href.indexOf("sms:") === 0 ? "Text Click"
+             : "Email Click";
+    plausible(name, { props: { page: location.pathname } });
+  }, true);
 </script>
 </head>
 <body>
@@ -424,13 +434,17 @@
 
   <main id="main" tabindex="-1">
     <p class="audience">UAD 3.6 report help for signing appraisers</p>
-    <h1>You do the inspection. <span class="line">I&rsquo;ll do the 3.6 report.</span></h1>
-    <p class="lede">I&rsquo;m a certified residential appraiser ready for UAD 3.6. Send me the file and the order, I do the report, you review and sign. $149. Call or text me &mdash; <a href="tel:+14692968726" style="white-space:nowrap">(469) 296-8726</a>.</p>
+    <h1>UAD 3.6 is here. <span class="line">We want to help.</span></h1>
+    <p class="lede">You inspect and make the final calls. We write the report, you review and sign. We only take what we can personally finish.</p>
+    <p class="deadline">UAD 3.6 is required for new UCDP submissions beginning <strong>November 2, 2026</strong>.</p>
+
+    <p><strong>Want to see it first?</strong> Send the makings of a report: an order, sketch, comps, photos and notes. Use a fake order, or swap the real details for placeholders. We&rsquo;ll send back a finished, editable UAD 3.6 to compare against your own. No charge and no obligation.</p>
     <div class="actions">
-      <a class="btn" href="sms:+14692968726">Text Matt &middot; (469) 296-8726</a>
-      <a class="btn btn-alt" href="start.html">Try one free</a>
+      <a class="btn" href="start.html">Let&rsquo;s try one</a>
+      <a class="btn btn-alt" href="uad36-work-sample.pdf" target="_blank" rel="noopener">View Sample UAD 3.6 Report</a>
+      <a href="tel:+14692968726" style="white-space:nowrap">Or call Matt &middot; (469) 296-8726</a>
     </div>
-    <p class="fineprint">Use a past assignment you have permission to share.</p>
+    <p class="fineprint">No live order, no client involved, and nothing you send is reused or sold. Matt reads every request himself before anything begins.</p>
 
     <section>
       <p class="eyebrow">After delivery</p>
