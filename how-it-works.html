@@ -48,13 +48,18 @@
   .steps li { display:grid; grid-template-columns:42px 1fr; gap:16px; padding:19px 0; border-bottom:1px solid var(--rule); }
   .steps .n { color:var(--accent); font-family:"IBM Plex Mono",monospace; font-size:14px; padding-top:3px; }
   .steps p { margin:0; color:var(--muted); font-size:16px; }
-  .scopes { display:grid; grid-template-columns:1fr 1fr; gap:28px; }
-  .scopes article { padding:20px 0 0; border-top:3px solid var(--accent); }
-  .scopes .guar { color:var(--ink); font-size:15px; margin-top:10px; }
-  .scopes .guar strong { color:var(--accent-deep); }
-  .scopes .lane { font-family:"IBM Plex Mono","Courier New",monospace; font-size:11.5px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin:0 0 8px; }
-  .price { display:block; color:var(--accent); font-size:32px; margin-bottom:12px; }
-  .scopes p { color:var(--muted); font-size:16px; }
+  .steps.day li { grid-template-columns:76px 1fr; }
+  .scopes { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:4px; }
+  .scopes article { border:1px solid var(--rule); border-top:3px solid var(--accent); padding:18px 20px; }
+  .scopes .lane { font-family:"IBM Plex Mono","Courier New",monospace; font-size:11.5px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
+  .scopes h3 { font-size:18px; margin:0 0 6px; }
+  .price { font-family:"IBM Plex Mono","Courier New",monospace; font-size:13.5px; color:var(--accent-deep); margin:0 0 10px; }
+  .scopes p { font-size:15.5px; margin:0; }
+  .scopes .note { color:var(--muted); font-size:13.5px; margin:12px 0; }
+  .both { border-left:3px solid var(--accent); margin:18px 0 14px; padding:2px 0 2px 16px; }
+  .both p { font-size:15.5px; margin:0 0 7px; }
+  .both p:last-child { margin-bottom:0; color:var(--muted); }
+  .both strong { color:var(--accent-deep); }
   .fineprint { color:var(--muted); font-size:14px; }
   .delivery { background:var(--wash); padding:26px; }
   .delivery ul { padding-left:20px; margin:0 0 16px; }
@@ -107,23 +112,46 @@
     <a class="technology-link" href="technology.html"><span><strong>Curious what happens behind our desk?</strong><span>See the technology &amp; human review.</span></span><span class="arrow" aria-hidden="true">&rarr;</span></a>
 
     <section id="process">
-      <h2>Four simple steps.</h2>
-      <ol class="steps">
-        <li><span class="n">01</span><div><h3>Send a request.</h3><p>Tell us what you need. No confidential assignment files in the opening form.</p></div></li>
-        <li><span class="n">02</span><div><h3>Upload privately.</h3><p>After we confirm fit, we send your upload link and checklist. We check the packet and flag anything missing.</p></div></li>
-        <li><span class="n">03</span><div><h3>Approve the handoff.</h3><p>Scope, fixed fee, file format, and return time are agreed in writing. Uploading alone never starts production.</p></div></li>
-        <li><span class="n">04</span><div><h3>Review your report.</h3><p>We prepare and check the draft; Matt reads it before it comes back. You keep the final appraisal decisions.</p></div></li>
+      <h2>Here&rsquo;s how it works.</h2>
+      <p>We set you up with your own private shared folder. When a new order comes in, make a folder inside it and name it with the order ID. When you finish the inspection, drop your photos, sketch and notes into that folder, right from the driveway. That&rsquo;s all we need to get started. If something needs discussion, we&rsquo;ll reach out. While you drive to your next inspection, we build the report. Matt oversees every one, so the comps are right, the market research is done and the comments sound like you. He gives the finished report a thorough review, and it lands back in the same folder, ready to open in TOTAL. Review it, make any edits, sign it and send it to your client. If anything needs fixing, send it right back. Revisions go to the front of the line.</p>
+    </section>
+
+    <section id="day">
+      <h2>An example of what your day looks like.</h2>
+      <p>You have three inspections today. The orders came in yesterday, and you made a folder for each one.</p>
+      <ol class="steps day">
+        <li><span class="n">9:00 AM</span><div><h3>First inspection.</h3><p>When you&rsquo;re done, drop your photos, sketch and notes into that order&rsquo;s folder before you pull away. We start on the report.</p></div></li>
+        <li><span class="n">10:30 AM</span><div><h3>Second inspection.</h3><p>Drop your files when you&rsquo;re done. Meanwhile, we&rsquo;re pulling comps and doing the market research on the first one.</p></div></li>
+        <li><span class="n">1:00 PM</span><div><h3>Third inspection.</h3><p>Drop your files and head back to your desk. By now the first report is being written and the second is in research.</p></div></li>
+        <li><span class="n">3:00 PM</span><div><h3>Back at your desk.</h3><p>The first report is in its folder, reviewed by Matt. Open it in TOTAL, look it over, make any edits, sign and send it to your client.</p></div></li>
+        <li><span class="n">Later</span><div><h3>The other two.</h3><p>They land in their folders later today or by tomorrow, depending on the assignment.</p></div></li>
       </ol>
-      <p class="fineprint" id="tracking">Follow progress through your private tracker, with optional email or text updates. <a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">See a sample tracker &rarr;</a></p>
+      <p class="fineprint" id="tracking">Follow progress through your private tracker, with optional email or text updates. <a href="tracking.html">See how tracking works &rarr;</a></p>
     </section>
 
     <section id="pricing">
-      <h2>Choose how much to hand off.</h2>
+      <h2>Choose how much you want us to handle.</h2>
       <div class="scopes">
-        <article><p class="lane">Full desk</p><span class="price">$149</span><h3>Research &amp; report</h3><p>Send the order, inspection materials, and contract if applicable. We handle the subject and market research, comp search, and report.</p><p class="guar"><strong>Revisions included, however many it takes.</strong> No extra charge.</p></article>
-        <article><p class="lane">Partial desk</p><span class="price">$89</span><h3>You send the comps</h3><p>Send your inspection packet, subject data, selected comps, supporting market data, and direction. We prepare the report.</p><p class="guar"><strong>Revisions included, however many it takes.</strong> No extra charge.</p></article>
+        <article>
+          <p class="lane">Full desk</p>
+          <h3>$149* &middot; We&rsquo;ll do everything.</h3>
+          <p class="price">You just inspect.</p>
+          <p class="note">* Price is negotiable depending on volume.</p>
+          <p>We do the entire report besides the inspection.</p>
+        </article>
+        <article>
+          <p class="lane">Partial desk</p>
+          <h3>$59 &middot; You send the comps</h3>
+          <p class="price">Your data, comp set &amp; market direction</p>
+          <p>We complete the report from what you send.</p>
+        </article>
       </div>
-      <p class="fineprint">Per accepted report. These are desk fees, separate from your appraisal fee. Market fit and the exact return time are confirmed before acceptance.</p>
+      <div class="both">
+        <p><strong>Revisions are included on both.</strong> However many it takes, at no extra charge, and they go ahead of new production in our queue.</p>
+        <p>We read every line before it goes back. Before your first report, we confirm we can cover your market and how soon we can be ready.</p>
+      </div>
+      <p class="fineprint"><strong>These are desk fees</strong> you pay separately from the appraisal fee you charge your client. No subscription or minimum.</p>
+      <p>Need it done same day? Text or call <a href="tel:+14692968726">(469) 296-8726</a> or email <a href="mailto:mrr@appraisalpartners.net?subject=Rush%20request">mrr@appraisalpartners.net</a> and we will expedite your report.</p>
     </section>
 
     <section class="delivery" id="return">

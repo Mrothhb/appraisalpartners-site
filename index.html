@@ -155,7 +155,7 @@
   ul.plain li { margin-bottom: 10px; }
   ul.plain li::marker { color: var(--accent); }
   .scopes { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 4px; }
-  .scopes article { border: 1px solid var(--rule); border-top: 3px solid var(--accent); padding: 18px 20px 8px; }
+  .scopes article { border: 1px solid var(--rule); border-top: 3px solid var(--accent); padding: 18px 20px; }
   .price {
     font-family: "IBM Plex Mono", "Courier New", monospace;
     font-size: 13.5px; color: var(--accent-deep); margin: 0 0 10px;
@@ -166,6 +166,7 @@
   .both strong { color: var(--accent-deep); }
   .scopes .lane { font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11.5px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
   .scopes p { font-size: 15.5px; margin: 0; }
+  .scopes .note { color: var(--muted); font-size: 13.5px; margin: 12px 0; }
   .fineprint { font-size: 14.5px; color: var(--muted); margin: 14px 0 0; }
   .speed {
     border-left: 3px solid var(--accent); margin: 24px 0 0; padding: 3px 0 3px 16px;
@@ -190,11 +191,6 @@
   }
   .qa-list dt { font-weight: 700; }
   .qa-list dd { color: var(--muted); margin: 0; }
-  .status-notifications {
-    align-items: start; display: grid; gap: 18px 28px; grid-template-columns: 1fr 250px;
-    margin-top: 24px;
-  }
-  .status-notifications p { margin-bottom: 0; }
   .profile { display: grid; grid-template-columns: 140px 1fr; gap: 24px; align-items: start; }
   .profile img { width: 140px; height: 140px; object-fit: cover; border: 1px solid var(--rule); display: block; }
   .profile p:last-child { margin-bottom: 0; }
@@ -211,7 +207,7 @@
     .scopes, ol.steps { grid-template-columns: 1fr; }
     .profile { grid-template-columns: 96px 1fr; gap: 14px; }
     .profile img { width: 96px; height: 96px; }
-    .qa-list > div, .status-notifications { grid-template-columns: 1fr; }
+    .qa-list > div { grid-template-columns: 1fr; }
     .sheet { padding-top: 28px; }
     .nav { gap: 5px 14px; }
   }
@@ -225,152 +221,6 @@
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
     overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
   }
-    /* The live tracker: the real status card, same structure, same styles, same stage data. */
-  .livetrack {
-    --lt-surface: #FFFFFF; --lt-ink: #1C2420; --lt-muted: #667069;
-    --lt-rule: #DCE1DC; --lt-accent: #2E5D46; --lt-deep: #24493A;
-    --lt-wash: #F0F4F1; --lt-notice: #FFF7DD; --lt-notice-rule: #B5841A;
-    --lt-shadow: 0 12px 36px rgba(28, 36, 32, .07);
-    margin-inline: -24px; margin-top: 22px; color: var(--lt-ink);
-  }
-  .lt-header {
-    align-items: center; display: flex; flex-wrap: wrap; gap: 9px 14px;
-    justify-content: space-between; margin: 0 0 13px;
-  }
-  .lt-eyebrow {
-    color: var(--lt-accent); font-size: 11px; font-weight: 700; letter-spacing: .13em;
-    margin: 0; text-transform: uppercase;
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  }
-  .lt-order { color: var(--lt-ink); }
-  .lt-card {
-    background: var(--lt-surface); border: 1px solid var(--lt-rule);
-    box-shadow: var(--lt-shadow); padding: 27px 28px 24px;
-  }
-  .lt-top { display: grid; gap: 26px; grid-template-columns: minmax(0, 1.3fr) minmax(245px, .7fr); }
-  .lt-count {
-    color: var(--lt-accent); font-size: 11px; font-weight: 700; letter-spacing: .11em;
-    margin: 0; text-transform: uppercase;
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  }
-  .lt-stage {
-    font-family: Georgia, "Times New Roman", serif; font-size: clamp(26px, 3.6vw, 33px);
-    font-weight: 700; letter-spacing: -.015em; line-height: 1.14; margin: 4px 0 8px;
-  }
-  .lt-story { color: var(--lt-muted); font-size: 17px; margin: 0 0 11px; max-width: 520px; }
-  .lt-time {
-    color: var(--lt-muted); font-size: 11.5px; margin: 0;
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  }
-  .lt-delivery {
-    align-self: stretch; background: var(--lt-wash); border-left: 3px solid var(--lt-accent);
-    display: flex; flex-direction: column; justify-content: center; padding: 18px 20px;
-  }
-  .lt-label {
-    color: var(--lt-muted); display: block; font-size: 10.5px; font-weight: 700;
-    letter-spacing: .09em; text-transform: uppercase;
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  }
-  .lt-value {
-    font-family: Georgia, "Times New Roman", serif; font-size: 19px;
-    font-weight: 700; line-height: 1.35; margin: 6px 0 0;
-  }
-  .lt-progress { margin-top: 27px; }
-  .lt-track { background: var(--lt-rule); height: 8px; overflow: hidden; }
-  .lt-fill { background: var(--lt-accent); height: 100%; transition: width .45s ease; width: 0; }
-  .lt-rail {
-    display: grid; grid-template-columns: repeat(10, minmax(64px, 1fr));
-    list-style: none; margin: 13px 0 0; padding: 0; overflow-x: auto;
-  }
-  .lt-rail li {
-    color: var(--lt-muted); font-size: 10.5px; line-height: 1.28; padding-right: 8px; position: relative;
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-  }
-  .lt-rail li::before {
-    align-items: center; background: var(--lt-surface); border: 1.5px solid var(--lt-rule);
-    border-radius: 50%; color: var(--lt-muted); content: counter(ltstep); counter-increment: ltstep;
-    display: flex; font-size: 9.5px; height: 19px; justify-content: center; margin-bottom: 6px; width: 19px;
-  }
-  .lt-rail { counter-reset: ltstep; }
-  .lt-rail li.done::before { background: var(--lt-accent); border-color: var(--lt-accent); color: #fff; content: "\2713"; }
-  .lt-rail li.now::before { border-color: var(--lt-accent); border-width: 2.5px; color: var(--lt-deep); }
-  .lt-rail li.now { color: var(--lt-deep); font-weight: 700; }
-  .lt-next {
-    align-items: baseline; border-top: 1px solid var(--lt-rule); display: flex; flex-wrap: wrap;
-    gap: 4px 10px; margin-top: 20px; padding-top: 15px;
-  }
-  .lt-next p { margin: 0; font-size: 15px; }
-  .lt-next p:first-of-type { flex: 1 1 240px; }
-  .lt-next p:last-of-type { color: var(--lt-deep); font-weight: 750; }
-  .lt-next .lt-label { display: inline; }
-  .lt-details {
-    border-top: 1px solid var(--lt-rule); display: grid; gap: 24px;
-    grid-template-columns: 1.45fr .55fr; margin-top: 23px; padding-top: 20px;
-  }
-  .lt-detail p { margin: 5px 0 0; font-size: 16px; }
-  .lt-owner p { color: var(--lt-deep); font-weight: 750; }
-  @media (min-width: 820px) { .livetrack { margin-inline: -40px; } }
-  @media (min-width: 1060px) { .livetrack { margin-inline: -130px; } }
-  @media (max-width: 620px) {
-    .lt-rail { -webkit-mask-image: linear-gradient(to right, #000 88%, transparent); mask-image: linear-gradient(to right, #000 88%, transparent); }
-    .lt-card { padding: 21px 18px; }
-    .lt-top, .lt-details { grid-template-columns: 1fr; gap: 16px; }
-    .lt-delivery { border-left: 0; border-top: 3px solid var(--lt-accent); }
-  }
-  .thread li {
-    background: var(--paper); border: 1px solid var(--rule); border-radius: 15px;
-    font-size: 13.5px; line-height: 1.38; margin: 0; max-width: 84%; padding: 8px 12px;
-    justify-self: start; animation: bubble .28s ease both;
-  }
-  .thread li.them {
-    background: var(--accent); border-color: var(--accent); color: var(--paper); justify-self: end;
-  }
-  .thread li .who {
-    display: block; font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 9.5px; letter-spacing: .09em; text-transform: uppercase; opacity: .62; margin-bottom: 2px;
-  }
-  @keyframes bubble { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .thread li { animation: none; } }
-  /* A Messages screen, not a mockup of one. */
-  .iphone {
-    background: #fff; border: 1px solid #d3d6d2; border-radius: 30px; overflow: hidden;
-    box-shadow: 0 18px 40px -22px rgba(28,36,32,.55); max-width: 300px; margin-left: auto;
-  }
-  .iphone-bar {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 9px 20px 3px; font: 600 12px/1 -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-    color: #000;
-  }
-  .ip-icons { letter-spacing: -1px; font-size: 8px; color: #000; }
-  .iphone-head {
-    align-items: center; border-bottom: 1px solid #e4e6e3; display: flex; flex-direction: column;
-    gap: 4px; padding: 6px 12px 9px;
-  }
-  .ip-avatar {
-    align-items: center; background: #b9bfc4; border-radius: 50%; color: #fff; display: flex;
-    font: 600 15px/1 -apple-system, "Helvetica Neue", Arial, sans-serif;
-    height: 34px; justify-content: center; width: 34px;
-  }
-  .ip-who {
-    font: 400 11px/1.2 -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-    color: #3c3c43; text-align: center;
-  }
-  .iphone .thread {
-    list-style: none; margin: 0; padding: 11px 10px 16px; display: grid; gap: 3px;
-    min-height: 250px; align-content: start;
-  }
-  .thread li {
-    background: #e9e9eb; border-radius: 18px; color: #000; justify-self: start; margin: 0;
-    max-width: 78%; padding: 8px 13px; position: relative;
-    font: 400 14px/1.32 -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-    animation: bubble .26s ease both;
-  }
-  .thread li + li { margin-top: 4px; }
-  .thread li.them { background: #0b84fe; color: #fff; justify-self: end; }
-  .thread li .who { display: none; }
-  @keyframes bubble { from { opacity: 0; transform: translateY(7px) scale(.97); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .thread li { animation: none; } }
-  @media (max-width: 620px) { .iphone { margin: 0 auto; } }
   .convert-band {
     border: 2px solid var(--accent); background: var(--wash);
     padding: 24px 26px 22px; margin-top: 30px;
@@ -447,27 +297,20 @@
     <p class="fineprint">No live order, no client involved, and nothing you send is reused or sold. Matt reads every request himself before anything begins.</p>
 
     <section>
-      <p class="eyebrow">After delivery</p>
-      <h2>Send the client&rsquo;s revision request straight to me. <span class="line">I handle it, no extra charge.</span></h2>
-      <p class="beat close"><a href="how-it-works.html#revisions">What&rsquo;s covered &rarr;</a></p>
-    </section>
-
-    <section>
       <h2>Choose how much you want us to handle.</h2>
       <div class="scopes">
         <article>
           <p class="lane">Full desk</p>
-          <h3>$149 &middot; Research &amp; report</h3>
-          <p class="price">You send the order &amp; inspection work</p>
-          <p>We handle the research and comp search, then complete the report from your inspection work.</p>
-          <p class="turn"><strong>Most orders: back the next business day.</strong> <span class="soon">Often sooner.</span></p>
+          <h3>$149* &middot; We&rsquo;ll do everything.</h3>
+          <p class="price">You just inspect.</p>
+          <p class="note">* Price is negotiable depending on volume.</p>
+          <p>We do the entire report besides the inspection.</p>
         </article>
         <article>
           <p class="lane">Partial desk</p>
-          <h3>$89 &middot; You send the comps</h3>
+          <h3>$59 &middot; You send the comps</h3>
           <p class="price">Your data, comp set &amp; market direction</p>
           <p>We complete the report from what you send.</p>
-          <p class="turn"><strong>Most orders: back the next business day.</strong> <span class="soon">Often sooner.</span></p>
         </article>
       </div>
       <div class="both">
@@ -475,7 +318,7 @@
         <p>We read every line before it goes back. Before your first report, we confirm we can cover your market and how soon we can be ready.</p>
       </div>
       <p class="fineprint"><strong>These are desk fees</strong> you pay separately from the appraisal fee you charge your client. No subscription or minimum.</p>
-      <p>Need it faster? Text <a href="tel:+14692968726">(469) 296-8726</a> or email <a href="mailto:mrr@appraisalpartners.net?subject=Rush%20request">mrr@appraisalpartners.net</a> to ask about a rush.</p>
+      <p>Need it done same day? Text or call <a href="tel:+14692968726">(469) 296-8726</a> or email <a href="mailto:mrr@appraisalpartners.net?subject=Rush%20request">mrr@appraisalpartners.net</a> and we will expedite your report.</p>
 
 
       <div class="convert-band">
@@ -485,20 +328,6 @@
         <p class="band-links"><a class="btn" href="mailto:mrr@appraisalpartners.net?subject=Conversion%20request">Send a request</a><a href="convert.html">How conversion works &rarr;</a></p>
       </div>
     </section>
-
-    <section>
-      <p class="eyebrow">The handoff</p>
-      <h2>Three steps.</h2>
-      <ol class="steps">
-        <li><span class="n">01</span><strong>Submit the request.</strong><span>An order number, tracker &amp; secure folder come back.</span></li>
-        <li><span class="n">02</span><strong>Upload the materials.</strong><span>We confirm the fee and return time before anything starts.</span></li>
-        <li><span class="n">03</span><strong>Review, revise, sign.</strong><span>You make every final appraisal decision.</span></li>
-      </ol>
-      <p class="docs"><a href="how-it-works.html"><strong>The full process &rarr;</strong></a></p>
-      <p><a class="process-link" href="technology.html">See what happens behind our desk. <span>Inside our agentic pipeline &rarr;</span></a></p>
-    </section>
-
-
 
     <section>
       <p class="eyebrow">Before you ask</p>
@@ -525,58 +354,6 @@
       </div>
     </section>
 
-    <section>
-      <p class="eyebrow">While it&rsquo;s with us</p>
-      <h2>See where your report stands.</h2>
-      <p>Every accepted order gets a private page.</p>
-
-      <div class="livetrack">
-        <div class="lt-header">
-          <p class="lt-eyebrow">Report tracking &middot; <span class="lt-order">AP&#8209;4827</span></p>
-        </div>
-        <div class="lt-card">
-          <div class="lt-top">
-            <div>
-              <p class="lt-count" id="lt-count"></p>
-              <p class="lt-stage" id="lt-stage"></p>
-              <p class="lt-story" id="lt-story"></p>
-              <p class="lt-time">Updated <span id="lt-updated"></span></p>
-            </div>
-            <div class="lt-delivery">
-              <span class="lt-label" id="lt-return-label">Return time</span>
-              <p class="lt-value" id="lt-return"></p>
-            </div>
-          </div>
-          <div class="lt-progress">
-            <div class="lt-track"><div class="lt-fill" id="lt-fill"></div></div>
-            <ol class="lt-rail" id="lt-rail"></ol>
-          </div>
-          <div class="lt-next">
-            <span class="lt-label">Next</span>
-            <p id="lt-nexttext"></p>
-            <span class="lt-label">Owner</span>
-            <p id="lt-actor"></p>
-          </div>
-        </div>
-      </div>
-      <div class="status-notifications">
-        <div>
-          <p class="eyebrow">Milestone updates</p>
-          <p>Email, text, both or status page only. You hear from us at acceptance, when we need something and when the report is ready. Reply STOP anytime.</p>
-        </div>
-        <div class="iphone" aria-label="Text message thread with Matt">
-          <div class="iphone-bar"><span>9:41</span><span class="ip-icons">&#9679;&#9679;&#9679;&#9679;&#9679;</span></div>
-          <div class="iphone-head">
-            <span class="ip-avatar">M</span>
-            <span class="ip-who">Matt &middot; Appraisal Partners</span>
-          </div>
-          <ol class="thread" id="sms-thread"></ol>
-        </div>
-      </div>
-      <p class="docs"><a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA"><strong>View the full live tracking demo &rarr;</strong></a></p>
-      <p class="os-caption">Synthetic demonstration. No client or property data. The full page uses the same ten checkpoints.</p>
-    </section>
-
     <div class="cta">
       <h2>Don&rsquo;t trust us with a live order yet.</h2>
       <p>We wouldn&rsquo;t either. We&rsquo;ll complete a past assignment at no charge so you can compare the work before a live client or due date is involved.</p>
@@ -591,157 +368,6 @@
       <p>No referral program or affiliate pitch.</p>
     </section>
 </main>
-  <script>
-  (function () {
-    var list = document.getElementById("sms-thread");
-    if (!list) return;
-    // A real exchange, not a broadcast: the appraiser answers, and Matt answers back.
-    var thread = [
-      { who: "Matt",  text: "AP-4827 accepted. Back to you Tuesday by 3:30 PM CT. Tracking link is in your email." },
-      { them: true,   who: "You", text: "Perfect. I'll send my comps tonight, use mine." },
-      { who: "Matt",  text: "Will do. I'll flag anything that doesn't verify rather than swap it." },
-      { who: "Matt",  text: "Comps in hand. Write-up started." },
-      { who: "Matt",  text: "Ready for your review. Editable file, XML and PDF are in your folder." },
-      { them: true,   who: "You", text: "Got it, looks good. Signing tonight." }
-    ];
-    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    function build(m) {
-      var li = document.createElement("li");
-      if (m.them) li.className = "them";
-      var who = document.createElement("span");
-      who.className = "who"; who.textContent = m.who;
-      li.append(who, document.createTextNode(m.text));
-      return li;
-    }
-    // Append only the newest bubble; earlier ones stay put instead of re-animating every tick.
-    var shown = 0;
-    function draw(upTo) {
-      if (upTo < shown) { list.replaceChildren(); shown = 0; }
-      for (; shown < upTo; shown++) list.append(build(thread[shown]));
-    }
-    // Reserve the full thread's height up front so the page below never moves as bubbles arrive.
-    function reserve() {
-      var keep = shown;
-      list.style.minHeight = "";
-      draw(thread.length);
-      list.style.minHeight = list.offsetHeight + "px";
-      draw(keep);
-    }
-    if (reduce) { draw(thread.length); return; }
-    reserve();
-    window.addEventListener("resize", reserve);
-    var n = 0;
-    (function tick() {
-      n = n >= thread.length ? 1 : n + 1;   // never render an empty phone
-      draw(n);
-      window.setTimeout(tick, n === thread.length ? 4200 : 1500);
-    })();
-  })();
-  </script>
-
-
-  <script type="module">
-  // Imports the product's own stage data, so this panel can never drift from the real page.
-  import { STAGES, workflowSummary, formatCentralTime } from "./status-core.mjs";
-
-  const byId = (id) => document.getElementById(id);
-  // A markup change must never kill the loop: write only if the element is there.
-  const put = (id, value) => { const n = byId(id); if (n) n.textContent = value; };
-
-  if (byId("lt-rail")) {
-    const now = new Date();
-    // A committed return has to look like a real deadline: next business day, 3:30 PM CT.
-    const dayFmt = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit", weekday: "short",
-    });
-    function nextBusinessReturn() {
-      for (let add = 1; add < 8; add += 1) {
-        const when = new Date(Date.now() + add * 86400000);
-        const part = Object.fromEntries(dayFmt.formatToParts(when).map((x) => [x.type, x.value]));
-        if (part.weekday === "Sat" || part.weekday === "Sun") continue;
-        const probe = new Date(part.year + "-" + part.month + "-" + part.day + "T12:00:00Z");
-        const named = new Intl.DateTimeFormat("en-US", {
-          timeZone: "America/Chicago", timeZoneName: "longOffset",
-        }).formatToParts(probe).find((x) => x.type === "timeZoneName").value;
-        const offset = named.replace("GMT", "") || "-06:00";
-        return part.year + "-" + part.month + "-" + part.day + "T15:30:00" + offset;
-      }
-      return new Date(Date.now() + 86400000).toISOString();
-    }
-    const due = nextBusinessReturn();
-    const base = {
-      schema: 1, order: "4827", stage: "drafting", waiting_on_you: false,
-      scope: "prior-assignment-trial", price_cents: 0,
-      committed_return: due, updated_at: now.toISOString(),
-      notifications: "both", long_window: false, demo: true,
-    };
-    const acceptedAt = STAGES.findIndex((stage) => stage.code === "accepted");
-    const smsForStage = (code) => {
-      if (code === "accepted") return "AP-4827 accepted. Your return time is set. Open your private tracking link for the full order status. Reply STOP to opt out.";
-      if (["research", "comparables", "drafting", "validation", "review"].includes(code)) return "AP-4827 update: research is complete and report preparation is underway. Open your private tracking link for details. Reply STOP to opt out.";
-      if (code === "ready" || code === "complete") return "AP-4827 is ready for your review. Open the private order folder and tracking link for delivery details. Reply STOP to opt out.";
-      return "Text alerts begin after acceptance. Your private status page is already available.";
-    };
-
-    const frame = (i) => {
-      const before = i < acceptedAt;
-      return {
-        ...base,
-        stage: STAGES[i].code,
-        scope: before ? null : base.scope,
-        price_cents: before ? null : base.price_cents,
-        committed_return: before ? null : base.committed_return,
-      };
-    };
-
-    function paint(i) {
-      const payload = frame(i);
-      const flow = workflowSummary(payload);
-      const accepted = i >= acceptedAt;
-      put("lt-count", "Checkpoint " + (i + 1) + " of " + STAGES.length);
-      put("lt-stage", STAGES[i].label);
-      put("lt-story", flow.happened);
-      put("lt-nexttext", flow.next);
-      put("lt-actor", flow.actor);
-      put("lt-updated", formatCentralTime(payload.updated_at));
-      put("lt-return-label", accepted ? "Illustrative trial return" : "Return time");
-      put("lt-return", accepted ? formatCentralTime(payload.committed_return) : "Pending acceptance");
-      byId("lt-fill").style.width = Math.round(((i + 1) / STAGES.length) * 100) + "%";
-
-      const list = byId("lt-rail");
-      list.replaceChildren();
-      STAGES.forEach((stage, n) => {
-        const li = document.createElement("li");
-        li.className = n < i ? "done" : n === i ? "now" : "";
-        li.textContent = stage.label;
-        list.append(li);
-      });
-    }
-
-    // Reserve the tallest frame's height so the card never changes size as the demo advances,
-    // and the page below it never moves while someone is reading.
-    const card = document.querySelector(".lt-card");
-    function reserve() {
-      if (!card) return;
-      card.style.minHeight = "";
-      let max = 0;
-      for (let k = 0; k < STAGES.length; k++) { paint(k); max = Math.max(max, card.offsetHeight); }
-      card.style.minHeight = max + "px";
-    }
-    reserve();
-
-    // Open mid-production: a live-looking order with a return time already set and
-    // an alert already sent reads as real; "Submitted" reads as empty.
-    let i = STAGES.findIndex((stage) => stage.code === "drafting");
-    paint(i);
-    window.addEventListener("resize", () => { reserve(); paint(i); });
-    (function step() {
-      const atEnd = i >= STAGES.length - 1;
-      window.setTimeout(() => { i = atEnd ? 0 : i + 1; paint(i); step(); }, atEnd ? 3600 : 2100);
-    })();
-  }
-  </script>
-
   <footer>
     <span>Appraisal Partners of Texas, Inc.</span>
     <span>TX #1361115-CR &middot; CO #CR200002387</span>
