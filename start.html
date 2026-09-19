@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Start a free UAD 3.6 tryout or submit a live UAD 3.6 report request. Every accepted report includes a private tracker and optional email or text updates.">
+<meta name="description" content="Start a free UAD 3.6 tryout or request setup for live report work. After setup, forward the client order and Matt creates its private AP folder.">
 <meta name="referrer" content="no-referrer">
 <!-- Public configuration; the Apps Script deployment passed the private accepted/duplicate/rejected smoke test. -->
 <meta name="ap-intake-endpoint" content="https://script.google.com/macros/s/AKfycbyf_YUnCq8lWuJSCl8fYXuMvBDX8CJ48oLRHhP-tpTZI6X-bjal_IhAy7gduJFC2GkWQg/exec">
 <link rel="canonical" href="https://appraisalpartners.net/start.html">
 <meta property="og:title" content="Start a Report | Appraisal Partners">
-<meta property="og:description" content="Choose a free UAD 3.6 tryout or a live UAD 3.6 report request. Uploading starts intake only; production waits for written acceptance.">
+<meta property="og:description" content="Choose a free UAD 3.6 tryout or set up live report work. Accepted customers forward each client order and receive a private AP folder.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/start.html">
 <meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
@@ -222,12 +222,12 @@
   <main id="main" tabindex="-1">
 
   <h1>Tell us what you need.</h1>
-  <p class="lede">Choose a free UAD 3.6 tryout or a live order. This first step collects no property address, borrower name or assignment documents. Matt reviews the request before emailing the Restricted upload folder.</p>
+  <p class="lede">Choose a free UAD 3.6 tryout or tell Matt you want to start live work. This first step collects no property address, borrower name or assignment documents. After setup, you forward the client order email and Matt creates its restricted AP-numbered folder.</p>
 
   <fieldset class="modepick">
     <legend>Choose one</legend>
     <div class="opt"><input type="radio" id="m-trial" name="ordermode" value="Free trial on a past assignment" checked><label for="m-trial"><strong>Free UAD 3.6 tryout</strong><span>Use a completed estate, divorce, private-party or other assignment you are allowed to share. No live client, deadline or charge.</span></label></div>
-    <div class="opt"><input type="radio" id="m-live" name="ordermode" value="Live UAD 3.6 order"><label for="m-live"><strong>Live UAD 3.6 order</strong><span>Need help on a current order? Start here. You do not need to try us first.</span></label></div>
+    <div class="opt"><input type="radio" id="m-live" name="ordermode" value="Live UAD 3.6 order"><label for="m-live"><strong>Set up live report work</strong><span>Have a current order? Start the relationship here without client data. After setup, forward the client order email to Matt.</span></label></div>
   </fieldset>
   <p class="human-help">Questions? Text, call or email Matt any day of the week at <a href="tel:+14692968726">(469) 296-8726</a>.</p>
 
@@ -343,15 +343,16 @@
 
     <button class="btn" id="submit-intake" type="submit" disabled>Submit free tryout request</button>
     <div class="form-result" id="intake-result" role="status" aria-live="polite" hidden></div>
-    <p class="fineprint">This submits the request only, not the assignment documents. Uploading to the Restricted folder authorizes storage for intake; it does not start production. One free tryout per appraiser or firm, subject to scope &amp; capacity. Prefer email? <a id="email-fallback" href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a>.</p>
+    <p class="fineprint">This submits a fit and setup request only. After the standing terms are accepted, forward the client order email to Matt. He will create the restricted AP-numbered folder for the remaining files. Production starts only after written acceptance. One free tryout per appraiser or firm, subject to scope &amp; capacity. Prefer email? <a id="email-fallback" href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a>.</p>
   </form>
 
   <section id="next">
     <h2>After you submit</h2>
     <ol class="steps">
-      <li><span class="n">1.</span><span><strong>Matt reviews your request.</strong> If it may fit, he emails your AP order number, Restricted upload folder, private tracker &amp; the right checklist. The website does not send an automatic confirmation email.</span></li>
-      <li><span class="n">2.</span><span><strong>You upload the checklist items and reply UPLOAD COMPLETE when finished.</strong> Matt reviews fit, scope, software &amp; capacity; there is no separate packet-receipt email.</span></li>
-      <li><span class="n">3.</span><span><strong>If we can take it, we send the fee &amp; return time.</strong> Nothing enters production until you accept in writing. The tryout is $0.</span></li>
+      <li><span class="n">1.</span><span><strong>Matt reviews the fit request.</strong> If it may work, he emails the short service terms. The website does not send an automatic confirmation.</span></li>
+      <li><span class="n">2.</span><span><strong>You accept the terms once by email.</strong> For live work, then forward the new client order email. For a tryout, Matt sends the closed-report instructions.</span></li>
+      <li><span class="n">3.</span><span><strong>Matt creates the AP-numbered shared folder.</strong> Add the remaining files there and reply <strong>UPLOAD COMPLETE</strong>.</span></li>
+      <li><span class="n">4.</span><span><strong>Matt confirms the scope, fixed fee and return time.</strong> Nothing enters production until the signing appraiser replies <strong>ACCEPTED</strong>. The qualifying tryout is $0.</span></li>
     </ol>
   </section>
 
@@ -395,7 +396,7 @@
     trialConsent.hidden = live; liveConsent.hidden = !live;
     trialBox.required = !live; liveBox.required = live;
     if (live) { trialBox.checked = false; } else { liveBox.checked = false; }
-    submitButton.textContent = live ? 'Submit live order request' : 'Submit free tryout request';
+    submitButton.textContent = live ? 'Submit live-work setup' : 'Submit free tryout request';
   }
   for (var mi = 0; mi < modeInputs.length; mi += 1) modeInputs[mi].addEventListener('change', showMode);
   showMode();
@@ -513,7 +514,7 @@
       showTextUpdateFields();
       submitButton.textContent = 'Request received';
       submitButton.disabled = true;
-      showResult('success', '<p><strong>Your request was received.</strong></p><p>Matt will review it and email the next step from mrr@appraisalpartners.net. The website does not send an automatic confirmation. Keep the property address, names, and files out of email until Matt sends the Restricted upload folder.</p>');
+      showResult('success', '<p><strong>Your request was received.</strong></p><p>Matt will review it and email the next step from mrr@appraisalpartners.net. The website does not send an automatic confirmation. If you are new, accept the service terms first. For live work, then forward the client order email; Matt will create the AP-numbered folder for the remaining files.</p>');
     } else {
       useEmailFallback('The secure form could not confirm your request.');
     }
