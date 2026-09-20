@@ -154,8 +154,8 @@
   ul.plain { margin: 0 0 18px; padding: 0 0 0 1.15em; }
   ul.plain li { margin-bottom: 10px; }
   ul.plain li::marker { color: var(--accent); }
-  .scopes { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 4px; }
-  .scopes article { border: 1px solid var(--rule); border-top: 3px solid var(--accent); padding: 18px 20px; }
+  .scopes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 4px; }
+  .scopes article { border: 1px solid var(--rule); border-top: 3px solid var(--accent); padding: 16px 16px; }
   .price {
     font-family: "IBM Plex Mono", "Courier New", monospace;
     font-size: 13.5px; color: var(--accent-deep); margin: 0 0 10px;
@@ -300,17 +300,23 @@
       <h2>Choose how much you want us to handle.</h2>
       <div class="scopes">
         <article>
-          <p class="lane">Full desk</p>
-          <h3>$149* &middot; We handle the full report.</h3>
-          <p class="price">You inspect, review, and sign.</p>
-          <p class="note">* Price is negotiable depending on volume.</p>
-          <p>We research and prepare the editable report. You inspect, review, sign, and deliver.</p>
+          <p class="lane">Report assembly</p>
+          <h3>$59 &middot; You send the comps and your decisions</h3>
+          <p class="price">Your comps, market export, files &amp; decision sheet</p>
+          <p>We enter the data, run the math, build the report and check it. Every appraisal decision stays yours &mdash; comps, ratings, adjustments, value.</p>
         </article>
         <article>
           <p class="lane">Partial desk</p>
           <h3>$89 &middot; You send the comps</h3>
           <p class="price">Your comps, market export &amp; files</p>
-          <p>We enter the data and build the report from your MLS sheets, market export and files. Adjustments, analysis and the value stay yours.</p>
+          <p>We build the report and draft the adjustments, analysis and value for your review.</p>
+        </article>
+        <article>
+          <p class="lane">Full desk</p>
+          <h3>$149* &middot; We handle the full report.</h3>
+          <p class="price">You inspect, review, and sign.</p>
+          <p class="note">* Price is negotiable depending on volume.</p>
+          <p>We research, pick the comps and prepare the editable report. You inspect, review, sign, and deliver.</p>
         </article>
       </div>
       <div class="both">
