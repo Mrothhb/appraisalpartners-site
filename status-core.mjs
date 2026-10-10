@@ -12,21 +12,21 @@ export const STAGES = Object.freeze([
   Object.freeze({
     code: "submitted",
     label: "Submitted",
-    note: "Submitted. Waiting for scope review.",
+    note: "Submitted. Rates on the way.",
     workflow: workflow(
       "Your request was received.",
-      "We review the request and intake checklist items before deciding whether to accept it.",
-      "Appraisal Partners",
+      "We reply with the rates and the return time.",
+      "A&AP",
     ),
   }),
   Object.freeze({
     code: "intake",
     label: "Scope review",
-    note: "Scope review in progress.",
+    note: "Packet check in progress.",
     workflow: workflow(
       "We started the scope review.",
-      "We confirm the scope, price, and return time, or ask for what is missing.",
-      "Appraisal Partners",
+      "Your files land after the inspection; we check the packet and start at the next run.",
+      "A&AP",
     ),
   }),
   Object.freeze({
@@ -37,12 +37,12 @@ export const STAGES = Object.freeze([
     workflow: workflow(
       "Scope, desk fee, and the committed turn time were confirmed.",
       "Subject & market research begins.",
-      "Appraisal Partners",
+      "A&AP",
     ),
     trialWorkflow: workflow(
       "The $0 trial scope and illustrative return were confirmed.",
       "Subject & market research begins.",
-      "Appraisal Partners",
+      "A&AP",
     ),
   }),
   Object.freeze({
@@ -52,7 +52,7 @@ export const STAGES = Object.freeze([
     workflow: workflow(
       "The order was accepted and research began.",
       "We pull the comp set.",
-      "Appraisal Partners",
+      "A&AP",
     ),
   }),
   Object.freeze({
@@ -62,7 +62,7 @@ export const STAGES = Object.freeze([
     workflow: workflow(
       "The comp set was gathered and cross-checked.",
       "The write-up begins. Reply in the order thread if you want a comp swapped.",
-      "Appraisal Partners",
+      "A&AP",
     ),
   }),
   Object.freeze({
@@ -72,7 +72,7 @@ export const STAGES = Object.freeze([
     workflow: workflow(
       "The comp set was settled and the write-up began.",
       "We finish the write-up, then begin the UAD & rules check.",
-      "Appraisal Partners",
+      "A&AP",
     ),
   }),
   Object.freeze({
@@ -82,7 +82,7 @@ export const STAGES = Object.freeze([
     workflow: workflow(
       "The write-up finished and the UAD & rules check began.",
       "We clear or classify every finding, then complete the final read-through.",
-      "Appraisal Partners",
+      "A&AP",
     ),
   }),
   Object.freeze({
@@ -92,7 +92,7 @@ export const STAGES = Object.freeze([
     workflow: workflow(
       "Findings were cleared or classified and the final read-through began.",
       "We prepare and return the report for your review.",
-      "Appraisal Partners",
+      "A&AP",
     ),
   }),
   Object.freeze({

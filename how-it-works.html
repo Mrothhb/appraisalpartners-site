@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Forward, upload, approve, review. A simple handoff for an editable UAD 3.6 report, with scope, fee, format, and return time agreed before production.">
 <link rel="canonical" href="https://appraisalpartners.net/how-it-works.html">
-<meta property="og:title" content="How the Production Desk Works | Appraisal Partners">
+<meta property="og:title" content="How the Production Desk Works | A&amp;AP">
 <meta property="og:description" content="See the simple handoff from a forwarded order to an editable UAD 3.6 report ready for the signing appraiser's review.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/how-it-works.html">
 <meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
-<title>How It Works | Appraisal Partners</title>
+<link rel="icon" type="image/png" href="/assets/aap-favicon.png">
+<link rel="apple-touch-icon" href="/assets/aap-apple-touch-icon.png">
+<title>How It Works | A&amp;AP</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
@@ -77,6 +78,25 @@
   @media(max-width:560px) { body { padding:0 20px; } .sheet { padding-top:24px; } .scopes { grid-template-columns:1fr; gap:12px; } .cred { display:none; } .delivery { padding:22px; } }
   @media(prefers-reduced-motion:reduce) { .technology-link .arrow { transition:none; } }
   @media (max-width:600px) { .scopes { grid-template-columns:1fr; } }
+
+  /* A&AP mark: AP monogram, A&AP left-aligned under it (as on the self-service form header). */
+  header.letterhead { align-items: flex-end; }
+  .letterhead .name.brandmark {
+    display: inline-flex; flex-direction: column; align-items: flex-start; gap: 5px;
+    color: #0C2A46; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 17px; font-weight: 700; letter-spacing: 0.02em; line-height: 1;
+    text-decoration: none; text-transform: none;
+  }
+  .letterhead .brandmark .mark { display: block; width: 60px; height: auto; }
+  .letterhead .brandmark .mark-light { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .letterhead .name.brandmark { color: var(--ink); }
+    :root:not([data-theme="light"]) .letterhead .brandmark .mark { display: none; }
+    :root:not([data-theme="light"]) .letterhead .brandmark .mark-light { display: block; }
+  }
+  :root[data-theme="dark"] .letterhead .name.brandmark { color: var(--ink); }
+  :root[data-theme="dark"] .letterhead .brandmark .mark { display: none; }
+  :root[data-theme="dark"] .letterhead .brandmark .mark-light { display: block; }
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-pNkpzZuFyeVpLVvH7hc8w.js"></script>
@@ -99,7 +119,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <div class="sheet">
   <header class="letterhead">
-    <a class="name" href="index.html">Appraisal Partners</a>
+    <a class="name brandmark" href="index.html" aria-label="A&amp;AP home"><img class="mark" src="assets/aap-mark.png" alt="" width="60" height="35"><img class="mark mark-light" src="assets/aap-mark-light.png" alt="" width="60" height="35"><span class="wordmark">A&amp;AP</span></a>
     <span class="cred">An appraiser at the other end.</span>
     <nav class="nav" aria-label="Primary">
       <a href="uad36.html">UAD 3.6</a><a href="convert.html">Convert</a><a href="how-it-works.html" aria-current="page">How it works</a><a href="#pricing">Pricing</a><a href="technology.html">Behind the desk</a><a href="portrait.html">The portrait</a><a href="story.html">Four appraisers</a><a href="about.html">About us</a><a href="faq.html">FAQ</a><a href="contact.html">Contact</a>
@@ -183,7 +203,7 @@
       <p class="contact">Prefer to talk? <a href="tel:+14692968726">(469) 296-8726</a> &middot; <a href="mailto:mrr@appraisalpartners.net">Email Matt</a></p>
     </div>
   </main>
-  <footer><span><a href="index.html">Appraisal Partners</a></span><span>TX #1361115-CR &middot; CO #CR200002387</span><span><a href="terms.html">Terms</a></span><address>Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address></footer>
+  <footer><span><a href="index.html">A&amp;AP</a></span><span>TX #1361115-CR &middot; CO #CR200002387</span><span><a href="terms.html">Terms</a></span><address>Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address></footer>
 </div>
 </body>
 </html>

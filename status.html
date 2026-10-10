@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Private Appraisal Partners report tracking with production checkpoints, committed return time, and optional email or text updates.">
+<meta name="description" content="Private A&amp;AP report tracking with production checkpoints, committed return time, and optional email or text updates.">
 <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <link rel="canonical" href="https://appraisalpartners.net/status.html">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
-<title>Private Report Tracking | Appraisal Partners</title>
+<link rel="icon" type="image/png" href="/assets/aap-favicon.png">
+<link rel="apple-touch-icon" href="/assets/aap-apple-touch-icon.png">
+<title>Private Report Tracking | A&amp;AP</title>
 <style>
   :root {
     --paper: #F7F8F5; --surface: #FFFFFF; --ink: #1C2420; --muted: #667069;
@@ -208,13 +209,32 @@
   .nextline p:last-of-type { color: var(--accent-deep); font-weight: 750; }
   .nextline p:first-of-type { flex: 1 1 260px; }
   .status-card .rail { margin-top: 13px; }
+
+  /* A&AP mark: AP monogram, A&AP left-aligned under it (as on the self-service form header). */
+  header.letterhead { align-items: flex-end; }
+  .letterhead .name.brandmark {
+    display: inline-flex; flex-direction: column; align-items: flex-start; gap: 5px;
+    color: #0C2A46; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 17px; font-weight: 700; letter-spacing: 0.02em; line-height: 1;
+    text-decoration: none; text-transform: none;
+  }
+  .letterhead .brandmark .mark { display: block; width: 60px; height: auto; }
+  .letterhead .brandmark .mark-light { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .letterhead .name.brandmark { color: var(--ink); }
+    :root:not([data-theme="light"]) .letterhead .brandmark .mark { display: none; }
+    :root:not([data-theme="light"]) .letterhead .brandmark .mark-light { display: block; }
+  }
+  :root[data-theme="dark"] .letterhead .name.brandmark { color: var(--ink); }
+  :root[data-theme="dark"] .letterhead .brandmark .mark { display: none; }
+  :root[data-theme="dark"] .letterhead .brandmark .mark-light { display: block; }
 </style>
 </head>
 <body>
 
 <main class="sheet">
   <header class="letterhead">
-    <a class="name" href="index.html">Appraisal Partners</a>
+    <a class="name brandmark" href="index.html" aria-label="A&amp;AP home"><img class="mark" src="assets/aap-mark.png" alt="" width="60" height="35"><img class="mark mark-light" src="assets/aap-mark-light.png" alt="" width="60" height="35"><span class="wordmark">A&amp;AP</span></a>
     <span class="page-kind">Private report tracking</span>
   </header>
 
@@ -222,7 +242,7 @@
 
   <section class="error" id="error-panel" hidden aria-live="polite">
     <h1>This tracking link isn&rsquo;t available.</h1>
-    <p>Open the complete link from your latest Appraisal Partners order email. If that link was forwarded or replaced, reply to the existing order thread and ask Matt for a new one.</p>
+    <p>Open the complete link from your latest A&amp;AP order email. If that link was forwarded or replaced, reply to the existing order thread and ask Matt for a new one.</p>
     <p>This page never asks for a password, property address, borrower name, or report data.</p>
     <p><a class="demo-link" href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">See the free prior-assignment trial demonstration</a></p>
   </section>

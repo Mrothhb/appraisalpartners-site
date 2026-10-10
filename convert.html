@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Bring your existing UAD 2.6 report into UAD 3.6. Send the 2.6, get back an editable native 3.6 to check against your original, review and sign in your own software. Currently for TOTAL. Matt confirms the price and return time before you decide.">
 <link rel="canonical" href="https://appraisalpartners.net/convert.html">
-<meta property="og:title" content="Convert Legacy Reports to UAD 3.6 | Appraisal Partners">
+<meta property="og:title" content="Convert Legacy Reports to UAD 3.6 | A&amp;AP">
 <meta property="og:description" content="Bring your existing report into UAD 3.6. An editable native 3.6 you review and sign in your own software. Currently for TOTAL. Matt confirms the price and return time first.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/convert.html">
 <meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
-<title>Convert Legacy 1004 / UAD 2.6 Reports to UAD 3.6 | Appraisal Partners</title>
+<link rel="icon" type="image/png" href="/assets/aap-favicon.png">
+<link rel="apple-touch-icon" href="/assets/aap-apple-touch-icon.png">
+<title>Convert Legacy 1004 / UAD 2.6 Reports to UAD 3.6 | A&amp;AP</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
@@ -78,6 +79,25 @@
   @media (max-width: 600px) { .sheet { padding-top: 28px; } .nav { gap: 5px 14px; } }
   .banner h3 { color: var(--accent); }
   .banner .hit { color: var(--accent); font-weight: 700; }
+
+  /* A&AP mark: AP monogram, A&AP left-aligned under it (as on the self-service form header). */
+  header.letterhead { align-items: flex-end; }
+  .letterhead .name.brandmark {
+    display: inline-flex; flex-direction: column; align-items: flex-start; gap: 5px;
+    color: #0C2A46; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 17px; font-weight: 700; letter-spacing: 0.02em; line-height: 1;
+    text-decoration: none; text-transform: none;
+  }
+  .letterhead .brandmark .mark { display: block; width: 60px; height: auto; }
+  .letterhead .brandmark .mark-light { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .letterhead .name.brandmark { color: var(--ink); }
+    :root:not([data-theme="light"]) .letterhead .brandmark .mark { display: none; }
+    :root:not([data-theme="light"]) .letterhead .brandmark .mark-light { display: block; }
+  }
+  :root[data-theme="dark"] .letterhead .name.brandmark { color: var(--ink); }
+  :root[data-theme="dark"] .letterhead .brandmark .mark { display: none; }
+  :root[data-theme="dark"] .letterhead .brandmark .mark-light { display: block; }
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-pNkpzZuFyeVpLVvH7hc8w.js"></script>
@@ -101,7 +121,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <div class="sheet">
   <header class="letterhead">
-    <a class="name" href="index.html">Appraisal Partners</a>
+    <a class="name brandmark" href="index.html" aria-label="A&amp;AP home"><img class="mark" src="assets/aap-mark.png" alt="" width="60" height="35"><img class="mark mark-light" src="assets/aap-mark-light.png" alt="" width="60" height="35"><span class="wordmark">A&amp;AP</span></a>
     <span class="cred">Matt Roth, Certified Residential &middot; Tim Roth, MAI, SRA</span>
     <nav class="nav" aria-label="Primary">
       <a href="uad36.html">UAD 3.6</a>
