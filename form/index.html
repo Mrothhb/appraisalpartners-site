@@ -412,7 +412,18 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function body(send) {
     return { t: T, status: state.status, answers: state.answers, changes: state.changes, send: !!send };
   }
+  // A browser signed in to several Google accounts gets its JSONP request redirected to /u/N/ and failing, because a
+  // <script> load carries Google's cookies. So a browser reads with a cookie-free fetch first; only where that fails
+  // (TOTAL's pane, which preflights) does it fall back to JSONP, and it remembers which worked.
+  var viaScript = false;
   function read() {
+    if (viaScript) return jsonp();
+    return fetch(API + "?t=" + encodeURIComponent(T), { credentials: "omit", cache: "no-store" })
+      .then(function (r) { return r.json(); })
+      .then(function (r) { if (r && r.ok) return r; throw { code: (r && r.error) || "bad_reply" }; },
+            function () { viaScript = true; return jsonp(); });
+  }
+  function jsonp() {
     return new Promise(function (resolve, reject) {
       var cb = "aap" + Date.now() + "_" + Math.floor(Math.random() * 1e6), s = document.createElement("script");
       var t = setTimeout(function () { end(null); }, 20000);
