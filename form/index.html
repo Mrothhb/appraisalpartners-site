@@ -6,6 +6,8 @@
      order's prefill leaves it blank; what we found goes to the audit, never on the form. Comp rows are the order's
      grid_comps (first 3 by default). Questions added after a run (formlink.py --questions) show first, answers under
      q_<id>. The order's internal note never reaches the page; public_note shows when there is one.
+     Once the report is back (stage returned) the pre-report sections hide (Matt, 2026-10-11): only the order, the
+     desk's answers (public_note, formlink.py --note), any post-run questions and Changes or questions show.
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
 <html lang="en">
@@ -87,7 +89,10 @@ textarea { min-height: 72px; resize: vertical; line-height: 1.4; overflow: hidde
 .checks { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 6px 0; }
 .checks label { display: flex; align-items: center; gap: 8px; min-height: 36px; }
 .checks input { width: 22px; height: 22px; margin: 0; accent-color: var(--navy); }
-.changes .line .n { flex: none; width: 22px; color: var(--muted); font-weight: 600; }
+.changes .line .n { flex: none; width: 22px; color: var(--muted); font-weight: 600; padding-top: 9px; }
+.changes .id { display: flex; gap: 8px; align-items: flex-start; }
+.changes .id textarea { flex: 1; min-height: 40px; }
+#order .note { white-space: pre-line; color: var(--ink); font-size: 15px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
 .mic { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--navy); color: #fff; display: grid; place-items: center; cursor: pointer; }
 .mic.on { background: var(--change); animation: pulse 1.4s infinite; }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(200, 30, 30, .45); } 50% { box-shadow: 0 0 0 10px rgba(200, 30, 30, 0); } }
@@ -151,12 +156,12 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
   {"title": "To finish your report", "note": "Answer these, then tap your status again to send them.", "lines": [
    {"kind": "questions"}
   ]},
-  {"title": "Your inspection", "lines": [
+  {"title": "Your inspection", "stage": "open", "lines": [
    {"kind": "check", "key": "inspection_ok", "label": "I confirm: measured to ANSI Z765-2021, utilities on, smoke/CO detectors and water heater strap meet local and state rules, no work by me on this property in the last 3 years"},
    {"kind": "text", "key": "inspection_except", "label": "Except", "wide": true},
    {"kind": "text", "key": "terms_ok", "label": "Your initials: this client's terms allow our help", "short": true}
   ]},
-  {"title": "Your calls", "lines": [
+  {"title": "Your calls", "stage": "open", "lines": [
    {"kind": "choice", "key": "subject_quality", "label": "Quality", "options": ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6"], "open": true},
    {"kind": "choice", "key": "subject_condition", "label": "Condition", "options": ["C1", "C2", "C3", "C4", "C5", "C6"], "open": true},
    {"kind": "choice", "key": "premise", "label": "As is?", "options": ["As is", "Subject to repair", "Subject to completion", "Subject to inspection"], "open": true},
@@ -165,17 +170,17 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
    {"kind": "prompt", "key": "prior_sale_ok", "prompt": "prior_sale", "label": "{}: arm's length and in line with the market?", "options": ["Yes", "No"], "open": true},
    {"kind": "prompt", "key": "influence_effect", "prompt": "influence", "label": "{}: effect on value", "options": ["Adverse", "Beneficial", "Neutral"], "open": true}
   ]},
-  {"title": "Your comps", "note": "\"Same\" means same as the house.", "lines": [
+  {"title": "Your comps", "stage": "open", "note": "\"Same\" means same as the house.", "lines": [
    {"kind": "comps", "quality": ["Same", "Q1", "Q2", "Q3", "Q4", "Q5", "Q6"], "condition": ["Same", "C1", "C2", "C3", "C4", "C5", "C6"], "open": true},
    {"kind": "choice", "key": "most_weight", "label": "Most weight: comp", "options": "comps", "open": true}
   ]},
-  {"title": "The market", "lines": [
+  {"title": "The market", "stage": "open", "lines": [
    {"kind": "choice", "key": "price_trend", "label": "Prices, last 12 months", "options": ["Increasing", "Stable", "Declining"], "open": true},
    {"kind": "choice", "key": "supply", "label": "Supply", "options": ["Shortage", "In balance", "Oversupply"], "open": true},
    {"kind": "text", "key": "time_adjustment", "label": "Time adjustment, % per month (0 if none)", "short": true, "open": true},
    {"kind": "choice", "key": "exposure", "label": "Typical time to sell", "options": ["Under 30 days", "30 to 60 days", "60 to 90 days", "Over 90 days"], "open": true}
   ]},
-  {"title": "Your adjustments", "note": "Only the lines where a comp differs from the house. Skip the rest.", "lines": [
+  {"title": "Your adjustments", "stage": "open", "note": "Only the lines where a comp differs from the house. Skip the rest.", "lines": [
    {"kind": "text", "key": "rate_gla", "label": "Living area, $ per sq ft", "short": true, "open": true},
    {"kind": "text", "key": "rate_site", "label": "Site, $ per sq ft or acre", "short": true, "open": true},
    {"kind": "text", "key": "rate_condition", "label": "Condition, $ per step", "short": true, "open": true},
@@ -187,10 +192,10 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
    {"kind": "checks", "label": "Basis", "items": [["basis_paired", "Paired sales in my data"], ["basis_regression", "Regression"], ["basis_cost", "Cost"], ["basis_sensitivity", "Sensitivity test"], ["basis_experience", "Experience"]], "open": true},
    {"kind": "choice", "key": "concessions", "label": "Concessions on comps", "options": ["Adjust them", "Don't adjust"], "open": true}
   ]},
-  {"title": "Anything else", "lines": [
+  {"title": "Anything else", "stage": "open", "lines": [
    {"kind": "multi", "key": "notes", "label": "Any assumption, condition or instruction only you can give. Or just say it all here.", "talk": true, "open": true}
   ]},
-  {"title": "Change requests", "note": "List your changes here, then tap NEEDS CHANGE.", "stage": "returned", "lines": [
+  {"title": "Changes or questions", "note": "One per box: a change, or a question about anything in the report (\"Why comp 3?\"). Then tap NEEDS CHANGE. Our answers show at the top of this form.", "stage": "returned", "lines": [
    {"kind": "changes", "count": 5}
   ]}
  ]
@@ -208,7 +213,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   var STAGES = {
     open: { statuses: ["DRAFT", "READY"], help: "Tick what's right, pick your calls, then tap <b>READY</b>. Blanks stay blank; we never make your calls.",
             refused: "The report isn't back with you yet. Tap READY when your checklist is done." },
-    returned: { statuses: ["NEEDS_CHANGE", "DONE"], help: "Review the report in TOTAL. List any changes below and tap <b>NEEDS CHANGE</b>, or tap <b>DONE</b>.",
+    returned: { statuses: ["NEEDS_CHANGE", "DONE"], help: "Review the report in TOTAL. List any changes or questions below and tap <b>NEEDS CHANGE</b>, or tap <b>DONE</b>.",
                 refused: "The report is back in your folder now. Tap NEEDS CHANGE or DONE." }
   };
   var SENT = "Saved with A&AP. We'll email you when it's back.";
@@ -313,9 +318,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function changes(count) {
     var rows = [];
     for (var n = 0; n < count; n++) (function (n) {
-      var input = el("input", { type: "text", autocomplete: "off", "aria-label": "Change " + (n + 1) });
-      input.addEventListener("input", function () { state.changes[n] = input.value; changed(); });
-      controls["change" + (n + 1)] = { set: function () { var v = state.changes[n] || ""; if (input.value !== v) input.value = v; } };
+      var input = el("textarea", { rows: "1", "aria-label": "Change or question " + (n + 1) });
+      input.addEventListener("input", function () { state.changes[n] = input.value; grow(input); changed(); });
+      controls["change" + (n + 1)] = { set: function () { var v = state.changes[n] || ""; if (input.value !== v) { input.value = v; grow(input); } } };
       rows.push(el("div", { cls: "line wide" }, [el("div", { cls: "id" }, [el("span", { cls: "n", text: String(n + 1) + "." }), input])]));
     })(n);
     return [el("div", { cls: "changes" }, rows)];
