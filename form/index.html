@@ -10,6 +10,9 @@
      desk's answers (public_note, formlink.py --note), any post-run questions and Changes or questions show.
      A Workfile copy redraws from the backend's data when questions or the note changed since it was made.
      Once post-run questions exist the START sections hide: the form then shows only what is left to answer.
+     Under the buttons: "By tapping READY you agree to the ... Terms for this order" (Matt 2026-10-11: READY is the
+     agreement). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
+     anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
 <html lang="en">
@@ -54,6 +57,8 @@ header svg { width: 64px; height: 37.6px; flex: none; }
 .st[aria-pressed="true"]::before { content: "\2713"; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); }
 .st:disabled { opacity: .45; cursor: not-allowed; }
 .status-help { font-size: 14px; color: var(--muted); margin: 8px 0 0; }
+.terms-line { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+.terms-line a { color: var(--navy); }
 .banner { margin: 10px 0 0; padding: 10px 12px; border-radius: 8px; font-weight: 600; }
 .banner.ok { background: var(--ok-bg); color: var(--ok-ink); }
 .banner.warn { background: var(--warn-bg); color: var(--warn-ink); }
@@ -135,6 +140,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
   <section class="card" aria-labelledby="st-top">
     <p class="status-label" id="st-top">STATUS</p>
     <div class="status" data-status></div>
+    <p class="terms-line" data-terms></p>
     <p class="status-help" id="help"></p>
     <div id="banner" aria-live="polite"></div>
     <div class="history" id="history"></div>
@@ -145,6 +151,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
   <section class="card" aria-labelledby="st-bottom">
     <p class="status-label" id="st-bottom">DONE? SET THE STATUS</p>
     <div class="status" data-status></div>
+    <p class="terms-line" data-terms></p>
     <div id="banner2" aria-live="polite"></div>
   </section>
   </div>
@@ -162,7 +169,6 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
    {"kind": "check", "key": "inspection_ok", "label": "I confirm: I inspected the interior and exterior myself; I measured to ANSI Z765-2021; the utilities were on; the smoke/CO detectors and water heater strapping meet local and state rules; I have no interest in this property or the parties and did no work on it in the 3 years before this order"},
    {"kind": "text", "key": "inspection_except", "label": "Except (what, and what you saw)", "wide": true},
    {"kind": "text", "key": "helper", "label": "Anyone who helped on this order: name, credential (none, trainee, licensed, certified) and what they did", "wide": true, "open": true},
-   {"kind": "check", "key": "terms_ok", "label": "This client's terms allow outside report preparation and the file sharing it takes, and this property and market are within my competence"},
    {"kind": "prompt", "key": "il_amc_fee", "prompt": "il_amc", "label": "Illinois: your fee from {} for this order, $", "text": true, "short": true, "open": true}
   ]},
   {"title": "Your calls on the house", "stage": "open", "note": "Your ratings apply to the exterior, the interior and overall unless you say otherwise under Anything else.", "lines": [
@@ -259,11 +265,13 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   window.addEventListener("resize", function () { document.querySelectorAll("textarea").forEach(grow); });
 
   // ---------- one line each (names match the PDF's fields) ----------
-  function check(name, label, cls) {
+  function check(name, label, cls, href) {
     var input = el("input", { type: "checkbox" });
     input.addEventListener("change", function () { state.answers[name] = input.checked; changed(); });
     controls[name] = { set: function (v) { input.checked = !!v; } };
-    return el("label", { cls: "line " + (cls || "") }, [input, el("span", { cls: "lbl", text: label })]);
+    var lbl = el("span", { cls: "lbl", text: label + (href ? " " : "") });
+    if (href) lbl.appendChild(el("a", { href: href, target: "_blank", rel: "noopener", text: "Read the terms" }));
+    return el("label", { cls: "line " + (cls || "") }, [input, lbl]);
   }
   function text(name, label, opts) {
     opts = opts || {};
@@ -346,7 +354,12 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var hp = D.house_prompts || {};
     if (!isOpen(line)) return [];
     switch (line.kind) {
-      case "check": return [check(line.key, line.label)];
+      case "check": {                  // a per-lane line (terms): label and link picked by the order's house_prompts.lane
+        var lane = hp.lane === "self-service" ? "self-service" : "default";
+        var lbl = typeof line.label === "object" ? line.label[lane] : line.label;
+        var href = line.href && typeof line.href === "object" ? line.href[lane] : line.href;
+        return [check(line.key, lbl, null, href)];
+      }
       case "text": return [text(line.key, line.label, { short: line.short, wide: line.wide })];
       case "multi": return [text(line.key, line.label, { multi: true, talk: line.talk })];
       case "choice": {
@@ -406,6 +419,14 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     // After the run the questions are all that is left to answer: the START sections (already answered) step aside.
     var built = (D.questions || []).length > 0;
     document.querySelectorAll("[data-stage]").forEach(function (c) { var st = c.getAttribute("data-stage"); c.hidden = st !== stage || (st === "open" && built); });
+    // Matt 2026-10-11: tapping READY is the agreement to this order's terms; the lane picks which terms.
+    var selfServ = (D.house_prompts || {}).lane === "self-service";
+    document.querySelectorAll("[data-terms]").forEach(function (p) {
+      p.textContent = ""; p.hidden = stage !== "open";
+      if (stage !== "open") return;
+      p.appendChild(document.createTextNode("By tapping READY you agree to the " + (selfServ ? "A&AP Software Terms" : "A&AP Service Terms") + " for this order: "));
+      p.appendChild(el("a", { href: selfServ ? "https://appraisalpartners.net/terms-software.html" : "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener", text: "read the terms" }));
+    });
     paintStatus();
   }
   function paintStatus() {
