@@ -8,6 +8,7 @@
      q_<id>. The order's internal note never reaches the page; public_note shows when there is one.
      Once the report is back (stage returned) the pre-report sections hide (Matt, 2026-10-11): only the order, the
      desk's answers (public_note, formlink.py --note), any post-run questions and Changes or questions show.
+     A Workfile copy redraws from the backend's data when questions or the note changed since it was made.
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
 <html lang="en">
@@ -147,7 +148,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
   </section>
   </div>
 
-  <p class="foot">No value goes on this checklist. That opinion is yours alone. · A&amp;AP</p>
+  <p class="foot">The value is yours alone. We ask for it only once the report is built, and enter it exactly as you give it. · A&amp;AP</p>
 </div>
 
 <script type="application/json" id="checklist">
@@ -587,6 +588,12 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (state.status !== "DRAFT") banner(state.status === "DONE" ? THANKS : SENT, "ok");
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
+  // A Workfile copy made before the run learns the questions and answers added since from the backend.
+  function newer(f) { return JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || ""); }
+  function refresh(f) {
+    D = f; O = D.order || {}; controls = {}; $("order").innerHTML = ""; $("sections").innerHTML = "";
+    renderOrder(); renderSections(); paintAll(); document.querySelectorAll("textarea").forEach(grow);
+  }
   function boot(form, saved) {
     D = form || {}; O = D.order || {};
     state = { status: D.status || "DRAFT", answers: Object.assign({}, D.prefill || {}), changes: (D.changes || []).slice(), history: [] };
@@ -615,7 +622,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (!T || !API) { conn("Not connected"); return; }
     connecting = true; conn("Connecting…");
     read().then(function (r) {
-      connecting = false; online = true; conn("Connected"); if (r.form) setStage(r.form.stage); if (r.saved) apply(r.saved);
+      connecting = false; online = true; conn("Connected");
+      if (r.form && newer(r.form) && edits === savedEdits && !tapped) refresh(r.form);
+      if (r.form) setStage(r.form.stage); if (r.saved) apply(r.saved);
       if (tapped) { setStatus(tapped); banner("Sending…", "ok"); } else if (edits !== savedEdits) afterEdit();   // typing before it connected
     }, function (e) {
       connecting = false; conn("Not connected");
