@@ -9,6 +9,7 @@
      Once the report is back (stage returned) the pre-report sections hide (Matt, 2026-10-11): only the order, the
      desk's answers (public_note, formlink.py --note), any post-run questions and Changes or questions show.
      A Workfile copy redraws from the backend's data when questions or the note changed since it was made.
+     Once post-run questions exist the START sections hide: the form then shows only what is left to answer.
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
 <html lang="en">
@@ -158,40 +159,48 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
    {"kind": "questions"}
   ]},
   {"title": "Your inspection", "stage": "open", "lines": [
-   {"kind": "check", "key": "inspection_ok", "label": "I confirm: measured to ANSI Z765-2021, utilities on, smoke/CO detectors and water heater strap meet local and state rules, no work by me on this property in the last 3 years"},
-   {"kind": "text", "key": "inspection_except", "label": "Except", "wide": true},
-   {"kind": "text", "key": "terms_ok", "label": "Your initials: this client's terms allow our help", "short": true}
+   {"kind": "check", "key": "inspection_ok", "label": "I confirm: I inspected the interior and exterior myself; I measured to ANSI Z765-2021; the utilities were on; the smoke/CO detectors and water heater strapping meet local and state rules; I have no interest in this property or the parties and did no work on it in the 3 years before this order"},
+   {"kind": "text", "key": "inspection_except", "label": "Except (what, and what you saw)", "wide": true},
+   {"kind": "text", "key": "helper", "label": "Anyone who helped on this order: name, credential (none, trainee, licensed, certified) and what they did", "wide": true, "open": true},
+   {"kind": "check", "key": "terms_ok", "label": "This client's terms allow outside report preparation and the file sharing it takes, and this property and market are within my competence"},
+   {"kind": "prompt", "key": "il_amc_fee", "prompt": "il_amc", "label": "Illinois: your fee from {} for this order, $", "text": true, "short": true, "open": true}
   ]},
-  {"title": "Your calls", "stage": "open", "lines": [
+  {"title": "Your calls on the house", "stage": "open", "note": "Your ratings apply to the exterior, the interior and overall unless you say otherwise under Anything else.", "lines": [
    {"kind": "choice", "key": "subject_quality", "label": "Quality", "options": ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6"], "open": true},
    {"kind": "choice", "key": "subject_condition", "label": "Condition", "options": ["C1", "C2", "C3", "C4", "C5", "C6"], "open": true},
+   {"kind": "text", "key": "updates", "label": "Kitchen and baths: updated when? (e.g., kitchen remodeled 1-5 yrs ago; baths not updated)", "wide": true, "open": true},
    {"kind": "choice", "key": "premise", "label": "As is?", "options": ["As is", "Subject to repair", "Subject to completion", "Subject to inspection"], "open": true},
    {"kind": "choice", "key": "condition_as_is", "label": "If not as is: condition before the repairs", "options": ["C1", "C2", "C3", "C4", "C5", "C6"], "open": true},
-   {"kind": "multi", "key": "repairs", "label": "Repairs and cost, one per line (write \"safety\" on safety or structural items)", "open": true},
-   {"kind": "prompt", "key": "prior_sale_ok", "prompt": "prior_sale", "label": "{}: arm's length and in line with the market?", "options": ["Yes", "No"], "open": true},
-   {"kind": "prompt", "key": "influence_effect", "prompt": "influence", "label": "{}: effect on value", "options": ["Adverse", "Beneficial", "Neutral"], "open": true}
+   {"kind": "multi", "key": "repairs", "label": "Repairs, inspections or unfinished work, one per line with the cost (write \"safety\" on safety or structural items, \"inspection\" on items an expert must check)", "open": true},
+   {"kind": "prompt", "key": "prior_sale_ok", "prompt": "prior_sale", "label": "{}: arm's length and in line with the market?", "options": ["Yes", "No, see Anything else"], "open": true},
+   {"kind": "prompt", "key": "contract_ok", "prompt": "contract", "label": "{}: arm's length, with concessions typical for this market?", "options": ["Yes", "No, see Anything else"], "open": true},
+   {"kind": "prompt", "key": "influence_effect", "prompt": "influence", "label": "{}: effect on value", "options": ["Adverse", "Beneficial", "Neutral"], "open": true},
+   {"kind": "choice", "key": "hbu_present_use", "label": "Highest and best use as improved is the present use", "options": ["Yes", "No, see Anything else"], "open": true},
+   {"kind": "prompt", "key": "site_value", "prompt": "site", "label": "Your site value, $ ({})", "text": true, "short": true, "open": true}
   ]},
-  {"title": "Your comps", "stage": "open", "note": "\"Same\" means same as the house.", "lines": [
+  {"title": "Your comps", "stage": "open", "note": "\"Same\" means same as the house. Your comps stay in the order you gave them. If we pull the sales for you, you pick your comps from the sheet in your Workfile when we ask.", "lines": [
    {"kind": "comps", "quality": ["Same", "Q1", "Q2", "Q3", "Q4", "Q5", "Q6"], "condition": ["Same", "C1", "C2", "C3", "C4", "C5", "C6"], "open": true},
-   {"kind": "choice", "key": "most_weight", "label": "Most weight: comp", "options": "comps", "open": true}
+   {"kind": "choice", "key": "most_weight", "label": "Most weight: comp", "options": "comps", "open": true},
+   {"kind": "prompt", "key": "search_net", "prompt": "net", "label": "We'll pull every sale and listing within {}. To widen or narrow that, say how", "text": true, "open": true}
   ]},
   {"title": "The market", "stage": "open", "lines": [
-   {"kind": "choice", "key": "price_trend", "label": "Prices, last 12 months", "options": ["Increasing", "Stable", "Declining"], "open": true},
+   {"kind": "prompt", "key": "price_trend", "prompt": "market", "label": "{} Prices, last 12 months:", "options": ["Increasing", "Stable", "Declining"], "open": true},
    {"kind": "choice", "key": "supply", "label": "Supply", "options": ["Shortage", "In balance", "Oversupply"], "open": true},
-   {"kind": "text", "key": "time_adjustment", "label": "Time adjustment, % per month (0 if none)", "short": true, "open": true},
-   {"kind": "choice", "key": "exposure", "label": "Typical time to sell", "options": ["Under 30 days", "30 to 60 days", "60 to 90 days", "Over 90 days"], "open": true}
+   {"kind": "text", "key": "time_adjustment", "label": "Time adjustment, % per month from each contract date (0 if none)", "short": true, "open": true},
+   {"kind": "prompt", "key": "market_rent", "prompt": "rent", "label": "{}: your opinion of market rent, $ per month", "text": true, "short": true, "open": true}
   ]},
-  {"title": "Your adjustments", "stage": "open", "note": "Only the lines where a comp differs from the house. Skip the rest.", "lines": [
+  {"title": "Your adjustments", "stage": "open", "note": "Only the lines where a comp differs from the house; the rest are $0. We write the support from your data beside each rate.", "lines": [
    {"kind": "text", "key": "rate_gla", "label": "Living area, $ per sq ft", "short": true, "open": true},
    {"kind": "text", "key": "rate_site", "label": "Site, $ per sq ft or acre", "short": true, "open": true},
-   {"kind": "text", "key": "rate_condition", "label": "Condition, $ per step", "short": true, "open": true},
-   {"kind": "text", "key": "rate_quality", "label": "Quality, $ per step", "short": true, "open": true},
-   {"kind": "text", "key": "rate_garage", "label": "Garage, $ per space", "short": true, "open": true},
+   {"kind": "text", "key": "rate_age", "label": "Age, $ per year", "short": true, "open": true},
+   {"kind": "text", "key": "rate_condition", "label": "Condition difference, $ (per step, or per comp)", "short": true, "open": true},
+   {"kind": "text", "key": "rate_quality", "label": "Quality difference, $ (per step, or per comp)", "short": true, "open": true},
+   {"kind": "text", "key": "rate_garage", "label": "Garage or parking, $ per space", "short": true, "open": true},
    {"kind": "text", "key": "rate_full_bath", "label": "Full bath, $ each", "short": true, "open": true},
    {"kind": "text", "key": "rate_half_bath", "label": "Half bath, $ each", "short": true, "open": true},
+   {"kind": "text", "key": "rate_basement", "label": "Finished basement, $ per sq ft", "short": true, "open": true},
    {"kind": "text", "key": "rate_other", "label": "Other: what and $", "open": true},
-   {"kind": "checks", "label": "Basis", "items": [["basis_paired", "Paired sales in my data"], ["basis_regression", "Regression"], ["basis_cost", "Cost"], ["basis_sensitivity", "Sensitivity test"], ["basis_experience", "Experience"]], "open": true},
-   {"kind": "choice", "key": "concessions", "label": "Concessions on comps", "options": ["Adjust them", "Don't adjust"], "open": true}
+   {"kind": "choice", "key": "concessions", "label": "Concessions on comps", "options": ["Adjust what the market paid for them", "Don't adjust"], "open": true}
   ]},
   {"title": "Anything else", "stage": "open", "lines": [
    {"kind": "multi", "key": "notes", "label": "Any assumption, condition or instruction only you can give. Or just say it all here.", "talk": true, "open": true}
@@ -212,9 +221,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   var LABEL = {}; STATUSES.forEach(function (s) { LABEL[s] = s.replace("_", " "); });
   // The order's stage picks the buttons: open until we send the report back, returned once it's in their folder.
   var STAGES = {
-    open: { statuses: ["DRAFT", "READY"], help: "Tick what's right, pick your calls, then tap <b>READY</b>. Blanks stay blank; we never make your calls.",
+    open: { statuses: ["DRAFT", "READY"], help: "Tick what's right, pick your calls, then tap <b>READY</b>. READY means your inspection is done and your photos, sketch and files are in the Workfile. Blanks stay blank; anything we still need comes back here after the build.",
             refused: "The report isn't back with you yet. Tap READY when your checklist is done." },
-    returned: { statuses: ["NEEDS_CHANGE", "DONE"], help: "Review the report in TOTAL. List any changes or questions below and tap <b>NEEDS CHANGE</b>, or tap <b>DONE</b>.",
+    returned: { statuses: ["NEEDS_CHANGE", "DONE"], help: "Review the report in TOTAL. If it reads right, sign and deliver it as you always do, then tap <b>DONE</b>. For a change or a question, write it below and tap <b>NEEDS CHANGE</b>; our answer shows at the top of this form.",
                 refused: "The report is back in your folder now. Tap NEEDS CHANGE or DONE." }
   };
   var SENT = "Saved with A&AP. We'll email you when it's back.";
@@ -344,7 +353,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
         var opts = line.options === "comps" ? grid().map(String) : line.options;
         return [choice(line.key, line.label, opts)];
       }
-      case "prompt": return hp[line.prompt] ? [choice(line.key, line.label.replace("{}", hp[line.prompt]), line.options)] : [];
+      case "prompt": {                 // shows only when the order's house_prompts carries it; "text": true asks for a short answer
+        if (!hp[line.prompt]) return [];
+        var label = line.label.replace("{}", hp[line.prompt]);
+        return line.text ? [text(line.key, label, { short: line.short, wide: !line.short })] : [choice(line.key, label, line.options)];
+      }
       case "checks": return [checks(line.label, line.items)];
       case "comps": return comps(line);
       case "questions": return questions();
@@ -388,8 +401,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function setStage(st) {
     stage = STAGES[st] ? st : "open";
-    $("help").innerHTML = STAGES[stage].help;
-    document.querySelectorAll("[data-stage]").forEach(function (c) { c.hidden = c.getAttribute("data-stage") !== stage; });
+    var built0 = (D.questions || []).length > 0 && stage === "open";
+    $("help").innerHTML = built0 ? "Your report is built. Answer the questions below, then tap <b>READY</b>; we finish it and put it back in your folder." : STAGES[stage].help;
+    // After the run the questions are all that is left to answer: the START sections (already answered) step aside.
+    var built = (D.questions || []).length > 0;
+    document.querySelectorAll("[data-stage]").forEach(function (c) { var st = c.getAttribute("data-stage"); c.hidden = st !== stage || (st === "open" && built); });
     paintStatus();
   }
   function paintStatus() {
