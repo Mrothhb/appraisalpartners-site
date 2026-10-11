@@ -670,17 +670,27 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   setInterval(poll, 30000);
 
   // ---------- go ----------
-  if (INLINE) {                       // a one-file copy (a report's Workfile): shows at once, then syncs when it can
-    boot(INLINE.form, null);
-    if (!T || !API) { conn("Not connected"); return; }
-    connecting = true; conn("Connecting…");
+  if (INLINE) {                       // a one-file copy (a report's Workfile): opens on the latest from the backend
+    if (!T || !API) { boot(INLINE.form, null); conn("Not connected"); return; }
+    // Matt 2026-10-11: no flash of the copy's original version. Wait briefly for the latest; fall back to the copy
+    // saved in the report only when the backend does not answer.
+    gate("Loading your form…");
+    connecting = true;
+    var booted = false;
+    var fallback = setTimeout(function () { if (!booted) { booted = true; boot(INLINE.form, null); conn("Connecting…"); } }, 8000);
     read().then(function (r) {
-      connecting = false; online = true; conn("Connected");
+      clearTimeout(fallback);
+      connecting = false; online = true;
+      if (!booted) { booted = true; boot(r.form || INLINE.form, r.saved); conn("Connected"); return; }
+      conn("Connected");
       if (r.form && newer(r.form) && edits === savedEdits && !tapped) refresh(r.form);
       if (r.form) setStage(r.form.stage); if (r.saved) apply(r.saved);
       if (tapped) { setStatus(tapped); banner("Sending…", "ok"); } else if (edits !== savedEdits) afterEdit();   // typing before it connected
     }, function (e) {
-      connecting = false; conn("Not connected");
+      clearTimeout(fallback);
+      connecting = false;
+      if (!booted) { booted = true; boot(INLINE.form, null); }
+      conn("Not connected");
       if (tapped) setStatus(tapped);   // shows the tap as chosen with the not-connected line
       if (e && e.code === "unknown") setReadOnly("This copy's link no longer works. Reply to our email and we'll send a fresh one.");
     });
