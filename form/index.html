@@ -1,0 +1,620 @@
+<!doctype html>
+<!-- A&AP checklist: appraisalpartners.net/form/?t=<code>. It loads and saves one order through our Google Apps Script
+     web app at API. No order data lives in this file; never add analytics here (the link carries the code).
+     The checklist's lines are the JSON block id="checklist" below: the page and checklist_pdf.py both read it.
+     Only what the law leaves to the appraiser is on it (Matt, 2026-10-10): a line marked "open" shows only while the
+     order's prefill leaves it blank; what we found goes to the audit, never on the form. Comp rows are the order's
+     grid_comps (first 3 by default). Questions added after a run (formlink.py --questions) show first, answers under
+     q_<id>. The order's internal note never reaches the page; public_note shows when there is one.
+     formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
+     Workfile, where TOTAL's preview pane shows it. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>A&amp;AP Checklist</title>
+<link rel="icon" href="logo.png">
+<style>
+:root {
+  --bg: #f3f5f8; --card: #fff; --ink: #1c2430; --muted: #5f6b7a; --line: #c9d2dc; --field: #fbfcfd; --navy: #0d2a46;
+  --draft: #c25e00; --ready: #12803a; --change: #c81e1e; --done: #1c4fb0;
+  --ok-bg: #e6f4ea; --ok-ink: #0f5a29; --warn-bg: #fff4e0; --warn-ink: #7a4300; --prefill: #eef3f8;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.4 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 14px 12px 40px; }
+header { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; }
+header svg { width: 64px; height: 37.6px; flex: none; }
+.brand { font-size: 22px; font-weight: 800; color: var(--navy); letter-spacing: 1px; }
+.sub { color: var(--muted); font-size: 14px; }
+.conn { margin-left: auto; font-size: 13px; color: var(--muted); text-align: right; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 0 0 12px; }
+.order { font-size: 15px; }
+.order b { color: var(--navy); }
+.order div { margin: 2px 0; }
+
+/* Status: the two buttons that fit the stage (DRAFT and READY, then NEEDS CHANGE and DONE once the report is back).
+   Every button is the same fixed box: one line, the check in the left padding, so it never wraps or grows. */
+.status-label { font-size: 12px; font-weight: 700; letter-spacing: .8px; color: var(--muted); margin: 0 0 8px; }
+.status { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.st { position: relative; height: 48px; padding: 0 24px; border-radius: 8px; border: 2.5px solid var(--c); background: #fff; color: var(--c);
+      font-family: inherit; font-weight: 800; font-size: 16px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; overflow: hidden;
+      cursor: pointer; -webkit-tap-highlight-color: transparent; }
+@media (max-width: 500px) { .status { grid-template-columns: minmax(0, 1fr); } }   /* a phone: one under the other */
+.st[data-s="DRAFT"] { --c: var(--draft); } .st[data-s="READY"] { --c: var(--ready); }
+.st[data-s="NEEDS_CHANGE"] { --c: var(--change); } .st[data-s="DONE"] { --c: var(--done); }
+.st[aria-pressed="true"] { background: var(--c); color: #fff; }
+.st[aria-pressed="true"]::before { content: "\2713"; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); }
+.st:disabled { opacity: .45; cursor: not-allowed; }
+.status-help { font-size: 14px; color: var(--muted); margin: 8px 0 0; }
+.banner { margin: 10px 0 0; padding: 10px 12px; border-radius: 8px; font-weight: 600; }
+.banner.ok { background: var(--ok-bg); color: var(--ok-ink); }
+.banner.warn { background: var(--warn-bg); color: var(--warn-ink); }
+.history { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+
+/* The checklist */
+h2 { font-size: 15px; margin: 0 0 2px; color: #fff; background: var(--navy); padding: 6px 12px; border-radius: 6px; }
+.note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+.line { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 4px 0; border-bottom: 1px solid #e6eaef; }
+.line:last-child { border-bottom: 0; }
+.line .lbl { flex: 1; min-width: 0; }
+.line .lbl .hint { color: var(--muted); font-size: 13px; }
+.line input[type="checkbox"] { flex: none; width: 24px; height: 24px; margin: 0; accent-color: var(--navy); }
+.line input[type="text"], .line textarea { font: inherit; border: 1.5px solid var(--line); border-radius: 6px; background: var(--field); padding: 8px 10px; min-height: 40px; }
+.line input[type="text"] { flex: none; width: 200px; max-width: 48%; }
+.line input.short { width: 110px; }
+.line.wide { flex-direction: column; align-items: stretch; gap: 6px; }
+.line.wide input[type="text"], .line.wide textarea { width: 100%; max-width: none; }
+textarea { min-height: 72px; resize: vertical; line-height: 1.4; overflow: hidden; }
+.comp { padding: 6px 0; border-bottom: 1px solid #e6eaef; }
+.comp .id { display: flex; gap: 8px; align-items: center; font-weight: 600; }
+.comp .id .n { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--navy); color: #fff; font-size: 13px; display: grid; place-items: center; }
+.comp .id input { flex: 1; min-height: 36px; }
+.comp .rate { display: flex; align-items: center; gap: 8px; margin: 6px 0 0 32px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+.comp .rate .lbl { flex: none; width: 70px; }
+/* Choices: tap buttons, never a native dropdown (TOTAL's preview pane flickers on those). Tap again to clear. */
+.line.choice { flex-wrap: wrap; }
+.line.choice .lbl { flex: 1 1 160px; }
+.taps { display: flex; flex-wrap: wrap; gap: 6px; }
+.tap { min-height: 34px; padding: 4px 10px; border-radius: 7px; border: 2px solid var(--navy); background: #fff; color: var(--navy);
+       font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.tap[aria-pressed="true"] { background: var(--navy); color: #fff; }
+.tap[aria-pressed="true"]::before { content: "\2713\00a0"; }
+.tap:disabled { opacity: .45; cursor: not-allowed; }
+.checks { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 6px 0; }
+.checks label { display: flex; align-items: center; gap: 8px; min-height: 36px; }
+.checks input { width: 22px; height: 22px; margin: 0; accent-color: var(--navy); }
+.changes .line .n { flex: none; width: 22px; color: var(--muted); font-weight: 600; }
+.mic { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--navy); color: #fff; display: grid; place-items: center; cursor: pointer; }
+.mic.on { background: var(--change); animation: pulse 1.4s infinite; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(200, 30, 30, .45); } 50% { box-shadow: 0 0 0 10px rgba(200, 30, 30, 0); } }
+.mic svg { width: 18px; height: 24px; }
+.talk-row { display: flex; gap: 10px; align-items: center; }
+.talk-hint { font-size: 13px; color: var(--muted); }
+.foot { text-align: center; font-size: 13px; color: var(--muted); margin: 18px 0 0; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+#gate p { margin: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 354 208" width="64" height="37.6" id="logo" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="apSteel" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#5b7893"/>
+          <stop offset="1" stop-color="#486480"/>
+        </linearGradient>
+      </defs>
+      <path fill="#0d2a46" d="M133.28 9.00 L148.00 9.00 Q158.32 9.00 165.50 21.00 L272.54 200.00 L211.88 200.00 L176.00 140.00 L176.00 104.50 L135.50 64.00 L135.50 95.00 L82.00 140.00 L82.00 178.00 L67.58 200.00 L8.06 200.00 Z"/>
+      <path fill="#0d2a46" d="M174.12 12.00 L279.00 12.00 A66.50 66.50 0 0 1 279.00 145.00 L253.65 145.00 L229.43 104.50 L276.00 105.00 A26.50 26.50 0 0 0 276.00 52.00 L198.04 52.00 Z"/>
+      <path fill="url(#apSteel)" d="M92.00 200.00 L92.00 145.30 L112.00 128.48 L112.00 200.00 Z M118.50 200.00 L118.50 123.01 L138.50 106.19 L138.50 200.00 Z M145.00 200.00 L145.00 88.35 L165.00 108.35 L165.00 200.00 Z"/>
+    </svg>
+    <div>
+      <div class="brand">A&amp;AP</div>
+      <div class="sub">Checklist</div>
+    </div>
+    <div class="conn" id="conn" aria-live="polite"></div>
+  </header>
+
+  <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
+
+  <div id="main" hidden>
+  <section class="card order" id="order" aria-label="The order"></section>
+
+  <section class="card" aria-labelledby="st-top">
+    <p class="status-label" id="st-top">STATUS</p>
+    <div class="status" data-status></div>
+    <p class="status-help" id="help"></p>
+    <div id="banner" aria-live="polite"></div>
+    <div class="history" id="history"></div>
+  </section>
+
+  <fieldset id="form"><div id="sections"></div></fieldset>
+
+  <section class="card" aria-labelledby="st-bottom">
+    <p class="status-label" id="st-bottom">DONE? SET THE STATUS</p>
+    <div class="status" data-status></div>
+    <div id="banner2" aria-live="polite"></div>
+  </section>
+  </div>
+
+  <p class="foot">No value goes on this checklist. That opinion is yours alone. · A&amp;AP</p>
+</div>
+
+<script type="application/json" id="checklist">
+{
+ "sections": [
+  {"title": "To finish your report", "note": "Answer these, then tap your status again to send them.", "lines": [
+   {"kind": "questions"}
+  ]},
+  {"title": "Your inspection", "lines": [
+   {"kind": "check", "key": "inspection_ok", "label": "I confirm: measured to ANSI Z765-2021, utilities on, smoke/CO detectors and water heater strap meet local and state rules, no work by me on this property in the last 3 years"},
+   {"kind": "text", "key": "inspection_except", "label": "Except", "wide": true},
+   {"kind": "text", "key": "terms_ok", "label": "Your initials: this client's terms allow our help", "short": true}
+  ]},
+  {"title": "Your calls", "lines": [
+   {"kind": "choice", "key": "subject_quality", "label": "Quality", "options": ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6"], "open": true},
+   {"kind": "choice", "key": "subject_condition", "label": "Condition", "options": ["C1", "C2", "C3", "C4", "C5", "C6"], "open": true},
+   {"kind": "choice", "key": "premise", "label": "As is?", "options": ["As is", "Subject to repair", "Subject to completion", "Subject to inspection"], "open": true},
+   {"kind": "choice", "key": "condition_as_is", "label": "If not as is: condition before the repairs", "options": ["C1", "C2", "C3", "C4", "C5", "C6"], "open": true},
+   {"kind": "multi", "key": "repairs", "label": "Repairs and cost, one per line (write \"safety\" on safety or structural items)", "open": true},
+   {"kind": "prompt", "key": "prior_sale_ok", "prompt": "prior_sale", "label": "{}: arm's length and in line with the market?", "options": ["Yes", "No"], "open": true},
+   {"kind": "prompt", "key": "influence_effect", "prompt": "influence", "label": "{}: effect on value", "options": ["Adverse", "Beneficial", "Neutral"], "open": true}
+  ]},
+  {"title": "Your comps", "note": "\"Same\" means same as the house.", "lines": [
+   {"kind": "comps", "quality": ["Same", "Q1", "Q2", "Q3", "Q4", "Q5", "Q6"], "condition": ["Same", "C1", "C2", "C3", "C4", "C5", "C6"], "open": true},
+   {"kind": "choice", "key": "most_weight", "label": "Most weight: comp", "options": "comps", "open": true}
+  ]},
+  {"title": "The market", "lines": [
+   {"kind": "choice", "key": "price_trend", "label": "Prices, last 12 months", "options": ["Increasing", "Stable", "Declining"], "open": true},
+   {"kind": "choice", "key": "supply", "label": "Supply", "options": ["Shortage", "In balance", "Oversupply"], "open": true},
+   {"kind": "text", "key": "time_adjustment", "label": "Time adjustment, % per month (0 if none)", "short": true, "open": true},
+   {"kind": "choice", "key": "exposure", "label": "Typical time to sell", "options": ["Under 30 days", "30 to 60 days", "60 to 90 days", "Over 90 days"], "open": true}
+  ]},
+  {"title": "Your adjustments", "note": "Only the lines where a comp differs from the house. Skip the rest.", "lines": [
+   {"kind": "text", "key": "rate_gla", "label": "Living area, $ per sq ft", "short": true, "open": true},
+   {"kind": "text", "key": "rate_site", "label": "Site, $ per sq ft or acre", "short": true, "open": true},
+   {"kind": "text", "key": "rate_condition", "label": "Condition, $ per step", "short": true, "open": true},
+   {"kind": "text", "key": "rate_quality", "label": "Quality, $ per step", "short": true, "open": true},
+   {"kind": "text", "key": "rate_garage", "label": "Garage, $ per space", "short": true, "open": true},
+   {"kind": "text", "key": "rate_full_bath", "label": "Full bath, $ each", "short": true, "open": true},
+   {"kind": "text", "key": "rate_half_bath", "label": "Half bath, $ each", "short": true, "open": true},
+   {"kind": "text", "key": "rate_other", "label": "Other: what and $", "open": true},
+   {"kind": "checks", "label": "Basis", "items": [["basis_paired", "Paired sales in my data"], ["basis_regression", "Regression"], ["basis_cost", "Cost"], ["basis_sensitivity", "Sensitivity test"], ["basis_experience", "Experience"]], "open": true},
+   {"kind": "choice", "key": "concessions", "label": "Concessions on comps", "options": ["Adjust them", "Don't adjust"], "open": true}
+  ]},
+  {"title": "Anything else", "lines": [
+   {"kind": "multi", "key": "notes", "label": "Any assumption, condition or instruction only you can give. Or just say it all here.", "talk": true, "open": true}
+  ]},
+  {"title": "Change requests", "note": "List your changes here, then tap NEEDS CHANGE.", "stage": "returned", "lines": [
+   {"kind": "changes", "count": 5}
+  ]}
+ ]
+}
+</script>
+
+<script>
+var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPwO_MB0iqsrAarETBMjLEdV5GfyFd_tgh_PiEA4z_w/exec";   // the web app's /exec URL (SETUP.md); while empty, the page says it is not connected
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var STATUSES = ["DRAFT", "READY", "NEEDS_CHANGE", "DONE"];
+  var LABEL = {}; STATUSES.forEach(function (s) { LABEL[s] = s.replace("_", " "); });
+  // The order's stage picks the buttons: open until we send the report back, returned once it's in their folder.
+  var STAGES = {
+    open: { statuses: ["DRAFT", "READY"], help: "Tick what's right, pick your calls, then tap <b>READY</b>. Blanks stay blank; we never make your calls.",
+            refused: "The report isn't back with you yet. Tap READY when your checklist is done." },
+    returned: { statuses: ["NEEDS_CHANGE", "DONE"], help: "Review the report in TOTAL. List any changes below and tap <b>NEEDS CHANGE</b>, or tap <b>DONE</b>.",
+                refused: "The report is back in your folder now. Tap NEEDS CHANGE or DONE." }
+  };
+  var SENT = "Saved with A&AP. We'll email you when it's back.";
+  var THANKS = "Saved with A&AP. Thank you.";
+  var NCHANGES = 5;
+  var MAX_BODY = 100000;       // Code.gs's limit on one save
+  var CHECKLIST = JSON.parse($("checklist").textContent);
+  var INLINE = $("order-data") ? JSON.parse($("order-data").textContent) : null;
+
+  var T = (INLINE && INLINE.t) || new URLSearchParams(location.search).get("t") || "";
+  var D = {}, O = {}, state = null, stage = "open";
+  var controls = {};      // name -> {set}
+  var online = false, readOnly = false, edits = 0, savedEdits = 0, timer = null, writing = Promise.resolve();
+  var connecting = false, tapped = null;   // a status tapped while the first read is under way goes out once it connects
+  var savedAt = null;          // the stored answers' updatedAt, as last read
+
+  // ---------- small DOM helpers ----------
+  function el(tag, attrs, kids) {
+    var n = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (k === "text") n.textContent = attrs[k];
+      else if (k === "cls") n.className = attrs[k];
+      else n.setAttribute(k, attrs[k]);
+    }
+    (kids || []).forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function changed() { edits++; afterEdit(); }
+  function grow(t) {
+    if (t.tagName !== "TEXTAREA" || !t.isConnected) return;
+    t.style.height = "auto"; t.style.height = (t.scrollHeight + 3) + "px";
+  }
+  window.addEventListener("resize", function () { document.querySelectorAll("textarea").forEach(grow); });
+
+  // ---------- one line each (names match the PDF's fields) ----------
+  function check(name, label, cls) {
+    var input = el("input", { type: "checkbox" });
+    input.addEventListener("change", function () { state.answers[name] = input.checked; changed(); });
+    controls[name] = { set: function (v) { input.checked = !!v; } };
+    return el("label", { cls: "line " + (cls || "") }, [input, el("span", { cls: "lbl", text: label })]);
+  }
+  function text(name, label, opts) {
+    opts = opts || {};
+    var id = "f-" + name;
+    var input = opts.multi ? el("textarea", { id: id, rows: "3" }) : el("input", { id: id, type: "text", autocomplete: "off" });
+    if (opts.short) input.className = "short";
+    input.addEventListener("input", function () { state.answers[name] = input.value; grow(input); changed(); });
+    controls[name] = { set: function (v) { v = v == null ? "" : String(v); if (input.value !== v) input.value = v; grow(input); } };
+    var row = el("div", { cls: "line" + (opts.multi || opts.wide ? " wide" : "") }, [el("label", { cls: "lbl", "for": id, text: label }), input]);
+    if (opts.talk) row.appendChild(talkRow(input));
+    return row;
+  }
+  function taps(name, label, options) {
+    var box = el("div", { cls: "taps", role: "group", "aria-label": label }), btns = [];
+    function paint(v) { btns.forEach(function (b) { b.setAttribute("aria-pressed", String(b.value === v)); }); }
+    options.forEach(function (o) {
+      var b = el("button", { type: "button", cls: "tap", value: o, "aria-pressed": "false", text: o });
+      b.addEventListener("click", function () {
+        state.answers[name] = state.answers[name] === o ? "" : o;     // tap again to clear
+        paint(state.answers[name]); changed();
+      });
+      btns.push(b); box.appendChild(b);
+    });
+    controls[name] = { set: function (v) { paint(v == null ? "" : String(v)); } };
+    return box;
+  }
+  function choice(name, label, options) {
+    return el("div", { cls: "line choice" }, [el("span", { cls: "lbl", text: label }), taps(name, label, options)]);
+  }
+  function checks(label, items) {
+    var box = el("div", { cls: "checks" });
+    items.forEach(function (it) {
+      var input = el("input", { type: "checkbox" });
+      input.addEventListener("change", function () { state.answers[it[0]] = input.checked; changed(); });
+      controls[it[0]] = { set: function (v) { input.checked = !!v; } };
+      box.appendChild(el("label", null, [input, el("span", { text: it[1] })]));
+    });
+    return el("div", { cls: "line wide" }, [el("span", { cls: "lbl", text: label }), box]);
+  }
+  function grid() { return (D.grid_comps && D.grid_comps.length) ? D.grid_comps : [1, 2, 3]; }   // comp numbers on the grid
+  function unrated(n, what) {      // a comp's rating is open while neither its prefill nor its comp record has it
+    var c = (D.comps || [])[n - 1] || {};
+    return blank("comp" + n + "_" + what) && !c[what];
+  }
+  function comps(line) {
+    return grid().filter(function (n) { return unrated(n, "quality") || unrated(n, "condition"); }).map(function (n) {
+      var c = (D.comps || [])[n - 1] || {}, rows = [el("div", { cls: "id" }, [el("span", { cls: "n", text: String(n) }), c.address || c.id || "Comp " + n])];
+      ["quality", "condition"].forEach(function (what) {
+        if (unrated(n, what)) rows.push(el("div", { cls: "rate" }, [el("span", { cls: "lbl", text: what === "quality" ? "Quality" : "Condition" }),
+          taps("comp" + n + "_" + what, "Comp " + n + " " + what, line[what])]));
+      });
+      return el("div", { cls: "comp" }, rows);
+    });
+  }
+  function questions() {           // asked after the run: a box or buttons under each question
+    return (D.questions || []).map(function (q) {
+      var name = "q_" + q.id;
+      if (q.kind === "choice") return el("div", { cls: "line wide" }, [el("span", { cls: "lbl", text: q.text }), taps(name, q.text, q.choices || [])]);
+      return text(name, q.text, { multi: true });
+    });
+  }
+  function changes(count) {
+    var rows = [];
+    for (var n = 0; n < count; n++) (function (n) {
+      var input = el("input", { type: "text", autocomplete: "off", "aria-label": "Change " + (n + 1) });
+      input.addEventListener("input", function () { state.changes[n] = input.value; changed(); });
+      controls["change" + (n + 1)] = { set: function () { var v = state.changes[n] || ""; if (input.value !== v) input.value = v; } };
+      rows.push(el("div", { cls: "line wide" }, [el("div", { cls: "id" }, [el("span", { cls: "n", text: String(n + 1) + "." }), input])]));
+    })(n);
+    return [el("div", { cls: "changes" }, rows)];
+  }
+  function blank(k) { var v = (D.prefill || {})[k]; return v == null || v === "" || v === false; }
+  function isOpen(line) {          // an "open" line shows only while their own data leaves it blank
+    if (!line.open) return true;
+    if (line.kind === "comps") return grid().some(function (n) { return unrated(n, "quality") || unrated(n, "condition"); });
+    if (line.kind === "checks") return line.items.every(function (it) { return blank(it[0]); });
+    return blank(line.key);
+  }
+  function render(line) {
+    var hp = D.house_prompts || {};
+    if (!isOpen(line)) return [];
+    switch (line.kind) {
+      case "check": return [check(line.key, line.label)];
+      case "text": return [text(line.key, line.label, { short: line.short, wide: line.wide })];
+      case "multi": return [text(line.key, line.label, { multi: true, talk: line.talk })];
+      case "choice": {
+        var opts = line.options === "comps" ? grid().map(String) : line.options;
+        return [choice(line.key, line.label, opts)];
+      }
+      case "prompt": return hp[line.prompt] ? [choice(line.key, line.label.replace("{}", hp[line.prompt]), line.options)] : [];
+      case "checks": return [checks(line.label, line.items)];
+      case "comps": return comps(line);
+      case "questions": return questions();
+      case "changes": return changes(line.count || NCHANGES);
+    }
+    return [];
+  }
+  function renderSections() {
+    var host = $("sections");
+    CHECKLIST.sections.forEach(function (sec) {
+      var nodes = [];
+      sec.lines.forEach(function (line) { render(line).forEach(function (n) { nodes.push(n); }); });
+      if (!nodes.length) return;       // their file settled the whole section
+      var card = el("section", { cls: "card" }, [el("h2", { text: sec.title }), sec.note ? el("p", { cls: "note", text: sec.note }) : null]);
+      if (sec.stage) { card.setAttribute("data-stage", sec.stage); card.hidden = true; }   // setStage shows it
+      nodes.forEach(function (n) { card.appendChild(n); });
+      host.appendChild(card);
+    });
+  }
+  function renderOrder() {
+    var box = $("order");
+    function fact(k, v) { if (v) box.appendChild(el("div", null, [el("b", { text: k + ": " }), v])); }
+    fact("Order", [O.code, O.order_id].filter(function (v, i, a) { return v && a.indexOf(v) === i; }).join(" · "));
+    fact("Property", O.property);
+    fact("Client", O.client);
+    fact("Due", O.due_date);
+    if (D.public_note) box.appendChild(el("div", { cls: "note", text: D.public_note }));
+  }
+  function paintAll() { Object.keys(controls).forEach(function (k) { controls[k].set(state.answers[k]); }); }
+
+  // ---------- status ----------
+  var statusBtns = [];
+  function renderStatus() {
+    document.querySelectorAll("[data-status]").forEach(function (bar) {
+      STATUSES.forEach(function (s) {
+        var b = el("button", { type: "button", cls: "st", "data-s": s, "aria-pressed": "false", text: LABEL[s] });
+        b.addEventListener("click", function () { setStatus(s); });
+        bar.appendChild(b); statusBtns.push(b);
+      });
+    });
+  }
+  function setStage(st) {
+    stage = STAGES[st] ? st : "open";
+    $("help").innerHTML = STAGES[stage].help;
+    document.querySelectorAll("[data-stage]").forEach(function (c) { c.hidden = c.getAttribute("data-stage") !== stage; });
+    paintStatus();
+  }
+  function paintStatus() {
+    statusBtns.forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-s") === state.status));
+      b.hidden = STAGES[stage].statuses.indexOf(b.getAttribute("data-s")) < 0;
+      b.disabled = readOnly;
+    });
+    var h = state.history.slice(-4).reverse().map(function (e) { return LABEL[e.status] + " " + when(e.at); });
+    $("history").textContent = h.length ? "History: " + h.join(" · ") : "";
+  }
+  function when(iso) {
+    var d = new Date(iso); if (isNaN(d)) return "";
+    return d.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  }
+  function banner(msg, kind) {
+    ["banner", "banner2"].forEach(function (id) {
+      var b = $(id); b.textContent = msg || ""; b.className = msg ? "banner " + (kind || "ok") : "";
+    });
+  }
+  function conn(msg) { $("conn").textContent = msg; }
+
+  // ---------- saving ----------
+  // TOTAL's preview pane preflights every cross-origin fetch, and Google never answers a preflight. So the page reads
+  // through a <script> tag (JSONP) and writes with no-cors posts it cannot read; a read then shows whether it saved.
+  function body(send) {
+    return { t: T, status: state.status, answers: state.answers, changes: state.changes, send: !!send };
+  }
+  function read() {
+    return new Promise(function (resolve, reject) {
+      var cb = "aap" + Date.now() + "_" + Math.floor(Math.random() * 1e6), s = document.createElement("script");
+      var t = setTimeout(function () { end(null); }, 20000);
+      function end(r) {
+        clearTimeout(t); s.remove();
+        if (r) delete window[cb]; else window[cb] = function () { delete window[cb]; };   // a late reply clears itself
+        if (r && r.ok) resolve(r); else reject({ code: r && r.error });
+      }
+      window[cb] = end;
+      s.onerror = function () { end(null); };
+      s.src = API + "?t=" + encodeURIComponent(T) + "&callback=" + cb;
+      document.head.appendChild(s);
+    });
+  }
+  function post(doc, keepalive) {
+    return fetch(API, { method: "POST", mode: "no-cors", keepalive: !!keepalive,
+                        headers: { "Content-Type": "text/plain;charset=utf-8" }, body: doc });
+  }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  // Saved means a read shows it: the stored updatedAt moved and, for a status tap, the stored status is the tap's.
+  function write(send) {
+    var at = edits, s = state.status, doc = JSON.stringify(body(send)), before;
+    function confirm(tries) {
+      return read().then(function (r) {
+        var v = r.saved;
+        if (v && v.updatedAt !== before && (!send || v.status === s)) return v;
+        if (send && r.form && (STAGES[r.form.stage] || STAGES.open).statuses.indexOf(s) < 0) {   // Code.gs refused the tap
+          setStage(r.form.stage);
+          throw { code: "stage", status: v ? v.status : "DRAFT" };
+        }
+        if (tries > 1) return wait(1500).then(function () { return confirm(tries - 1); });
+        throw {};
+      });
+    }
+    function once() { return post(doc).then(function () { return confirm(2); }); }
+    writing = writing.catch(function () {}).then(function () {
+      before = savedAt;
+      if (doc.length > MAX_BODY) throw { code: "too_large" };
+      return once().catch(function (e) {
+        if (e && e.code) throw e;
+        return wait(600 + Math.random() * 900).then(once);
+      });
+    }).then(function (v) {
+      savedEdits = Math.max(savedEdits, at); savedAt = v.updatedAt;
+      if (Array.isArray(v.history)) { state.history = v.history; paintStatus(); }
+      var n = v.notificationAt && v.notificationAt[s];   // set when this save reserved the email notice
+      return { notification: n && (!before || n > before) ? "sent" : "suppressed" };
+    }, function (e) { failed(e); throw e; });
+    return writing;
+  }
+  function failed(e) {
+    var code = e && e.code;
+    if (code === "unknown") {
+      setReadOnly("This link no longer works, so this didn't reach us. Reply to our email and we'll send a fresh one.");
+    } else if (code === "stage") {
+      state.status = e.status; paintStatus();
+      banner(STAGES[stage].refused, "warn");
+    } else if (code === "too_large") {
+      banner("That's more than the checklist can hold. Shorten the long box a little, or email us the rest.", "warn");
+    } else {
+      banner("We couldn't send that. Your answers are still here; try again in a minute.", "warn");
+    }
+    conn("Not saved");
+  }
+  function setReadOnly(msg) {
+    readOnly = true; $("form").disabled = true; paintStatus(); banner(msg, "warn"); conn("Read only");
+  }
+  function afterEdit() {
+    if (!online || readOnly) return;
+    if (state.status === "DRAFT") {           // drafts save on a pause in typing; sent forms wait for a status tap
+      conn("Saving…");
+      clearTimeout(timer);
+      timer = setTimeout(function () { write(false).then(function () { conn("Draft saved " + when(new Date().toISOString())); }, function () {}); }, 1500);
+    } else {
+      banner("You changed answers. Tap " + (stage === "open" ? "READY" : "NEEDS CHANGE or DONE") + " to save them.", "warn");
+    }
+  }
+  function setStatus(s) {
+    if (readOnly) return;
+    clearTimeout(timer);
+    state.status = s;
+    paintStatus();
+    if (connecting) { tapped = s; banner("Sending…", "ok"); return; }
+    if (!online) { banner("Not connected, so this didn't reach us. Your answers are still on this page.", "warn"); return; }
+    conn("Sending…");
+    write(true).then(function (r) {
+      conn("Saved " + when(new Date().toISOString()));
+      banner(s === "DRAFT" ? "Saved as a draft. Tap READY when you're done." :
+             r.notification === "suppressed" ? "Saved with A&AP. No new email notice was sent." : s === "DONE" ? THANKS : SENT, "ok");
+    }, function () {});
+  }
+
+  // ---------- talk ----------
+  function talkRow(ta) {
+    var ua = navigator.userAgent, phone = /iPhone|iPad|iPod|Android/i.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
+    var keyboard = phone ? "Tap the box, then the mic on your keyboard, and talk."
+      : /Windows/i.test(ua) ? "Click the box, press Windows key + H, and talk."
+      : /Mac/i.test(ua) ? "Click the box, press the Fn (globe) key twice, and talk."
+      : "Click the box and use your computer's dictation.";
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var hint = el("span", { cls: "talk-hint", text: keyboard });
+    var row = el("div", { cls: "talk-row" }, [hint]);
+    if (!SR) return row;
+    var mic = el("button", { type: "button", cls: "mic", "aria-label": "Start listening", "aria-pressed": "false" });
+    mic.innerHTML = '<svg viewBox="0 0 15 20" aria-hidden="true"><rect x="4" y="0.5" width="7" height="12" rx="3.5" fill="currentColor"/><path d="M1.5 9.5 a6 6 0 0 0 12 0" stroke="currentColor" stroke-width="1.6" fill="none"/><line x1="7.5" y1="15.5" x2="7.5" y2="19" stroke="currentColor" stroke-width="1.6"/></svg>';
+    row.insertBefore(mic, hint);
+    hint.textContent = "Tap the mic and talk, or: " + keyboard.charAt(0).toLowerCase() + keyboard.slice(1);
+    var rec = null, wanted = false, pending = "", android = /Android/i.test(ua);
+    function off(why) { wanted = false; mic.classList.remove("on"); mic.setAttribute("aria-pressed", "false"); if (why) hint.textContent = why; }
+    function append(w) {
+      w = (w || "").trim(); if (!w) return;
+      var v = ta.value, sep = (!v || /\s$/.test(v)) ? "" : " ";
+      if (!v || /[.!?]\s*$/.test(v)) w = w.charAt(0).toUpperCase() + w.slice(1);
+      ta.value = v + sep + w; grow(ta);
+      state.answers[ta.id.slice(2)] = ta.value; changed();
+    }
+    function start() {
+      rec = new SR(); rec.lang = "en-US"; rec.interimResults = true; rec.continuous = !android;
+      rec.onstart = function () { hint.textContent = "Listening… tap the mic to stop"; mic.classList.add("on"); mic.setAttribute("aria-pressed", "true"); };
+      rec.onresult = function (ev) {
+        var t = "";
+        for (var i = ev.resultIndex; i < ev.results.length; i++) { var r = ev.results[i]; if (r.isFinal) append(r[0].transcript); else t += r[0].transcript; }
+        pending = t;
+      };
+      rec.onerror = function (ev) {
+        if (ev.error === "not-allowed" || ev.error === "service-not-allowed") off("The mic is blocked here. " + keyboard);
+        else if (ev.error === "audio-capture") off("No microphone found. " + keyboard);
+        else if (ev.error === "network") off("Speech needs a connection. " + keyboard);
+      };
+      rec.onend = function () {
+        if (pending) { append(pending); pending = ""; }
+        if (wanted) { try { start(); return; } catch (e) { wanted = false; } }
+        if (mic.classList.contains("on")) off("Stopped. Tap the mic to talk more.");
+      };
+      rec.start();
+    }
+    mic.addEventListener("click", function () {
+      if (wanted) { wanted = false; try { rec && rec.stop(); } catch (e) {} return; }
+      wanted = true;
+      try { start(); } catch (e) { off("The mic is blocked here. " + keyboard); }
+    });
+    return row;
+  }
+
+  // ---------- load ----------
+  function apply(saved) {
+    savedAt = saved.updatedAt || null;
+    state.status = saved.status || state.status;
+    state.history = Array.isArray(saved.history) ? saved.history.slice() : [];
+    if (edits === savedEdits) {      // saved answers win over the prefill; never over unsent typing
+      if (saved.answers && typeof saved.answers === "object") state.answers = Object.assign({}, D.prefill || {}, saved.answers);
+      if (Array.isArray(saved.changes)) { state.changes = saved.changes.slice(0, NCHANGES); while (state.changes.length < NCHANGES) state.changes.push(""); }
+      paintAll();
+    }
+    paintStatus();
+    if (state.status !== "DRAFT") banner(state.status === "DONE" ? THANKS : SENT, "ok");
+  }
+  function gate(msg) { $("gate-msg").textContent = msg; }
+  function boot(form, saved) {
+    D = form || {}; O = D.order || {};
+    state = { status: D.status || "DRAFT", answers: Object.assign({}, D.prefill || {}), changes: (D.changes || []).slice(), history: [] };
+    while (state.changes.length < NCHANGES) state.changes.push("");
+    renderOrder();
+    renderSections();
+    renderStatus();
+    paintAll();
+    setStage(D.stage);
+    if (saved) apply(saved);
+    $("gate").hidden = true; $("main").hidden = false;
+    document.querySelectorAll("textarea").forEach(grow);
+  }
+  // A draft still waiting on its pause in typing goes out when the page is closed or put away.
+  function flush() {
+    if (!online || readOnly || state.status !== "DRAFT" || edits === savedEdits || !timer) return;
+    clearTimeout(timer); timer = null;
+    try { post(JSON.stringify(body(false)), true).catch(function () {}); } catch (e) {}
+  }
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flush(); });
+  window.addEventListener("pagehide", flush);
+
+  // ---------- go ----------
+  if (INLINE) {                       // a one-file copy (a report's Workfile): shows at once, then syncs when it can
+    boot(INLINE.form, null);
+    if (!T || !API) { conn("Not connected"); return; }
+    connecting = true; conn("Connecting…");
+    read().then(function (r) {
+      connecting = false; online = true; conn("Connected"); if (r.form) setStage(r.form.stage); if (r.saved) apply(r.saved);
+      if (tapped) { setStatus(tapped); banner("Sending…", "ok"); } else if (edits !== savedEdits) afterEdit();   // typing before it connected
+    }, function (e) {
+      connecting = false; conn("Not connected");
+      if (tapped) setStatus(tapped);   // shows the tap as chosen with the not-connected line
+      if (e && e.code === "unknown") setReadOnly("This copy's link no longer works. Reply to our email and we'll send a fresh one.");
+    });
+    return;
+  }
+  if (!T) { gate("This page needs the link from our email. Open the checklist from that link."); return; }
+  if (!API) { gate("The checklist isn't connected yet. Reply to our email and we'll sort it out."); return; }
+  read().then(function (r) { online = true; conn("Connected"); boot(r.form, r.saved); }, function (e) {
+    gate(e && e.code === "unknown" ? "This link isn't working. Reply to our email and we'll send a fresh one."
+                                   : "We couldn't open your checklist just now. Check your connection and try again.");
+  });
+})();
+</script>
+</body>
+</html>
