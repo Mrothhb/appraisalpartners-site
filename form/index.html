@@ -653,6 +653,22 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flush(); });
   window.addEventListener("pagehide", flush);
 
+  // While open, look for the desk's changes every 30 seconds (Matt 2026-10-11: "it seems to lag"): new questions or
+  // answers, the stage, or a status the desk set (back to DRAFT). Never while he has unsaved typing or a tap in flight.
+  function poll() {
+    if (document.visibilityState !== "visible" || readOnly || !online || connecting || tapped || edits !== savedEdits || timer) return;
+    read().then(function (r) {
+      if (edits !== savedEdits) return;
+      if (r.form && newer(r.form)) refresh(r.form);
+      if (r.form && (r.form.stage || "open") !== stage) { D.stage = r.form.stage; setStage(r.form.stage); }
+      if (r.saved && r.saved.status !== state.status) {
+        var was = state.status; apply(r.saved);
+        if (was === "READY" && r.saved.status === "DRAFT") banner("Back to DRAFT: something is still needed. Check our email, then tap READY again.", "warn");
+      }
+    }, function () {});
+  }
+  setInterval(poll, 30000);
+
   // ---------- go ----------
   if (INLINE) {                       // a one-file copy (a report's Workfile): shows at once, then syncs when it can
     boot(INLINE.form, null);
