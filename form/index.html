@@ -11,7 +11,7 @@
      A Workfile copy redraws from the backend's data when questions or the note changed since it was made.
      Once post-run questions exist the START sections hide: the form then shows only what is left to answer.
      Under the buttons: "By tapping READY you agree to the ... Terms for this order" (Matt 2026-10-11: READY is the
-     agreement). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
+     agreement). house_prompts.lane "review" is a partner reviewer's form (review help, no value line). house_prompts.lane "desk" (partial and full desk) is the minimal form: DRAFT and READY, no checklist. READY needs the tapper's initials (answers.ready_by), since a shared link cannot say who tapped. house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
@@ -59,6 +59,7 @@ header svg { width: 64px; height: 37.6px; flex: none; }
 .status-help { font-size: 14px; color: var(--muted); margin: 8px 0 0; }
 .terms-line { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
 .terms-line a { color: var(--navy); }
+.initials { font: inherit; width: 5.5em; padding: 4px 8px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--field); text-transform: uppercase; }
 .banner { margin: 10px 0 0; padding: 10px 12px; border-radius: 8px; font-weight: 600; }
 .banner.ok { background: var(--ok-bg); color: var(--ok-ink); }
 .banner.warn { background: var(--warn-bg); color: var(--warn-ink); }
@@ -141,6 +142,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
     <p class="status-label" id="st-top">STATUS</p>
     <div class="status" data-status></div>
     <p class="terms-line" data-terms></p>
+    <p class="terms-line" data-initials hidden><label for="initials">Your initials</label> <input id="initials" class="initials" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false"> <span>so we know who tapped READY</span></p>
     <p class="status-help" id="help"></p>
     <div id="banner" aria-live="polite"></div>
     <div class="history" id="history"></div>
@@ -353,6 +355,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function render(line) {
     var hp = D.house_prompts || {};
     if (!isOpen(line)) return [];
+    // Matt 2026-10-12: partial and full desk (house_prompts.lane "desk") get the minimal form: DRAFT and READY only,
+    // plus any prompt the desk adds for the order, post-run questions and, once the report is back, changes.
+    if (hp.lane === "desk" && ["prompt", "questions", "changes"].indexOf(line.kind) < 0) return [];
     switch (line.kind) {
       case "check": {                  // a per-lane line (terms): label and link picked by the order's house_prompts.lane
         var lane = hp.lane === "self-service" ? "self-service" : "default";
@@ -404,6 +409,10 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // ---------- status ----------
   var statusBtns = [];
   function renderStatus() {
+    // Matt 2026-10-12 (Astra, Sol): a shared link cannot say who tapped, so READY carries the tapper's initials (answers.ready_by).
+    var ini = $("initials");
+    ini.addEventListener("input", function () { state.answers.ready_by = ini.value.trim().toUpperCase(); changed(); });
+    controls.ready_by = { set: function (v) { var w = v == null ? "" : String(v); if (ini.value !== w) ini.value = w; } };
     document.querySelectorAll("[data-status]").forEach(function (bar) {
       STATUSES.forEach(function (s) {
         var b = el("button", { type: "button", cls: "st", "data-s": s, "aria-pressed": "false", text: LABEL[s] });
@@ -415,12 +424,22 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function setStage(st) {
     stage = STAGES[st] ? st : "open";
     var built0 = (D.questions || []).length > 0 && stage === "open";
-    $("help").innerHTML = built0 ? "Your report is built. Answer the questions below, then tap <b>READY</b>; we finish it and put it back in your folder." : STAGES[stage].help;
+    // Matt 2026-10-12: a partner reviewer's form (house_prompts.lane "review") reviews; the appraiser signs and the value is his.
+    var review = (D.house_prompts || {}).lane === "review";
+    var desk = (D.house_prompts || {}).lane === "desk";
+    $("help").innerHTML = review ? "Review the report in TOTAL. For a change or a question, write it below and tap <b>NEEDS CHANGE</b>; our answer shows at the top of this form. When it's ready for the appraiser, tap <b>DONE</b>. Please don't sign it." :
+      built0 ? "Your report is built. Answer the questions below, then tap <b>READY</b>; we finish it and put it back in your folder." :
+      desk && stage === "open" ? "When your inspection is done and your photos, sketch and files are in the Workfile: save the report, tap <b>READY</b>, then close it. We check your files and email you when production starts." : STAGES[stage].help;
+    document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = review || desk; });
     // After the run the questions are all that is left to answer: the START sections (already answered) step aside.
     var built = (D.questions || []).length > 0;
     document.querySelectorAll("[data-stage]").forEach(function (c) { var st = c.getAttribute("data-stage"); c.hidden = st !== stage || (st === "open" && built); });
+    // A form with nothing between the two status blocks (the minimal desk form) shows the top one only.
+    var shown = Array.prototype.some.call($("sections").children, function (c) { return !c.hidden; });
+    document.querySelectorAll('[aria-labelledby="st-bottom"]').forEach(function (b) { b.hidden = !shown; });
     // Matt 2026-10-11: tapping READY is the agreement to this order's terms; the lane picks which terms.
     var selfServ = (D.house_prompts || {}).lane === "self-service";
+    document.querySelectorAll("[data-initials]").forEach(function (p) { p.hidden = stage !== "open"; });
     document.querySelectorAll("[data-terms]").forEach(function (p) {
       p.textContent = ""; p.hidden = stage !== "open";
       if (stage !== "open") return;
@@ -546,6 +565,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function setStatus(s) {
     if (readOnly) return;
+    if (s === "READY" && !String(state.answers.ready_by || "").trim()) {
+      banner("Add your initials by the READY button, then tap READY again.", "warn"); $("initials").focus(); return;
+    }
     clearTimeout(timer);
     state.status = s;
     paintStatus();
