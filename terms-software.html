@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Plain-language terms for A&amp;AP self-service: report-preparation software for the appraiser who makes every appraisal decision himself. Accepted by tapping READY on the order's form.">
+<link rel="canonical" href="https://appraisalpartners.net/terms-software.html">
+<meta property="og:title" content="A&amp;AP Software Terms">
+<meta property="og:description" content="Self-service lane: software prepares the report from the appraiser's own answers. No appraisal review or advice. Accepted by tapping READY.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://appraisalpartners.net/terms-software.html">
+<meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="/assets/aap-favicon.png">
+<link rel="apple-touch-icon" href="/assets/aap-apple-touch-icon.png">
+<title>A&amp;AP Software Terms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+  :root {
+    --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
+    --rule: #D9DED9; --rule-strong: #889089; --accent: #2E5D46; --accent-deep: #24493A;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6;
+  }
+  * { box-sizing: border-box; }
+  main:focus { outline: none; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
+    font-size: 16.5px; line-height: 1.65; margin: 0; padding: 0 24px;
+  }
+  .sheet { max-width: 680px; margin: 0 auto; padding: 44px 0 64px; }
+  .letterhead {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 16px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 14px;
+  }
+  .letterhead .name {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-weight: 500; font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink); text-decoration: none;
+  }
+  .letterhead .cred, .nav {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+  }
+  .nav { width: 100%; display: flex; flex-wrap: wrap; gap: 9px 20px; padding-top: 2px; }
+  .nav a { color: var(--muted); }
+  .nav a, footer a { text-decoration-thickness: 0.5px; text-underline-offset: 2px; }
+  h1 { font-size: clamp(28px, 5vw, 38px); font-weight: 700; line-height: 1.25; margin: 40px 0 8px; }
+  .vers { font-family: "IBM Plex Mono", "Courier New", monospace; color: var(--muted); font-size: 12px; }
+  p { margin: 0 0 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover, a:focus-visible { text-decoration-color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .stamp { border: 1.5px solid var(--accent); padding: 14px 18px; margin: 26px 0; }
+  .stamp p { margin: 0; }
+  .terms-steps { margin: 0 0 18px; padding-left: 26px; }
+  .terms-steps li { margin: 0 0 6px; padding-left: 4px; }
+  .stamp strong { color: var(--accent); }
+  footer {
+    border-top: 2px solid var(--ink); margin-top: 44px; padding-top: 14px;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+  footer .postal-address { flex-basis: 100%; font-style: normal; }
+  .skip {
+    position: absolute; left: -9999px; top: 0;
+    background: var(--accent); color: var(--paper); padding: 10px 16px;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; z-index: 10;
+  }
+  .skip:focus { left: 8px; top: 8px; }
+  @media (max-width: 600px) { .sheet { padding-top: 28px; } .nav { gap: 5px 14px; } }
+
+  /* A&AP mark: AP monogram, A&AP left-aligned under it (as on the self-service form header). */
+  header.letterhead { align-items: flex-end; }
+  .letterhead .name.brandmark {
+    display: inline-flex; flex-direction: column; align-items: flex-start; gap: 5px;
+    color: #0C2A46; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 17px; font-weight: 700; letter-spacing: 0.02em; line-height: 1;
+    text-decoration: none; text-transform: none;
+  }
+  .letterhead .brandmark .mark { display: block; width: 60px; height: auto; }
+  .letterhead .brandmark .mark-light { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .letterhead .name.brandmark { color: var(--ink); }
+    :root:not([data-theme="light"]) .letterhead .brandmark .mark { display: none; }
+    :root:not([data-theme="light"]) .letterhead .brandmark .mark-light { display: block; }
+  }
+  :root[data-theme="dark"] .letterhead .name.brandmark { color: var(--ink); }
+  :root[data-theme="dark"] .letterhead .brandmark .mark { display: none; }
+  :root[data-theme="dark"] .letterhead .brandmark .mark-light { display: block; }
+</style>
+<!-- Privacy-friendly analytics by Plausible -->
+<script async src="https://plausible.io/js/pa-pNkpzZuFyeVpLVvH7hc8w.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+  // Phone and email contacts were invisible in analytics: nothing fired on tel:, sms: or mailto:.
+  document.addEventListener("click", function (event) {
+    var link = event.target.closest && event.target.closest('a[href^="tel:"], a[href^="sms:"], a[href^="mailto:"]');
+    if (!link) return;
+    var href = link.getAttribute("href") || "";
+    var name = href.indexOf("tel:") === 0 ? "Call Click"
+             : href.indexOf("sms:") === 0 ? "Text Click"
+             : "Email Click";
+    plausible(name, { props: { page: location.pathname } });
+  }, true);
+</script>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+<div class="sheet">
+  <header class="letterhead">
+    <a class="name brandmark" href="index.html" aria-label="A&amp;AP home"><img class="mark" src="assets/aap-mark.svg" alt="" width="60" height="35"><img class="mark mark-light" src="assets/aap-mark-light.svg" alt="" width="60" height="35"><span class="wordmark">A&amp;AP</span></a>
+    <span class="cred">Standard terms for the self-service lane</span>
+    <nav class="nav" aria-label="Primary">
+      <a href="uad36.html">UAD 3.6</a>
+      <a href="convert.html">Convert</a>
+      <a href="how-it-works.html">How it works</a>
+      <a href="how-it-works.html#pricing">Pricing</a>
+      <a href="technology.html">Behind the desk</a>
+      <a href="portrait.html">The portrait</a>
+      <a href="story.html">Four appraisers</a>
+      <a href="about.html">About us</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html">Contact</a>
+      <a href="start.html">Start with one report</a>
+    </nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+
+  <h1>A&amp;AP Software Terms</h1>
+
+  <p class="vers"><strong>Version dated October 11, 2026. Accepted by tapping READY on an order's form. No signature page.</strong></p>
+
+  <p><strong>This is software.</strong> You inspect, pick the comparables, and make every appraisal decision on the order's form and in TOTAL. The software assembles the report from your answers, your files, and public records, and puts it back in your folder for you to review and sign. Nobody here appraises, reviews, or advises on your report.</p>
+
+  <p>In these terms, "we" and "A&amp;AP" mean M ROTH SOFTWARE CONSULTING LLC (A&amp;AP). If you want an appraiser in the reviewer seat instead, that is the separate <a href="terms.html">A&amp;AP Service Terms</a>, run by Appraisal Partners of Texas, Inc.</p>
+
+  <h2>Agree by tapping READY</h2>
+
+  <p>Every order has its own form. Under its READY button the form says:</p>
+
+  <div class="stamp"><p><strong>By tapping READY you agree to the A&amp;AP Software Terms for this order.</strong></p></div>
+
+  <p>That tap is the entire agreement step for the order. There is no terms email, PDF, or signing service. By tapping READY you also confirm, for that order: your client's terms allow software preparation of the report and the file sharing it takes; you hold a current appraiser credential in the property's state; and the property and its market are within your competence.</p>
+
+  <h2>1. What the software does, and what it never does</h2>
+
+  <p>The software fills the facts and the arithmetic: property data, market data, exhibits, your comparables, your adjustments applied to your numbers, and draft text built from your inspection and your sources. It never writes a rating, a rate, a weight, a site value, a rent, or a value, and it never pre-picks an answer for you. A blank stays blank and comes back to you as a question. Your value is entered exactly as you give it.</p>
+
+  <p>You are the appraiser of record. You inspect, decide, review every page, sign, and deliver. What the software assembles is information for you to evaluate, not an opinion. A&amp;AP and Matthew Roth do not develop or review the appraisal, do not advise on value or any appraisal call, are not named anywhere in your report, and never contact your client. A&amp;AP is not an appraiser and not an appraisal management company. FHA, VA, and USDA orders are not accepted in this lane.</p>
+
+  <h2>2. Support</h2>
+
+  <p>Support covers the software: how to use the form, your files and data, errors, and anything the build got wrong against your files or answers. Those corrections are free and take priority.</p>
+
+  <p>A question about the report is answered by what the report says and where each number came from, never by what it should say. If you want an appraiser to review the report or weigh in on a call, that is a different service: the order moves to a reviewed lane at that lane's price, where the law of the property's state allows it. We do not do that review inside a self-service order, on a call or otherwise.</p>
+
+  <h2>3. Your files, our providers, and confidentiality</h2>
+
+  <p>Your report and workfile are yours. When the report comes back, its Workfile holds the support bundle (sources, market data, tables, photos, records) and a dated copy of your form answers at every READY, NEEDS CHANGE, and DONE. We keep our own copy of the run record and form data for five years from the report date and give it to you on request within five business days, including after you stop using the service.</p>
+
+  <p>Here is the setup, so you know it before your first order:</p>
+
+  <ul class="terms-steps">
+    <li><strong>Where the files live.</strong> Your order folder is in Google Drive under our Google Workspace business account. The report itself is a TOTAL file from a la mode, the software your report already runs in.</li>
+    <li><strong>Who processes them.</strong> Two AI providers receive the order's documents to build the draft: Anthropic (Claude) and OpenAI (Codex). Both run on paid subscription accounts under the providers' standard commercial terms, not on a negotiated data agreement.</li>
+    <li><strong>Data use.</strong> We keep each provider's setting that would let it train on our sessions turned off. Nothing from your order is used to train a model, build a product, or serve another customer. Access is per order, and only the order's documents are processed. We never ask for or keep borrower personal information beyond the report's own fields.</li>
+    <li><strong>Changes.</strong> We tell you in writing before materially changing this setup.</li>
+  </ul>
+
+  <p>We use your order's information only to build the report, support you, and keep required records. We protect it with reasonable safeguards and do not sell it, solicit your client, or share it without permission. We report any known unauthorized access affecting your information to you the same day. Our nonpublic software and process remain ours.</p>
+
+  <h2>4. Price, changes, and revisions</h2>
+
+  <p>The price is per order, as quoted when the order is confirmed, and does not change. Delivered work is invoiced monthly and due within 15 days. There is no subscription, minimum, or long-term commitment. You may cancel before you tap READY at no charge.</p>
+
+  <p>Changes and revisions go through the form: tap NEEDS CHANGE and say what to change. Corrections to what the software filled are free. New scope from your client, such as more comparables or a changed assignment, is quoted before it begins.</p>
+
+  <h2>5. Responsibility, liability, and disputes</h2>
+
+  <p>A&amp;AP is responsible for the software filling the report correctly from your files and answers. You remain responsible for the inspection, the analysis and conclusions, the review of every page, the certification, the signature, delivery, and your professional obligations to your client and regulator. We do not guarantee that any lender, client, or review system accepts the report.</p>
+
+  <p>A&amp;AP's total liability for an order is limited to three times that order's price. Neither side is liable to the other for consequential, incidental, or punitive damages or lost profits.</p>
+
+  <p>Texas law governs. We first try to resolve any disagreement directly. An unresolved dispute goes to binding arbitration in Collin County, Texas, with small claims court available where applicable. If one provision cannot be enforced, the rest remain effective. These terms, the order's quoted price, and the order's form with its READY record are the entire agreement for that order. A later version applies only to orders whose form links it.</p>
+
+  </main>
+
+  <footer>
+    <span>M ROTH SOFTWARE CONSULTING LLC (A&amp;AP)</span>
+    <span><a href="index.html">A&amp;AP</a> / Self-service</span>
+    <span><a href="start.html">Start with one report</a></span>
+    <span>mrr@appraisalpartners.net</span>
+    <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
+  </footer>
+</div>
+</body>
+</html>

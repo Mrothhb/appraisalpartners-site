@@ -364,14 +364,14 @@
 
     <button class="btn" id="submit-intake" type="submit" disabled>Submit free tryout request</button>
     <div class="form-result" id="intake-result" role="status" aria-live="polite" hidden></div>
-    <p class="fineprint">This submits a fit and setup request only. After the standing terms are accepted, forward the client order email to Matt. He will create the restricted AP-numbered folder for the remaining files. Production starts only after written acceptance. One free tryout per appraiser or firm, subject to scope &amp; capacity. Prefer email? <a id="email-fallback" href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a>.</p>
+    <p class="fineprint">This submits a fit and setup request only. Then forward the client order email to Matt. He will create the restricted AP-numbered folder for the remaining files. Production starts only after you tap READY on the order&rsquo;s form, which accepts the terms for that order. One free tryout per appraiser or firm, subject to scope &amp; capacity. Prefer email? <a id="email-fallback" href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a>.</p>
   </form>
 
   <section id="next">
     <h2>After you submit</h2>
     <ol class="steps">
-      <li><span class="n">1.</span><span><strong>Matt reviews the fit request.</strong> If it may work, he emails the short service terms. The website does not send an automatic confirmation.</span></li>
-      <li><span class="n">2.</span><span><strong>You accept the terms once by email.</strong> For live work, then forward the new client order email. For a tryout, Matt sends the closed-report instructions.</span></li>
+      <li><span class="n">1.</span><span><strong>Matt reviews the fit request.</strong> If it may work, he replies with the next step. The website does not send an automatic confirmation.</span></li>
+      <li><span class="n">2.</span><span><strong>Each order comes with a short form.</strong> Tapping READY on it accepts the terms for that order. For live work, forward the new client order email. For a tryout, Matt sends the closed-report instructions.</span></li>
       <li><span class="n">3.</span><span><strong>Matt replies with both rates and the return time.</strong> Say it works and which one. That reply is the go-ahead; the folder link follows.</span></li>
       <li><span class="n">4.</span><span><strong>Add the files after the inspection.</strong> The finished unsigned report lands back in the same folder. The qualifying tryout is $0.</span></li>
     </ol>
@@ -535,7 +535,7 @@
       showTextUpdateFields();
       submitButton.textContent = 'Request received';
       submitButton.disabled = true;
-      showResult('success', '<p><strong>Your request was received.</strong></p><p>Matt will review it and email the next step from mrr@appraisalpartners.net. The website does not send an automatic confirmation. If you are new, accept the service terms first. For live work, then forward the client order email; Matt will create the AP-numbered folder for the remaining files.</p>');
+      showResult('success', '<p><strong>Your request was received.</strong></p><p>Matt will review it and email the next step from mrr@appraisalpartners.net. The website does not send an automatic confirmation. For live work, forward the client order email; Matt will create the AP-numbered folder for the remaining files.</p>');
     } else {
       useEmailFallback('The secure form could not confirm your request.');
     }
