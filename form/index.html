@@ -11,7 +11,7 @@
      A Workfile copy redraws from the backend's data when questions or the note changed since it was made.
      Once post-run questions exist the START sections hide: the form then shows only what is left to answer.
      Under the buttons: "By tapping READY you agree to the ... Terms for this order" (Matt 2026-10-11: READY is the
-     agreement). house_prompts.lane "review" is a partner reviewer's form (review help, no value line). house_prompts.lane "desk" (partial and full desk) is the minimal form: DRAFT and READY, no checklist. READY needs the tapper's initials (answers.ready_by), since a shared link cannot say who tapped, except on the desk lane's short form (Matt 2026-10-12). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
+     agreement). house_prompts.lane "review" is a partner reviewer's form (review help, no value line). house_prompts.lane "desk" (partial and full desk) is the minimal form: DRAFT and READY, no checklist; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. READY needs the tapper's initials (answers.ready_by), since a shared link cannot say who tapped, except on the desk and regression lanes' short forms (Matt 2026-10-12). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
@@ -486,7 +486,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (!isOpen(line)) return [];
     // Matt 2026-10-12: partial and full desk (house_prompts.lane "desk") get the minimal form: DRAFT and READY only,
     // plus any prompt the desk adds for the order, post-run questions and, once the report is back, changes.
-    if (hp.lane === "desk" && ["prompt", "questions", "changes"].indexOf(line.kind) < 0) return [];
+    if ((hp.lane === "desk" || hp.lane === "regression") && ["prompt", "questions", "changes"].indexOf(line.kind) < 0) return [];
     switch (line.kind) {
       case "check": {                  // a per-lane line (terms): label and link picked by the order's house_prompts.lane
         var lane = hp.lane === "self-service" ? "self-service" : "default";
@@ -518,7 +518,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       var nodes = [];
       sec.lines.forEach(function (line) { render(line).forEach(function (n) { nodes.push(n); }); });
       if (!nodes.length) return;       // their file settled the whole section
-      var card = el("section", { cls: "card" }, [el("h2", { text: sec.title }), sec.note ? el("p", { cls: "note", text: sec.note }) : null]);
+      var factors = (D.house_prompts || {}).lane === "regression" && sec.lines.some(function (line) { return line.kind === "questions"; });
+      var card = el("section", { cls: "card" }, [el("h2", { text: factors ? "Factors to test" : sec.title }),
+        factors ? el("p", { cls: "note", text: "Pick Yes or No for each factor. Anything else is a note for the team; it does not filter the sales." }) : sec.note ? el("p", { cls: "note", text: sec.note }) : null]);
       if (sec.stage) { card.setAttribute("data-stage", sec.stage); card.hidden = true; }   // setStage shows it
       nodes.forEach(function (n) { card.appendChild(n); });
       host.appendChild(card);
@@ -555,8 +557,10 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var built0 = (D.questions || []).length > 0 && stage === "open";
     // Matt 2026-10-12: a partner reviewer's form (house_prompts.lane "review") reviews; the appraiser signs and the value is his.
     var review = (D.house_prompts || {}).lane === "review";
-    var desk = (D.house_prompts || {}).lane === "desk";
+    var regression = (D.house_prompts || {}).lane === "regression";    // a regression form shows like the desk lane
+    var desk = (D.house_prompts || {}).lane === "desk" || regression;
     $("help").innerHTML = review ? "Review the report in TOTAL. For a change or a question, write it below and tap <b>NEEDS CHANGE</b>; our answer shows at the top of this form. When it's ready for the appraiser, tap <b>DONE</b>. Please don't sign it." :
+      regression ? "Save the report, pick the factors, then tap <b>READY</b>. We run a regression on the MLS export in this report's Workfile, post the results at the top of this form and email them to you. The factors are information; you decide what to use." :
       built0 ? "Your report is built. Answer the questions below, then tap <b>READY</b>; we finish it and put it back in your folder." :
       desk && stage === "open" ? "When your inspection is done and your photos, sketch and files are in the Workfile: save the report, tap <b>READY</b>, then close it. We check your files and email you when production starts." : STAGES[stage].help;
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = review || desk; });
@@ -694,7 +698,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function setStatus(s) {
     if (readOnly) return;
-    if (s === "READY" && (D.house_prompts || {}).lane !== "desk" && !String(state.answers.ready_by || "").trim()) {
+    if (s === "READY" && ["desk", "regression"].indexOf((D.house_prompts || {}).lane) < 0 && !String(state.answers.ready_by || "").trim()) {
       banner("Add your initials by the READY button, then tap READY again.", "warn"); $("initials").focus(); return;
     }
     clearTimeout(timer);
