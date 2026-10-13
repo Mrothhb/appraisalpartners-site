@@ -22,7 +22,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-13.8">
+<html lang="en" data-build="v2026-10-13.9">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -629,6 +629,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     fact("Property", O.property);
     fact("Client", O.client);
     fact("Due", O.due_date);
+    fact("Price", O.price);          // optional (Matt 2026-10-13): our price as the desk writes it
+    fact("Ready by", O.ready_by);    // optional: a day, never a clock time
     if (D.public_note && D.note_kind !== "not_ready") box.appendChild(rich(D.public_note, "note"));
   }
   function rich(text, cls) {       // a desk note as he should read it: bullets, paragraphs, a bold lead-in
@@ -707,7 +709,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     document.querySelectorAll("[data-terms]").forEach(function (p) {
       p.textContent = ""; p.hidden = stage !== "open" || built;
       if (p.hidden) return;
-      p.appendChild(document.createTextNode("By tapping Ready you agree to our "));
+      p.appendChild(document.createTextNode(O.price ? "By tapping Ready you agree to the price above and our " : "By tapping Ready you agree to our "));
       p.appendChild(el("a", { href: selfServ ? "https://appraisalpartners.net/terms-software.html" : "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener", text: "terms" }));
       p.appendChild(document.createTextNode("."));
     });
