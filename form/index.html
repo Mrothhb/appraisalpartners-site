@@ -18,11 +18,11 @@
      post-run question marked "required" (true, or a list of lanes) blocks READY, and DONE once the report is back (never
      NEEDS CHANGE): Ready reads "Ready · 2 left" until they are in, and a tap marks the blank ones in red.
      Under the buttons: "By tapping READY you agree to the ... Terms for this order" (Matt 2026-10-11: READY is the
-     agreement). house_prompts.lane "review" is a partner reviewer's form (review help, no value line). house_prompts.lane "desk" (partial and full desk) is the minimal form: READY only, no checklist; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. READY needs the tapper's initials (answers.ready_by), since a shared link cannot say who tapped, except on the desk and regression lanes' short forms (Matt 2026-10-12). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
+     agreement). house_prompts.lane "review" is a partner reviewer's form (review help, no value line). house_prompts.lane "desk" (partial and full desk) is the minimal form: READY only, no checklist; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. No initials on any lane (Matt 2026-10-13). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-13.7">
+<html lang="en" data-build="v2026-10-13.8">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -152,17 +152,22 @@ header .conn { color: rgba(255, 255, 255, .78); }
 .st:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .st:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
 @media (max-width: 500px) { .status { grid-template-columns: minmax(0, 1fr); } }
-.status.one { grid-template-columns: minmax(0, 300px); }
-@media (max-width: 500px) { .status.one { grid-template-columns: minmax(0, 1fr); } }
+.status.one { grid-template-columns: minmax(0, 1fr); }   /* Ready alone: the card's full width, as Approve and Request */
 .st.wait, .st.wait:hover { background: #a9bfd6; border-color: #a9bfd6; color: #fff; cursor: default; }
 .line.need { box-shadow: inset 3px 0 0 var(--danger); padding-left: var(--s-3); } .line.need .lbl { color: var(--danger); }   /* a phone: one under the other, full width */
 .status-help { font-size: var(--fs-14); color: var(--ink-2); line-height: var(--lh); margin: var(--s-3) 0 var(--s-4); }
 .status-help b { color: var(--ink); font-weight: 600; }
 .saved { font-size: var(--fs-13); color: var(--ink-2); }
+/* A and B (Matt 2026-10-13: "crammed"): one even 16 px gap between the status row, the hint, Ready, the terms line and
+   any message, each the card's full width. */
+.statusbox:not(.agree) { display: flex; flex-direction: column; gap: var(--s-4); }
+.statusbox:not(.agree) > * { margin: 0; }
+.now-row { display: flex; align-items: center; gap: var(--s-2); }
+#banner:empty { display: none; }
 .status-now { display: inline-block; margin: 0; padding: var(--s-1) var(--s-3); border-radius: var(--r-2); background: var(--tint); font-size: var(--fs-14); line-height: var(--lh); color: var(--ink); }
 /* The review view (Matt 2026-10-13: "just show the value we have, and they can click a green checkmark"): our value, a green
    Agree that is his DONE, Needs change beside it, one small line; no heading or help. */
-.agree #now, .agree #help { display: none; }
+.agree .now-row, .agree #help { display: none; }
 .agree-value { margin: 0 0 var(--s-4); color: var(--ink); }
 .agree-value span { display: block; margin: 0 0 var(--s-1); font-size: var(--fs-12); font-weight: 600; letter-spacing: .06em; color: var(--ink-2); line-height: 1.3; }
 .agree-value b { display: block; font-size: 28px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
@@ -176,15 +181,12 @@ header .conn { color: rgba(255, 255, 255, .78); }
 .agree .st[data-s="DONE"], .agree .st[data-s="DONE"][aria-pressed="true"] { background: var(--success); border-color: var(--success); color: #fff; }
 .agree .st[data-s="DONE"]:hover { background: var(--success); border-color: var(--success); box-shadow: inset 0 0 0 100px rgba(0, 0, 0, .08); }
 .terms-line { font-size: var(--fs-13); color: var(--ink-2); line-height: var(--lh); margin: var(--s-3) 0 0; }
-.terms-line[data-initials] { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-2); margin-top: var(--s-3); }
-.terms-line label { color: var(--ink); font-weight: 600; font-size: var(--fs-14); }
 .terms-line a { color: var(--ink-2); text-decoration: underline; } .terms-line a:hover { color: var(--ink); }
 
 /* ---------- fields: one look for every box ---------- */
-.initials, .line input[type="text"], .line textarea { font: inherit; font-size: var(--fs-16); line-height: 1.4; color: var(--ink); background: var(--field); border: 1px solid var(--edge); border-radius: var(--r-1); transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background-color var(--dur) var(--ease); }
-.initials:hover, .line input[type="text"]:hover, .line textarea:hover { border-color: var(--ink-2); }
-.initials:focus, .line input[type="text"]:focus, .line textarea:focus { border-color: var(--primary); outline: 0; box-shadow: 0 0 0 3px var(--focus-ring); }
-.initials { width: 4.6em; height: 40px; padding: 0 var(--s-2); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; text-align: center; font-variant-numeric: tabular-nums; }
+.line input[type="text"], .line textarea { font: inherit; font-size: var(--fs-16); line-height: 1.4; color: var(--ink); background: var(--field); border: 1px solid var(--edge); border-radius: var(--r-1); transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background-color var(--dur) var(--ease); }
+.line input[type="text"]:hover, .line textarea:hover { border-color: var(--ink-2); }
+.line input[type="text"]:focus, .line textarea:focus { border-color: var(--primary); outline: 0; box-shadow: 0 0 0 3px var(--focus-ring); }
 
 /* ---------- saved and warning messages ---------- */
 .banner { display: flex; align-items: flex-start; gap: var(--s-2); margin: var(--s-3) 0 0; padding: var(--s-3) var(--s-4) var(--s-3) var(--s-3); border: 1px solid; border-left-width: 3px; border-radius: var(--r-2); font-size: var(--fs-14); font-weight: 500; line-height: var(--lh); }
@@ -331,11 +333,10 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 
   <fieldset id="form"><div id="sections"></div></fieldset>
 
-  <section class="card" aria-label="Status">
-    <p class="status-now" id="now"></p> <span class="saved" id="saved" hidden>Saved</span>
+  <section class="card statusbox" aria-label="Status">
+    <div class="now-row"><p class="status-now" id="now"></p> <span class="saved" id="saved" hidden>Saved</span></div>
     <p class="status-help" id="help"></p>
     <p class="agree-value" id="agree-value" hidden></p>
-    <p class="terms-line" data-initials hidden><label for="initials">Your initials</label> <input id="initials" class="initials" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false"></p>
     <div class="status" data-status></div>
     <p class="agree-hint" id="agree-hint" hidden>Your final TOTAL file goes to your folder when you approve.</p>
     <p class="terms-line" data-terms></p>
@@ -670,10 +671,6 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // ---------- status ----------
   var statusBtns = [], agreeQ = null;   // agreeQ: the review view's value to agree ("confirm" question)
   function renderStatus() {
-    // Matt 2026-10-12 (Astra, Sol): a shared link cannot say who tapped, so READY carries the tapper's initials (answers.ready_by).
-    var ini = $("initials");
-    ini.addEventListener("input", function () { state.answers.ready_by = ini.value.trim().toUpperCase(); changed(); });
-    controls.ready_by = { set: function (v) { var w = v == null ? "" : String(v); if (ini.value !== w) ini.value = w; } };
     document.querySelectorAll("[data-status]").forEach(function (bar) {
       STATUSES.forEach(function (s) {
         var b = el("button", { type: "button", cls: "st", "data-s": s, "aria-pressed": "false", text: LABEL[s] });
@@ -707,7 +704,6 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     document.querySelectorAll("[data-stage]").forEach(function (c) { var st = c.getAttribute("data-stage"); c.hidden = st !== stage || (st === "open" && built); });
     // Matt 2026-10-11: tapping READY is the agreement to this order's terms; the lane picks which terms.
     var selfServ = (D.house_prompts || {}).lane === "self-service";
-    document.querySelectorAll("[data-initials]").forEach(function (p) { p.hidden = !!agreeQ || stage !== "open" || desk; });   // no initials on the desk lane (10-12) or for Approve & Deliver (10-13)
     document.querySelectorAll("[data-terms]").forEach(function (p) {
       p.textContent = ""; p.hidden = stage !== "open" || built;
       if (p.hidden) return;
@@ -871,9 +867,6 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   var nudged = false;              // Matt 2026-10-13: READY with a question blank warns once; the next READY sends anyway
   function setStatus(s) {
     if (readOnly) return;
-    if (s === "READY" && ["desk", "regression"].indexOf((D.house_prompts || {}).lane) < 0 && !String(state.answers.ready_by || "").trim()) {
-      banner("Add your initials, then tap Ready.", "warn"); $("initials").focus(); return;
-    }
     var gaps = s === "READY" || s === "DONE" ? missing() : [];
     if (gaps.length) {               // required answers missing: say what and never send; READY stays (or goes back to) DRAFT
       gaps.forEach(function (m) { m.node.classList.add("need"); });
