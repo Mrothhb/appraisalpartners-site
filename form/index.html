@@ -806,11 +806,18 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
   // Saved means a read shows it: the stored updatedAt moved and, for a status tap, the stored status is the tap's.
   function write(send) {
-    var at = edits, s = state.status, doc = JSON.stringify(body(send)), before;
+    var at = edits, s = state.status, doc = JSON.stringify(body(send)), before, checkedForm;
+    if (send) pendingTaps++;
     function confirm(tries) {
       return read().then(function (r) {
         var v = r.saved;
         if (v && v.updatedAt !== before && (!send || v.status === s)) return v;
+        // The fast desk check can send READY back before this read confirms it. Its history proves the tap saved;
+        // repeating the POST here would turn the desk's DRAFT back into READY.
+        var h = v && v.history || [], last = h[h.length - 1], tap = h[h.length - 2];
+        if (send && s === "READY" && v && v.status === "DRAFT" && r.form && r.form.note_kind === "not_ready" &&
+            last && last.by === "desk" && last.status === "DRAFT" && tap && tap.by !== "desk" && tap.status === "READY" &&
+            (!before || tap.at > before)) { checkedForm = r.form; return v; }
         if (send && r.form && (STAGES[r.form.stage] || STAGES.open).statuses.indexOf(s) < 0) {   // Code.gs refused the tap
           setStage(r.form.stage);
           throw { code: "stage", status: v ? v.status : "DRAFT" };
@@ -828,11 +835,13 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
         return wait(600 + Math.random() * 900).then(once);
       });
     }).then(function (v) {
+      if (send) pendingTaps--;
       savedEdits = Math.max(savedEdits, at); savedAt = v.updatedAt;
+      if (checkedForm) { refresh(checkedForm); apply(v); }
       if (Array.isArray(v.history)) { state.history = v.history; paintStatus(); }
       var n = v.notificationAt && v.notificationAt[s];   // set when this save reserved the email notice
       return { notification: n && (!before || n > before) ? "sent" : "suppressed" };
-    }, function (e) { failed(e); throw e; });
+    }, function (e) { if (send) pendingTaps--; failed(e); throw e; });
     return writing;
   }
   function failed(e) {
@@ -885,13 +894,16 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     clearTimeout(timer); timer = null;
     state.status = s;
     paintStatus();
-    if (connecting) { tapped = s; banner("Sending…", "ok"); return; }
+    if (s === "READY") { fastUntil = Date.now() + 60000; pollSoon(); banner("Checking your files…", "ok"); }
+    if (connecting) { tapped = s; if (s !== "READY") banner("Sending…", "ok"); return; }
     if (!online) { banner("Not connected, not sent. Your answers are still here.", "warn"); return; }
     nudged = false;
     conn("Sending…");
     write(true).then(function (r) {
       conn("Saved " + when(new Date().toISOString()));
-      if (s === "READY") { fastUntil = Date.now() + 120000; pollSoon(); }
+      if (s === "READY" && state.status === "DRAFT" && D.note_kind === "not_ready") {
+        banner("Back to Draft: something is still needed.", "warn"); return;
+      }
       banner(s === "DRAFT" ? "Draft saved." : s === "DONE" ? THANKS : s === "READY" ? readyNote() : SENT, "ok");
     }, function () {});
   }
@@ -991,19 +1003,20 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flush(); else poll(); });
   window.addEventListener("pagehide", flush);
 
-  // While open, look for the desk's changes every 30 seconds (Matt 2026-10-11: "it seems to lag"), every 10 for two
-  // minutes after a READY: new questions or answers, the stage, or a status the desk set (a send-back: DRAFT and the red
+  // While open, look for the desk's changes every 30 seconds, every 2 for 60 seconds after a READY:
+  // new questions or answers, the stage, or a status the desk set (a send-back: DRAFT and the red
   // note). Never while he has unsaved typing or a tap in flight. A website tab put away waits; a Workfile copy never
   // does, since TOTAL's preview may not report itself visible (Matt 2026-10-13: "the red did not show up on the total
   // workfile form").
-  var pollT = null, fastUntil = 0, polling = false;
-  function pollSoon() { clearTimeout(pollT); pollT = setTimeout(function () { poll(); pollSoon(); }, Date.now() < fastUntil ? 10000 : 30000); }
+  var pollT = null, fastUntil = 0, polling = false, pendingTaps = 0;
+  function pollSoon() { clearTimeout(pollT); pollT = setTimeout(function () { poll(); pollSoon(); }, Date.now() < fastUntil ? 2000 : 30000); }
   function poll() {
-    if ((!INLINE && document.visibilityState === "hidden") || polling || readOnly || !online || connecting || tapped || edits !== savedEdits || timer) return;
+    if ((!INLINE && document.visibilityState === "hidden") || polling || readOnly || !online || connecting || tapped || pendingTaps || edits !== savedEdits || timer) return;
     polling = true;
+    var readAt = savedAt;
     read().then(function (r) {
       polling = false;
-      if (edits !== savedEdits) return;
+      if (pendingTaps || readAt !== savedAt || edits !== savedEdits) return;
       var was = state.status;
       if (r.form && newer(r.form)) { refresh(r.form); if (r.saved) apply(r.saved); }   // his cleared boxes too
       if (r.form && (r.form.stage || "open") !== stage) { D.stage = r.form.stage; setStage(r.form.stage); }
