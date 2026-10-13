@@ -10,25 +10,25 @@
      desk's answers (public_note, formlink.py --note), any post-run questions and Changes or questions show.
      A Workfile copy redraws from the backend's data when questions or the note changed since it was made.
      Once post-run questions exist the START sections hide: the form then shows only what is left to answer.
-     Nothing about the status sits above the lines (Matt 2026-10-13): one block at the bottom holds the status with how
-     many questions are still blank, the help line, the buttons, the terms line, the saved message and the history, and
+     Nothing about the status sits above the lines (Matt 2026-10-13): one block at the bottom holds the status (answers
+     autosave; no Draft button), the help line, the buttons, the terms line, the saved message and the history, and
      READY with a question blank warns once, then sends on the next tap. The one thing above the lines is a READY the
      desk sent back: note_kind "not_ready" (formlink.py --send-back) shows public_note as "Not ready yet" while DRAFT,
      first as a red pop-out (a DOM overlay), then as a red banner pinned at the top until the status changes. A line or
      post-run question marked "required" (true, or a list of lanes) blocks READY, and DONE once the report is back (never
-     NEEDS CHANGE): the same pop-out lists what is missing, by the item's "need" line when it has one.
+     NEEDS CHANGE): Ready reads "Ready · 2 left" until they are in, and a tap marks the blank ones in red.
      Under the buttons: "By tapping READY you agree to the ... Terms for this order" (Matt 2026-10-11: READY is the
-     agreement). house_prompts.lane "review" is a partner reviewer's form (review help, no value line). house_prompts.lane "desk" (partial and full desk) is the minimal form: DRAFT and READY, no checklist; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. READY needs the tapper's initials (answers.ready_by), since a shared link cannot say who tapped, except on the desk and regression lanes' short forms (Matt 2026-10-12). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
+     agreement). house_prompts.lane "review" is a partner reviewer's form (review help, no value line). house_prompts.lane "desk" (partial and full desk) is the minimal form: READY only, no checklist; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. READY needs the tapper's initials (answers.ready_by), since a shared link cannot say who tapped, except on the desk and regression lanes' short forms (Matt 2026-10-12). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en">
+<html lang="en" data-build="v2026-10-13.7">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex">
-<title>A&amp;AP Checklist</title>
+<title>A&amp;AP Form</title>
 <link rel="icon" href="logo.png">
 <style>
 /* A&AP checklist in TOTAL's look. One replacement for the page's <style> block: CSS only (2026-10-12).
@@ -49,31 +49,30 @@
 :root {
   /* type */
   --font: "Open Sans", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --fs-12: 12px; --fs-13: 13px; --fs-14: 14px; --fs-15: 15px; --fs-16: 16px; --fs-20: 20px;
+  --fs-12: 12px; --fs-13: 13px; --fs-14: 14px; --fs-16: 16px; --fs-20: 20px;
   --lh: 1.5; --lh-tight: 1.3;
   /* space: a 4/8 px scale */
   --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px;
-  --card-px: 16px; --card-py: 16px;
+  --card-px: 18px; --card-py: 20px;
   /* neutrals */
   --ink: #1c1c1c; --ink-2: #5f5f5f;
   --canvas: #f4f5f5; --card: #ffffff; --field: #ffffff; --field-off: #f4f5f5;
   --line: #e3e3e3; --line-2: #cccccc; --edge: #8a949f;
   /* the accent and the semantics built on it */
   --primary: #0b6fc1; --primary-hover: #00669b; --primary-active: #005380;
-  --secondary: #005c83;
+  --secondary: var(--primary);   /* one blue: bars, links, bullets, Ready */
   --link: #0b6fc1; --link-hover: #00669b;
   --success: #2b7e26; --success-edge: #50a81e; --success-bg: #ecf6e8; --success-ink: #236b1f; --success-line: #cfe6c7;
   --warning-bg: #fdf3e1; --warning-edge: #e5a53a; --warning-ink: #7a4300; --warning-line: #f1dcb0;
   --danger: #b9342a;
   --focus: #0b6fc1; --focus-ring: rgba(11, 111, 193, .25);
   /* the four statuses */
-  --draft: var(--secondary); --ready: var(--success); --change: var(--danger); --done: var(--primary);
+  --fs-body: 16px; --fs-h: 18px; --gap: 20px; --tint: #eaf3fb;   /* calm type, one even gap between cards */
+  --bar: #0d2a46; --bar-h: 64px;   /* the app bar, as on TOTAL's web tools; A&AP's own navy and mark */
   /* shape, depth, motion */
   --r-1: 2px; --r-2: 4px; --r-full: 999px;
   --shadow-1: 0 0 10px -6px rgba(0, 0, 0, .10);
   --dur: 150ms; --ease: cubic-bezier(.2, 0, .2, 1);
-  /* the one icon family: a check, drawn once */
-  --check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M3 8.5l3.2 3.2L13 5'/%3E%3C/svg%3E");
   color-scheme: light;
 }
 
@@ -81,7 +80,8 @@
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
-html, body { margin: 0; background: var(--canvas); color: var(--ink); font: 400 var(--fs-15)/var(--lh) var(--font); }
+html, body { margin: 0; background: var(--canvas); color: var(--ink); font: 400 var(--fs-body)/var(--lh) var(--font); }
+body { background: var(--canvas) linear-gradient(var(--bar), var(--bar)) top / 100% var(--bar-h) no-repeat; }
 button, input, textarea { font-family: inherit; }
 b, strong { font-weight: 600; }
 a { color: var(--link); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; text-decoration-color: rgba(11, 111, 193, .45); transition: color var(--dur) var(--ease), text-decoration-color var(--dur) var(--ease); }
@@ -93,66 +93,98 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--focus); outline-
 ::placeholder { color: var(--ink-2); opacity: 1; }
 
 /* ---------- page and header ---------- */
-.wrap { max-width: 760px; margin: 0 auto; padding: var(--s-4) var(--s-4) var(--s-8); }
-header { display: flex; align-items: center; gap: var(--s-3); margin: 0 0 var(--s-4); min-height: 44px; }
-header svg { width: 56px; height: 32.9px; flex: none; }
-.brand { font-size: var(--fs-20); font-weight: 700; color: #0d2a46; letter-spacing: 0; line-height: 1.2; }
-.sub { color: var(--ink-2); font-size: var(--fs-13); line-height: 1.3; margin-top: 2px; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 var(--s-4) var(--s-8); }
+header { display: flex; align-items: center; gap: var(--s-3); margin: 0 0 var(--gap); height: var(--bar-h); }
+header svg { width: 52px; height: 30.5px; flex: none; }
+header svg path { fill: #fff; } header svg path[fill^="url"] { fill: #9db8d3; }   /* our mark in white on the bar */
+.brand { font-size: var(--fs-20); font-weight: 700; color: #fff; letter-spacing: 0; line-height: 1.2; }
+.sub { color: rgba(255, 255, 255, .78); font-size: var(--fs-13); line-height: 1.3; margin-top: 1px; }
 .conn { margin-left: auto; max-width: 42%; font-size: var(--fs-12); line-height: 1.35; color: var(--ink-2); text-align: right; font-variant-numeric: tabular-nums; }
+header .conn { color: rgba(255, 255, 255, .78); }
 
 /* ---------- cards ---------- */
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-2); padding: var(--card-py) var(--card-px); margin: 0 0 var(--s-3); box-shadow: var(--shadow-1); }
-#gate p { margin: 0; color: var(--ink-2); font-size: var(--fs-15); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-2); padding: var(--card-py) var(--card-px); margin: 0 0 var(--gap); box-shadow: var(--shadow-1); }
+#gate p { margin: 0; color: var(--ink-2); font-size: var(--fs-body); }
 
 /* The order: label beside its value, our note under a rule */
-.order { font-size: var(--fs-15); }
+.order { font-size: var(--fs-body); }
 .order div { display: flex; gap: var(--s-2); align-items: baseline; margin: 0; padding: var(--s-1) 0; }
 .order div:first-child { padding-top: 0; }
 .order div:last-child { padding-bottom: 0; }
 .order b { flex: 0 0 6em; color: var(--ink-2); font-weight: 600; font-size: var(--fs-13); line-height: var(--lh); }
-#order .note { display: block; white-space: pre-line; color: var(--ink); font-size: var(--fs-15); line-height: var(--lh); margin: var(--s-4) 0 0; padding: var(--s-3) var(--s-4); background: var(--canvas); border-left: 3px solid var(--secondary); border-radius: 0 var(--r-2) var(--r-2) 0; }
+#order .note { display: block; color: var(--ink); font-size: var(--fs-body); line-height: var(--lh); margin: var(--s-4) 0 0; padding: var(--s-4) 0 0; border-top: 1px solid var(--line); }
+/* A desk note as written (Matt 2026-10-13: "cleaner bullets not dashes"): "- " or "• " lines a bulleted list, other lines
+   paragraphs, a first line ending in ":" a bold lead-in. Used by the order's note, the red banner and the pop-out. */
+/* The review PDF (Matt 2026-10-13: "put it on the form. private link"): one clear button, returned view only. */
+.pdf-btn { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 44px; margin: var(--s-4) 0 0; padding: 0 var(--s-4);
+           border: 1px solid var(--primary); border-radius: var(--r-2); background: var(--card); color: var(--primary);
+           font-weight: 600; font-size: var(--fs-14); line-height: 1.2; text-decoration: none; }
+.pdf-btn:hover { background: var(--canvas); color: var(--primary-hover); }
+.pdf-btn::before { content: ""; flex: none; width: 16px; height: 16px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 1.5h5.5l3 3v10h-8.5z' fill='none' stroke='%230b6fc1' stroke-width='1.4' stroke-linejoin='round'/%3E%3Cpath d='M9.5 1.5v3h3' fill='none' stroke='%230b6fc1' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") center / 16px 16px no-repeat; }
+/* The report itself in the review view (Matt 2026-10-13: "embed it instead make it look nice"): Drive's preview, framed. */
+.report h2 span { font-size: var(--fs-body); font-weight: 400; opacity: .85; }
+.report h2 span::before { content: "· "; }
+.pdf-sheet { overflow: hidden; border: 1px solid var(--line-2); border-radius: var(--r-1); background: #fff; }
+.pdf-frame { display: block; width: calc(100% + 32px); margin: 0 -16px; height: 75vh; min-height: 480px; border: 0; background: #fff; }   /* hides Drive's dark side rails */
+.pdf-foot { margin: var(--s-3) 0 0; }
+.pdf-foot .pdf-btn { margin: 0; }
+@media (max-width: 500px) { .report { --card-px: 8px; } .report h2 span { display: none; } .pdf-frame { height: 470px; min-height: 0; } }
+.rich p { margin: 0 0 var(--s-2); }
+.rich .lead, .rich b { font-weight: 700; }
+.rich b { flex: none; color: inherit; font-size: inherit; line-height: inherit; }   /* not the order card's label look */
+.rich ul { margin: 0 0 var(--s-2); padding-left: 1.4em; }
+.rich li { margin: 0 0 var(--s-2); padding-left: 2px; }
+.rich li::marker { color: var(--secondary); }
+#notready .rich li::marker { color: inherit; }
+.rich > :last-child, .rich li:last-child { margin-bottom: 0; }
 
-/* ---------- status: one segmented control, the chosen half filled in its color ---------- */
-.status-label { font-size: var(--fs-12); font-weight: 600; letter-spacing: .06em; color: var(--ink-2); margin: 0 0 var(--s-3); line-height: 1.3; }
-.status { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; }
-.st { position: relative; z-index: 0; height: 48px; margin: 0; padding: 0 var(--s-3) 0 36px; border: 1px solid var(--edge); border-radius: 0; background: var(--card); color: var(--ink);
-      font-family: inherit; font-weight: 600; font-size: var(--fs-14); letter-spacing: .02em; line-height: 1; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+/* ---------- status: two plain buttons, as on TOTAL's web tools: outlined blue, filled blue (green is Approve & Deliver's) ---------- */
+.status { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
+.st { height: 48px; margin: 0; padding: 0 var(--s-3); border: 1px solid var(--primary); border-radius: var(--r-2); background: var(--card); color: var(--primary);
+      font: 600 var(--fs-body)/1 var(--font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none;
       transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
-.st[data-s="DRAFT"], .st[data-s="NEEDS_CHANGE"] { border-radius: var(--r-2) 0 0 var(--r-2); }
-.st[data-s="READY"], .st[data-s="DONE"] { border-radius: 0 var(--r-2) var(--r-2) 0; margin-left: -1px; }
-.st[data-s="DRAFT"] { --c: var(--draft); } .st[data-s="READY"] { --c: var(--ready); }
-.st[data-s="NEEDS_CHANGE"] { --c: var(--change); } .st[data-s="DONE"] { --c: var(--done); }
-.st::before { content: ""; position: absolute; left: 11px; top: 50%; width: 18px; height: 18px; margin-top: -9px; background: var(--check) center / 16px 16px no-repeat; opacity: 0; transform: scale(.6); transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
-.st:hover { background: var(--canvas); border-color: var(--ink-2); z-index: 1; }
-.st:active { background: var(--line); }
-.st[aria-pressed="true"] { background: var(--c); border-color: var(--c); color: #fff; z-index: 2; }
-.st[aria-pressed="true"]::before { opacity: 1; transform: none; }
-.st[aria-pressed="true"]:hover { box-shadow: inset 0 0 0 100px rgba(0, 0, 0, .08); }
-.st[aria-pressed="true"]:active { box-shadow: inset 0 0 0 100px rgba(0, 0, 0, .14); }
-.st:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; z-index: 3; }
+.st:hover { background: var(--tint); }
+.st[data-s="READY"], .st[data-s="DONE"] { background: var(--primary); color: #fff; }
+.st[data-s="READY"]:hover, .st[data-s="DONE"]:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+.st[aria-pressed="true"] { background: var(--tint); box-shadow: inset 0 0 0 1px var(--primary); }
+.st[data-s="READY"][aria-pressed="true"], .st[data-s="DONE"][aria-pressed="true"] { background: var(--primary-active); border-color: var(--primary-active); box-shadow: none; }
+.st:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .st:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
-.st:disabled:hover { background: var(--card); border-color: var(--edge); }
-.st[aria-pressed="true"]:disabled:hover { background: var(--c); border-color: var(--c); }
-@media (max-width: 500px) {   /* a phone: one under the other */
-  .status { grid-template-columns: minmax(0, 1fr); }
-  .st[data-s="DRAFT"], .st[data-s="NEEDS_CHANGE"] { border-radius: var(--r-2) var(--r-2) 0 0; }
-  .st[data-s="READY"], .st[data-s="DONE"] { border-radius: 0 0 var(--r-2) var(--r-2); margin: -1px 0 0; }
-}
-.status-help { font-size: var(--fs-14); color: var(--ink-2); line-height: var(--lh); margin: var(--s-1) 0 var(--s-4); }
+@media (max-width: 500px) { .status { grid-template-columns: minmax(0, 1fr); } }
+.status.one { grid-template-columns: minmax(0, 300px); }
+@media (max-width: 500px) { .status.one { grid-template-columns: minmax(0, 1fr); } }
+.st.wait, .st.wait:hover { background: #a9bfd6; border-color: #a9bfd6; color: #fff; cursor: default; }
+.line.need { box-shadow: inset 3px 0 0 var(--danger); padding-left: var(--s-3); } .line.need .lbl { color: var(--danger); }   /* a phone: one under the other, full width */
+.status-help { font-size: var(--fs-14); color: var(--ink-2); line-height: var(--lh); margin: var(--s-3) 0 var(--s-4); }
 .status-help b { color: var(--ink); font-weight: 600; }
-.status-now { margin: 0; font-size: var(--fs-15); line-height: var(--lh); color: var(--ink); }   /* the status, read only, over its buttons */
-.status-now [data-s="DRAFT"] { color: var(--draft); } .status-now [data-s="READY"] { color: var(--ready); }
-.status-now [data-s="NEEDS_CHANGE"] { color: var(--change); } .status-now [data-s="DONE"] { color: var(--done); }
-.terms-line { font-size: var(--fs-13); color: var(--ink-2); line-height: var(--lh); margin: var(--s-2) 0 0; }
+.saved { font-size: var(--fs-13); color: var(--ink-2); }
+.status-now { display: inline-block; margin: 0; padding: var(--s-1) var(--s-3); border-radius: var(--r-2); background: var(--tint); font-size: var(--fs-14); line-height: var(--lh); color: var(--ink); }
+/* The review view (Matt 2026-10-13: "just show the value we have, and they can click a green checkmark"): our value, a green
+   Agree that is his DONE, Needs change beside it, one small line; no heading or help. */
+.agree #now, .agree #help { display: none; }
+.agree-value { margin: 0 0 var(--s-4); color: var(--ink); }
+.agree-value span { display: block; margin: 0 0 var(--s-1); font-size: var(--fs-12); font-weight: 600; letter-spacing: .06em; color: var(--ink-2); line-height: 1.3; }
+.agree-value b { display: block; font-size: 28px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.agree-hint { margin: var(--s-2) 0 0; font-size: var(--fs-13); line-height: var(--lh); color: var(--ink-2); }
+.build { margin: var(--s-3) 0 0; text-align: center; font-size: 11px; color: var(--ink-2); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+.more { margin: var(--s-2) 0 0 34px; padding: var(--s-1) 0; border: 0; background: none; color: var(--link); font: 600 var(--fs-14)/1.4 var(--font);
+        text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.more:hover { color: var(--link-hover); }
+.more:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--r-1); }
+.agree .status { gap: var(--s-3); }                         /* two separate, plain choices */
+.agree .st[data-s="DONE"], .agree .st[data-s="DONE"][aria-pressed="true"] { background: var(--success); border-color: var(--success); color: #fff; }
+.agree .st[data-s="DONE"]:hover { background: var(--success); border-color: var(--success); box-shadow: inset 0 0 0 100px rgba(0, 0, 0, .08); }
+.terms-line { font-size: var(--fs-13); color: var(--ink-2); line-height: var(--lh); margin: var(--s-3) 0 0; }
 .terms-line[data-initials] { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-2); margin-top: var(--s-3); }
 .terms-line label { color: var(--ink); font-weight: 600; font-size: var(--fs-14); }
+.terms-line a { color: var(--ink-2); text-decoration: underline; } .terms-line a:hover { color: var(--ink); }
 
 /* ---------- fields: one look for every box ---------- */
 .initials, .line input[type="text"], .line textarea { font: inherit; font-size: var(--fs-16); line-height: 1.4; color: var(--ink); background: var(--field); border: 1px solid var(--edge); border-radius: var(--r-1); transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background-color var(--dur) var(--ease); }
 .initials:hover, .line input[type="text"]:hover, .line textarea:hover { border-color: var(--ink-2); }
 .initials:focus, .line input[type="text"]:focus, .line textarea:focus { border-color: var(--primary); outline: 0; box-shadow: 0 0 0 3px var(--focus-ring); }
-.initials { width: 5.5em; height: 40px; padding: 0 var(--s-2); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; text-align: center; font-variant-numeric: tabular-nums; }
+.initials { width: 4.6em; height: 40px; padding: 0 var(--s-2); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; text-align: center; font-variant-numeric: tabular-nums; }
 
 /* ---------- saved and warning messages ---------- */
 .banner { display: flex; align-items: flex-start; gap: var(--s-2); margin: var(--s-3) 0 0; padding: var(--s-3) var(--s-4) var(--s-3) var(--s-3); border: 1px solid; border-left-width: 3px; border-radius: var(--r-2); font-size: var(--fs-14); font-weight: 500; line-height: var(--lh); }
@@ -165,17 +197,17 @@ header svg { width: 56px; height: 32.9px; flex: none; }
 .history:empty { display: none; }
 /* A READY the desk sent back, and why: a red pop-out on arrival, then this red banner pinned at the top (the one thing
    above the lines) until the status changes. Plain DOM and inline CSS, so it works in TOTAL's Workfile preview. */
-#notready { position: sticky; top: 0; z-index: 5; max-height: 45vh; overflow: auto; margin: 0 0 var(--s-4);
+#notready { position: sticky; top: 0; z-index: 5; max-height: 45vh; overflow: auto; margin: 0 0 var(--gap);
             background: var(--danger); color: #fff; border-color: var(--danger); border-left-color: #7d1f17;
-            font-size: var(--fs-15); box-shadow: 0 2px 8px rgba(0, 0, 0, .25); }
+            font-size: var(--fs-body); box-shadow: 0 2px 8px rgba(0, 0, 0, .25); }
 #notready::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.5' fill='none' stroke='%23fff' stroke-width='1.6'/%3E%3Cpath d='M8 4.8v3.9' stroke='%23fff' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='11.3' r='1' fill='%23fff'/%3E%3C/svg%3E"); }
-#notready b { display: block; font-weight: 700; }
-#notready span { white-space: pre-line; }
+#notready > div > b { display: block; font-weight: 700; }
+#notready .rich { margin-top: 2px; }
 .pop { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; padding: var(--s-4);
        background: rgba(28, 28, 28, .6); animation: fade var(--dur) var(--ease); }
 .pop-box { width: 100%; max-width: 440px; max-height: 100%; overflow: auto; background: var(--card); border-radius: var(--r-2); box-shadow: 0 12px 40px rgba(0, 0, 0, .35); }
 .pop-title { margin: 0; padding: var(--s-4) var(--s-5); background: var(--danger); color: #fff; font-size: var(--fs-20); font-weight: 700; line-height: var(--lh-tight); }
-.pop-why { margin: 0; padding: var(--s-5) var(--s-5) 0; white-space: pre-line; font-size: var(--fs-16); line-height: var(--lh); color: var(--ink); }
+.pop-why { margin: 0; padding: var(--s-5) var(--s-5) 0; font-size: var(--fs-16); line-height: var(--lh); color: var(--ink); }
 .pop-ok { display: block; width: calc(100% - 2 * var(--s-5)); min-height: 48px; margin: var(--s-5); border: 0; border-radius: var(--r-2);
           background: var(--danger); color: #fff; font: 700 var(--fs-16)/1.2 var(--font); cursor: pointer; }
 .pop-ok:hover, .pop-ok:active { box-shadow: inset 0 0 0 100px rgba(0, 0, 0, .12); }
@@ -183,11 +215,11 @@ header svg { width: 56px; height: 32.9px; flex: none; }
 @keyframes fade { from { opacity: 0; } }
 
 /* ---------- the checklist ---------- */
-h2 { font-size: var(--fs-15); font-weight: 600; line-height: var(--lh-tight); color: #fff; background: var(--secondary); margin: calc(var(--card-py) * -1) calc(var(--card-px) * -1) var(--s-3); padding: var(--s-3) var(--card-px); border-radius: 3px 3px 0 0; }
+h2 { display: flex; align-items: center; gap: var(--s-2); height: 36px; font-size: var(--fs-h); font-weight: 700; line-height: 1.2; color: #fff; background: var(--secondary); margin: calc(var(--card-py) * -1 - 1px) calc(var(--card-px) * -1 - 1px) var(--s-4); padding: 0 var(--s-3); border-radius: var(--r-2) var(--r-2) 0 0; white-space: nowrap; overflow: hidden; }
 .note { font-size: var(--fs-14); color: var(--ink-2); line-height: var(--lh); margin: 0 0 var(--s-2); }
 .line { display: flex; align-items: center; gap: var(--s-3); min-height: 48px; padding: var(--s-2) 0; border-bottom: 1px solid var(--line); }
 .line:last-child { border-bottom: 0; }
-.line .lbl { flex: 1; min-width: 0; font-size: var(--fs-15); line-height: 1.45; color: var(--ink); }
+.line .lbl { flex: 1; min-width: 0; font-size: var(--fs-body); line-height: 1.45; color: var(--ink); }
 .line .lbl .hint { display: block; color: var(--ink-2); font-size: var(--fs-13); }
 label.line { cursor: pointer; }
 .line input[type="checkbox"] { flex: none; width: 22px; height: 22px; margin: 0; accent-color: var(--primary); cursor: pointer; }
@@ -197,11 +229,13 @@ label.line { cursor: pointer; }
 .line.wide { flex-direction: column; align-items: stretch; gap: var(--s-2); }
 .line.wide input[type="text"], .line.wide textarea { width: 100%; max-width: none; }
 textarea { min-height: 72px; resize: none; overflow: hidden; }
+textarea[rows="1"] { min-height: 44px; }
+@media (max-width: 500px) { .line.wide .taps { flex-direction: column; align-items: stretch; } .line.wide .tap { width: 100%; } }
 
 /* Comps: a number, the comp, then one aligned row of ratings per line */
 .comp { padding: var(--s-3) 0; border-bottom: 1px solid var(--line); }
 .comp:last-child { border-bottom: 0; }
-.comp .id { display: flex; gap: var(--s-2); align-items: center; font-weight: 600; font-size: var(--fs-15); min-height: 28px; }
+.comp .id { display: flex; gap: var(--s-2); align-items: center; font-weight: 600; font-size: var(--fs-body); min-height: 28px; }
 .comp .id .n { flex: none; width: 26px; height: 26px; border-radius: var(--r-full); background: var(--secondary); color: #fff; font-size: var(--fs-13); font-weight: 600; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
 .comp .id input { flex: 1; min-height: 44px; }
 .comp .rate { display: flex; align-items: center; gap: var(--s-2) var(--s-3); margin: var(--s-2) 0 0 34px; flex-wrap: wrap; font-size: var(--fs-14); color: var(--ink-2); }
@@ -256,10 +290,8 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 
 /* ---------- a wider pane or a laptop ---------- */
 @media (min-width: 600px) {
-  :root { --card-px: 24px; --card-py: 20px; }
-  .wrap { padding: var(--s-6) var(--s-6) 56px; }
-  header { margin-bottom: var(--s-5); }
-  .card { margin-bottom: var(--s-4); }
+  :root { --card-px: 28px; --card-py: 26px; --gap: 24px; }
+  .wrap { padding: 0 var(--s-6) 56px; }
 }
 
 /* ---------- motion off when asked ---------- */
@@ -285,7 +317,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
     </svg>
     <div>
       <div class="brand">A&amp;AP</div>
-      <div class="sub">Checklist</div>
+      <div class="sub">Form</div>
     </div>
     <div class="conn" id="conn" aria-live="polite"></div>
   </header>
@@ -295,27 +327,29 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <div id="main" hidden>
   <div class="banner" id="notready" role="status" hidden></div>
   <section class="card order" id="order" aria-label="The order"></section>
+  <section class="card report" id="report" aria-label="Your report" hidden></section>
 
   <fieldset id="form"><div id="sections"></div></fieldset>
 
-  <section class="card" aria-labelledby="st-bottom">
-    <p class="status-label" id="st-bottom">DONE? SET THE STATUS</p>
-    <p class="status-now" id="now"></p>
+  <section class="card" aria-label="Status">
+    <p class="status-now" id="now"></p> <span class="saved" id="saved" hidden>Saved</span>
     <p class="status-help" id="help"></p>
+    <p class="agree-value" id="agree-value" hidden></p>
+    <p class="terms-line" data-initials hidden><label for="initials">Your initials</label> <input id="initials" class="initials" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false"></p>
     <div class="status" data-status></div>
+    <p class="agree-hint" id="agree-hint" hidden>Your final TOTAL file goes to your folder when you approve.</p>
     <p class="terms-line" data-terms></p>
-    <p class="terms-line" data-initials hidden><label for="initials">Your initials</label> <input id="initials" class="initials" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false"> <span>so we know who tapped READY</span></p>
     <div id="banner" aria-live="polite"></div>
-    <div class="history" id="history"></div>
+    <div class="history" id="history" hidden></div>
   </section>
   </div>
 
-  <p class="foot">The value is yours alone. We ask for it only once the report is built, and enter it exactly as you give it. · A&amp;AP</p>
+  <p class="foot">The value is yours alone; we enter it exactly as you give it. · A&amp;AP</p>
 </div>
 <div class="pop" id="pop" role="alertdialog" aria-modal="true" aria-labelledby="pop-title" aria-describedby="pop-why" hidden>
   <div class="pop-box">
     <p class="pop-title" id="pop-title">Not ready yet</p>
-    <p class="pop-why" id="pop-why"></p>
+    <div class="pop-why" id="pop-why"></div>
     <button type="button" class="pop-ok" id="pop-ok">OK, I'll fix it</button>
   </div>
 </div>
@@ -323,7 +357,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 <script type="application/json" id="checklist">
 {
  "sections": [
-  {"title": "To finish your report", "note": "Answer these, then set your status at the bottom.", "lines": [
+  {"title": "We need a few details", "lines": [
    {"kind": "questions"}
   ]},
   {"title": "Your inspection", "stage": "open", "lines": [
@@ -332,7 +366,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
    {"kind": "text", "key": "helper", "label": "Anyone who helped on this order: name, credential (none, trainee, licensed, certified) and what they did", "wide": true, "open": true},
    {"kind": "prompt", "key": "il_amc_fee", "prompt": "il_amc", "label": "Illinois: your fee from {} for this order, $", "text": true, "short": true, "open": true}
   ]},
-  {"title": "Your calls on the house", "stage": "open", "note": "Your ratings apply to the exterior, the interior and overall unless you say otherwise under Anything else.", "lines": [
+  {"title": "Your calls on the house", "stage": "open", "note": "Ratings cover the exterior, interior and overall unless you say otherwise.", "lines": [
    {"kind": "choice", "key": "subject_quality", "label": "Quality", "options": ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6"], "open": true},
    {"kind": "choice", "key": "subject_condition", "label": "Condition", "options": ["C1", "C2", "C3", "C4", "C5", "C6"], "open": true},
    {"kind": "text", "key": "updates", "label": "Kitchen and baths: updated when? (e.g., kitchen remodeled 1-5 yrs ago; baths not updated)", "wide": true, "open": true},
@@ -345,7 +379,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
    {"kind": "choice", "key": "hbu_present_use", "label": "Highest and best use as improved is the present use", "options": ["Yes", "No, see Anything else"], "open": true},
    {"kind": "prompt", "key": "site_value", "prompt": "site", "label": "Your site value, $ ({})", "text": true, "short": true, "open": true}
   ]},
-  {"title": "Your comps", "stage": "open", "note": "\"Same\" means same as the house. Your comps stay in the order you gave them. If we pull the sales for you, you pick your comps from the sheet in your Workfile when we ask.", "lines": [
+  {"title": "Your comps", "stage": "open", "note": "\"Same\" means same as the house. Your comps keep your order.", "lines": [
    {"kind": "comps", "quality": ["Same", "Q1", "Q2", "Q3", "Q4", "Q5", "Q6"], "condition": ["Same", "C1", "C2", "C3", "C4", "C5", "C6"], "open": true},
    {"kind": "choice", "key": "most_weight", "label": "Most weight: comp", "options": "comps", "open": true},
    {"kind": "prompt", "key": "search_net", "prompt": "net", "label": "We'll pull every sale and listing within {}. To widen or narrow that, say how", "text": true, "open": true}
@@ -356,7 +390,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
    {"kind": "text", "key": "time_adjustment", "label": "Time adjustment, % per month from each contract date (0 if none)", "short": true, "open": true},
    {"kind": "prompt", "key": "market_rent", "prompt": "rent", "label": "{}: your opinion of market rent, $ per month", "text": true, "short": true, "open": true}
   ]},
-  {"title": "Your adjustments", "stage": "open", "note": "Only the lines where a comp differs from the house; the rest are $0. We write the support from your data beside each rate.", "lines": [
+  {"title": "Your adjustments", "stage": "open", "note": "Only where a comp differs; the rest are $0.", "lines": [
    {"kind": "text", "key": "rate_gla", "label": "Living area, $ per sq ft", "short": true, "open": true},
    {"kind": "text", "key": "rate_site", "label": "Site, $ per sq ft or acre", "short": true, "open": true},
    {"kind": "text", "key": "rate_age", "label": "Age, $ per year", "short": true, "open": true},
@@ -372,7 +406,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   {"title": "Anything else", "stage": "open", "lines": [
    {"kind": "multi", "key": "notes", "label": "Any assumption, condition or instruction only you can give. Or just say it all here.", "talk": true, "open": true}
   ]},
-  {"title": "Changes or questions", "note": "One per box: a change, or a question about anything in the report (\"Why comp 3?\"). Then tap NEEDS CHANGE. Our answers show at the top of this form.", "stage": "returned", "lines": [
+  {"title": "Changes or questions", "note": "One per box.", "stage": "returned", "lines": [
    {"kind": "changes", "count": 5}
   ]}
  ]
@@ -386,15 +420,19 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   var $ = function (id) { return document.getElementById(id); };
   var STATUSES = ["DRAFT", "READY", "NEEDS_CHANGE", "DONE"];
   var LABEL = {}; STATUSES.forEach(function (s) { LABEL[s] = s.replace("_", " "); });
+  var WORD = { DRAFT: "Draft", READY: "Ready", NEEDS_CHANGE: "Changes requested", DONE: "Done" };   // what the customer reads
   // The order's stage picks the buttons: open until we send the report back, returned once it's in their folder.
   var STAGES = {
-    open: { statuses: ["DRAFT", "READY"], help: "Tick what's right, pick your calls, then tap <b>READY</b>. READY means your inspection is done and your photos, sketch and files are in the Workfile. Blanks stay blank; anything we still need comes back here after the build.",
-            refused: "The report isn't back with you yet. Tap READY when your checklist is done." },
-    returned: { statuses: ["NEEDS_CHANGE", "DONE"], help: "Review the PDF we emailed you. If it reads right, enter your final value above and tap <b>DONE</b>; your finished report then goes into your folder in TOTAL. For a change or a question, write it above and tap <b>NEEDS CHANGE</b>; our answer shows at the top of this form.",
-                refused: "Your report is back for your review now. Tap NEEDS CHANGE or DONE." }
+    open: { statuses: ["DRAFT", "READY"], help: "Files saved in the Workfile? Tap <b>Ready</b>.",
+            refused: "Not back with you yet. Tap Ready when done." },
+    returned: { statuses: ["NEEDS_CHANGE", "DONE"], help: "Review the PDF. Agree? Tap <b>Done</b>. Changes? Tap <b>Request Changes</b>.",
+                refused: "Your report is back. Tap Request Changes or Done." }
   };
-  var SENT = "Saved with A&AP. We'll email you when it's back.";
-  var THANKS = "Saved with A&AP. Thank you.";
+  var SENT = "Saved.";
+  var CLOSED = "This form is closed. Your final report is in your folder.";   // a removed key (formlink.py --close)
+  var THANKS = "Thanks. Your report is on its way to your folder.";
+  function asked() { return (D.questions || []).some(function (q) { return q.kind !== "confirm"; }); }   // B: our questions are out
+  function readyNote() { return asked() ? "Got it. Back to work." : D.accepted_at ? "Files checked. In production." : "Checking your files…"; }   // after READY
   var NCHANGES = 5;
   var MAX_BODY = 100000;       // Code.gs's limit on one save
   var CHECKLIST = JSON.parse($("checklist").textContent);
@@ -418,7 +456,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     (kids || []).forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
     return n;
   }
-  function changed() { edits++; paintNow(); afterEdit(); }
+  function changed() { edits++; $("saved").hidden = true; paintNow(); afterEdit(); }
   function grow(t) {
     if (t.tagName !== "TEXTAREA" || !t.isConnected) return;
     t.style.height = "auto"; t.style.height = (t.scrollHeight + 3) + "px";
@@ -437,7 +475,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function text(name, label, opts) {
     opts = opts || {};
     var id = "f-" + name;
-    var input = opts.multi ? el("textarea", { id: id, rows: "3" }) : el("input", { id: id, type: "text", autocomplete: "off" });
+    var input = opts.multi ? el("textarea", { id: id, rows: opts.rows || "3" }) : el("input", { id: id, type: "text", autocomplete: "off" });
     if (opts.short) input.className = "short";
     input.addEventListener("input", function () { state.answers[name] = input.value; grow(input); changed(); });
     controls[name] = { set: function (v) { v = v == null ? "" : String(v); if (input.value !== v) input.value = v; grow(input); } };
@@ -488,16 +526,16 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     });
   }
   function questions() {           // asked after the run: a box or buttons under each question
-    return (D.questions || []).map(function (q) {
+    return (D.questions || []).filter(function (q) { return q.kind !== "confirm"; }).map(function (q) {   // a confirm lives in the status block
       var name = "q_" + q.id, row = q.kind === "choice" ? el("div", { cls: "line wide" }, [el("span", { cls: "lbl", text: q.text }), taps(name, q.text, q.choices || [])])
-        : text(name, q.text, { multi: true });
-      if (needs(q.required)) musts.push({ key: name, label: q.need || q.text, node: row });
+        : q.short ? text(name, q.text, { short: true }) : text(name, q.text, { multi: true, rows: "1" });
+      if (needs(q.required)) musts.push({ key: name, node: row });
       return row;
     });
   }
   // Matt 2026-10-13: a line or question marked "required" (true, or a list of lanes; "default" when the order names
-  // none) must be answered before READY sends (open) or DONE sends (returned; NEEDS CHANGE never asks): the red pop-out
-  // lists what is missing, by its "need" line when it has one, and READY leaves the form DRAFT.
+  // none) must be answered before READY sends (open) or DONE sends (returned; NEEDS CHANGE never asks): the page marks
+  // what is missing, and READY leaves the form DRAFT.
   var musts = [];
   function needs(r) { return r === true || (Array.isArray(r) && r.indexOf((D.house_prompts || {}).lane || "default") >= 0); }
   function missing() {             // required lines and questions on show and still empty
@@ -506,20 +544,25 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       return m.node.isConnected && card && !card.hidden && !(v === true || typeof v === "number" || (typeof v === "string" && v.trim()));
     });
   }
-  function brief(s) {              // one short line: its first sentence, or its first 88 characters
-    s = String(s).replace(/\s+/g, " ").trim();
-    var m = s.match(/^.{10,120}?[.?!](?=\s|$)/);
-    return m ? m[0] : s.length > 90 ? s.slice(0, 88).replace(/\s+\S*$/, "") + "…" : s;
-  }
-  function changes(count) {
-    var rows = [];
+  function changes(count) {         // one box to start; "Add another" opens the next, up to Code.gs's five
+    var rows = [], shown = 1, had = 0, more = el("button", { type: "button", cls: "more", text: "Add another" });
+    function fit() {                // every box with text shows, and at least one; a desk clear brings it back to one
+      var last = 0;
+      state.changes.forEach(function (v, i) { if (String(v || "").trim()) last = i + 1; });
+      if (had && !last) shown = 1;
+      had = last; shown = Math.max(shown, last);
+      rows.forEach(function (r, i) { r.hidden = i >= shown; });
+      more.hidden = shown >= count;
+    }
     for (var n = 0; n < count; n++) (function (n) {
       var input = el("textarea", { rows: "1", "aria-label": "Change or question " + (n + 1) });
       input.addEventListener("input", function () { state.changes[n] = input.value; grow(input); changed(); });
-      controls["change" + (n + 1)] = { set: function () { var v = state.changes[n] || ""; if (input.value !== v) { input.value = v; grow(input); } } };
+      controls["change" + (n + 1)] = { set: function () { var v = state.changes[n] || ""; if (input.value !== v) { input.value = v; grow(input); } fit(); } };
       rows.push(el("div", { cls: "line wide" }, [el("div", { cls: "id" }, [el("span", { cls: "n", text: String(n + 1) + "." }), input])]));
     })(n);
-    return [el("div", { cls: "changes" }, rows)];
+    more.addEventListener("click", function () { shown = Math.min(count, shown + 1); fit(); var b = rows[shown - 1].querySelector("textarea"); b.focus(); grow(b); });
+    fit();
+    return [el("div", { cls: "changes" }, rows.concat([more]))];
   }
   function blank(k) { var v = (D.prefill || {})[k]; return v == null || v === "" || v === false; }
   function isOpen(line) {          // an "open" line shows only while their own data leaves it blank
@@ -566,13 +609,13 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       var nodes = [];
       sec.lines.forEach(function (line) {
         var made = render(line);
-        if (made.length && line.key && needs(line.required)) musts.push({ key: line.key, label: line.need || (made[0].querySelector(".lbl") || made[0]).textContent, node: made[0] });
+        if (made.length && line.key && needs(line.required)) musts.push({ key: line.key, node: made[0] });
         made.forEach(function (n) { nodes.push(n); });
       });
       if (!nodes.length) return;       // their file settled the whole section
       var factors = (D.house_prompts || {}).lane === "regression" && sec.lines.some(function (line) { return line.kind === "questions"; });
       var card = el("section", { cls: "card" }, [el("h2", { text: factors ? "Factors to test" : sec.title }),
-        factors ? el("p", { cls: "note", text: "Pick Yes or No for each factor. Anything else is a note for the team; it does not filter the sales." }) : sec.note ? el("p", { cls: "note", text: sec.note }) : null]);
+        factors ? el("p", { cls: "note", text: "Yes or No for each; notes don't filter the sales." }) : sec.note ? el("p", { cls: "note", text: sec.note }) : null]);
       if (sec.stage) { card.setAttribute("data-stage", sec.stage); card.hidden = true; }   // setStage shows it
       nodes.forEach(function (n) { card.appendChild(n); });
       host.appendChild(card);
@@ -585,12 +628,47 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     fact("Property", O.property);
     fact("Client", O.client);
     fact("Due", O.due_date);
-    if (D.public_note && D.note_kind !== "not_ready") box.appendChild(el("div", { cls: "note", text: D.public_note }));
+    if (D.public_note && D.note_kind !== "not_ready") box.appendChild(rich(D.public_note, "note"));
+  }
+  function rich(text, cls) {       // a desk note as he should read it: bullets, paragraphs, a bold lead-in
+    var box = el("div", { cls: "rich" + (cls ? " " + cls : "") }), list = null, first = true;
+    String(text || "").split(/\r?\n/).forEach(function (line) {
+      line = line.trim();
+      if (!line) { list = null; return; }
+      var bullet = /^[-•]\s+/.test(line);
+      if (bullet) { if (!list) list = box.appendChild(el("ul")); list.appendChild(el("li", { text: line.replace(/^[-•]\s+/, "") })); }
+      else {
+        var kv = first && line.match(/^([^:]{1,30}:)\s+(.{1,60})$/);   // "Value: $300,000": the label in bold
+        list = null; box.appendChild(kv ? el("p", null, [el("b", { text: kv[1] }), " " + kv[2]])
+                                        : el("p", first && /:$/.test(line) ? { cls: "lead", text: line } : { text: line }));
+      }
+      first = false;
+    });
+    return box;
+  }
+  // The review PDF (a private Drive link, never the public site) in a framed viewer once the report is back; in TOTAL's
+  // pane, or when the frame never loads, the one button instead (opens in the same tab there; untested in the pane).
+  function renderReport() {
+    var box = $("report"), m = /^https:\/\/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/.exec(D.report_pdf || "");
+    box.hidden = stage !== "returned" || !m;
+    if (box.hidden || box.getAttribute("data-id") === m[1]) return;
+    box.setAttribute("data-id", m[1]); box.textContent = "";
+    var view = "https://drive.google.com/file/d/" + m[1] + "/view", pane = !!INLINE && location.protocol === "file:";
+    var btn = el("a", { cls: "pdf-btn", href: view, target: pane ? "_self" : "_blank", rel: "noopener" }, ["Open report"]);
+    box.appendChild(el("h2", null, ["Your report", O.property ? el("span", { text: O.property }) : null]));
+    if (pane) { box.appendChild(btn); return; }
+    var frame = el("iframe", { cls: "pdf-frame", src: "https://drive.google.com/file/d/" + m[1] + "/preview", title: "Your report", allow: "fullscreen" }),
+        sheet = el("div", { cls: "pdf-sheet" }, [frame]);
+    var foot = el("p", { cls: "pdf-foot" }, [el("a", { cls: "pdf-btn", href: view, target: "_blank", rel: "noopener", text: "Open report" })]);
+    var loaded = false;
+    frame.addEventListener("load", function () { loaded = true; });
+    setTimeout(function () { if (!loaded && frame.isConnected) { sheet.replaceWith(btn); foot.remove(); } }, 15000);
+    box.appendChild(sheet); box.appendChild(foot);
   }
   function paintAll() { Object.keys(controls).forEach(function (k) { controls[k].set(state.answers[k]); }); }
 
   // ---------- status ----------
-  var statusBtns = [];
+  var statusBtns = [], agreeQ = null;   // agreeQ: the review view's value to agree ("confirm" question)
   function renderStatus() {
     // Matt 2026-10-12 (Astra, Sol): a shared link cannot say who tapped, so READY carries the tapper's initials (answers.ready_by).
     var ini = $("initials");
@@ -611,31 +689,41 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var review = (D.house_prompts || {}).lane === "review";
     var regression = (D.house_prompts || {}).lane === "regression";    // a regression form shows like the desk lane
     var desk = (D.house_prompts || {}).lane === "desk" || regression;
-    $("help").innerHTML = review ? "Review the report in TOTAL. For a change or a question, write it above and tap <b>NEEDS CHANGE</b>; our answer shows at the top of this form. When it's ready for the appraiser, tap <b>DONE</b>. Please don't sign it." :
-      regression ? "Save the report, pick the factors, then tap <b>READY</b>. We run a regression on the MLS export in this report's Workfile, post the results at the top of this form and email them to you. The factors are information; you decide what to use." :
-      built0 ? "Your report is built. Answer the questions above, then tap <b>READY</b>; we finish it and email you the PDF to review." :
-      desk && stage === "open" ? "When your inspection is done and your photos, sketch and files are in the Workfile: save the report, tap <b>READY</b>, then close it. We check your files and email you when production starts." : STAGES[stage].help;
+    $("help").innerHTML = review ? "Review it in TOTAL; please don't sign. Changes? Tap <b>Request Changes</b>. Good to go? Tap <b>Done</b>." :
+      regression ? "Save the report, pick the factors, tap <b>Ready</b>. Results show at the top; you decide what to use." :
+      built0 ? "Answer each, then tap <b>Ready</b>." : STAGES[stage].help;
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = review || desk; });
     // After the run the questions are all that is left to answer: the START sections (already answered) step aside.
     var built = (D.questions || []).length > 0;
+    renderReport();
+    agreeQ = stage === "returned" ? (D.questions || []).filter(function (q) { return q.kind === "confirm"; })[0] || null : null;
+    $("agree-value").closest("section").classList.toggle("agree", !!agreeQ);
+    $("agree-value").hidden = $("agree-hint").hidden = !agreeQ;
+    var box1 = document.querySelector(".changes textarea");   // Matt 2026-10-13: a different value goes in as a change
+    if (box1) box1.placeholder = agreeQ ? "Describe your requested change." : "";
+    $("agree-value").textContent = "";
+    if (agreeQ) { $("agree-value").appendChild(el("span", { text: "VALUE" })); $("agree-value").appendChild(el("b", { text: agreeQ.value })); }
+    statusBtns.forEach(function (b) { var st = b.getAttribute("data-s"); b.textContent = st === "NEEDS_CHANGE" ? "Request Changes" : agreeQ && st === "DONE" ? "Approve & Deliver" : WORD[st]; });
     document.querySelectorAll("[data-stage]").forEach(function (c) { var st = c.getAttribute("data-stage"); c.hidden = st !== stage || (st === "open" && built); });
     // Matt 2026-10-11: tapping READY is the agreement to this order's terms; the lane picks which terms.
     var selfServ = (D.house_prompts || {}).lane === "self-service";
-    document.querySelectorAll("[data-initials]").forEach(function (p) { p.hidden = stage !== "open" || desk; });   // Matt 2026-10-12: no initials on the desk lane
+    document.querySelectorAll("[data-initials]").forEach(function (p) { p.hidden = !!agreeQ || stage !== "open" || desk; });   // no initials on the desk lane (10-12) or for Approve & Deliver (10-13)
     document.querySelectorAll("[data-terms]").forEach(function (p) {
-      p.textContent = ""; p.hidden = stage !== "open";
-      if (stage !== "open") return;
-      p.appendChild(document.createTextNode("By tapping READY you agree to the " + (selfServ ? "A&AP Software Terms" : "A&AP Service Terms") + " for this order: "));
-      p.appendChild(el("a", { href: selfServ ? "https://appraisalpartners.net/terms-software.html" : "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener", text: "read the terms" }));
+      p.textContent = ""; p.hidden = stage !== "open" || built;
+      if (p.hidden) return;
+      p.appendChild(document.createTextNode("By tapping Ready you agree to our "));
+      p.appendChild(el("a", { href: selfServ ? "https://appraisalpartners.net/terms-software.html" : "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener", text: "terms" }));
+      p.appendChild(document.createTextNode("."));
     });
     paintStatus();
   }
   function paintStatus() {
     statusBtns.forEach(function (b) {
       b.setAttribute("aria-pressed", String(b.getAttribute("data-s") === state.status));
-      b.hidden = STAGES[stage].statuses.indexOf(b.getAttribute("data-s")) < 0;
+      b.hidden = STAGES[stage].statuses.indexOf(b.getAttribute("data-s")) < 0 || b.getAttribute("data-s") === "DRAFT";   // answers autosave
       b.disabled = readOnly;
     });
+    document.querySelectorAll("[data-status]").forEach(function (bar) { bar.classList.toggle("one", stage === "open"); });
     var h = state.history.slice(-4).reverse().map(function (e) { return LABEL[e.status] + " " + when(e.at); });
     $("history").textContent = h.length ? "History: " + h.join(" · ") : "";
     paintNow();
@@ -643,29 +731,34 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     // a red pop-out when it arrives ("make it red and a popout and very obvious"), then the red banner pinned there.
     var nr = $("notready"), back = D.note_kind === "not_ready" && !!D.public_note && state.status === "DRAFT";
     nr.textContent = ""; nr.hidden = !back;
-    if (back) nr.appendChild(el("div", null, [el("b", { text: "Not ready yet" }), el("span", { text: D.public_note })]));
-    if (!back) { if (popKind === "back") pop(false); }   // pops once per reason, once boot settles; his own DRAFT tap never brings it back
+    if (back) nr.appendChild(el("div", null, [el("b", { text: "Not ready yet" }), rich(D.public_note)]));
+    if (!back) { if (popKind === "back") pop(false); }   // pops once per reason, once boot settles
     else if (popped !== D.public_note) setTimeout(function () { if (!$("notready").hidden && popped !== D.public_note) { popped = D.public_note; pop(D.public_note, "back"); } }, 0);
   }
-  var popped = "", popKind = "", popTo = null;   // popTo: the first missing line, shown once the pop-out closes
-  function pop(text, kind, title) {   // the red pop-out: a DOM overlay, never alert() or a window
+  var popped = "", popKind = "";
+  function pop(text, kind) {   // the red pop-out: a DOM overlay, never alert() or a window
     var p = $("pop"), wrap = document.querySelector(".wrap");
-    $("pop-title").textContent = title || "Not ready yet";
     if (!text) {
       if (p.hidden) return;
       p.hidden = true; wrap.inert = false; popKind = "";
-      if (popTo) { popTo.scrollIntoView({ block: "center" }); var f = popTo.querySelector("input, textarea, button"); if (f) f.focus({ preventScroll: true }); popTo = null; }
       return;
     }
-    $("pop-why").textContent = text; popKind = kind; p.hidden = false; wrap.inert = true; $("pop-ok").focus();
+    $("pop-why").textContent = ""; $("pop-why").appendChild(rich(text)); popKind = kind; p.hidden = false; wrap.inert = true; $("pop-ok").focus();
   }
   $("pop-ok").addEventListener("click", function () { pop(false); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") pop(false); });
-  // The status, read only, sits just above its buttons with how many questions are still blank (Matt 2026-10-13: a
-  // READY tapped at the top sent nine post-run questions blank).
+  // The status, read only, sits just above its buttons; Ready carries how many required answers are left (Matt
+  // 2026-10-13: a READY tapped at the top sent nine post-run questions blank).
   function paintNow() {
-    var s = state.status, k = stage === "open" ? blanks() : 0, f = (D.house_prompts || {}).lane === "regression" ? " factor" : " question";
-    $("now").innerHTML = "Status: <b data-s=\"" + s + "\">" + LABEL[s] + "</b>." + (k ? " " + k + f + (k === 1 ? " above is" : "s above are") + " still blank." : "");
+    var s = state.status, left = stage === "open" ? missing() : [];
+    $("now").innerHTML = "<b>" + (s === "READY" && stage === "open" && asked() ? "Answered" : WORD[s]) + "</b>";
+    if (s !== "DRAFT") $("saved").hidden = true;
+    statusBtns.forEach(function (b) {
+      if (b.getAttribute("data-s") !== "READY") return;
+      b.textContent = left.length ? "Ready · " + left.length + " left" : WORD.READY;
+      b.classList.toggle("wait", left.length > 0);
+    });
+    musts.forEach(function (m) { if (left.indexOf(m) < 0) m.node.classList.remove("need"); });
   }
   function when(iso) {
     var d = new Date(iso); if (isNaN(d)) return "";
@@ -747,61 +840,63 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function failed(e) {
     var code = e && e.code;
     if (code === "unknown") {
-      setReadOnly("This link no longer works, so this didn't reach us. Reply to our email and we'll send a fresh one.");
+      closed();
     } else if (code === "stage") {
       state.status = e.status; paintStatus();
       banner(STAGES[stage].refused, "warn");
     } else if (code === "too_large") {
-      banner("That's more than the checklist can hold. Shorten the long box a little, or email us the rest.", "warn");
+      banner("Too long to save. Shorten it a little.", "warn");
     } else {
-      banner("We couldn't send that. Your answers are still here; try again in a minute.", "warn");
+      banner("Not sent. Try again in a minute.", "warn");
     }
     conn("Not saved");
   }
-  function setReadOnly(msg) {
-    readOnly = true; $("form").disabled = true; paintStatus(); banner(msg, "warn"); conn("Read only");
+  function closed() {               // the order is closed: no form, just the one line
+    readOnly = true; pop(false); $("form").disabled = true; $("main").hidden = true; $("gate").hidden = false; gate(CLOSED); conn("Closed");
+    document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = true; });
   }
   function afterEdit() {
     if (!online || readOnly) return;
     if (state.status === "DRAFT") {           // drafts save on a pause in typing; sent forms wait for a status tap
       conn("Saving…");
       clearTimeout(timer);
-      timer = setTimeout(function () { write(false).then(function () { conn("Draft saved " + when(new Date().toISOString())); }, function () {}); }, 1500);
+      timer = setTimeout(function () { timer = null; write(false).then(function () { conn("Draft saved " + when(new Date().toISOString())); $("saved").hidden = false; }, function () {}); }, 1500);
     } else {
-      banner("You changed answers. Tap " + (stage === "open" ? "READY" : "NEEDS CHANGE or DONE") + " to save them.", "warn");
+      banner("Changed. Tap " + (stage === "open" ? "Ready" : "Request Changes") + " to save.", "warn");
     }
   }
   function blanks() {              // post-run questions still blank (some may rightly stay blank)
-    return (D.questions || []).filter(function (q) { var v = state.answers["q_" + q.id]; return v == null || !String(v).trim(); }).length;
+    return (D.questions || []).filter(function (q) { var v = state.answers["q_" + q.id]; return q.kind !== "confirm" && (v == null || !String(v).trim()); }).length;
   }
   var nudged = false;              // Matt 2026-10-13: READY with a question blank warns once; the next READY sends anyway
   function setStatus(s) {
     if (readOnly) return;
     if (s === "READY" && ["desk", "regression"].indexOf((D.house_prompts || {}).lane) < 0 && !String(state.answers.ready_by || "").trim()) {
-      banner("Add your initials by the READY button, then tap READY again.", "warn"); $("initials").focus(); return;
+      banner("Add your initials, then tap Ready.", "warn"); $("initials").focus(); return;
     }
     var gaps = s === "READY" || s === "DONE" ? missing() : [];
     if (gaps.length) {               // required answers missing: say what and never send; READY stays (or goes back to) DRAFT
-      popTo = gaps[0].node; banner();
-      pop("Still needed before " + s + ":\n" + gaps.map(function (m) { return "• " + brief(m.label); }).join("\n"), "check",
-          s === "DONE" ? "Not done yet" : "Not ready yet");
+      gaps.forEach(function (m) { m.node.classList.add("need"); });
+      gaps[0].node.scrollIntoView({ block: "center" });
+      var first = gaps[0].node.querySelector("input, textarea, button"); if (first) first.focus({ preventScroll: true });
+      banner(gaps.length === 1 ? "Answer the marked question." : "Answer the marked questions.", "warn");
       if (s === "READY" && state.status === "READY") setStatus("DRAFT");
       return;
     }
     if (s === "READY" && !nudged && blanks()) {
-      nudged = true; banner("Some questions are blank. Tap READY again to send anyway.", "warn"); return;
+      nudged = true; banner("Some questions are blank. Tap Ready again to send.", "warn"); return;
     }
-    clearTimeout(timer);
+    if (agreeQ && (s === "DONE" || s === "NEEDS_CHANGE")) state.answers["q_" + agreeQ.id] = s === "DONE" ? "agreed " + agreeQ.value : "";   // Agree is his DONE
+    clearTimeout(timer); timer = null;
     state.status = s;
     paintStatus();
     if (connecting) { tapped = s; banner("Sending…", "ok"); return; }
-    if (!online) { banner("Not connected, so this didn't reach us. Your answers are still on this page.", "warn"); return; }
+    if (!online) { banner("Not connected, not sent. Your answers are still here.", "warn"); return; }
     nudged = false;
     conn("Sending…");
     write(true).then(function (r) {
       conn("Saved " + when(new Date().toISOString()));
-      banner(s === "DRAFT" ? "Saved as a draft. Tap READY when you're done." :
-             r.notification === "suppressed" ? "Saved with A&AP. No new email notice was sent." : s === "DONE" ? THANKS : SENT, "ok");
+      banner(s === "DRAFT" ? "Draft saved." : s === "DONE" ? THANKS : s === "READY" ? readyNote() : SENT, "ok");
     }, function () {});
   }
 
@@ -868,14 +963,15 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       paintAll();
     }
     paintStatus();
-    if (state.status !== "DRAFT") banner(state.status === "DONE" ? THANKS : SENT, "ok");
+    if (state.status !== "DRAFT") banner(state.status === "DONE" ? THANKS : state.status === "READY" && stage === "open" ? readyNote() : SENT, "ok");
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || "") || (f.note_kind || "") !== (D.note_kind || ""); }
+  function newer(f) { return JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || "") || (f.note_kind || "") !== (D.note_kind || "") || (f.report_pdf || "") !== (D.report_pdf || "") || (f.accepted_at || "") !== (D.accepted_at || ""); }
   function refresh(f) {
     D = f; O = D.order || {}; controls = {}; $("order").innerHTML = ""; $("sections").innerHTML = "";
     renderOrder(); renderSections(); paintAll(); setStage(D.stage); document.querySelectorAll("textarea").forEach(grow);
+    if (state.status === "READY" && stage === "open") banner(readyNote(), "ok");
   }
   function boot(form, saved) {
     D = form || {}; O = D.order || {};
@@ -905,12 +1001,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (document.visibilityState !== "visible" || readOnly || !online || connecting || tapped || edits !== savedEdits || timer) return;
     read().then(function (r) {
       if (edits !== savedEdits) return;
-      if (r.form && newer(r.form)) refresh(r.form);
+      var was = state.status;
+      if (r.form && newer(r.form)) { refresh(r.form); if (r.saved) apply(r.saved); }   // his cleared boxes too
       if (r.form && (r.form.stage || "open") !== stage) { D.stage = r.form.stage; setStage(r.form.stage); }
-      if (r.saved && r.saved.status !== state.status) {
-        var was = state.status; apply(r.saved);
-        if (was === "READY" && r.saved.status === "DRAFT") banner("Back to DRAFT: something is still needed. Check our email, then tap READY again.", "warn");
-      }
+      if (r.saved && r.saved.status !== state.status) apply(r.saved);
+      if (was === "READY" && state.status === "DRAFT") banner("Back to Draft: something is still needed.", "warn");
     }, function () {});
   }
   setInterval(poll, 30000);
@@ -938,15 +1033,15 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       if (!booted) { booted = true; boot(INLINE.form, null); }
       conn("Not connected");
       if (tapped) setStatus(tapped);   // shows the tap as chosen with the not-connected line
-      if (e && e.code === "unknown") setReadOnly("This copy's link no longer works. Reply to our email and we'll send a fresh one.");
+      if (e && e.code === "unknown") closed();
     });
     return;
   }
-  if (!T) { gate("This page needs the link from our email. Open the checklist from that link."); return; }
-  if (!API) { gate("The checklist isn't connected yet. Reply to our email and we'll sort it out."); return; }
+  if (!T) { gate("Open this form from your link."); return; }
+  if (!API) { gate("Not connected yet."); return; }
   read().then(function (r) { online = true; conn("Connected"); boot(r.form, r.saved); }, function (e) {
-    gate(e && e.code === "unknown" ? "This link isn't working. Reply to our email and we'll send a fresh one."
-                                   : "We couldn't open your checklist just now. Check your connection and try again.");
+    gate(e && e.code === "unknown" ? CLOSED
+                                   : "Couldn't open your form. Check your connection and try again.");
   });
 })();
 </script>
