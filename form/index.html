@@ -10,6 +10,13 @@
      desk's answers (public_note, formlink.py --note), any post-run questions and Changes or questions show.
      A Workfile copy redraws from the backend's data when questions or the note changed since it was made.
      Once post-run questions exist the START sections hide: the form then shows only what is left to answer.
+     Nothing about the status sits above the lines (Matt 2026-10-13): one block at the bottom holds the status with how
+     many questions are still blank, the help line, the buttons, the terms line, the saved message and the history, and
+     READY with a question blank warns once, then sends on the next tap. The one thing above the lines is a READY the
+     desk sent back: note_kind "not_ready" (formlink.py --send-back) shows public_note as "Not ready yet" while DRAFT,
+     first as a red pop-out (a DOM overlay), then as a red banner pinned at the top until the status changes. A line or
+     post-run question marked "required" (true, or a list of lanes) blocks READY, and DONE once the report is back (never
+     NEEDS CHANGE): the same pop-out lists what is missing, by the item's "need" line when it has one.
      Under the buttons: "By tapping READY you agree to the ... Terms for this order" (Matt 2026-10-11: READY is the
      agreement). house_prompts.lane "review" is a partner reviewer's form (review help, no value line). house_prompts.lane "desk" (partial and full desk) is the minimal form: DRAFT and READY, no checklist; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. READY needs the tapper's initials (answers.ready_by), since a shared link cannot say who tapped, except on the desk and regression lanes' short forms (Matt 2026-10-12). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
      anything else = the A&AP Service Terms (terms.html).
@@ -132,8 +139,11 @@ header svg { width: 56px; height: 32.9px; flex: none; }
   .st[data-s="DRAFT"], .st[data-s="NEEDS_CHANGE"] { border-radius: var(--r-2) var(--r-2) 0 0; }
   .st[data-s="READY"], .st[data-s="DONE"] { border-radius: 0 0 var(--r-2) var(--r-2); margin: -1px 0 0; }
 }
-.status-help { font-size: var(--fs-14); color: var(--ink-2); line-height: var(--lh); margin: var(--s-3) 0 0; }
+.status-help { font-size: var(--fs-14); color: var(--ink-2); line-height: var(--lh); margin: var(--s-1) 0 var(--s-4); }
 .status-help b { color: var(--ink); font-weight: 600; }
+.status-now { margin: 0; font-size: var(--fs-15); line-height: var(--lh); color: var(--ink); }   /* the status, read only, over its buttons */
+.status-now [data-s="DRAFT"] { color: var(--draft); } .status-now [data-s="READY"] { color: var(--ready); }
+.status-now [data-s="NEEDS_CHANGE"] { color: var(--change); } .status-now [data-s="DONE"] { color: var(--done); }
 .terms-line { font-size: var(--fs-13); color: var(--ink-2); line-height: var(--lh); margin: var(--s-2) 0 0; }
 .terms-line[data-initials] { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-2); margin-top: var(--s-3); }
 .terms-line label { color: var(--ink); font-weight: 600; font-size: var(--fs-14); }
@@ -153,6 +163,24 @@ header svg { width: 56px; height: 32.9px; flex: none; }
 .banner.warn::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.5' fill='none' stroke='%237a4300' stroke-width='1.6'/%3E%3Cpath d='M8 4.8v3.9' stroke='%237a4300' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='11.3' r='1' fill='%237a4300'/%3E%3C/svg%3E"); }
 .history { font-size: var(--fs-13); color: var(--ink-2); line-height: var(--lh); margin: var(--s-3) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
 .history:empty { display: none; }
+/* A READY the desk sent back, and why: a red pop-out on arrival, then this red banner pinned at the top (the one thing
+   above the lines) until the status changes. Plain DOM and inline CSS, so it works in TOTAL's Workfile preview. */
+#notready { position: sticky; top: 0; z-index: 5; max-height: 45vh; overflow: auto; margin: 0 0 var(--s-4);
+            background: var(--danger); color: #fff; border-color: var(--danger); border-left-color: #7d1f17;
+            font-size: var(--fs-15); box-shadow: 0 2px 8px rgba(0, 0, 0, .25); }
+#notready::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.5' fill='none' stroke='%23fff' stroke-width='1.6'/%3E%3Cpath d='M8 4.8v3.9' stroke='%23fff' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='11.3' r='1' fill='%23fff'/%3E%3C/svg%3E"); }
+#notready b { display: block; font-weight: 700; }
+#notready span { white-space: pre-line; }
+.pop { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; padding: var(--s-4);
+       background: rgba(28, 28, 28, .6); animation: fade var(--dur) var(--ease); }
+.pop-box { width: 100%; max-width: 440px; max-height: 100%; overflow: auto; background: var(--card); border-radius: var(--r-2); box-shadow: 0 12px 40px rgba(0, 0, 0, .35); }
+.pop-title { margin: 0; padding: var(--s-4) var(--s-5); background: var(--danger); color: #fff; font-size: var(--fs-20); font-weight: 700; line-height: var(--lh-tight); }
+.pop-why { margin: 0; padding: var(--s-5) var(--s-5) 0; white-space: pre-line; font-size: var(--fs-16); line-height: var(--lh); color: var(--ink); }
+.pop-ok { display: block; width: calc(100% - 2 * var(--s-5)); min-height: 48px; margin: var(--s-5); border: 0; border-radius: var(--r-2);
+          background: var(--danger); color: #fff; font: 700 var(--fs-16)/1.2 var(--font); cursor: pointer; }
+.pop-ok:hover, .pop-ok:active { box-shadow: inset 0 0 0 100px rgba(0, 0, 0, .12); }
+.pop-ok:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+@keyframes fade { from { opacity: 0; } }
 
 /* ---------- the checklist ---------- */
 h2 { font-size: var(--fs-15); font-weight: 600; line-height: var(--lh-tight); color: #fff; background: var(--secondary); margin: calc(var(--card-py) * -1) calc(var(--card-px) * -1) var(--s-3); padding: var(--s-3) var(--card-px); border-radius: 3px 3px 0 0; }
@@ -265,35 +293,37 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
 
   <div id="main" hidden>
+  <div class="banner" id="notready" role="status" hidden></div>
   <section class="card order" id="order" aria-label="The order"></section>
-
-  <section class="card" aria-labelledby="st-top">
-    <p class="status-label" id="st-top">STATUS</p>
-    <div class="status" data-status></div>
-    <p class="terms-line" data-terms></p>
-    <p class="terms-line" data-initials hidden><label for="initials">Your initials</label> <input id="initials" class="initials" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false"> <span>so we know who tapped READY</span></p>
-    <p class="status-help" id="help"></p>
-    <div id="banner" aria-live="polite"></div>
-    <div class="history" id="history"></div>
-  </section>
 
   <fieldset id="form"><div id="sections"></div></fieldset>
 
   <section class="card" aria-labelledby="st-bottom">
     <p class="status-label" id="st-bottom">DONE? SET THE STATUS</p>
+    <p class="status-now" id="now"></p>
+    <p class="status-help" id="help"></p>
     <div class="status" data-status></div>
     <p class="terms-line" data-terms></p>
-    <div id="banner2" aria-live="polite"></div>
+    <p class="terms-line" data-initials hidden><label for="initials">Your initials</label> <input id="initials" class="initials" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false"> <span>so we know who tapped READY</span></p>
+    <div id="banner" aria-live="polite"></div>
+    <div class="history" id="history"></div>
   </section>
   </div>
 
   <p class="foot">The value is yours alone. We ask for it only once the report is built, and enter it exactly as you give it. · A&amp;AP</p>
 </div>
+<div class="pop" id="pop" role="alertdialog" aria-modal="true" aria-labelledby="pop-title" aria-describedby="pop-why" hidden>
+  <div class="pop-box">
+    <p class="pop-title" id="pop-title">Not ready yet</p>
+    <p class="pop-why" id="pop-why"></p>
+    <button type="button" class="pop-ok" id="pop-ok">OK, I'll fix it</button>
+  </div>
+</div>
 
 <script type="application/json" id="checklist">
 {
  "sections": [
-  {"title": "To finish your report", "note": "Answer these, then tap your status again to send them.", "lines": [
+  {"title": "To finish your report", "note": "Answer these, then tap READY at the bottom.", "lines": [
    {"kind": "questions"}
   ]},
   {"title": "Your inspection", "stage": "open", "lines": [
@@ -360,8 +390,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   var STAGES = {
     open: { statuses: ["DRAFT", "READY"], help: "Tick what's right, pick your calls, then tap <b>READY</b>. READY means your inspection is done and your photos, sketch and files are in the Workfile. Blanks stay blank; anything we still need comes back here after the build.",
             refused: "The report isn't back with you yet. Tap READY when your checklist is done." },
-    returned: { statuses: ["NEEDS_CHANGE", "DONE"], help: "Review the report in TOTAL. If it reads right, sign and deliver it as you always do, then tap <b>DONE</b>. For a change or a question, write it below and tap <b>NEEDS CHANGE</b>; our answer shows at the top of this form.",
-                refused: "The report is back in your folder now. Tap NEEDS CHANGE or DONE." }
+    returned: { statuses: ["NEEDS_CHANGE", "DONE"], help: "Review the PDF we emailed you. If it reads right, enter your final value above and tap <b>DONE</b>; your finished report then goes into your folder in TOTAL. For a change or a question, write it above and tap <b>NEEDS CHANGE</b>; our answer shows at the top of this form.",
+                refused: "Your report is back for your review now. Tap NEEDS CHANGE or DONE." }
   };
   var SENT = "Saved with A&AP. We'll email you when it's back.";
   var THANKS = "Saved with A&AP. Thank you.";
@@ -388,7 +418,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     (kids || []).forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
     return n;
   }
-  function changed() { edits++; afterEdit(); }
+  function changed() { edits++; paintNow(); afterEdit(); }
   function grow(t) {
     if (t.tagName !== "TEXTAREA" || !t.isConnected) return;
     t.style.height = "auto"; t.style.height = (t.scrollHeight + 3) + "px";
@@ -459,10 +489,27 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function questions() {           // asked after the run: a box or buttons under each question
     return (D.questions || []).map(function (q) {
-      var name = "q_" + q.id;
-      if (q.kind === "choice") return el("div", { cls: "line wide" }, [el("span", { cls: "lbl", text: q.text }), taps(name, q.text, q.choices || [])]);
-      return text(name, q.text, { multi: true });
+      var name = "q_" + q.id, row = q.kind === "choice" ? el("div", { cls: "line wide" }, [el("span", { cls: "lbl", text: q.text }), taps(name, q.text, q.choices || [])])
+        : text(name, q.text, { multi: true });
+      if (needs(q.required)) musts.push({ key: name, label: q.need || q.text, node: row });
+      return row;
     });
+  }
+  // Matt 2026-10-13: a line or question marked "required" (true, or a list of lanes; "default" when the order names
+  // none) must be answered before READY sends (open) or DONE sends (returned; NEEDS CHANGE never asks): the red pop-out
+  // lists what is missing, by its "need" line when it has one, and READY leaves the form DRAFT.
+  var musts = [];
+  function needs(r) { return r === true || (Array.isArray(r) && r.indexOf((D.house_prompts || {}).lane || "default") >= 0); }
+  function missing() {             // required lines and questions on show and still empty
+    return musts.filter(function (m) {
+      var v = state.answers[m.key], card = m.node.closest("section");
+      return m.node.isConnected && card && !card.hidden && !(v === true || typeof v === "number" || (typeof v === "string" && v.trim()));
+    });
+  }
+  function brief(s) {              // one short line: its first sentence, or its first 88 characters
+    s = String(s).replace(/\s+/g, " ").trim();
+    var m = s.match(/^.{10,120}?[.?!](?=\s|$)/);
+    return m ? m[0] : s.length > 90 ? s.slice(0, 88).replace(/\s+\S*$/, "") + "…" : s;
   }
   function changes(count) {
     var rows = [];
@@ -514,9 +561,14 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function renderSections() {
     var host = $("sections");
+    musts = [];
     CHECKLIST.sections.forEach(function (sec) {
       var nodes = [];
-      sec.lines.forEach(function (line) { render(line).forEach(function (n) { nodes.push(n); }); });
+      sec.lines.forEach(function (line) {
+        var made = render(line);
+        if (made.length && line.key && needs(line.required)) musts.push({ key: line.key, label: line.need || (made[0].querySelector(".lbl") || made[0]).textContent, node: made[0] });
+        made.forEach(function (n) { nodes.push(n); });
+      });
       if (!nodes.length) return;       // their file settled the whole section
       var factors = (D.house_prompts || {}).lane === "regression" && sec.lines.some(function (line) { return line.kind === "questions"; });
       var card = el("section", { cls: "card" }, [el("h2", { text: factors ? "Factors to test" : sec.title }),
@@ -533,7 +585,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     fact("Property", O.property);
     fact("Client", O.client);
     fact("Due", O.due_date);
-    if (D.public_note) box.appendChild(el("div", { cls: "note", text: D.public_note }));
+    if (D.public_note && D.note_kind !== "not_ready") box.appendChild(el("div", { cls: "note", text: D.public_note }));
   }
   function paintAll() { Object.keys(controls).forEach(function (k) { controls[k].set(state.answers[k]); }); }
 
@@ -559,17 +611,14 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var review = (D.house_prompts || {}).lane === "review";
     var regression = (D.house_prompts || {}).lane === "regression";    // a regression form shows like the desk lane
     var desk = (D.house_prompts || {}).lane === "desk" || regression;
-    $("help").innerHTML = review ? "Review the report in TOTAL. For a change or a question, write it below and tap <b>NEEDS CHANGE</b>; our answer shows at the top of this form. When it's ready for the appraiser, tap <b>DONE</b>. Please don't sign it." :
+    $("help").innerHTML = review ? "Review the report in TOTAL. For a change or a question, write it above and tap <b>NEEDS CHANGE</b>; our answer shows at the top of this form. When it's ready for the appraiser, tap <b>DONE</b>. Please don't sign it." :
       regression ? "Save the report, pick the factors, then tap <b>READY</b>. We run a regression on the MLS export in this report's Workfile, post the results at the top of this form and email them to you. The factors are information; you decide what to use." :
-      built0 ? "Your report is built. Answer the questions below, then tap <b>READY</b>; we finish it and put it back in your folder." :
+      built0 ? "Your report is built. Answer the questions above, then tap <b>READY</b>; we finish it and email you the PDF to review." :
       desk && stage === "open" ? "When your inspection is done and your photos, sketch and files are in the Workfile: save the report, tap <b>READY</b>, then close it. We check your files and email you when production starts." : STAGES[stage].help;
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = review || desk; });
     // After the run the questions are all that is left to answer: the START sections (already answered) step aside.
     var built = (D.questions || []).length > 0;
     document.querySelectorAll("[data-stage]").forEach(function (c) { var st = c.getAttribute("data-stage"); c.hidden = st !== stage || (st === "open" && built); });
-    // A form with nothing between the two status blocks (the minimal desk form) shows the top one only.
-    var shown = Array.prototype.some.call($("sections").children, function (c) { return !c.hidden; });
-    document.querySelectorAll('[aria-labelledby="st-bottom"]').forEach(function (b) { b.hidden = !shown; });
     // Matt 2026-10-11: tapping READY is the agreement to this order's terms; the lane picks which terms.
     var selfServ = (D.house_prompts || {}).lane === "self-service";
     document.querySelectorAll("[data-initials]").forEach(function (p) { p.hidden = stage !== "open" || desk; });   // Matt 2026-10-12: no initials on the desk lane
@@ -589,15 +638,41 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     });
     var h = state.history.slice(-4).reverse().map(function (e) { return LABEL[e.status] + " " + when(e.at); });
     $("history").textContent = h.length ? "History: " + h.join(" · ") : "";
+    paintNow();
+    // Matt 2026-10-13: a READY the desk sent back says so at the very top, with why, while the form is DRAFT again:
+    // a red pop-out when it arrives ("make it red and a popout and very obvious"), then the red banner pinned there.
+    var nr = $("notready"), back = D.note_kind === "not_ready" && !!D.public_note && state.status === "DRAFT";
+    nr.textContent = ""; nr.hidden = !back;
+    if (back) nr.appendChild(el("div", null, [el("b", { text: "Not ready yet" }), el("span", { text: D.public_note })]));
+    if (!back) { if (popKind === "back") pop(false); }   // pops once per reason, once boot settles; his own DRAFT tap never brings it back
+    else if (popped !== D.public_note) setTimeout(function () { if (!$("notready").hidden && popped !== D.public_note) { popped = D.public_note; pop(D.public_note, "back"); } }, 0);
+  }
+  var popped = "", popKind = "", popTo = null;   // popTo: the first missing line, shown once the pop-out closes
+  function pop(text, kind, title) {   // the red pop-out: a DOM overlay, never alert() or a window
+    var p = $("pop"), wrap = document.querySelector(".wrap");
+    $("pop-title").textContent = title || "Not ready yet";
+    if (!text) {
+      if (p.hidden) return;
+      p.hidden = true; wrap.inert = false; popKind = "";
+      if (popTo) { popTo.scrollIntoView({ block: "center" }); var f = popTo.querySelector("input, textarea, button"); if (f) f.focus({ preventScroll: true }); popTo = null; }
+      return;
+    }
+    $("pop-why").textContent = text; popKind = kind; p.hidden = false; wrap.inert = true; $("pop-ok").focus();
+  }
+  $("pop-ok").addEventListener("click", function () { pop(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") pop(false); });
+  // The status, read only, sits just above its buttons with how many questions are still blank (Matt 2026-10-13: a
+  // READY tapped at the top sent nine post-run questions blank).
+  function paintNow() {
+    var s = state.status, k = stage === "open" ? blanks() : 0, f = (D.house_prompts || {}).lane === "regression" ? " factor" : " question";
+    $("now").innerHTML = "Status: <b data-s=\"" + s + "\">" + LABEL[s] + "</b>." + (k ? " " + k + f + (k === 1 ? " above is" : "s above are") + " still blank." : "");
   }
   function when(iso) {
     var d = new Date(iso); if (isNaN(d)) return "";
     return d.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
   }
   function banner(msg, kind) {
-    ["banner", "banner2"].forEach(function (id) {
-      var b = $(id); b.textContent = msg || ""; b.className = msg ? "banner " + (kind || "ok") : "";
-    });
+    var b = $("banner"); b.textContent = msg || ""; b.className = msg ? "banner " + (kind || "ok") : "";
   }
   function conn(msg) { $("conn").textContent = msg; }
 
@@ -696,16 +771,32 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       banner("You changed answers. Tap " + (stage === "open" ? "READY" : "NEEDS CHANGE or DONE") + " to save them.", "warn");
     }
   }
+  function blanks() {              // post-run questions still blank (some may rightly stay blank)
+    return (D.questions || []).filter(function (q) { var v = state.answers["q_" + q.id]; return v == null || !String(v).trim(); }).length;
+  }
+  var nudged = false;              // Matt 2026-10-13: READY with a question blank warns once; the next READY sends anyway
   function setStatus(s) {
     if (readOnly) return;
     if (s === "READY" && ["desk", "regression"].indexOf((D.house_prompts || {}).lane) < 0 && !String(state.answers.ready_by || "").trim()) {
       banner("Add your initials by the READY button, then tap READY again.", "warn"); $("initials").focus(); return;
+    }
+    var gaps = s === "READY" || s === "DONE" ? missing() : [];
+    if (gaps.length) {               // required answers missing: say what and never send; READY stays (or goes back to) DRAFT
+      popTo = gaps[0].node; banner();
+      pop("Still needed before " + s + ":\n" + gaps.map(function (m) { return "• " + brief(m.label); }).join("\n"), "check",
+          s === "DONE" ? "Not done yet" : "Not ready yet");
+      if (s === "READY" && state.status === "READY") setStatus("DRAFT");
+      return;
+    }
+    if (s === "READY" && !nudged && blanks()) {
+      nudged = true; banner("Some questions are blank. Tap READY again to send anyway.", "warn"); return;
     }
     clearTimeout(timer);
     state.status = s;
     paintStatus();
     if (connecting) { tapped = s; banner("Sending…", "ok"); return; }
     if (!online) { banner("Not connected, so this didn't reach us. Your answers are still on this page.", "warn"); return; }
+    nudged = false;
     conn("Sending…");
     write(true).then(function (r) {
       conn("Saved " + when(new Date().toISOString()));
@@ -781,10 +872,10 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || ""); }
+  function newer(f) { return JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || "") || (f.note_kind || "") !== (D.note_kind || ""); }
   function refresh(f) {
     D = f; O = D.order || {}; controls = {}; $("order").innerHTML = ""; $("sections").innerHTML = "";
-    renderOrder(); renderSections(); paintAll(); document.querySelectorAll("textarea").forEach(grow);
+    renderOrder(); renderSections(); paintAll(); setStage(D.stage); document.querySelectorAll("textarea").forEach(grow);
   }
   function boot(form, saved) {
     D = form || {}; O = D.order || {};
