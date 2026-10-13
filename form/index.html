@@ -22,7 +22,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-13.9">
+<html lang="en" data-build="v2026-10-13.10">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -891,6 +891,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     conn("Sending…");
     write(true).then(function (r) {
       conn("Saved " + when(new Date().toISOString()));
+      if (s === "READY") { fastUntil = Date.now() + 120000; pollSoon(); }
       banner(s === "DRAFT" ? "Draft saved." : s === "DONE" ? THANKS : s === "READY" ? readyNote() : SENT, "ok");
     }, function () {});
   }
@@ -987,23 +988,30 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     clearTimeout(timer); timer = null;
     try { post(JSON.stringify(body(false)), true).catch(function () {}); } catch (e) {}
   }
-  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flush(); });
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flush(); else poll(); });
   window.addEventListener("pagehide", flush);
 
-  // While open, look for the desk's changes every 30 seconds (Matt 2026-10-11: "it seems to lag"): new questions or
-  // answers, the stage, or a status the desk set (back to DRAFT). Never while he has unsaved typing or a tap in flight.
+  // While open, look for the desk's changes every 30 seconds (Matt 2026-10-11: "it seems to lag"), every 10 for two
+  // minutes after a READY: new questions or answers, the stage, or a status the desk set (a send-back: DRAFT and the red
+  // note). Never while he has unsaved typing or a tap in flight. A website tab put away waits; a Workfile copy never
+  // does, since TOTAL's preview may not report itself visible (Matt 2026-10-13: "the red did not show up on the total
+  // workfile form").
+  var pollT = null, fastUntil = 0, polling = false;
+  function pollSoon() { clearTimeout(pollT); pollT = setTimeout(function () { poll(); pollSoon(); }, Date.now() < fastUntil ? 10000 : 30000); }
   function poll() {
-    if (document.visibilityState !== "visible" || readOnly || !online || connecting || tapped || edits !== savedEdits || timer) return;
+    if ((!INLINE && document.visibilityState === "hidden") || polling || readOnly || !online || connecting || tapped || edits !== savedEdits || timer) return;
+    polling = true;
     read().then(function (r) {
+      polling = false;
       if (edits !== savedEdits) return;
       var was = state.status;
       if (r.form && newer(r.form)) { refresh(r.form); if (r.saved) apply(r.saved); }   // his cleared boxes too
       if (r.form && (r.form.stage || "open") !== stage) { D.stage = r.form.stage; setStage(r.form.stage); }
       if (r.saved && r.saved.status !== state.status) apply(r.saved);
       if (was === "READY" && state.status === "DRAFT") banner("Back to Draft: something is still needed.", "warn");
-    }, function () {});
+    }, function () { polling = false; });
   }
-  setInterval(poll, 30000);
+  pollSoon();
 
   // ---------- go ----------
   if (INLINE) {                       // a one-file copy (a report's Workfile): opens on the latest from the backend
@@ -1021,13 +1029,13 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       conn("Connected");
       if (r.form && newer(r.form) && edits === savedEdits && !tapped) refresh(r.form);
       if (r.form) setStage(r.form.stage); if (r.saved) apply(r.saved);
-      if (tapped) { setStatus(tapped); banner("Sending…", "ok"); } else if (edits !== savedEdits) afterEdit();   // typing before it connected
+      if (tapped) { var s = tapped; tapped = null; setStatus(s); } else if (edits !== savedEdits) afterEdit();   // typing before it connected
     }, function (e) {
       clearTimeout(fallback);
       connecting = false;
       if (!booted) { booted = true; boot(INLINE.form, null); }
       conn("Not connected");
-      if (tapped) setStatus(tapped);   // shows the tap as chosen with the not-connected line
+      if (tapped) { var s = tapped; tapped = null; setStatus(s); }   // shows the tap as chosen with the not-connected line
       if (e && e.code === "unknown") closed();
     });
     return;
