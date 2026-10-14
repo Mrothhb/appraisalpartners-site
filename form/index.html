@@ -22,7 +22,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-13.11">
+<html lang="en" data-build="v2026-10-14.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -165,9 +165,12 @@ header .conn { color: rgba(255, 255, 255, .78); }
 .now-row { display: flex; align-items: center; gap: var(--s-2); }
 #banner:empty { display: none; }
 .status-now { display: inline-block; margin: 0; padding: var(--s-1) var(--s-3); border-radius: var(--r-2); background: var(--tint); font-size: var(--fs-14); line-height: var(--lh); color: var(--ink); }
+.approved .status-now { color: var(--success); background: var(--success-bg); }
+.approved .more, .approved .talk-row { display: none; }
 /* The review view (Matt 2026-10-13: "just show the value we have, and they can click a green checkmark"): our value, a green
    Agree that is his DONE, Needs change beside it, one small line; no heading or help. */
 .agree .now-row, .agree #help { display: none; }
+.agree.approved .now-row { display: flex; margin-bottom: var(--s-4); }
 .agree-value { margin: 0 0 var(--s-4); color: var(--ink); }
 .agree-value span { display: block; margin: 0 0 var(--s-1); font-size: var(--fs-12); font-weight: 600; letter-spacing: .06em; color: var(--ink-2); line-height: 1.3; }
 .agree-value b { display: block; font-size: 28px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
@@ -178,8 +181,8 @@ header .conn { color: rgba(255, 255, 255, .78); }
 .more:hover { color: var(--link-hover); }
 .more:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--r-1); }
 .agree .status { gap: var(--s-3); }                         /* two separate, plain choices */
-.agree .st[data-s="DONE"], .agree .st[data-s="DONE"][aria-pressed="true"] { background: var(--success); border-color: var(--success); color: #fff; }
-.agree .st[data-s="DONE"]:hover { background: var(--success); border-color: var(--success); box-shadow: inset 0 0 0 100px rgba(0, 0, 0, .08); }
+.st[data-s="DONE"], .st[data-s="DONE"][aria-pressed="true"] { background: var(--success); border-color: var(--success); color: #fff; }
+.st[data-s="DONE"]:hover { background: var(--success); border-color: var(--success); box-shadow: inset 0 0 0 100px rgba(0, 0, 0, .08); }
 .terms-line { font-size: var(--fs-13); color: var(--ink-2); line-height: var(--lh); margin: var(--s-3) 0 0; }
 .terms-line a { color: var(--ink-2); text-decoration: underline; } .terms-line a:hover { color: var(--ink); }
 
@@ -426,12 +429,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   var STAGES = {
     open: { statuses: ["DRAFT", "READY"], help: "Save the report, then tap <b>Ready</b>.",   // TOTAL writes dragged-in Workfile files only on a save
             refused: "Not back with you yet. Tap Ready when done." },
-    returned: { statuses: ["NEEDS_CHANGE", "DONE"], help: "Review the PDF. Agree? Tap <b>Done</b>. Changes? Tap <b>Request Changes</b>.",
-                refused: "Your report is back. Tap Request Changes or Done." }
+    returned: { statuses: ["NEEDS_CHANGE", "DONE"], help: "Review the PDF, then approve or request changes.",
+                refused: "Your report is back. Approve or request changes." }
   };
   var SENT = "Saved.";
   var CLOSED = "This form is closed. Your final report is in your folder.";   // a removed key (formlink.py --close)
-  var THANKS = "Thanks. Your report is on its way to your folder.";
   function asked() { return (D.questions || []).some(function (q) { return q.kind !== "confirm"; }); }   // B: our questions are out
   function readyNote() { return asked() ? "Got it. Back to work." : D.accepted_at ? "Files checked. In production." : "Checking your files…"; }   // after READY
   var NCHANGES = 5;
@@ -445,6 +447,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   var online = false, readOnly = false, edits = 0, savedEdits = 0, timer = null, writing = Promise.resolve();
   var connecting = false, tapped = null;   // a status tapped while the first read is under way goes out once it connects
   var savedAt = null;          // the stored answers' updatedAt, as last read
+  var approved = false;        // only a saved DONE in the returned stage locks the form
+  function approvalNote() {
+    var h = state.history.filter(function (e) { return e.status === "DONE"; });
+    return "Approved " + when(h.length ? h[h.length - 1].at : savedAt) + ". Your final report is on its way to your folder.";
+  }
 
   // ---------- small DOM helpers ----------
   function el(tag, attrs, kids) {
@@ -703,7 +710,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (box1) box1.placeholder = agreeQ ? "Describe your requested change." : "";
     $("agree-value").textContent = "";
     if (agreeQ) { $("agree-value").appendChild(el("span", { text: "VALUE" })); $("agree-value").appendChild(el("b", { text: agreeQ.value })); }
-    statusBtns.forEach(function (b) { var st = b.getAttribute("data-s"); b.textContent = st === "NEEDS_CHANGE" ? "Request Changes" : agreeQ && st === "DONE" ? "Approve & Deliver" : WORD[st]; });
+    statusBtns.forEach(function (b) { var st = b.getAttribute("data-s"); b.textContent = st === "NEEDS_CHANGE" ? "Request Changes" : stage === "returned" && st === "DONE" ? "Approve & Deliver" : WORD[st]; });
     document.querySelectorAll("[data-stage]").forEach(function (c) { var st = c.getAttribute("data-stage"); c.hidden = st !== stage || (st === "open" && built); });
     // Matt 2026-10-11: tapping READY is the agreement to this order's terms; the lane picks which terms.
     var selfServ = (D.house_prompts || {}).lane === "self-service";
@@ -717,14 +724,22 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     paintStatus();
   }
   function paintStatus() {
+    var locked = readOnly || approved || (stage === "returned" && state.status === "DONE" && pendingTaps > 0);
+    $("form").disabled = locked;
+    $("form").classList.toggle("approved", approved);
+    document.querySelectorAll("#form input, #form textarea, #form button, #form select").forEach(function (c) { c.disabled = locked; });
+    $("now").closest("section").classList.toggle("approved", approved);
+    $("help").hidden = approved;
+    $("agree-hint").hidden = approved || !agreeQ;
     statusBtns.forEach(function (b) {
       b.setAttribute("aria-pressed", String(b.getAttribute("data-s") === state.status));
-      b.hidden = STAGES[stage].statuses.indexOf(b.getAttribute("data-s")) < 0 || b.getAttribute("data-s") === "DRAFT";   // answers autosave
-      b.disabled = readOnly;
+      b.hidden = approved || STAGES[stage].statuses.indexOf(b.getAttribute("data-s")) < 0 || b.getAttribute("data-s") === "DRAFT";   // answers autosave
+      b.disabled = locked;
     });
-    document.querySelectorAll("[data-status]").forEach(function (bar) { bar.classList.toggle("one", stage === "open"); });
-    var h = state.history.slice(-4).reverse().map(function (e) { return LABEL[e.status] + " " + when(e.at); });
+    document.querySelectorAll("[data-status]").forEach(function (bar) { bar.hidden = approved; bar.classList.toggle("one", stage === "open"); });
+    var h = state.history.slice(-4).reverse().map(function (e) { return (stage === "returned" && e.status === "DONE" ? "Approved" : LABEL[e.status]) + " " + when(e.at); });
     $("history").textContent = h.length ? "History: " + h.join(" · ") : "";
+    $("history").hidden = !approved || !h.length;
     paintNow();
     // Matt 2026-10-13: a READY the desk sent back says so at the very top, with why, while the form is DRAFT again:
     // a red pop-out when it arrives ("make it red and a popout and very obvious"), then the red banner pinned there.
@@ -750,7 +765,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // 2026-10-13: a READY tapped at the top sent nine post-run questions blank).
   function paintNow() {
     var s = state.status, left = stage === "open" ? missing() : [];
-    $("now").innerHTML = "<b>" + (s === "READY" && stage === "open" && asked() ? "Answered" : WORD[s]) + "</b>";
+    $("now").innerHTML = "<b>" + (approved ? "Approved" : s === "READY" && stage === "open" && asked() ? "Answered" : WORD[s]) + "</b>";
     if (s !== "DRAFT") $("saved").hidden = true;
     statusBtns.forEach(function (b) {
       if (b.getAttribute("data-s") !== "READY") return;
@@ -812,6 +827,10 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     function confirm(tries) {
       return read().then(function (r) {
         var v = r.saved;
+        if (r.form && r.form.stage === "returned" && v && v.status === "DONE") {
+          if (send && s === "DONE") { checkedForm = r.form; return v; }
+          throw { code: "approved", form: r.form, saved: v };
+        }
         if (v && v.updatedAt !== before && (!send || v.status === s)) return v;
         // The fast desk check can send READY back before this read confirms it. Its history proves the tap saved;
         // repeating the POST here would turn the desk's DRAFT back into READY.
@@ -829,6 +848,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     }
     function once() { return post(doc).then(function () { return confirm(2); }); }
     writing = writing.catch(function () {}).then(function () {
+      if (approved) throw { code: "approved" };   // a queued autosave cannot follow approval
       before = savedAt;
       if (doc.length > MAX_BODY) throw { code: "too_large" };
       return once().catch(function (e) {
@@ -843,11 +863,17 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       var n = v.notificationAt && v.notificationAt[s];   // set when this save reserved the email notice
       return { notification: n && (!before || n > before) ? "sent" : "suppressed" };
     }, function (e) { if (send) pendingTaps--; failed(e); throw e; });
+    paintStatus();
     return writing;
   }
   function failed(e) {
     var code = e && e.code;
-    if (code === "unknown") {
+    paintStatus();
+    if (code === "approved") {
+      if (e.form) refresh(e.form);
+      if (e.saved) apply(e.saved);
+      paintStatus(); banner(approvalNote(), "ok"); conn("Approved"); return;
+    } else if (code === "unknown") {
       closed();
     } else if (code === "stage") {
       state.status = e.status; paintStatus();
@@ -864,7 +890,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = true; });
   }
   function afterEdit() {
-    if (!online || readOnly) return;
+    if (!online || readOnly || approved) return;
     if (state.status === "DRAFT") {           // drafts save on a pause in typing; sent forms wait for a status tap
       conn("Saving…");
       clearTimeout(timer);
@@ -878,7 +904,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   var nudged = false;              // Matt 2026-10-13: READY with a question blank warns once; the next READY sends anyway
   function setStatus(s) {
-    if (readOnly) return;
+    if (readOnly || approved || pendingTaps) return;
     var gaps = s === "READY" || s === "DONE" ? missing() : [];
     if (gaps.length) {               // required answers missing: say what and never send; READY stays (or goes back to) DRAFT
       gaps.forEach(function (m) { m.node.classList.add("need"); });
@@ -901,11 +927,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     nudged = false;
     conn("Sending…");
     write(true).then(function (r) {
-      conn("Saved " + when(new Date().toISOString()));
+      conn(approved ? "Approved" : "Saved " + when(new Date().toISOString()));
       if (s === "READY" && state.status === "DRAFT" && D.note_kind === "not_ready") {
         banner("Back to Draft: something is still needed.", "warn"); return;
       }
-      banner(s === "DRAFT" ? "Draft saved." : s === "DONE" ? THANKS : s === "READY" ? readyNote() : SENT, "ok");
+      banner(approved ? approvalNote() : s === "DRAFT" ? "Draft saved." : s === "READY" ? readyNote() : SENT, "ok");
     }, function () {});
   }
 
@@ -927,6 +953,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var rec = null, wanted = false, pending = "", android = /Android/i.test(ua);
     function off(why) { wanted = false; mic.classList.remove("on"); mic.setAttribute("aria-pressed", "false"); if (why) hint.textContent = why; }
     function append(w) {
+      if (readOnly || approved || $("form").disabled) return;
       w = (w || "").trim(); if (!w) return;
       var v = ta.value, sep = (!v || /\s$/.test(v)) ? "" : " ";
       if (!v || /[.!?]\s*$/.test(v)) w = w.charAt(0).toUpperCase() + w.slice(1);
@@ -948,7 +975,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       };
       rec.onend = function () {
         if (pending) { append(pending); pending = ""; }
-        if (wanted) { try { start(); return; } catch (e) { wanted = false; } }
+        if (wanted && !$("form").disabled) { try { start(); return; } catch (e) { wanted = false; } }
         if (mic.classList.contains("on")) off("Stopped. Tap the mic to talk more.");
       };
       rec.start();
@@ -966,17 +993,20 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     savedAt = saved.updatedAt || null;
     state.status = saved.status || state.status;
     state.history = Array.isArray(saved.history) ? saved.history.slice() : [];
+    approved = stage === "returned" && state.status === "DONE";
+    conn(approved ? "Approved" : "Connected");
+    if (approved) { clearTimeout(timer); timer = null; tapped = null; savedEdits = edits; pop(false); }
     if (edits === savedEdits) {      // saved answers win over the prefill; never over unsent typing
       if (saved.answers && typeof saved.answers === "object") state.answers = Object.assign({}, D.prefill || {}, saved.answers);
       if (Array.isArray(saved.changes)) { state.changes = saved.changes.slice(0, NCHANGES); while (state.changes.length < NCHANGES) state.changes.push(""); }
       paintAll();
     }
     paintStatus();
-    if (state.status !== "DRAFT") banner(state.status === "DONE" ? THANKS : state.status === "READY" && stage === "open" ? readyNote() : SENT, "ok");
+    banner(approved ? approvalNote() : state.status === "DRAFT" ? "" : state.status === "READY" && stage === "open" ? readyNote() : SENT, "ok");
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || "") || (f.note_kind || "") !== (D.note_kind || "") || (f.report_pdf || "") !== (D.report_pdf || "") || (f.accepted_at || "") !== (D.accepted_at || ""); }
+  function newer(f) { return (f.stage || "open") !== stage || JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || "") || (f.note_kind || "") !== (D.note_kind || "") || (f.report_pdf || "") !== (D.report_pdf || "") || (f.accepted_at || "") !== (D.accepted_at || ""); }
   function refresh(f) {
     D = f; O = D.order || {}; controls = {}; $("order").innerHTML = ""; $("sections").innerHTML = "";
     renderOrder(); renderSections(); paintAll(); setStage(D.stage); document.querySelectorAll("textarea").forEach(grow);
@@ -997,7 +1027,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   // A draft still waiting on its pause in typing goes out when the page is closed or put away.
   function flush() {
-    if (!online || readOnly || state.status !== "DRAFT" || edits === savedEdits || !timer) return;
+    if (!online || readOnly || approved || state.status !== "DRAFT" || edits === savedEdits || !timer) return;
     clearTimeout(timer); timer = null;
     try { post(JSON.stringify(body(false)), true).catch(function () {}); } catch (e) {}
   }
@@ -1023,7 +1053,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       if (r.form && (r.form.stage || "open") !== stage) { D.stage = r.form.stage; setStage(r.form.stage); }
       if (r.saved && r.saved.status !== state.status) apply(r.saved);
       if (was === "READY" && state.status === "DRAFT") banner("Back to Draft: something is still needed.", "warn");
-    }, function () { polling = false; });
+    }, function (e) { polling = false; if (e && e.code === "unknown") closed(); });
   }
   pollSoon();
 
