@@ -22,7 +22,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-13.10">
+<html lang="en" data-build="v2026-10-13.11">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -424,7 +424,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   var WORD = { DRAFT: "Draft", READY: "Ready", NEEDS_CHANGE: "Changes requested", DONE: "Done" };   // what the customer reads
   // The order's stage picks the buttons: open until we send the report back, returned once it's in their folder.
   var STAGES = {
-    open: { statuses: ["DRAFT", "READY"], help: "Files saved in the Workfile? Tap <b>Ready</b>.",
+    open: { statuses: ["DRAFT", "READY"], help: "Save the report, then tap <b>Ready</b>.",   // TOTAL writes dragged-in Workfile files only on a save
             refused: "Not back with you yet. Tap Ready when done." },
     returned: { statuses: ["NEEDS_CHANGE", "DONE"], help: "Review the PDF. Agree? Tap <b>Done</b>. Changes? Tap <b>Request Changes</b>.",
                 refused: "Your report is back. Tap Request Changes or Done." }
@@ -690,7 +690,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var desk = (D.house_prompts || {}).lane === "desk" || regression;
     $("help").innerHTML = review ? "Review it in TOTAL; please don't sign. Changes? Tap <b>Request Changes</b>. Good to go? Tap <b>Done</b>." :
       regression ? "Save the report, pick the factors, tap <b>Ready</b>. Results show at the top; you decide what to use." :
-      built0 ? "Answer each, then tap <b>Ready</b>." : STAGES[stage].help;
+      built0 ? "Answer each, then tap <b>Ready</b>." :
+      stage === "open" && O.files_by === "email" ? "Tap <b>Ready</b> to start." : STAGES[stage].help;   // files by email, no Workfile
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = review || desk; });
     // After the run the questions are all that is left to answer: the START sections (already answered) step aside.
     var built = (D.questions || []).length > 0;
