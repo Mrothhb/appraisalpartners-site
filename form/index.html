@@ -22,7 +22,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-14.1">
+<html lang="en" data-build="v2026-10-14.2">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -200,6 +200,8 @@ header .conn { color: rgba(255, 255, 255, .78); }
 .banner.warn::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.5' fill='none' stroke='%237a4300' stroke-width='1.6'/%3E%3Cpath d='M8 4.8v3.9' stroke='%237a4300' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='11.3' r='1' fill='%237a4300'/%3E%3C/svg%3E"); }
 .history { font-size: var(--fs-13); color: var(--ink-2); line-height: var(--lh); margin: var(--s-3) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
 .history:empty { display: none; }
+#payment { margin: 0 0 var(--gap); background: var(--danger); color: #fff; border-color: var(--danger); border-left-color: #7d1f17; }
+#payment::before { display: none; }
 /* A READY the desk sent back, and why: a red pop-out on arrival, then this red banner pinned at the top (the one thing
    above the lines) until the status changes. Plain DOM and inline CSS, so it works in TOTAL's Workfile preview. */
 #notready { position: sticky; top: 0; z-index: 5; max-height: 45vh; overflow: auto; margin: 0 0 var(--gap);
@@ -330,6 +332,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
 
   <div id="main" hidden>
+  <div class="banner" id="payment" role="status" hidden></div>
   <div class="banner" id="notready" role="status" hidden></div>
   <section class="card order" id="order" aria-label="The order"></section>
   <section class="card report" id="report" aria-label="Your report" hidden></section>
@@ -630,6 +633,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     });
   }
   function renderOrder() {
+    var due = String(O.payment_due || "").trim();
+    $("payment").hidden = !due;
+    $("payment").textContent = due ? "Payment due: " + due + ". Your PDF download and TOTAL file are released once payment is received." : "";
     var box = $("order");
     function fact(k, v) { if (v) box.appendChild(el("div", null, [el("b", { text: k + ": " }), v])); }
     fact("Order", [O.code, O.order_id].filter(function (v, i, a) { return v && a.indexOf(v) === i; }).join(" · "));
@@ -660,20 +666,21 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // pane, or when the frame never loads, the one button instead (opens in the same tab there; untested in the pane).
   function renderReport() {
     var box = $("report"), m = /^https:\/\/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/.exec(D.report_pdf || "");
+    var due = !!String(O.payment_due || "").trim(), id = m ? m[1] + (due ? ":due" : ":paid") : "";
     box.hidden = stage !== "returned" || !m;
-    if (box.hidden || box.getAttribute("data-id") === m[1]) return;
-    box.setAttribute("data-id", m[1]); box.textContent = "";
+    if (box.hidden || box.getAttribute("data-id") === id) return;
+    box.setAttribute("data-id", id); box.textContent = "";
     var view = "https://drive.google.com/file/d/" + m[1] + "/view", pane = !!INLINE && location.protocol === "file:";
     var btn = el("a", { cls: "pdf-btn", href: view, target: pane ? "_self" : "_blank", rel: "noopener" }, ["Open report"]);
     box.appendChild(el("h2", null, ["Your report", O.property ? el("span", { text: O.property }) : null]));
-    if (pane) { box.appendChild(btn); return; }
+    if (pane) { if (!due) box.appendChild(btn); return; }
     var frame = el("iframe", { cls: "pdf-frame", src: "https://drive.google.com/file/d/" + m[1] + "/preview", title: "Your report", allow: "fullscreen" }),
         sheet = el("div", { cls: "pdf-sheet" }, [frame]);
     var foot = el("p", { cls: "pdf-foot" }, [el("a", { cls: "pdf-btn", href: view, target: "_blank", rel: "noopener", text: "Open report" })]);
     var loaded = false;
     frame.addEventListener("load", function () { loaded = true; });
-    setTimeout(function () { if (!loaded && frame.isConnected) { sheet.replaceWith(btn); foot.remove(); } }, 15000);
-    box.appendChild(sheet); box.appendChild(foot);
+    setTimeout(function () { if (!due && !loaded && frame.isConnected) { sheet.replaceWith(btn); foot.remove(); } }, 15000);
+    box.appendChild(sheet); if (!due) box.appendChild(foot);
   }
   function paintAll() { Object.keys(controls).forEach(function (k) { controls[k].set(state.answers[k]); }); }
 
@@ -1006,7 +1013,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return (f.stage || "open") !== stage || JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || "") || (f.note_kind || "") !== (D.note_kind || "") || (f.report_pdf || "") !== (D.report_pdf || "") || (f.accepted_at || "") !== (D.accepted_at || ""); }
+  function newer(f) { return JSON.stringify(f.order || {}) !== JSON.stringify(O) || (f.stage || "open") !== stage || JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || "") || (f.note_kind || "") !== (D.note_kind || "") || (f.report_pdf || "") !== (D.report_pdf || "") || (f.accepted_at || "") !== (D.accepted_at || ""); }
   function refresh(f) {
     D = f; O = D.order || {}; controls = {}; $("order").innerHTML = ""; $("sections").innerHTML = "";
     renderOrder(); renderSections(); paintAll(); setStage(D.stage); document.querySelectorAll("textarea").forEach(grow);
