@@ -22,7 +22,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-14.6">
+<html lang="en" data-build="v2026-10-14.7">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -700,14 +700,14 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     });
     return box;
   }
-  // A private, view-only PDF opens on request; payment holds withhold the link.
+  // A private Drive preview stays viewable during payment holds; viewer permissions prevent download, print and copy.
   function renderReport() {
     var box = $("report"), m = /^https:\/\/drive\.google\.com\/(?:file\/d\/([A-Za-z0-9_-]+)|(?:open|uc)\?(?:[^#]*&)?id=([A-Za-z0-9_-]+))/.exec(D.report_pdf || "");
     var due = !!String(O.payment_due || "").trim();
-    box.textContent = ""; box.hidden = stage !== "returned" || !m || due;
+    box.textContent = ""; box.hidden = stage !== "returned" || !m;
     if (box.hidden) return;
     box.appendChild(el("a", { cls: "pdf-btn", href: "https://drive.google.com/file/d/" + (m[1] || m[2]) + "/view",
-      target: !!INLINE && location.protocol === "file:" ? "_self" : "_blank", rel: "noopener", text: "View PDF" }));
+      target: !!INLINE && location.protocol === "file:" ? "_self" : "_blank", rel: "noopener", text: due ? "View PDF (view only)" : "View PDF" }));
   }
   function paintAll() { Object.keys(controls).forEach(function (k) { controls[k].set(state.answers[k]); }); }
 
