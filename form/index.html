@@ -8,6 +8,9 @@
      q_<id>. The order's internal note never reaches the page; public_note shows when there is one.
      Once the report is back (stage returned) the pre-report sections hide (Matt, 2026-10-11): only the order, the
      desk's calls, the PDF and material questions show; customers can request changes without an approval tap.
+     Once it is delivered (delivered_at; Matt, 2026-10-15) a question he answered before the delivery leaves the form
+     and his answer shows under History; one still blank, or asked after it, stays. "Change request sent" shows only
+     while his latest request is open: not yet in resolved_post_changes (formlink.py --delivered).
      A Workfile copy redraws from the backend's data when questions or the note changed since it was made.
      Once post-run questions exist the START sections hide: the form then shows only what is left to answer.
      Nothing about the status sits above the lines (Matt 2026-10-13): one block at the bottom holds the status (answers
@@ -22,7 +25,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-15.1">
+<html lang="en" data-build="v2026-10-15.2">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -571,8 +574,17 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       return el("div", { cls: "comp" }, rows);
     });
   }
+  // Matt 2026-10-15: once the report is delivered, a question he answered before the delivery leaves the form and his
+  // answer shows under History, read only; one still blank, or asked after the delivery, stays a question.
+  var filed = [];
+  function askedAt(f) { var e = (f.log || []).filter(function (x) { return x.what === "questions"; }).pop(); return e ? e.at : ""; }
   function questions() {           // asked after the run: a box or buttons under each question
-    return (D.questions || []).filter(function (q) { return q.kind !== "confirm" && (D.stage !== "returned" || (D.house_prompts || {}).lane === "review" || q.material !== false); }).map(function (q) {   // a confirm lives in the status block
+    var settled = D.stage === "returned" && (D.house_prompts || {}).lane !== "review" && !!D.delivered_at && !(Date.parse(askedAt(D)) > Date.parse(D.delivered_at));
+    return (D.questions || []).filter(function (q) { return q.kind !== "confirm" && (D.stage !== "returned" || (D.house_prompts || {}).lane === "review" || q.material !== false); }).filter(function (q) {
+      var v = state.answers["q_" + q.id];
+      if (settled && v != null && String(v).trim()) { filed.push(q); return false; }
+      return true;
+    }).map(function (q) {   // a confirm lives in the status block
       var name = "q_" + q.id, row = q.kind === "choice" ? el("div", { cls: "line wide" }, [el("span", { cls: "lbl", text: q.text }), taps(name, q.text, q.choices || [])])
         : q.short ? text(name, q.text, { short: true }) : text(name, q.text, { multi: true, rows: "1" });
       if (needs(q.required)) musts.push({ key: name, node: row });
@@ -650,7 +662,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function renderSections() {
     var host = $("sections");
-    musts = [];
+    musts = []; filed = [];
     CHECKLIST.sections.forEach(function (sec) {
       var nodes = [];
       sec.lines.forEach(function (line) {
@@ -804,10 +816,16 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var h = entries.reverse().filter(function (e) { return e.event === "post_change" || e.event === "delivered" || e.event === "updated" || e.status === "DONE"; }).map(function (e) { return (e.event === "post_change" ? "Change requested" : e.event === "delivered" ? "Delivered" : e.event === "updated" ? "Updated" : "Approved") + " " + when(e.at); });
     $("history-list").textContent = "";
     h.forEach(function (line) { $("history-list").appendChild(el("li", { text: line })); });
-    $("history").hidden = stage !== "returned" || !h.length;
+    filed.forEach(function (q) {     // his answers to the questions that left the form at delivery, read only
+      var said = String(state.answers["q_" + q.id] == null ? "" : state.answers["q_" + q.id]).trim(), asked = String(q.text || "").trim();
+      if (said) $("history-list").appendChild(el("li", null, [asked + (/[?.!:]$/.test(asked) ? " " : ": "), el("b", { text: said })]));
+    });
+    $("history").hidden = stage !== "returned" || !$("history-list").children.length;
     $("post-request").hidden = !customerReturned() && !approved;
     $("post-open").disabled = $("post-text").disabled = $("post-send").disabled = postBusy || !online || readOnly;
     var requests = state.post_changes || [], lastRequest = requests[requests.length - 1];
+    // Matt 2026-10-15: only while his latest request is open; the delivery that shipped it resolved it.
+    if (lastRequest && (D.resolved_post_changes || []).indexOf(lastRequest.id) >= 0) lastRequest = null;
     $("post-sent").hidden = !lastRequest;
     $("post-sent").textContent = lastRequest ? "Change request sent " + when(lastRequest.at) + ". We'll update your report and let you know." : "";
     paintNow();
@@ -1108,7 +1126,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return JSON.stringify(f.order || {}) !== JSON.stringify(O) || (f.stage || "open") !== stage || JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || "") || (f.note_kind || "") !== (D.note_kind || "") || (f.report_pdf || "") !== (D.report_pdf || "") || (f.accepted_at || "") !== (D.accepted_at || "") || (f.delivered_at || "") !== (D.delivered_at || "") || JSON.stringify(f.deliveries || []) !== JSON.stringify(D.deliveries || []); }
+  function newer(f) { return JSON.stringify(f.order || {}) !== JSON.stringify(O) || (f.stage || "open") !== stage || JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || "") || (f.note_kind || "") !== (D.note_kind || "") || (f.report_pdf || "") !== (D.report_pdf || "") || (f.accepted_at || "") !== (D.accepted_at || "") || (f.delivered_at || "") !== (D.delivered_at || "") || JSON.stringify(f.deliveries || []) !== JSON.stringify(D.deliveries || []) || askedAt(f) !== askedAt(D); }
   function refresh(f) {
     D = f; O = D.order || {}; controls = {}; $("order").innerHTML = ""; $("sections").innerHTML = "";
     renderOrder(); renderSections(); paintAll(); setStage(D.stage); document.querySelectorAll("textarea").forEach(grow);
@@ -1116,7 +1134,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function boot(form, saved) {
     D = form || {}; O = D.order || {};
-    state = { status: D.status || "DRAFT", answers: Object.assign({}, D.prefill || {}), changes: (D.changes || []).slice(), history: [] };
+    // His saved answers are in before the lines are drawn: a delivered form files the ones he answered under History.
+    state = { status: D.status || "DRAFT", answers: Object.assign({}, D.prefill || {}, saved && saved.answers && typeof saved.answers === "object" ? saved.answers : null), changes: (D.changes || []).slice(), history: [] };
     while (state.changes.length < NCHANGES) state.changes.push("");
     renderOrder();
     renderSections();
