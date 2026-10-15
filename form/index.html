@@ -22,7 +22,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-14.8">
+<html lang="en" data-build="v2026-10-15.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -400,9 +400,10 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
    {"kind": "questions"}
   ]},
   {"title": "Your inspection", "stage": "open", "lines": [
-   {"kind": "check", "key": "inspection_ok", "label": "I confirm: I inspected the interior and exterior myself; I measured to ANSI Z765-2021; the utilities were on; the smoke/CO detectors and water heater strapping meet local and state rules; I have no interest in this property or the parties and did no work on it in the 3 years before this order"},
+   {"kind": "choice", "key": "inspected_by", "label": "Who inspected the house", "options": ["I did, inside and out", "My assistant did, and I did not", "We both did", "My assistant did inside; I saw the exterior"], "open": true},
+   {"kind": "check", "key": "inspection_ok", "label": "I confirm: the house was measured to ANSI Z765-2021; the utilities were on; the smoke/CO detectors and water heater strapping meet local and state rules; I have no interest in this property or the parties and did no work on it in the 3 years before this order"},
    {"kind": "text", "key": "inspection_except", "label": "Except (what, and what you saw)", "wide": true},
-   {"kind": "text", "key": "helper", "label": "Anyone who helped on this order: name, credential (none, trainee, licensed, certified) and what they did", "wide": true, "open": true},
+   {"kind": "text", "key": "helper", "label": "Anyone who helped on this order: name, what they did, and their credential (none, trainee, licensed or certified, with the number and state)", "wide": true, "open": true},
    {"kind": "prompt", "key": "il_amc_fee", "prompt": "il_amc", "label": "Illinois: your fee from {} for this order, $", "text": true, "short": true, "open": true}
   ]},
   {"title": "Your calls on the house", "stage": "open", "note": "Ratings cover the exterior, interior and overall unless you say otherwise.", "lines": [
