@@ -25,7 +25,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-16.3">
+<html lang="en" data-build="v2026-10-16.4">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -111,9 +111,15 @@ header .conn { color: rgba(255, 255, 255, .78); }
 
 /* The order: label beside its value, our note under a rule */
 .order { font-size: var(--fs-body); }
-.order div { display: flex; gap: var(--s-2); align-items: baseline; margin: 0; padding: var(--s-1) 0; }
-.order div:first-child { padding-top: 0; }
-.order div:last-child { padding-bottom: 0; }
+.order .order-fact { display: flex; gap: var(--s-2); align-items: baseline; margin: 0; padding: var(--s-1) 0; overflow-wrap: anywhere; }
+.order .order-fact:first-child { padding-top: 0; }
+.order > .order-fact:last-child { padding-bottom: 0; }
+.order-head { display: grid; grid-template-columns: minmax(0, 1fr) fit-content(60%); align-items: baseline; gap: var(--s-2); }
+.order-head .now-row { justify-self: end; min-width: 0; }
+@media (max-width: 480px) {
+  .order-head { grid-template-columns: minmax(0, 1fr); }
+  .order-head .now-row { grid-row: 1; justify-self: start; }
+}
 .order b { flex: 0 0 6em; color: var(--ink-2); font-weight: 600; font-size: var(--fs-13); line-height: var(--lh); }
 #order .note { display: block; color: var(--ink); font-size: var(--fs-body); line-height: var(--lh); margin: var(--s-4) 0 0; padding: var(--s-4) 0 0; border-top: 1px solid var(--line); }
 /* A desk note as written (Matt 2026-10-13: "cleaner bullets not dashes"): "- " or "• " lines a bulleted list, other lines
@@ -161,14 +167,16 @@ header .conn { color: rgba(255, 255, 255, .78); }
 .status-help { font-size: var(--fs-14); color: var(--ink-2); line-height: var(--lh); margin: var(--s-3) 0 var(--s-4); }
 .status-help b { color: var(--ink); font-weight: 600; }
 .saved { font-size: var(--fs-13); color: var(--ink-2); }
-/* A and B (Matt 2026-10-13: "crammed"): one even 16 px gap between the status row, the hint, Ready, the terms line and
+/* A and B (Matt 2026-10-13: "crammed"): one even 16 px gap between the hint, Ready, the terms line and
    any message, each the card's full width. */
 .statusbox:not(.agree) { display: flex; flex-direction: column; gap: var(--s-4); }
 .statusbox:not(.agree) > * { margin: 0; }
-.now-row { display: flex; align-items: center; gap: var(--s-2); }
+.now-row { display: flex; align-items: center; gap: var(--s-2); overflow-wrap: anywhere; }
+.now-row .status-now { min-width: 0; }
+.now-row .saved { flex: none; }
 #banner:empty { display: none; }
 .status-now { display: inline-block; margin: 0; padding: var(--s-1) var(--s-3); border-radius: var(--r-2); background: var(--tint); font-size: var(--fs-14); line-height: var(--lh); color: var(--ink); }
-.approved .status-now { color: var(--success); background: var(--success-bg); }
+.status-now.approved { color: var(--success); background: var(--success-bg); }
 .approved .more, .approved .talk-row { display: none; }
 #post-request { margin-top: var(--s-4); }
 #post-request .st { width: 100%; }
@@ -179,8 +187,7 @@ header .conn { color: rgba(255, 255, 255, .78); }
 #payment { flex-direction: column; }
 /* The review view (Matt 2026-10-13: "just show the value we have, and they can click a green checkmark"): our value, a green
    Agree that is his DONE, Needs change beside it, one small line; no heading or help. */
-.agree .now-row, .agree #help { display: none; }
-.agree.approved .now-row { display: flex; margin-bottom: var(--s-4); }
+.agree #help { display: none; }
 .agree-value { margin: 0 0 var(--s-4); color: var(--ink); }
 .agree-value span { display: block; margin: 0 0 var(--s-1); font-size: var(--fs-12); font-weight: 600; letter-spacing: .06em; color: var(--ink-2); line-height: 1.3; }
 .agree-value b { display: block; font-size: 28px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
@@ -355,7 +362,9 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
 
   <div id="main" hidden>
-  <section class="card order" id="order" aria-label="The order"></section>
+  <section class="card order" id="order" aria-label="The order">
+    <div class="now-row"><p class="status-now" id="now"></p> <span class="saved" id="saved" hidden>Saved</span></div>
+  </section>
   <div class="banner" id="payment" role="status" hidden></div>
   <div class="card" id="returned-intro" hidden><p id="returned-headline">Your report is in your TOTAL folder. Review and edit it there.</p><p class="note" id="delivered-at" hidden></p><p class="note" id="legacy-approved" hidden></p></div>
   <div class="banner" id="notready" role="status" hidden></div>
@@ -363,8 +372,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 
   <fieldset id="form"><div id="sections"></div></fieldset>
 
-  <section class="card statusbox" aria-label="Status">
-    <div class="now-row"><p class="status-now" id="now"></p> <span class="saved" id="saved" hidden>Saved</span></div>
+  <section class="card statusbox" id="action" aria-label="Status">
     <p class="status-help" id="help"></p>
     <p class="agree-value" id="agree-value" hidden></p>
     <div class="status" data-status></div>
@@ -697,7 +705,9 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     var pay = String(O.pay_link || "").trim();      // the desk's card link (formlink.py); only a plain https address becomes a button
     if (due && /^https:\/\/[^\s"'<>]+$/.test(pay))
       $("payment").appendChild(el("a", { cls: "pay-btn", href: pay, target: !!INLINE && location.protocol === "file:" ? "_self" : "_blank", rel: "noopener", text: "Pay by card" }));
-    var box = $("order"), callsBox = $("calls");
+    var box = $("order"), callsBox = $("calls"), nowRow = $("now").closest(".now-row");
+    box.textContent = "";
+    var head = box.appendChild(el("div", { cls: "order-head" }));
     var returned = D.stage === "returned" && (D.house_prompts || {}).lane !== "review";
     callsBox.textContent = ""; callsBox.hidden = true;
     if (returned) {
@@ -707,8 +717,9 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       var list = el("ul"); calls.forEach(function (l) { list.appendChild(el("li", { text: l })); }); callsBox.appendChild(list);
     }
     box.hidden = false;
-    function fact(k, v) { if (v) box.appendChild(el("div", null, [el("b", { text: k + ": " }), v])); }
-    fact("Order", [O.code, O.order_id].filter(function (v, i, a) { return v && a.indexOf(v) === i; }).join(" · "));
+    function fact(k, v, parent) { if (v) (parent || box).appendChild(el("div", { cls: "order-fact" }, [el("b", { text: k + ": " }), v])); }
+    fact("Order", [O.code, O.order_id].filter(function (v, i, a) { return v && a.indexOf(v) === i; }).join(" · "), head);
+    head.appendChild(nowRow);
     fact("Property", O.property);
     fact("Client", O.client);
     fact("Due", O.due_date);
@@ -770,7 +781,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     var built = (D.questions || []).length > 0;
     renderReport();
     agreeQ = stage === "returned" ? (D.questions || []).filter(function (q) { return q.kind === "confirm"; })[0] || null : null;
-    $("agree-value").closest("section").classList.toggle("agree", !!agreeQ && approved);
+    $("action").classList.toggle("agree", !!agreeQ && approved);
     $("agree-value").hidden = !agreeQ;
     var box1 = document.querySelector(".changes textarea");   // Matt 2026-10-13: a different value goes in as a change
     if (box1) box1.placeholder = agreeQ ? "Describe your requested change." : "";
@@ -795,8 +806,9 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     $("form").hidden = inProduction();
     $("form").classList.toggle("approved", approved);
     document.querySelectorAll("#form input, #form textarea, #form button, #form select").forEach(function (c) { c.disabled = locked; });
-    $("now").closest("section").classList.toggle("approved", approved);
-    $("now").closest("section").classList.toggle("agree", approved && !!agreeQ);
+    $("action").classList.toggle("approved", approved);
+    $("now").classList.toggle("approved", approved);
+    $("action").classList.toggle("agree", approved && !!agreeQ);
     $("now").closest(".now-row").hidden = customerReturned() && !approved;
     $("help").hidden = approved || customerReturned() || inProduction();
     document.querySelectorAll("[data-terms]").forEach(function (p) { p.hidden = stage !== "open" || (asked() && !!acceptance() && !quoteChanged()) || inProduction() || answered(); });
@@ -1149,7 +1161,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
   function newer(f) { return JSON.stringify(f.order || {}) !== JSON.stringify(O) || JSON.stringify(f.house_prompts || {}) !== JSON.stringify(D.house_prompts || {}) || (f.terms || "") !== (D.terms || "") || (f.stage || "open") !== stage || JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || "") || (f.note_kind || "") !== (D.note_kind || "") || (f.report_pdf || "") !== (D.report_pdf || "") || (f.accepted_at || "") !== (D.accepted_at || "") || (f.delivered_at || "") !== (D.delivered_at || "") || JSON.stringify(f.deliveries || []) !== JSON.stringify(D.deliveries || []) || askedAt(f) !== askedAt(D); }
   function refresh(f) {
-    D = f; O = D.order || {}; controls = {}; $("order").innerHTML = ""; $("sections").innerHTML = "";
+    D = f; O = D.order || {}; controls = {}; $("sections").innerHTML = "";
     renderOrder(); renderSections(); paintAll(); setStage(D.stage); document.querySelectorAll("textarea").forEach(grow);
     if (state.status === "READY" && stage === "open") banner(readyNote(), "ok");
   }
