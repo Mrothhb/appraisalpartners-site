@@ -25,7 +25,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-16.5">
+<html lang="en" data-build="v2026-10-16.6">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -145,6 +145,9 @@ header .conn { color: rgba(255, 255, 255, .78); }
 .rich li { margin: 0 0 var(--s-2); padding-left: 2px; }
 .rich li::marker { color: var(--secondary); }
 #notready .rich li::marker { color: inherit; }
+.memo { overflow-wrap: anywhere; }
+.memo p, .memo ul { margin-bottom: var(--s-4); }
+.memo .lead { color: var(--ink-2); font-size: var(--fs-14); margin-bottom: var(--s-2); }
 .rich > :last-child, .rich li:last-child { margin-bottom: 0; }
 
 /* ---------- status: two plain buttons, as on TOTAL's web tools: outlined blue, filled blue (green is Approve & Deliver's) ---------- */
@@ -719,7 +722,15 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     var head = box.appendChild(el("div", { cls: "order-head" }));
     var returned = D.stage === "returned" && (D.house_prompts || {}).lane !== "review";
     callsBox.textContent = ""; callsBox.hidden = true;
-    if (returned) {
+    callsBox.setAttribute("aria-label", D.signoff === true ? "For your review" : "Our calls");
+    if (returned && D.signoff === true) {
+      var memo = rich(D.note_kind !== "not_ready" ? D.public_note : "", "memo", true);
+      callsBox.hidden = !memo.children.length;
+      if (!callsBox.hidden) {
+        callsBox.appendChild(el("h2", { text: "For your review" }));
+        callsBox.appendChild(memo);
+      }
+    } else if (returned) {
       var calls = D.note_kind !== "not_ready" ? String(D.public_note || "").split(/\r?\n/).map(function (l) { return l.trim().replace(/^[-•]\s+/, ""); }).filter(Boolean) : [];
       callsBox.hidden = !calls.length;
       if (calls.length) callsBox.appendChild(el("h2", { text: "Our calls" }));
@@ -736,13 +747,19 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     box.appendChild(el("p", { id: "acceptance", cls: "note", hidden: true }));
     if (!returned && D.public_note && D.note_kind !== "not_ready") box.appendChild(rich(D.public_note, "note"));
   }
-  function rich(text, cls) {       // a desk note as he should read it: bullets, paragraphs, a bold lead-in
-    var box = el("div", { cls: "rich" + (cls ? " " + cls : "") }), list = null, first = true;
+  function rich(text, cls, documentNote) {       // sign-off prose joins until a blank line, bullet or section label
+    var box = el("div", { cls: "rich" + (cls ? " " + cls : "") }), list = null, first = true, paragraph = null;
     String(text || "").split(/\r?\n/).forEach(function (line) {
       line = line.trim();
-      if (!line) { list = null; return; }
+      if (!line) { list = null; paragraph = null; return; }
       var bullet = /^[-•]\s+/.test(line);
-      if (bullet) { if (!list) list = box.appendChild(el("ul")); list.appendChild(el("li", { text: line.replace(/^[-•]\s+/, "") })); }
+      if (bullet) { paragraph = null; if (!list) list = box.appendChild(el("ul")); list.appendChild(el("li", { text: line.replace(/^[-•]\s+/, "") })); }
+      else if (documentNote) {
+        list = null;
+        if (line.length <= 40 && /:$/.test(line)) { box.appendChild(el("p", { cls: "lead", text: line })); paragraph = null; }
+        else if (paragraph) paragraph.textContent += " " + line;
+        else paragraph = box.appendChild(el("p", { text: line }));
+      }
       else {
         var kv = first && line.match(/^([^:]{1,30}:)\s+(.{1,60})$/);   // "Value: $300,000": the label in bold
         list = null; box.appendChild(kv ? el("p", null, [el("b", { text: kv[1] }), " " + kv[2]])
