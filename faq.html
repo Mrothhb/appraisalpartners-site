@@ -1,164 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Plain answers for appraisers considering the production desk: whose client it is, who is responsible, how disclosure works, the AI question, software and formats, pricing, revisions, and confidentiality.">
-<link rel="canonical" href="https://appraisalpartners.net/faq.html">
-<meta property="og:title" content="FAQ | A&amp;AP Production Desk">
-<meta property="og:description" content="Whose client is it? Who signs? What does it cost? What if the comps are wrong? Short, plain answers.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://appraisalpartners.net/faq.html">
-<meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/png" href="/assets/aap-favicon.png">
-<link rel="apple-touch-icon" href="/assets/aap-apple-touch-icon.png">
-<title>FAQ | A&amp;AP</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
-<style>
-  :root { --paper:#FAFAF7; --ink:#1C2420; --muted:#5C6660; --rule:#D9DED9; --accent:#2E5D46; --accent-deep:#24493A; --wash:#F1F3EF; }
-  @media (prefers-color-scheme:dark) { :root:not([data-theme="light"]) { --paper:#141917; --ink:#E8EAE6; --muted:#97A19A; --rule:#2A322D; --accent:#6FA98C; --accent-deep:#8FBFA6; --wash:#1B211E; } }
-  :root[data-theme="dark"] { --paper:#141917; --ink:#E8EAE6; --muted:#97A19A; --rule:#2A322D; --accent:#6FA98C; --accent-deep:#8FBFA6; --wash:#1B211E; }
-  * { box-sizing:border-box; }
-  body { background:var(--paper); color:var(--ink); font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:17px; line-height:1.68; margin:0; padding:0 24px; }
-  .sheet { max-width:720px; margin:0 auto; padding:44px 0 64px; }
-  .letterhead { align-items:baseline; border-bottom:2px solid var(--ink); display:flex; flex-wrap:wrap; gap:18px; justify-content:space-between; padding-bottom:14px; }
-  .name { font-family:"IBM Plex Mono","Courier New",monospace; font-size:14px; font-weight:500; letter-spacing:.22em; text-transform:uppercase; color:var(--ink); text-decoration:none; }
-  .cred,.nav,footer { color:var(--muted); font-family:"IBM Plex Mono","Courier New",monospace; font-size:11.5px; letter-spacing:.04em; }
-  .nav { display:flex; flex-wrap:wrap; gap:9px 20px; padding-top:2px; width:100%; }
-  .nav a { color:var(--muted); padding:4px 0; }
-  main:focus { outline:none; }
-  h1 { font-size:clamp(34px,7vw,52px); font-weight:700; letter-spacing:-.02em; line-height:1.15; margin:46px 0 20px; text-wrap:balance; }
-  h1 .line { color:var(--accent); }
-  h2 { font-size:25px; line-height:1.3; margin:0 0 16px; }
-  .lede { font-size:20px; line-height:1.55; margin:0 0 14px; }
-  p { margin:0 0 18px; }
-  a { color:var(--accent-deep); text-decoration-color:currentColor; text-decoration-thickness:1px; text-underline-offset:3px; }
-  a:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
-  .questions { border-top:1px solid var(--rule); margin-top:36px; }
-  details { border-bottom:1px solid var(--rule); }
-  summary { cursor:pointer; font-size:18px; font-weight:700; list-style:none; padding:18px 38px 16px 0; position:relative; }
-  summary::-webkit-details-marker { display:none; }
-  summary::after { color:var(--accent); content:"+"; font-family:"IBM Plex Mono","Courier New",monospace; font-size:20px; font-weight:400; position:absolute; right:4px; top:16px; }
-  details[open] summary::after { content:"−"; }
-  .answer { color:var(--muted); padding:0 32px 4px 0; }
-  .answer strong { color:var(--ink); }
-  .cta { border:1.5px solid var(--ink); margin-top:44px; padding:24px 26px; }
-  a.btn { background:var(--accent); border:1.5px solid var(--accent); color:var(--paper); display:inline-block; font-family:"IBM Plex Mono","Courier New",monospace; font-size:13px; font-weight:500; letter-spacing:.07em; padding:11px 18px; text-decoration:none; text-transform:uppercase; }
-  footer { border-top:2px solid var(--ink); display:flex; flex-wrap:wrap; gap:10px 18px; justify-content:space-between; margin-top:44px; padding-top:14px; }
-  footer .postal-address { flex-basis:100%; font-style:normal; }
-  .skip { background:var(--accent); color:var(--paper); font-family:"IBM Plex Mono","Courier New",monospace; font-size:13px; left:-9999px; padding:10px 16px; position:absolute; top:0; z-index:10; }
-  .skip:focus { left:8px; top:8px; }
-  @media (max-width: 600px) { .sheet { padding-top: 28px; } .nav { gap: 5px 14px; } }
-
-  /* A&AP mark: AP monogram, A&AP left-aligned under it (as on the self-service form header). */
-  header.letterhead { align-items: flex-end; }
-  .letterhead .name.brandmark {
-    display: inline-flex; flex-direction: column; align-items: flex-start; gap: 5px;
-    color: #0C2A46; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 17px; font-weight: 700; letter-spacing: 0.02em; line-height: 1;
-    text-decoration: none; text-transform: none;
-  }
-  .letterhead .brandmark .mark { display: block; width: 60px; height: auto; }
-  .letterhead .brandmark .mark-light { display: none; }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .letterhead .name.brandmark { color: var(--ink); }
-    :root:not([data-theme="light"]) .letterhead .brandmark .mark { display: none; }
-    :root:not([data-theme="light"]) .letterhead .brandmark .mark-light { display: block; }
-  }
-  :root[data-theme="dark"] .letterhead .name.brandmark { color: var(--ink); }
-  :root[data-theme="dark"] .letterhead .brandmark .mark { display: none; }
-  :root[data-theme="dark"] .letterhead .brandmark .mark-light { display: block; }
-</style>
-<!-- Privacy-friendly analytics by Plausible -->
-<script async src="https://plausible.io/js/pa-pNkpzZuFyeVpLVvH7hc8w.js"></script>
-<script>
-  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-  plausible.init()
-  // Phone and email contacts were invisible in analytics: nothing fired on tel:, sms: or mailto:.
-  document.addEventListener("click", function (event) {
-    var link = event.target.closest && event.target.closest('a[href^="tel:"], a[href^="sms:"], a[href^="mailto:"]');
-    if (!link) return;
-    var href = link.getAttribute("href") || "";
-    var name = href.indexOf("tel:") === 0 ? "Call Click"
-             : href.indexOf("sms:") === 0 ? "Text Click"
-             : "Email Click";
-    plausible(name, { props: { page: location.pathname } });
-  }, true);
-</script>
-</head>
-<body>
-
-<a class="skip" href="#main">Skip to content</a>
-<div class="sheet">
-  <header class="letterhead">
-    <a class="name brandmark" href="index.html" aria-label="A&amp;AP home"><img class="mark" src="assets/aap-mark.svg" alt="" width="60" height="35"><img class="mark mark-light" src="assets/aap-mark-light.svg" alt="" width="60" height="35"><span class="wordmark">A&amp;AP</span></a>
-    <span class="cred">Matt Roth, Certified Residential &middot; Tim Roth, MAI, SRA</span>
-    <nav class="nav" aria-label="Primary">
-      <a href="uad36.html">UAD 3.6</a>
-      <a href="convert.html">Convert</a>
-      <a href="how-it-works.html">How it works</a>
-      <a href="how-it-works.html#pricing">Pricing</a>
-      <a href="technology.html">Behind the desk</a>
-      <a href="portrait.html">The portrait</a>
-      <a href="story.html">Four appraisers</a>
-      <a href="about.html">About us</a>
-      <a href="faq.html" aria-current="page">FAQ</a>
-      <a href="contact.html">Contact</a>
-      <a href="start.html">Start with one report</a>
-    </nav>
-  </header>
-
-  <main id="main" tabindex="-1">
-    <h1>Questions <span class="line">we&rsquo;d ask too.</span></h1>
-    <p class="lede">Short answers. If yours is not here, email us and you&rsquo;ll get a direct answer.</p>
-
-    <div class="questions">
-      <details open><summary>What does it cost?</summary><div class="answer"><p>$59 when you send the comps and your decisions and we build the report. $89 when you send the comps and we draft the analysis. $149 when we handle the research too. These are desk fees paid by you, not appraisal fees billed to your AMC, lender, borrower or client. No subscription or minimum. The accepted price does not change later. We invoice once a month for the reports delivered that month.</p></div></details>
-      <details><summary>Do you use AI?</summary><div class="answer"><p>Yes. We use software automation and AI-assisted tools in this work, and yes, that includes the drafting. Matt checks the source documents and reads every report himself. AI does not inspect, make the final comp or value decisions, or sign. <a href="technology.html">What runs behind the desk &rarr;</a></p></div></details>
-      <details><summary>Is this allowed? How does disclosure work?</summary><div class="answer"><p>Only when your engagement, client, state &amp; assignment program allow it. When our work is significant appraisal assistance, the report&rsquo;s certification identifies Matthew Roth, his credential, that he did not inspect &amp; what he did. We do not accept an assignment that cannot be handled that way.</p></div></details>
-      <details><summary>Who is responsible for the appraisal?</summary><div class="answer"><p>You are. You make the final calls on scope, comps, adjustments, reconciliation &amp; value. We return an editable working report for you to review, change and sign.</p></div></details>
-      <details>
-        <summary>What do I upload?</summary>
-        <div class="answer"><p><strong>Research &amp; report &middot; $149:</strong> Forward the client order email first. After Matt creates the AP folder, add the contract if applicable, raw photos, sketch, field notes and mobile report file. You do not have to assemble the subject data or select comps first.</p><p><strong>Your data &amp; comps &middot; $89: Forward the client order email first. After the AP folder arrives, add the inspection files plus MLS PDF sheets for your comps, the market export, and public record if we cannot pull it. We build the report and draft the adjustments, analysis and value for your review. Report assembly &middot; $59: the same files plus the one-page decision sheet with your ratings, comps, adjustments and value. We enter it, build the report and check it; every appraisal decision is yours.</strong> Forward the client order email first. Then add the inspection material, subject data, comp set, supporting data and market direction to the AP folder Matt sends you.</p></div>
-      </details>
-      <details><summary>Why not hire a VA or an offshore report writer instead?</summary><div class="answer"><p>Some do, and it can work. What you get here that you would otherwise have to build and supervise yourself: Matt checks the report against its sources and reads every line before it comes back, he answers your questions himself, and the assistance is documented in your certification. If your lender or AMC agreements restrict where borrower files can go, confirm that before any file leaves your office, including to us.</p></div></details>
-      <details><summary>Whose client is it?</summary><div class="answer"><p>Yours. We work behind you. We do not contact, invoice or solicit your client. You keep the engagement and appraisal fee.</p></div></details>
-      <details><summary>What format comes back?</summary><div class="answer"><p>An editable working report file with the agreed photos &amp; exhibits placed. We confirm the file format when we set you up, and each report comes back to its order folder.</p></div></details>
-      <details><summary>How fast is it?</summary><div class="answer"><p>Fast turnaround is the point. You get both rates and the return time in Matt&rsquo;s reply to your order, before the inspection. The return-time clock starts when your files are in the folder.</p></div></details>
-      <details><summary>How much can you take in a week?</summary><div class="answer"><p>The desk stays small on purpose, and we check capacity when we set you up. If a week is getting full, we tell you before you send more. Planning steady volume? Tell us what is coming and we&rsquo;ll tell you straight what we can take. And the reports we do take are produced side by side rather than one after another, so your file is not the fourth one of our day. <a href="about.html">Why the desk stays small &rarr;</a></p></div></details>
-      <details><summary>Can I track the status of my appraisal report?</summary><div class="answer"><p>Yes. Every accepted report gets a private tracking link. See where it is at each step and choose email updates, text updates, both or status page only. <a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">View the full live tracking demo &rarr;</a></p></div></details>
-      <details><summary>What if I do not like the comps?</summary><div class="answer"><p>Upload your selected set, ask to see candidates before we complete the grid, or review our choices with the report. You make the final selection. We will not chase a predetermined value.</p></div></details>
-      <details><summary>What if something is wrong?</summary><div class="answer"><p>Send your changes as one list. We correct our production errors at no charge. New scope is quoted before we touch it.</p></div></details>
-      <details><summary>Who handles revision requests from my client?</summary><div class="answer"><p>Matt handles them on reports this desk prepared. Send him the request; he already has the research and reasoning behind your report. Revisions within the report as delivered are included, even if it comes back again. They come back with a summary of what changed. You review the response, make every final appraisal decision and send it to your client.</p><p>One extra comp each time a revision comes back is included on either scope. More comps, a materially new research assignment, a new effective date or an added form get a quote before work starts. <a href="how-it-works.html#revisions">What revision support covers &rarr;</a></p></div></details>
-      <details><summary>Does a revision wait behind your other work?</summary><div class="answer"><p>No. Revisions go to the front of the queue, ahead of new production.</p></div></details>
-      <details><summary>What if the revision is my fault, not yours?</summary><div class="answer"><p>Handled the same way, no additional fee. We do not sort revisions by whose error it was &mdash; a bad field note, a number we mistyped, or a reviewer who simply wants more support all get the same treatment. If a pattern develops on your orders we will raise it with you directly rather than bill for it.</p></div></details>
-      <details><summary>What if the reviewer wants a comp I did not give you?</summary><div class="answer"><p>One extra comp each time a revision comes back is included, on every scope. Beyond that, or a materially new research assignment, we quote a price and a return time before starting.</p></div></details>
-      <details><summary>How long do you keep the research behind my report?</summary><div class="answer"><p>Five years from delivery, the same period as a workfile, so a condition that lands much later can still be answered from the record. This is our production record and does not replace your own workfile obligation. You submit the revised report to your client; we do not contact them.</p></div></details>
-      <details><summary>How can the fee be that low?</summary><div class="answer"><p>Matt built this workflow for his own reports first. It cuts re-keying, form filling &amp; file chasing, so the hours go to research, analysis and the read-through. These are standing rates for defined scopes, not teaser prices.</p></div></details>
-      <details><summary>What kind of past assignment can I use for the trial?</summary><div class="answer"><p>Use only a closed prior assignment you have actual authority and the original client&rsquo;s explicit permission to share. If a lender or AMC prohibits sharing, that file is not eligible. A closed estate, divorce or other private-use assignment may work, but the assignment type alone does not make it shareable. Redaction alone is not permission.</p></div></details>
-      <details><summary>Do you take legacy 1004/UAD 2.6 orders?</summary><div class="answer"><p>We never deliver a 2.6, but a 2.6 can come in. Draft your live order in the legacy form you know and we convert it to a native UAD 3.6 for your signature: <a href="convert.html">how conversion works</a>. A closed legacy assignment also makes a fine free trial; it comes back converted to UAD 3.6 on a file you already know.</p></div></details>
-      <details><summary>Can I use this only when reports stack up?</summary><div class="answer"><p>Yes. Forward one when you are buried in reports and none when you are not. There is no subscription or minimum. We take only what we can personally complete and review.</p></div></details>
-      <details><summary>Where can you work?</summary><div class="answer"><p>With your data &amp; comps, we can often help outside our licensed markets when the client, state &amp; data rules permit it. Research &amp; report requires authorized data access and market competence. DFW is ready now. Ask before forwarding an order if the market or assignment type is uncertain.</p></div></details>
-      <details><summary>What about confidential information?</summary><div class="answer"><p>Keep client and property information out of the opening fit form. Forward the client order email to Matt. The remaining report files move through that order&rsquo;s restricted shared folder; the tracking page never shows the borrower, property address or report data. You must be authorized to share everything you send.</p></div></details>
-      <details><summary>How do I start?</summary><div class="answer"><p>New here? <a href="start.html">Send the short fit request</a> without client or property information. After that, forward each new client order email to Matt. He replies with the partial-desk and full-desk rates and the return time. Say it works, he sends the folder link, you add the inspection files after the inspection, and the finished report lands back in that folder.</p></div></details>
-    </div>
-
-    <div class="cta">
-      <h2>Still have a question?</h2>
-      <p>Email <a href="mailto:mrr@appraisalpartners.net">mrr@appraisalpartners.net</a> or call <a href="tel:+14692968726">(469) 296-8726</a>. Matt reads every note and answers every call himself.</p>
-      <p><a class="btn" href="start.html">Let&rsquo;s try one</a></p>
-    </div>
-  </main>
-
-  <footer>
-    <span><a href="index.html">A&amp;AP</a></span>
-    <span>TX #1361115-CR &middot; CO #CR200002387</span>
-    <span><a href="terms.html">Terms</a></span>
-    <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
-  </footer>
-</div>
-</body>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="refresh" content="0; url=how-it-works.html#faq">
+    <link
+      rel="canonical"
+      href="https://appraisalpartners.net/how-it-works.html#faq">
+    <title>Page moved | A&amp;AP</title>
+  </head>
+  <body>
+    <p>
+      This page has moved.
+      <a href="how-it-works.html#faq">Continue to A&amp;AP</a>.
+    </p>
+  </body>
 </html>

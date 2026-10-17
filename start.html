@@ -1,583 +1,685 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Start a free UAD 3.6 tryout or request setup for live report work. After setup, forward the client order and Matt creates its private AP folder.">
-<meta name="referrer" content="no-referrer">
-<!-- Public configuration; the Apps Script deployment passed the private accepted/duplicate/rejected smoke test. -->
-<meta name="ap-intake-endpoint" content="https://script.google.com/macros/s/AKfycbyf_YUnCq8lWuJSCl8fYXuMvBDX8CJ48oLRHhP-tpTZI6X-bjal_IhAy7gduJFC2GkWQg/exec">
-<link rel="canonical" href="https://appraisalpartners.net/start.html">
-<meta property="og:title" content="Start a Report | A&amp;AP">
-<meta property="og:description" content="Choose a free UAD 3.6 tryout or set up live report work. Accepted customers forward each client order and receive a private AP folder.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://appraisalpartners.net/start.html">
-<meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/png" href="/assets/aap-favicon.png">
-<link rel="apple-touch-icon" href="/assets/aap-apple-touch-icon.png">
-<title>Start a Report | A&amp;AP</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
-<style>
-  :root {
-    --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
-    --rule: #D9DED9; --rule-strong: #889089; --accent: #2E5D46; --accent-deep: #24493A; --wash: #F1F3EF;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
-    }
-  }
-  :root[data-theme="dark"] {
-    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
-    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6; --wash: #1B211E;
-  }
-  * { box-sizing: border-box; }
-  main:focus { outline: none; }
-  body {
-    background: var(--paper); color: var(--ink);
-    font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
-    font-size: 17px; line-height: 1.68; margin: 0; padding: 0 24px;
-  }
-  .sheet { max-width: 720px; margin: 0 auto; padding: 44px 0 64px; }
-  .letterhead {
-    display: flex; justify-content: space-between; align-items: baseline;
-    gap: 18px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 14px;
-  }
-  .letterhead .name {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-weight: 500; font-size: 14px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--ink); text-decoration: none;
-  }
-  .letterhead .cred, .nav {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
-  }
-  .nav { width: 100%; display: flex; flex-wrap: wrap; gap: 9px 20px; padding-top: 2px; }
-  .nav a { color: var(--muted); }
-  .nav a, footer a { text-decoration-thickness: 0.5px; text-underline-offset: 2px; }
-  h1 {
-    font-size: clamp(34px, 7vw, 50px); font-weight: 700; line-height: 1.16;
-    letter-spacing: -0.02em; text-wrap: balance; margin: 46px 0 20px;
-  }
-  h1 .line { color: var(--accent); }
-  h2 { font-size: 24px; line-height: 1.35; margin: 0 0 14px; }
-  h3 { font-size: 18px; line-height: 1.35; margin: 0 0 10px; }
-  .lede { font-size: 20px; line-height: 1.55; margin: 0 0 14px; }
-  p { margin: 0 0 18px; }
-  a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-  a:hover, a:focus-visible { text-decoration-color: var(--accent); }
-  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-  section { border-top: 1px solid var(--rule); margin-top: 44px; padding-top: 30px; }
-  .eyebrow {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--accent); margin: 0 0 18px;
-  }
-  form { margin-top: 6px; }
-  .field { margin-bottom: 18px; }
-  .field label, fieldset legend {
-    display: block;
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--accent-deep); margin-bottom: 6px;
-  }
-  .field input[type="text"], .field input[type="email"], .field input[type="tel"],
-  .field input[type="date"], .field select, .field textarea {
-    width: 100%; padding: 10px 12px; font-family: inherit; font-size: 16px;
-    color: var(--ink); background: var(--paper);
-    border: 1px solid var(--rule-strong); border-radius: 0;
-  }
-  .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible {
-    outline: 2px solid var(--accent); outline-offset: 1px;
-  }
-  .field .hint { font-size: 13.5px; color: var(--muted); margin: 6px 0 0; font-family: "IBM Plex Mono", "Courier New", monospace; }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
-  fieldset { border: 1px solid var(--rule); padding: 16px 18px 6px; margin: 0 0 18px; }
-  fieldset .opt { display: flex; gap: 10px; align-items: baseline; margin-bottom: 10px; font-size: 15.5px; }
-  fieldset .opt input { accent-color: var(--accent); }
-  fieldset .opt label { font-family: inherit; font-size: 15.5px; text-transform: none; letter-spacing: 0; color: var(--ink); margin: 0; display: inline; font-weight: 400; }
-  .notify-toggle {
-    display: grid; grid-template-columns: 20px 1fr; gap: 11px;
-    border: 1px solid var(--rule-strong); background: var(--paper);
-    padding: 13px 15px; margin-bottom: 10px; align-items: start;
-  }
-  .notify-toggle:has(input:checked) { border-color: var(--accent); background: var(--wash); }
-  .notify-toggle input { accent-color: var(--accent); margin-top: 4px; }
-  .notify-toggle label { font-family: inherit; text-transform: none; letter-spacing: 0; color: var(--ink); margin: 0; font-weight: 400; }
-  .notify-toggle label strong { display: block; font-size: 16px; font-weight: 700; }
-  .notify-toggle label span { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
-  .consent {
-    background: var(--wash); border: 1px solid var(--rule); padding: 16px 18px;
-    margin-bottom: 18px; font-size: 15.5px;
-    display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: start;
-  }
-  .consent[hidden] { display: none; }
-  .consent input { margin-top: 5px; }
-  .consent label, .consent .hint { grid-column: 2; }
-  .consent input { accent-color: var(--accent); }
-  .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-  .form-result { border: 1.5px solid var(--ink); padding: 16px 18px; margin: 18px 0 0; }
-  .form-result[data-state="success"] { border-color: var(--accent); background: var(--wash); }
-  .form-result[data-state="error"] { border-color: #8A3F35; }
-  .form-result p:last-child { margin-bottom: 0; }
-  button.btn {
-    display: inline-block; background: var(--accent); color: var(--paper);
-    padding: 12px 22px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
-    border: 1.5px solid var(--accent); cursor: pointer;
-    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px;
-  }
-  button.btn:hover, button.btn:focus-visible { background: var(--accent-deep); border-color: var(--accent-deep); }
-  .fineprint { font-size: 14.5px; color: var(--muted); margin: 12px 0 0; }
-  ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 15px; }
-  ol.steps li { display: grid; grid-template-columns: 34px 1fr; gap: 14px; }
-  ol.steps .n {
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 14px; color: var(--accent); padding-top: 4px;
-  }
-  ul.plain { margin: 0 0 16px; padding: 0 0 0 1.15em; }
-  ul.plain li { margin-bottom: 8px; font-size: 15.5px; }
-  ul.plain li::marker { color: var(--accent); }
-  .note { border: 1.5px solid var(--ink); padding: 21px 23px; margin-top: 36px; }
-  .note p:last-child { margin-bottom: 0; }
-  footer {
-    border-top: 2px solid var(--ink); margin-top: 44px; padding-top: 14px;
-    font-family: "IBM Plex Mono", "Courier New", monospace;
-    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
-    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-  }
-  footer .postal-address { flex-basis: 100%; font-style: normal; }
-  @media (max-width: 620px) { .grid2 { grid-template-columns: 1fr; } }
-  .skip {
-    position: absolute; left: -9999px; top: 0;
-    background: var(--accent); color: var(--paper); padding: 10px 16px;
-    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; z-index: 10;
-  }
-  .skip:focus { left: 8px; top: 8px; }
-  .hint { font-size: 13.5px; color: var(--muted); margin: 5px 0 0; }
-  .consent .hint { margin-top: 6px; }
-  .modepick { border: 1px solid var(--rule); margin: 0 0 18px; padding: 15px 17px 13px; }
-  .modepick legend {
-    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11px;
-    letter-spacing: .13em; text-transform: uppercase; color: var(--accent); padding: 0 6px;
-  }
-  .modepick .opt { align-items: start; display: flex; gap: 10px; margin-bottom: 9px; }
-  .modepick .opt:last-child { margin-bottom: 0; }
-  .modepick label { display: block; }
-  .modepick label span { display: block; color: var(--muted); font-size: 14.5px; }
-  .modepick .opt {
-    border: 1px solid var(--rule); padding: 14px 15px; margin: 0 0 10px;
-  }
-  .modepick .opt:has(input:checked) { border-color: var(--accent); background: var(--wash); }
-  .modepick .opt input { margin-top: 5px; }
-  .form-heading {
-    border-top: 1px solid var(--rule); margin: 28px 0 18px; padding-top: 22px;
-    font-size: 21px;
-  }
-  .choice-label strong { display: block; font-size: 16px; }
-  .choice-label span { display: block; color: var(--muted); font-size: 14px; margin-top: 2px; }
-  .human-help { margin: -2px 0 24px; font-size: 15px; color: var(--muted); }
-  @media (max-width: 600px) { .sheet { padding-top: 28px; } .nav { gap: 5px 14px; } }
-  .optional { border: 1px solid var(--rule); margin: 0 0 18px; padding: 0 15px; }
-  .optional > summary {
-    cursor: pointer; list-style: none; padding: 13px 0; position: relative;
-    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11px;
-    letter-spacing: .13em; text-transform: uppercase; color: var(--accent);
-  }
-  .optional > summary::-webkit-details-marker { display: none; }
-  .optional > summary::after {
-    content: "+"; position: absolute; right: 2px; top: 10px;
-    font-size: 17px; color: var(--accent);
-  }
-  .optional[open] > summary::after { content: "\2212"; }
-  .optional fieldset { border: 0; margin: 0 0 12px; padding: 0; }
-  .optional fieldset legend { padding-left: 0; }
-  .optional .hint { padding-bottom: 12px; }
-
-  /* A&AP mark: AP monogram, A&AP left-aligned under it (as on the self-service form header). */
-  header.letterhead { align-items: flex-end; }
-  .letterhead .name.brandmark {
-    display: inline-flex; flex-direction: column; align-items: flex-start; gap: 5px;
-    color: #0C2A46; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 17px; font-weight: 700; letter-spacing: 0.02em; line-height: 1;
-    text-decoration: none; text-transform: none;
-  }
-  .letterhead .brandmark .mark { display: block; width: 60px; height: auto; }
-  .letterhead .brandmark .mark-light { display: none; }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .letterhead .name.brandmark { color: var(--ink); }
-    :root:not([data-theme="light"]) .letterhead .brandmark .mark { display: none; }
-    :root:not([data-theme="light"]) .letterhead .brandmark .mark-light { display: block; }
-  }
-  :root[data-theme="dark"] .letterhead .name.brandmark { color: var(--ink); }
-  :root[data-theme="dark"] .letterhead .brandmark .mark { display: none; }
-  :root[data-theme="dark"] .letterhead .brandmark .mark-light { display: block; }
-</style>
-</head>
-<body>
-
-<a class="skip" href="#main">Skip to content</a>
-<div class="sheet">
-  <header class="letterhead">
-    <a class="name brandmark" href="index.html" aria-label="A&amp;AP home"><img class="mark" src="assets/aap-mark.svg" alt="" width="60" height="35"><img class="mark mark-light" src="assets/aap-mark-light.svg" alt="" width="60" height="35"><span class="wordmark">A&amp;AP</span></a>
-    <span class="cred">Secure report request</span>
-    <nav class="nav" aria-label="Primary">
-      <a href="uad36.html">UAD 3.6</a>
-      <a href="convert.html">Convert</a>
-      <a href="how-it-works.html">How it works</a>
-      <a href="how-it-works.html#pricing">Pricing</a>
-      <a href="technology.html">Behind the desk</a>
-      <a href="portrait.html">The portrait</a>
-      <a href="story.html">Four appraisers</a>
-      <a href="about.html">About us</a>
-      <a href="faq.html">FAQ</a>
-      <a href="contact.html">Contact</a>
-      <a href="start.html">Start with one report</a>
-    </nav>
-  </header>
-
-  <main id="main" tabindex="-1">
-
-  <h1>Tell us what you need.</h1>
-  <p class="lede">Choose a free UAD 3.6 tryout or tell Matt you want to start live work. This first step collects no property address, borrower name or assignment documents. After setup, you forward the client order email and Matt creates its restricted AP-numbered folder.</p>
-
-  <fieldset class="modepick">
-    <legend>Choose one</legend>
-    <div class="opt"><input type="radio" id="m-trial" name="ordermode" value="Free trial on a past assignment" checked><label for="m-trial"><strong>Free UAD 3.6 tryout</strong><span>Use a completed estate, divorce, private-party or other assignment you are allowed to share. No live client, deadline or charge.</span></label></div>
-    <div class="opt"><input type="radio" id="m-live" name="ordermode" value="Live UAD 3.6 order"><label for="m-live"><strong>Set up live report work</strong><span>Have a current order? Start the relationship here without client data. After setup, forward the client order email to Matt.</span></label></div>
-  </fieldset>
-  <p class="human-help">Questions? Text, call or email Matt any day of the week at <a href="tel:+14692968726">(469) 296-8726</a>.</p>
-
-  <form id="startform" action="start.html" method="post">
-    <noscript>
-      <div class="note">
-        <p><strong>JavaScript is off, so this form will not send.</strong></p>
-        <p>Nothing has been submitted. Email <a href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a> with the subject &ldquo;Free past-report trial&rdquo; instead.</p>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta
+      name="description"
+      content="Request conversion, partial desk or full desk report preparation. Start with your contact details; Matt sets up your private order folder.">
+    <title>Start a report | A&amp;AP</title>
+    <link rel="canonical" href="https://appraisalpartners.net/start.html">
+    <link rel="icon" type="image/png" href="assets/aap-favicon.png">
+    <link rel="apple-touch-icon" href="assets/aap-apple-touch-icon.png">
+    <link
+      rel="preload"
+      href="assets/open-sans.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin>
+    <link rel="stylesheet" href="assets/site.css">
+    <meta name="referrer" content="no-referrer">
+    <meta
+      name="ap-intake-endpoint"
+      content="https://script.google.com/macros/s/AKfycbyf_YUnCq8lWuJSCl8fYXuMvBDX8CJ48oLRHhP-tpTZI6X-bjal_IhAy7gduJFC2GkWQg/exec">
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="appbar">
+      <div class="wrap appbar-inner">
+        <a class="brand" href="index.html" aria-label="A&amp;AP home"
+          ><img
+            src="assets/aap-mark-light.svg"
+            width="44"
+            height="28"
+            alt=""><span>A&amp;AP</span></a
+        >
+        <nav class="nav" aria-label="Primary">
+          <a href="convert.html">Convert</a
+          ><a href="how-it-works.html">How it works</a
+          ><a href="about.html">About</a
+          ><a class="btn" href="start.html" aria-current="page"
+            >Start a report</a
+          >
+        </nav>
+        <details class="mobile-nav">
+          <summary>Menu</summary>
+          <nav class="mobile-menu" aria-label="Mobile">
+            <a href="convert.html">Convert</a
+            ><a href="how-it-works.html">How it works</a
+            ><a href="about.html">About</a>
+          </nav>
+        </details>
+        <a class="btn mobile-start" href="start.html">Start a report</a>
       </div>
-    </noscript>
-    <div class="honeypot" aria-hidden="true">
-      <label for="f-apx-verify">Leave this field empty</label>
-      <input type="text" id="f-apx-verify" name="apx_verify" tabindex="-1" autocomplete="off">
-    </div>
-    <input type="hidden" id="f-form-version" name="form_version" value="ap-intake-v1">
-    <input type="hidden" id="f-trial-consent-version" name="trial_consent_version" value="trial-authority-2026-08-30">
-    <input type="hidden" id="f-sms-consent-version" name="sms_consent_version" value="sms-transactional-2026-08-30">
-    <input type="hidden" id="f-consent-source" name="consent_source" value="https://appraisalpartners.net/start.html">
-    <input type="hidden" id="f-request-id" name="request_id" value="">
-    <input type="hidden" id="f-started-at" name="started_at" value="">
-    <input type="hidden" id="f-ordermode" name="ordermode" value="Free trial on a past assignment">
-    <h2 class="form-heading">About you</h2>
-    <div class="grid2">
-      <div class="field">
-        <label for="f-name">Your name</label>
-        <input type="text" id="f-name" name="name" autocomplete="name" maxlength="100" required>
-      </div>
-      <div class="field">
-        <label for="f-license">License # and state</label>
-        <input type="text" id="f-license" name="license" maxlength="80" placeholder="e.g. TX 1234567-CR">
-      </div>
-      <div class="field">
-        <label for="f-email">Email</label>
-        <input type="email" id="f-email" name="email" autocomplete="email" maxlength="254" required>
-      </div>
-      <div class="field">
-        <label for="f-software">Your report software &amp; version</label>
-        <input type="text" id="f-software" name="software" maxlength="100" placeholder="Your current UAD 3.6 report software" required>
-        <p class="hint">We confirm the working-file format and delivery route before acceptance.</p>
-      </div>
-    </div>
-
-    <h2 class="form-heading">The assignment</h2>
-    <div class="field">
-      <label for="f-scenario">What kind of assignment?</label>
-      <select id="f-scenario" name="scenario">
-        <option value="full-interior">Full interior inspection (I walked the property)</option>
-        <option value="exterior">Exterior-only</option>
-        <option value="desktop">Desktop / data-supplied</option>
-        <option value="rental">Rental income needed (rent schedule or income addendum)</option>
-      </select>
+    </header>
+    <main class="wrap" id="main" tabindex="-1">
+      <section class="hero page-hero">
+        <p class="eyebrow">Start a report</p>
+        <h1>Tell Matt what you need.</h1>
+        <p class="lede">
+          Start with your details. Matt will confirm the fit and set up your
+          private order folder.
+        </p>
+        <p>
+          For a free first look, choose a closed file you have authority and
+          client permission to share.
+        </p>
+      </section>
+      <div class="intake-layout">
+        <form
+          class="card intake-form"
+          id="startform"
+          action="start.html"
+          method="post"
+        >
+          <noscript
+            ><p>
+              JavaScript is needed to send this form. Email
+              <a href="mailto:mrr@appraisalpartners.net"
+                >mrr@appraisalpartners.net</a
+              >
+              instead.
+            </p></noscript
+          >
+          <div class="honeypot" aria-hidden="true">
+            <label for="f-apx-verify">Leave empty</label
+            ><input
+              type="text"
+              id="f-apx-verify"
+              name="apx_verify"
+              tabindex="-1"
+              autocomplete="off">
           </div>
-
-    <fieldset>
-      <legend>How much should we handle?</legend>
-      <div class="opt"><input type="radio" id="d-assembly" name="datalane" value="Report assembly"><label class="choice-label" for="d-assembly"><strong>Report assembly</strong><span>I send the comps, the data and my decisions on the one-page sheet. You enter it, build the report and check it. Every appraisal decision stays mine.</span></label></div>
-      <div class="opt"><input type="radio" id="d-mine" name="datalane" value="My data and comps" checked><label class="choice-label" for="d-mine"><strong>Use my data &amp; comps</strong><span>You complete the report from my inspection material, subject data, comp set &amp; direction.</span></label></div>
-      <div class="opt"><input type="radio" id="d-research" name="datalane" value="Research and report"><label class="choice-label" for="d-research"><strong>Handle the research too</strong><span>I provide the order, engagement letter, inspection notes, sketch &amp; photos. You handle the authorized research, comp set &amp; report.</span></label></div>
-    </fieldset>
-
-    <details class="optional">
-      <summary>Report preferences (optional)</summary>
-      <fieldset>
-        <legend>Comp direction</legend>
-        <div class="opt"><input type="radio" id="c-mine" name="compdir" value="Use my comps" checked><label for="c-mine">Use my comps</label></div>
-        <div class="opt"><input type="radio" id="c-proceed" name="compdir" value="Prepare candidates and proceed"><label for="c-proceed">Pick them for me</label></div>
-        <div class="opt"><input type="radio" id="c-memo" name="compdir" value="Candidate memo before the grid"><label for="c-memo">Send me candidates to confirm</label></div>
-      </fieldset>
-      <fieldset>
-        <legend>Return format</legend>
-        <div class="opt"><input type="radio" id="fmt-zap" name="format" value="Editable working file" checked><label for="fmt-zap">Raw file (opens clean in your report software)</label></div>
-        <div class="opt"><input type="radio" id="fmt-zip" name="format" value="XML/PDF package"><label for="fmt-zip">UAD 3.6 XML, PDF &amp; exhibits package (.ZIP)</label></div>
-        <div class="opt"><input type="radio" id="fmt-unsure" name="format" value="Not sure"><label for="fmt-unsure">Not sure, I'll decide later</label></div>
-      </fieldset>
-      <p class="hint">Skip this and we&rsquo;ll confirm it before acceptance.</p>
-    </details>
-
-    <fieldset>
-      <legend>Report updates</legend>
-      <p class="hint">Every accepted report gets a private tracker. Select how you want later report milestones sent.</p>
-      <div class="notify-toggle">
-        <input type="checkbox" id="n-email" name="notify-email" checked>
-        <label for="n-email"><strong>Email updates</strong><span>Private order thread &amp; report milestones.</span></label>
+          <input
+            type="hidden"
+            id="f-form-version"
+            name="form_version"
+            value="ap-intake-v1">
+          <input
+            type="hidden"
+            id="f-trial-consent-version"
+            name="trial_consent_version"
+            value="trial-authority-2026-08-30">
+          <input
+            type="hidden"
+            id="f-sms-consent-version"
+            name="sms_consent_version"
+            value="sms-transactional-2026-08-30">
+          <input
+            type="hidden"
+            id="f-consent-source"
+            name="consent_source"
+            value="https://appraisalpartners.net/start.html">
+          <input type="hidden" id="f-request-id" name="request_id" value="">
+          <input type="hidden" id="f-started-at" name="started_at" value="">
+          <input type="hidden" id="f-ordermode" value="Live UAD 3.6 order">
+          <fieldset class="modepick">
+            <legend>Your request</legend>
+            <div class="opt">
+              <input
+                type="radio"
+                id="m-live"
+                name="ordermode"
+                value="Live UAD 3.6 order"
+                checked><label for="m-live">Live report work</label>
+            </div>
+            <div class="opt">
+              <input
+                type="radio"
+                id="m-trial"
+                name="ordermode"
+                value="Free trial on a past assignment"><label for="m-trial">Free closed-file first look</label>
+            </div>
+          </fieldset>
+          <div class="field">
+            <label for="f-service">Service</label
+            ><select id="f-service" name="service">
+              <option value="conversion">Conversion</option>
+              <option value="partial" selected>Partial desk</option>
+              <option value="full">Full desk</option>
+              <option value="2-4-units">2–4 units</option>
+            </select>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label for="f-name">Your name</label
+              ><input
+                type="text"
+                id="f-name"
+                name="name"
+                autocomplete="name"
+                maxlength="100"
+                required>
+            </div>
+            <div class="field">
+              <label for="f-email">Email</label
+              ><input
+                type="email"
+                id="f-email"
+                name="email"
+                autocomplete="email"
+                maxlength="254"
+                required>
+            </div>
+            <div class="field">
+              <label for="f-license">License # and state</label
+              ><input
+                type="text"
+                id="f-license"
+                name="license"
+                maxlength="80"
+                placeholder="TX 1234567-CR">
+            </div>
+            <div class="field">
+              <label for="f-software">Report software and version</label
+              ><input
+                type="text"
+                id="f-software"
+                name="software"
+                maxlength="100"
+                placeholder="TOTAL, version…"
+                required>
+            </div>
+          </div>
+          <details class="optional">
+            <summary>Assignment and report preferences</summary>
+            <div class="field">
+              <label for="f-scenario">Inspection type</label
+              ><select id="f-scenario" name="scenario">
+                <option value="full-interior">Full interior inspection</option>
+                <option value="exterior">Exterior-only</option>
+                <option value="desktop">Desktop / data-supplied</option>
+                <option value="rental">Rental income needed</option>
+              </select>
+            </div>
+            <fieldset>
+              <legend>Desk scope</legend>
+              <div class="opt">
+                <input
+                  type="radio"
+                  id="d-assembly"
+                  name="datalane"
+                  value="Report assembly"><label for="d-assembly"
+                  >Assembly from my data and decisions</label
+                >
+              </div>
+              <div class="opt">
+                <input
+                  type="radio"
+                  id="d-mine"
+                  name="datalane"
+                  value="My data and comps"
+                  checked><label for="d-mine">Use my data and comps</label>
+              </div>
+              <div class="opt">
+                <input
+                  type="radio"
+                  id="d-research"
+                  name="datalane"
+                  value="Research and report"><label for="d-research">Research and report</label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Comp direction</legend>
+              <div class="opt">
+                <input
+                  type="radio"
+                  id="c-mine"
+                  name="compdir"
+                  value="Use my comps"
+                  checked><label for="c-mine">Use my comps</label>
+              </div>
+              <div class="opt">
+                <input
+                  type="radio"
+                  id="c-proceed"
+                  name="compdir"
+                  value="Prepare candidates and proceed"><label for="c-proceed">Pick them for me</label>
+              </div>
+              <div class="opt">
+                <input
+                  type="radio"
+                  id="c-memo"
+                  name="compdir"
+                  value="Candidate memo before the grid"><label for="c-memo">Confirm candidates first</label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Working format</legend>
+              <div class="opt">
+                <input
+                  type="radio"
+                  id="fmt-zap"
+                  name="format"
+                  value="Editable working file"
+                  checked><label for="fmt-zap">Editable working file</label>
+              </div>
+              <div class="opt">
+                <input
+                  type="radio"
+                  id="fmt-zip"
+                  name="format"
+                  value="XML/PDF package"><label for="fmt-zip">XML/PDF package</label>
+              </div>
+              <div class="opt">
+                <input
+                  type="radio"
+                  id="fmt-unsure"
+                  name="format"
+                  value="Not sure"><label for="fmt-unsure">Confirm with Matt</label>
+              </div>
+            </fieldset>
+          </details>
+          <fieldset>
+            <legend>Order updates</legend>
+            <div class="notify-toggle">
+              <input
+                type="checkbox"
+                id="n-email"
+                name="notify-email"
+                checked><label for="n-email">Email updates</label>
+            </div>
+            <div class="notify-toggle">
+              <input type="checkbox" id="n-text" name="notify-text"><label
+                for="n-text"
+                >Text updates</label
+              >
+            </div>
+          </fieldset>
+          <div id="text-update-fields" hidden>
+            <div class="field">
+              <label for="f-mobile">Mobile number</label
+              ><input
+                type="tel"
+                id="f-mobile"
+                name="mobile"
+                autocomplete="tel"
+                inputmode="tel"
+                maxlength="30"
+                aria-describedby="sms-details">
+              <p class="hint" id="sms-details">Order updates only.</p>
+            </div>
+            <div class="consent">
+              <input
+                type="checkbox"
+                id="f-sms-consent"
+                name="sms_consent"
+                value="yes"><label for="f-sms-consent"
+                >I agree to receive transactional text messages from Appraisal
+                Partners at the mobile number above about my trial or orders. No
+                marketing messages. Message and data rates may apply. Reply STOP
+                to opt out. Consent is not a condition of purchase.</label
+              >
+            </div>
+          </div>
+          <div class="consent" id="consent-trial" hidden>
+            <input
+              type="checkbox"
+              id="f-permission"
+              name="trial_authority_consent"
+              value="yes"><label for="f-permission"
+              >This is a closed prior assignment, not live client work. I have
+              reviewed the engagement restrictions and have actual authority and
+              client permission to share it for this trial. It will not be
+              signed, delivered, or relied on.</label
+            >
+          </div>
+          <div class="consent" id="consent-live">
+            <input
+              type="checkbox"
+              id="f-live-permission"
+              name="live_authority_consent"
+              value="yes"
+              required><label for="f-live-permission"
+              >I am the signing appraiser on this assignment. My client and
+              engagement permit outside production assistance, and I will make
+              every final appraisal decision, sign and deliver the report
+              myself.</label
+            >
+          </div>
+          <button class="btn" id="submit-intake" type="submit" disabled>
+            Submit live-work setup
+          </button>
+          <div
+            class="form-result"
+            id="intake-result"
+            role="status"
+            aria-live="polite"
+            tabindex="-1"
+            hidden
+          ></div>
+          <p class="fineprint">
+            Setup request only. No property or borrower details here. Matt
+            replies with the next step. Your order form confirms scope, quote
+            and ready day; tapping READY authorizes work.
+          </p>
+          <p class="fineprint">
+            Prefer email?
+            <a id="email-fallback" href="mailto:mrr@appraisalpartners.net"
+              >mrr@appraisalpartners.net</a
+            >.
+          </p>
+        </form>
+        <aside class="intake-help">
+          <h2>What happens next</h2>
+          <p>
+            Matt replies personally. Once setup is complete, forward the client
+            order and put the inspection files in your private folder.
+          </p>
+          <p>
+            Your order form holds the quote, ready day, status and approval. You
+            review the report before it goes to your TOTAL folder.
+          </p>
+          <p>
+            <a href="tel:+14692968726">(469)&nbsp;296&#8209;8726</a><br><a
+              href="mailto:mrr@appraisalpartners.net"
+              >mrr@appraisalpartners.net</a
+            >
+          </p>
+        </aside>
       </div>
-      <div class="notify-toggle">
-        <input type="checkbox" id="n-text" name="notify-text">
-        <label for="n-text"><strong>Text updates</strong><span>Report milestones only. Never marketing.</span></label>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap footer-inner">
+        <div>
+          <p><strong>Appraisal Partners of Texas, Inc.</strong></p>
+          <p>TX #1361115-CR · CO #CR200002387</p>
+        </div>
+        <nav class="footer-links" aria-label="Legal and credentials">
+          <a
+            href="https://www.asc.gov/appraiser?field_state_name_value=All&amp;field_license_type__value=All&amp;field_first_name__value=Matthew&amp;field_last_name__value=Roth&amp;items_per_page=20&amp;submit=Apply"
+            >Verify credentials</a
+          ><a href="terms.html">Terms</a
+          ><a href="terms-software.html">Software terms</a>
+        </nav>
+        <address>10900 Research Blvd, Suite 160C · Austin, TX 78759</address>
       </div>
-      <p class="hint">Turn both off to use the tracker only.</p>
-    </fieldset>
+    </footer>
+    <script>
+      (function () {
+        var form = document.getElementById("startform");
+        var submitButton = document.getElementById("submit-intake");
+        var result = document.getElementById("intake-result");
+        var emailFallback = document.getElementById("email-fallback");
+        var sel = document.getElementById("f-scenario");
+        var textUpdateFields = document.getElementById("text-update-fields");
+        var mobile = document.getElementById("f-mobile");
+        var smsConsent = document.getElementById("f-sms-consent");
+        var modeInputs = document.querySelectorAll('input[name="ordermode"]');
+        var trialConsent = document.getElementById("consent-trial");
+        var liveConsent = document.getElementById("consent-live");
+        var trialBox = document.getElementById("f-permission");
+        var liveBox = document.getElementById("f-live-permission");
+        var orderModeField = document.getElementById("f-ordermode");
+        function isLive() {
+          return document.getElementById("m-live").checked;
+        }
+        function showMode() {
+          var live = isLive();
+          orderModeField.value = live
+            ? "Live UAD 3.6 order"
+            : "Free trial on a past assignment";
+          trialConsent.hidden = live;
+          liveConsent.hidden = !live;
+          trialBox.required = !live;
+          liveBox.required = live;
+          if (live) {
+            trialBox.checked = false;
+          } else {
+            liveBox.checked = false;
+          }
+          submitButton.textContent = live
+            ? "Submit live-work setup"
+            : "Submit free tryout request";
+        }
+        for (var mi = 0; mi < modeInputs.length; mi += 1)
+          modeInputs[mi].addEventListener("change", showMode);
+        showMode();
 
-    <div id="text-update-fields" hidden>
-      <div class="field">
-        <label for="f-mobile">Mobile number for order texts</label>
-        <input type="tel" id="f-mobile" name="mobile" autocomplete="tel" inputmode="tel" maxlength="30" aria-describedby="sms-details">
-        <p class="hint" id="sms-details">These transactional updates follow the order milestones you selected. Your number and consent stay in the private request record and never go in the status-page data.</p>
-      </div>
-      <div class="consent">
-        <input type="checkbox" id="f-sms-consent" name="sms_consent" value="yes">
-        <label for="f-sms-consent">I agree to receive transactional text messages from Appraisal Partners at the mobile number above about my trial or orders. No marketing messages. Message and data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.</label>
-      </div>
-    </div>
+        var service = document.getElementById("f-service");
+        var requestedService = new URLSearchParams(window.location.search).get(
+          "service",
+        );
+        var aliases = {
+          convert: "conversion",
+          conversion: "conversion",
+          partial: "partial",
+          full: "full",
+          "2-4": "2-4-units",
+          units: "2-4-units",
+          "2-4-units": "2-4-units",
+        };
+        if (aliases[requestedService])
+          service.value = aliases[requestedService];
+        function syncService() {
+          if (service.value === "full") {
+            document.getElementById("d-research").checked = true;
+            document.getElementById("c-proceed").checked = true;
+          } else {
+            document.getElementById("d-mine").checked = true;
+            document.getElementById("c-mine").checked = true;
+          }
+        }
+        service.addEventListener("change", syncService);
+        syncService();
+        function r(name) {
+          var el = document.querySelector('input[name="' + name + '"]:checked');
+          return el ? el.value : "";
+        }
+        function emailUpdatesSelected() {
+          var el = document.getElementById("n-email");
+          return !!(el && el.checked);
+        }
+        function textUpdatesSelected() {
+          var el = document.getElementById("n-text");
+          return !!(el && el.checked);
+        }
+        function notificationPreferenceLabel() {
+          var e = emailUpdatesSelected(),
+            t = textUpdatesSelected();
+          if (e && t) return "Email & text";
+          if (e) return "Email only";
+          if (t) return "Text only";
+          return "Status page only";
+        }
+        function showTextUpdateFields() {
+          var selected = textUpdatesSelected();
+          textUpdateFields.hidden = !selected;
+          mobile.required = selected;
+          smsConsent.required = selected;
+        }
+        var notificationOptions =
+          document.querySelectorAll("#n-email, #n-text");
+        for (var i = 0; i < notificationOptions.length; i++) {
+          notificationOptions[i].addEventListener(
+            "change",
+            showTextUpdateFields,
+          );
+        }
+        showTextUpdateFields();
 
-    <div class="consent" id="consent-trial">
-      <input type="checkbox" id="f-permission" name="trial_authority_consent" value="yes" required>
-      <label for="f-permission">This is a closed prior assignment, not live client work. I have reviewed the engagement restrictions and have actual authority and client permission to share it for this trial. It will not be signed, delivered, or relied on.</label>
-      <p class="hint">The trial and any later order run under the <a href="terms.html">desk terms</a>.</p>
-    </div>
-    <div class="consent" id="consent-live" hidden>
-      <input type="checkbox" id="f-live-permission" name="live_authority_consent" value="yes">
-      <label for="f-live-permission">I am the signing appraiser on this assignment. My client and engagement permit outside production assistance, and I will make every final appraisal decision, sign and deliver the report myself.</label>
-      <p class="hint">Nothing enters production until we confirm scope, price and a return time in writing, and you accept. Live orders run under the <a href="terms.html">desk terms</a>.</p>
-    </div>
+        function requestId() {
+          if (window.crypto && typeof window.crypto.randomUUID === "function") {
+            return "TR-" + window.crypto.randomUUID();
+          }
+          var bytes = new Uint8Array(16);
+          window.crypto.getRandomValues(bytes);
+          return (
+            "TR-" +
+            Array.prototype.map
+              .call(bytes, function (b) {
+                return b.toString(16).padStart(2, "0");
+              })
+              .join("")
+          );
+        }
 
-    <button class="btn" id="submit-intake" type="submit" disabled>Submit free tryout request</button>
-    <div class="form-result" id="intake-result" role="status" aria-live="polite" hidden></div>
-    <p class="fineprint">This submits a fit and setup request only. Then forward the client order email to Matt. He will create the restricted AP-numbered folder for the remaining files. Production starts only after you tap READY on the order&rsquo;s form, which accepts the terms for that order. One free tryout per appraiser or firm, subject to scope &amp; capacity. Prefer email? <a id="email-fallback" href="mailto:mrr@appraisalpartners.net?subject=Free%20past-report%20trial">mrr@appraisalpartners.net</a>.</p>
-  </form>
+        function v(id) {
+          var el = document.getElementById(id);
+          return el ? el.value.trim() : "";
+        }
 
-  <section id="next">
-    <h2>After you submit</h2>
-    <ol class="steps">
-      <li><span class="n">1.</span><span><strong>Matt reviews the fit request.</strong> If it may work, he replies with the next step. The website does not send an automatic confirmation.</span></li>
-      <li><span class="n">2.</span><span><strong>Each order comes with a short form.</strong> Tapping READY on it accepts the terms for that order. For live work, forward the new client order email. For a tryout, Matt sends the closed-report instructions.</span></li>
-      <li><span class="n">3.</span><span><strong>Matt replies with both rates and the return time.</strong> Say it works and which one. That reply is the go-ahead; the folder link follows.</span></li>
-      <li><span class="n">4.</span><span><strong>Add the files after the inspection.</strong> The finished unsigned report lands back in the same folder. The qualifying tryout is $0.</span></li>
-    </ol>
-  </section>
+        function preparedEmailHref() {
+          var notificationPreference = notificationPreferenceLabel();
+          var includesText = textUpdatesSelected();
+          var id = v("f-request-id");
+          var lines = [
+            isLive()
+              ? "Live UAD 3.6 order request"
+              : "Free prior-assignment trial request",
+            "Request ID: " + id,
+            "",
+            "Name: " + v("f-name"),
+            "License: " + v("f-license"),
+            "Email: " + v("f-email"),
+            "Software: " + v("f-software"),
+            "Service: " + service.options[service.selectedIndex].text,
+            "Request type: " + r("ordermode"),
+            "Assignment type: " + sel.options[sel.selectedIndex].text,
+            "Trial scope: " + r("datalane"),
+            "Comps: " + r("compdir"),
+            "Working format: " + r("format"),
+            "Updates: " + notificationPreference,
+            "Mobile: " + (includesText ? v("f-mobile") : "not provided"),
+            "SMS consent: " +
+              (includesText && smsConsent.checked
+                ? "Yes (" +
+                  v("f-sms-consent-version") +
+                  "): transactional trial and order updates only; no marketing messages; message and data rates may apply; reply STOP to opt out; consent is not a condition of purchase."
+                : "Not requested"),
+            "",
+            isLive()
+              ? "Live order authority consent: I am the signing appraiser on this assignment. My client and engagement permit outside production assistance, and I will make every final appraisal decision, sign and deliver the report myself."
+              : "Trial authority consent (" +
+                v("f-trial-consent-version") +
+                "): This is a closed prior assignment, not live client work. I have reviewed the engagement restrictions and have actual authority and client permission to share it for this trial. It will not be signed, delivered, or relied on.",
+            "Consent source: " + v("f-consent-source"),
+          ];
+          var subject =
+            (isLive() ? "Live UAD 3.6 order " : "Free past-report trial ") +
+            id +
+            ": " +
+            v("f-name");
+          return (
+            "mailto:mrr@appraisalpartners.net?subject=" +
+            encodeURIComponent(subject) +
+            "&body=" +
+            encodeURIComponent(lines.join("\n"))
+          );
+        }
 
+        function showResult(state, html) {
+          result.dataset.state = state;
+          result.innerHTML = html;
+          result.hidden = false;
+          result.focus();
+        }
 
+        var endpointMeta = document.querySelector(
+          'meta[name="ap-intake-endpoint"]',
+        );
+        var endpoint = endpointMeta ? endpointMeta.content.trim() : "";
+        var allowedEndpoint =
+          /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(
+            endpoint,
+          );
+        var iframe = null;
+        var pendingTimer = null;
+        var pendingRequestId = "";
 
-  <div class="note">
-    <p><strong>Want to look around first?</strong> View the <a href="uad36-work-sample.pdf">sample UAD 3.6 report</a> or the <a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">live tracking demo</a>.</p>
-  </div>
-  </main>
+        function useEmailFallback(message) {
+          var href = preparedEmailHref();
+          emailFallback.href = href;
+          submitButton.disabled = false;
+          submitButton.textContent = "Open request in my email";
+          showResult(
+            "error",
+            "<p><strong>" +
+              message +
+              '</strong></p><p>We cannot confirm a website submission. <a id="result-email-fallback" href="' +
+              href.replace(/&/g, "&amp;").replace(/"/g, "&quot;") +
+              '">Open the prepared email</a>, then press Send in your mail app.</p>',
+          );
+        }
 
-  <footer>
-    <span>TX #1361115-CR &middot; CO #CR200002387</span>
-    <span><a href="index.html">Appraisal Partners of Texas, Inc.</a></span>
-    <span><a href="how-it-works.html">How it works</a>
-      <a href="how-it-works.html#pricing">Pricing</a></span>
-    <span><a href="terms.html">Terms</a></span>
-    <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
-  </footer>
-</div>
+        window.addEventListener("message", function (event) {
+          var trustedOrigin =
+            event.origin === "https://script.google.com" ||
+            /^https:\/\/[A-Za-z0-9.-]+\.googleusercontent\.com$/.test(
+              event.origin,
+            );
+          var data = event.data || {};
+          if (
+            !trustedOrigin ||
+            data.type !== "ap-intake-result" ||
+            data.requestId !== pendingRequestId
+          )
+            return;
+          window.clearTimeout(pendingTimer);
+          pendingTimer = null;
+          if (data.ok) {
+            form.reset();
+            showMode();
+            showTextUpdateFields();
+            syncService();
+            submitButton.textContent = "Request received";
+            submitButton.disabled = true;
+            showResult(
+              "success",
+              "<p><strong>Your request was received.</strong></p><p>Matt will review it and email the next step from mrr@appraisalpartners.net. The website does not send an automatic confirmation. For live work, forward the client order email; Matt will create the AP-numbered folder for the remaining files.</p>",
+            );
+          } else {
+            useEmailFallback("The secure form could not confirm your request.");
+          }
+        });
 
-<script>
-(function () {
-  var form = document.getElementById('startform');
-  var submitButton = document.getElementById('submit-intake');
-  var result = document.getElementById('intake-result');
-  var emailFallback = document.getElementById('email-fallback');
-  var sel = document.getElementById('f-scenario');
-  var textUpdateFields = document.getElementById('text-update-fields');
-  var mobile = document.getElementById('f-mobile');
-  var smsConsent = document.getElementById('f-sms-consent');
-  var modeInputs = document.querySelectorAll('input[name="ordermode"]');
-  var trialConsent = document.getElementById('consent-trial');
-  var liveConsent = document.getElementById('consent-live');
-  var trialBox = document.getElementById('f-permission');
-  var liveBox = document.getElementById('f-live-permission');
-  var orderModeField = document.getElementById('f-ordermode');
-  function isLive() { return document.getElementById('m-live').checked; }
-  function showMode() {
-    var live = isLive();
-    orderModeField.value = live ? 'Live UAD 3.6 order' : 'Free trial on a past assignment';
-    trialConsent.hidden = live; liveConsent.hidden = !live;
-    trialBox.required = !live; liveBox.required = live;
-    if (live) { trialBox.checked = false; } else { liveBox.checked = false; }
-    submitButton.textContent = live ? 'Submit live-work setup' : 'Submit free tryout request';
-  }
-  for (var mi = 0; mi < modeInputs.length; mi += 1) modeInputs[mi].addEventListener('change', showMode);
-  showMode();
+        document.getElementById("f-request-id").value = requestId();
+        document.getElementById("f-started-at").value = String(Date.now());
+        submitButton.disabled = false;
+        if (!allowedEndpoint)
+          submitButton.textContent = "Prepare free tryout request";
 
-  function r(name) {
-    var el = document.querySelector('input[name="' + name + '"]:checked');
-    return el ? el.value : '';
-  }
-  function emailUpdatesSelected() {
-    var el = document.getElementById('n-email');
-    return !!(el && el.checked);
-  }
-  function textUpdatesSelected() {
-    var el = document.getElementById('n-text');
-    return !!(el && el.checked);
-  }
-  function notificationPreferenceLabel() {
-    var e = emailUpdatesSelected(), t = textUpdatesSelected();
-    if (e && t) return 'Email & text';
-    if (e) return 'Email only';
-    if (t) return 'Text only';
-    return 'Status page only';
-  }
-  function showTextUpdateFields() {
-    var selected = textUpdatesSelected();
-    textUpdateFields.hidden = !selected;
-    mobile.required = selected;
-    smsConsent.required = selected;
-  }
-  var notificationOptions = document.querySelectorAll('#n-email, #n-text');
-  for (var i = 0; i < notificationOptions.length; i++) {
-    notificationOptions[i].addEventListener('change', showTextUpdateFields);
-  }
-  showTextUpdateFields();
+        form.addEventListener("submit", function (e) {
+          var trap = document.getElementById("f-apx-verify");
+          if (trap) trap.value = "";
+          e.preventDefault();
+          if (!form.reportValidity()) return;
+          emailFallback.href = preparedEmailHref();
 
-  function requestId() {
-    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
-      return 'TR-' + window.crypto.randomUUID();
-    }
-    var bytes = new Uint8Array(16);
-    window.crypto.getRandomValues(bytes);
-    return 'TR-' + Array.prototype.map.call(bytes, function (b) {
-      return b.toString(16).padStart(2, '0');
-    }).join('');
-  }
+          if (!allowedEndpoint) {
+            window.location.href = preparedEmailHref();
+            showResult(
+              "success",
+              "<p><strong>Your mail app should open with the request prepared.</strong></p><p>Nothing has been submitted yet. Review the note and press Send in your mail app.</p>",
+            );
+            return;
+          }
 
-  function v(id) {
-    var el = document.getElementById(id);
-    return el ? el.value.trim() : '';
-  }
-
-  function preparedEmailHref() {
-    var notificationPreference = notificationPreferenceLabel();
-    var includesText = textUpdatesSelected();
-    var id = v('f-request-id');
-    var lines = [
-      isLive() ? 'Live UAD 3.6 order request' : 'Free prior-assignment trial request',
-      'Request ID: ' + id,
-      '',
-      'Name: ' + v('f-name'),
-      'License: ' + v('f-license'),
-      'Email: ' + v('f-email'),
-      'Software: ' + v('f-software'),
-      'Request type: ' + r('ordermode'),
-      'Assignment type: ' + sel.options[sel.selectedIndex].text,
-      'Trial scope: ' + r('datalane'),
-      'Comps: ' + r('compdir'),
-      'Working format: ' + r('format'),
-      'Updates: ' + notificationPreference,
-      'Mobile: ' + (includesText ? v('f-mobile') : 'not provided'),
-      'SMS consent: ' + (includesText && smsConsent.checked
-        ? 'Yes (' + v('f-sms-consent-version') + '): transactional trial and order updates only; no marketing messages; message and data rates may apply; reply STOP to opt out; consent is not a condition of purchase.'
-        : 'Not requested'),
-      '',
-      (isLive()
-        ? 'Live order authority consent: I am the signing appraiser on this assignment. My client and engagement permit outside production assistance, and I will make every final appraisal decision, sign and deliver the report myself.'
-        : 'Trial authority consent (' + v('f-trial-consent-version') + '): This is a closed prior assignment, not live client work. I have reviewed the engagement restrictions and have actual authority and client permission to share it for this trial. It will not be signed, delivered, or relied on.'),
-      'Consent source: ' + v('f-consent-source')
-    ];
-    var subject = (isLive() ? 'Live UAD 3.6 order ' : 'Free past-report trial ') + id + ': ' + v('f-name');
-    return 'mailto:mrr@appraisalpartners.net?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
-  }
-
-  function showResult(state, html) {
-    result.dataset.state = state;
-    result.innerHTML = html;
-    result.hidden = false;
-    result.focus();
-  }
-
-  var endpointMeta = document.querySelector('meta[name="ap-intake-endpoint"]');
-  var endpoint = endpointMeta ? endpointMeta.content.trim() : '';
-  var allowedEndpoint = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(endpoint);
-  var iframe = null;
-  var pendingTimer = null;
-  var pendingRequestId = '';
-
-  function useEmailFallback(message) {
-    var href = preparedEmailHref();
-    emailFallback.href = href;
-    submitButton.disabled = false;
-    submitButton.textContent = 'Open request in my email';
-    showResult('error', '<p><strong>' + message + '</strong></p><p>We cannot confirm a website submission. <a id="result-email-fallback" href="' + href.replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '">Open the prepared email</a>, then press Send in your mail app.</p>');
-  }
-
-  window.addEventListener('message', function (event) {
-    var trustedOrigin = event.origin === 'https://script.google.com' || /^https:\/\/[A-Za-z0-9.-]+\.googleusercontent\.com$/.test(event.origin);
-    var data = event.data || {};
-    if (!trustedOrigin || data.type !== 'ap-intake-result' || data.requestId !== pendingRequestId) return;
-    window.clearTimeout(pendingTimer);
-    pendingTimer = null;
-    if (data.ok) {
-      form.reset();
-      showMode();
-      showTextUpdateFields();
-      submitButton.textContent = 'Request received';
-      submitButton.disabled = true;
-      showResult('success', '<p><strong>Your request was received.</strong></p><p>Matt will review it and email the next step from mrr@appraisalpartners.net. The website does not send an automatic confirmation. For live work, forward the client order email; Matt will create the AP-numbered folder for the remaining files.</p>');
-    } else {
-      useEmailFallback('The secure form could not confirm your request.');
-    }
-  });
-
-  document.getElementById('f-request-id').value = requestId();
-  document.getElementById('f-started-at').value = String(Date.now());
-  submitButton.disabled = false;
-  if (!allowedEndpoint) submitButton.textContent = 'Prepare free tryout request';
-
-  form.addEventListener('submit', function (e) {
-    var trap = document.getElementById('f-apx-verify');
-    if (trap) trap.value = '';
-    e.preventDefault();
-    if (!form.reportValidity()) return;
-    emailFallback.href = preparedEmailHref();
-
-    if (!allowedEndpoint) {
-      window.location.href = preparedEmailHref();
-      showResult('success', '<p><strong>Your mail app should open with the request prepared.</strong></p><p>Nothing has been submitted yet. Review the note and press Send in your mail app.</p>');
-      return;
-    }
-
-    submitButton.disabled = true;
-    submitButton.textContent = 'Sending securely...';
-    showResult('success', '<p><strong>Sending your request...</strong></p>');
-    pendingRequestId = v('f-request-id');
-    if (!iframe) {
-      iframe = document.createElement('iframe');
-      iframe.name = 'ap-intake-response';
-      iframe.title = 'Trial request response';
-      iframe.hidden = true;
-      document.body.appendChild(iframe);
-    }
-    form.action = endpoint;
-    form.target = iframe.name;
-    pendingTimer = window.setTimeout(function () {
-      useEmailFallback('We could not confirm receipt from the secure form.');
-    }, 15000);
-    HTMLFormElement.prototype.submit.call(form);
-  });
-})();
-</script>
-</body>
+          submitButton.disabled = true;
+          submitButton.textContent = "Sending securely...";
+          showResult(
+            "success",
+            "<p><strong>Sending your request...</strong></p>",
+          );
+          pendingRequestId = v("f-request-id");
+          if (!iframe) {
+            iframe = document.createElement("iframe");
+            iframe.name = "ap-intake-response";
+            iframe.title = "Trial request response";
+            iframe.hidden = true;
+            document.body.appendChild(iframe);
+          }
+          form.action = endpoint;
+          form.target = iframe.name;
+          pendingTimer = window.setTimeout(function () {
+            useEmailFallback(
+              "We could not confirm receipt from the secure form.",
+            );
+          }, 15000);
+          HTMLFormElement.prototype.submit.call(form);
+        });
+      })();
+    </script>
+  </body>
 </html>

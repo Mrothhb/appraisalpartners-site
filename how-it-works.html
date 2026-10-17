@@ -1,209 +1,407 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Forward, upload, approve, review. A simple handoff for an editable UAD 3.6 report, with scope, fee, format, and return time agreed before production.">
-<link rel="canonical" href="https://appraisalpartners.net/how-it-works.html">
-<meta property="og:title" content="How the Production Desk Works | A&amp;AP">
-<meta property="og:description" content="See the simple handoff from a forwarded order to an editable UAD 3.6 report ready for the signing appraiser's review.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://appraisalpartners.net/how-it-works.html">
-<meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/png" href="/assets/aap-favicon.png">
-<link rel="apple-touch-icon" href="/assets/aap-apple-touch-icon.png">
-<title>How It Works | A&amp;AP</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
-<style>
-  :root { --paper:#FAFAF7; --ink:#1C2420; --muted:#5C6660; --rule:#D9DED9; --accent:#2E5D46; --accent-deep:#24493A; --wash:#F1F3EF; }
-  @media (prefers-color-scheme:dark) { :root:not([data-theme="light"]) { --paper:#141917; --ink:#E8EAE6; --muted:#A4AEA7; --rule:#354039; --accent:#80B69A; --accent-deep:#A4CFB7; --wash:#1B211E; } }
-  :root[data-theme="dark"] { --paper:#141917; --ink:#E8EAE6; --muted:#A4AEA7; --rule:#354039; --accent:#80B69A; --accent-deep:#A4CFB7; --wash:#1B211E; }
-  * { box-sizing:border-box; }
-  body { background:var(--paper); color:var(--ink); font-family:"Libre Caslon Text",Georgia,serif; font-size:17px; line-height:1.65; margin:0; padding:0 24px; }
-  .sheet { max-width:820px; margin:auto; padding:36px 0 48px; }
-  .letterhead { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:12px; border-bottom:2px solid var(--ink); padding-bottom:16px; }
-  .name { color:var(--ink); font-family:"IBM Plex Mono",monospace; font-size:14px; font-weight:500; letter-spacing:.16em; text-decoration:none; text-transform:uppercase; }
-  .cred { color:var(--muted); font-size:13px; }
-  .nav { display:flex; flex-wrap:wrap; gap:6px 18px; width:100%; font-family:"IBM Plex Mono",monospace; font-size:13px; }
-  .nav a { color:var(--muted); padding:4px 0; }
-  .nav a[aria-current] { color:var(--ink); }
-  h1 { font-size:clamp(36px,6.5vw,54px); line-height:1.13; letter-spacing:-.035em; margin:12px 0 18px; text-wrap:balance; }
-  h1 span { color:var(--accent); }
-  h2 { font-size:26px; line-height:1.3; margin:0 0 18px; text-wrap:balance; }
-  h3 { font-size:20px; line-height:1.35; margin:0 0 8px; }
-  p { margin:0 0 16px; }
-  a { color:var(--accent-deep); text-underline-offset:4px; }
-  a:focus-visible, summary:focus-visible { outline:2px solid var(--accent); outline-offset:5px; }
-  .eyebrow { color:var(--accent); font-family:"IBM Plex Mono",monospace; font-size:13px; letter-spacing:.12em; text-transform:uppercase; margin:40px 0 0; }
-  .lede { font-size:20px; max-width:650px; }
-  .technology-link { display:flex; gap:18px; align-items:center; justify-content:space-between; padding:20px 0; margin:24px 0 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); text-decoration:none; }
-  .technology-link strong { display:block; color:var(--ink); font-size:18px; }
-  .technology-link span span { font-size:15px; }
-  .technology-link .arrow { font-size:28px; transition:transform .2s ease; }
-  .technology-link:hover .arrow { transform:translateX(5px); }
-  section { margin-top:40px; }
-  .steps { padding:0; margin:0; list-style:none; }
-  .steps li { display:grid; grid-template-columns:42px 1fr; gap:16px; padding:19px 0; border-bottom:1px solid var(--rule); }
-  .steps .n { color:var(--accent); font-family:"IBM Plex Mono",monospace; font-size:14px; padding-top:3px; }
-  .steps p { margin:0; color:var(--muted); font-size:16px; }
-  .steps.day li { grid-template-columns:76px 1fr; }
-  .scopes { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-top:4px; }
-  .scopes article { border:1px solid var(--rule); border-top:3px solid var(--accent); padding:16px 16px; }
-  .scopes .lane { font-family:"IBM Plex Mono","Courier New",monospace; font-size:11.5px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
-  .scopes h3 { font-size:18px; margin:0 0 6px; }
-  .price { font-family:"IBM Plex Mono","Courier New",monospace; font-size:13.5px; color:var(--accent-deep); margin:0 0 10px; }
-  .scopes p { font-size:15.5px; margin:0; }
-  .scopes .note { color:var(--muted); font-size:13.5px; margin:12px 0; }
-  .both { border-left:3px solid var(--accent); margin:18px 0 14px; padding:2px 0 2px 16px; }
-  .both p { font-size:15.5px; margin:0 0 7px; }
-  .both p:last-child { margin-bottom:0; color:var(--muted); }
-  .both strong { color:var(--accent-deep); }
-  .fineprint { color:var(--muted); font-size:14px; }
-  .delivery { background:var(--wash); padding:26px; }
-  .delivery ul { padding-left:20px; margin:0 0 16px; }
-  .delivery li { margin-bottom:5px; }
-  details { border-bottom:1px solid var(--rule); padding:16px 0; }
-  summary { cursor:pointer; font-weight:700; }
-  details p { color:var(--muted); font-size:16px; margin:12px 0 0; }
-  .cta { margin-top:40px; padding-top:28px; border-top:2px solid var(--ink); }
-  .btn { display:inline-block; background:var(--accent); color:var(--paper); padding:12px 20px; text-decoration:none; font-family:"IBM Plex Mono",monospace; font-size:14px; }
-  .contact { font-size:15px; margin-top:18px; }
-  footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; border-top:1px solid var(--rule); padding-top:20px; margin-top:36px; color:var(--muted); font-size:13px; }
-  footer address { width:100%; font-style:normal; }
-  .skip { position:absolute; left:-9999px; top:8px; padding:12px; background:var(--accent); color:var(--paper); }
-  .skip:focus { left:8px; }
-  @media(max-width:560px) { body { padding:0 20px; } .sheet { padding-top:24px; } .scopes { grid-template-columns:1fr; gap:12px; } .cred { display:none; } .delivery { padding:22px; } }
-  @media(prefers-reduced-motion:reduce) { .technology-link .arrow { transition:none; } }
-  @media (max-width:600px) { .scopes { grid-template-columns:1fr; } }
-
-  /* A&AP mark: AP monogram, A&AP left-aligned under it (as on the self-service form header). */
-  header.letterhead { align-items: flex-end; }
-  .letterhead .name.brandmark {
-    display: inline-flex; flex-direction: column; align-items: flex-start; gap: 5px;
-    color: #0C2A46; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 17px; font-weight: 700; letter-spacing: 0.02em; line-height: 1;
-    text-decoration: none; text-transform: none;
-  }
-  .letterhead .brandmark .mark { display: block; width: 60px; height: auto; }
-  .letterhead .brandmark .mark-light { display: none; }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .letterhead .name.brandmark { color: var(--ink); }
-    :root:not([data-theme="light"]) .letterhead .brandmark .mark { display: none; }
-    :root:not([data-theme="light"]) .letterhead .brandmark .mark-light { display: block; }
-  }
-  :root[data-theme="dark"] .letterhead .name.brandmark { color: var(--ink); }
-  :root[data-theme="dark"] .letterhead .brandmark .mark { display: none; }
-  :root[data-theme="dark"] .letterhead .brandmark .mark-light { display: block; }
-</style>
-<!-- Privacy-friendly analytics by Plausible -->
-<script async src="https://plausible.io/js/pa-pNkpzZuFyeVpLVvH7hc8w.js"></script>
-<script>
-  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-  plausible.init()
-  // Phone and email contacts were invisible in analytics: nothing fired on tel:, sms: or mailto:.
-  document.addEventListener("click", function (event) {
-    var link = event.target.closest && event.target.closest('a[href^="tel:"], a[href^="sms:"], a[href^="mailto:"]');
-    if (!link) return;
-    var href = link.getAttribute("href") || "";
-    var name = href.indexOf("tel:") === 0 ? "Call Click"
-             : href.indexOf("sms:") === 0 ? "Text Click"
-             : "Email Click";
-    plausible(name, { props: { page: location.pathname } });
-  }, true);
-</script>
-</head>
-<body>
-<a class="skip" href="#main">Skip to content</a>
-<div class="sheet">
-  <header class="letterhead">
-    <a class="name brandmark" href="index.html" aria-label="A&amp;AP home"><img class="mark" src="assets/aap-mark.svg" alt="" width="60" height="35"><img class="mark mark-light" src="assets/aap-mark-light.svg" alt="" width="60" height="35"><span class="wordmark">A&amp;AP</span></a>
-    <span class="cred">An appraiser at the other end.</span>
-    <nav class="nav" aria-label="Primary">
-      <a href="uad36.html">UAD 3.6</a><a href="convert.html">Convert</a><a href="how-it-works.html" aria-current="page">How it works</a><a href="#pricing">Pricing</a><a href="technology.html">Behind the desk</a><a href="portrait.html">The portrait</a><a href="story.html">Four appraisers</a><a href="about.html">About us</a><a href="faq.html">FAQ</a><a href="contact.html">Contact</a>
-      <a href="start.html">Start with one report</a>
-    </nav>
-  </header>
-  <main id="main" tabindex="-1">
-    <p class="eyebrow">How it works</p>
-    <h1>Your assignment.<br><span>A lighter workload.</span></h1>
-    <p class="lede">Forward the order. We create the folder and prepare the editable UAD 3.6 appraisal. You review it, make the final decisions, and sign.</p>
-    <a class="technology-link" href="technology.html"><span><strong>Curious what happens behind our desk?</strong><span>See the technology &amp; human review.</span></span><span class="arrow" aria-hidden="true">&rarr;</span></a>
-
-    <section id="process">
-      <h2>Here&rsquo;s how it works.</h2>
-      <p>When a new assignment arrives, forward the client&rsquo;s order email to Matt. He replies in that thread with the partial-desk and full-desk rates and the return time.</p>
-      <p>Say it works and which one you want. Matt sends the link to that assignment&rsquo;s private shared Drive folder. After the inspection, add your photos, sketch, notes, mobile report file and other agreed materials there, and we start.</p>
-      <p>We complete the agreed desk work and Matt personally reviews the report. The finished unsigned appraisal file lands in the same shared folder, ready to open in TOTAL. You review it, make any edits, sign it and send it to your client. Revisions within the agreed assignment go to the front of the line.</p>
-    </section>
-
-    <section id="day">
-      <h2>An example of what your day looks like.</h2>
-      <p>You have three inspections today. You forwarded the client orders as they arrived, Matt replied to each with the rates and return time, you said yes to all three, and each got its own AP folder.</p>
-      <ol class="steps day">
-        <li><span class="n">9:00 AM</span><div><h3>First inspection.</h3><p>When you&rsquo;re done, add the photos, sketch, notes and mobile file to its AP folder. We start.</p></div></li>
-        <li><span class="n">10:30 AM</span><div><h3>Second inspection.</h3><p>Add that packet to its own folder. The first one is already in research.</p></div></li>
-        <li><span class="n">1:00 PM</span><div><h3>Third inspection.</h3><p>Add the last packet and head home.</p></div></li>
-        <li><span class="n">Later</span><div><h3>We handle the desk.</h3><p>Track each report while we research, build and review it. The finished unsigned appraisal file returns to the same AP folder at the agreed return time.</p></div></li>
-        <li><span class="n">Review</span><div><h3>You stay in control.</h3><p>Open the file in TOTAL, independently review it, make any edits, sign and deliver it to your client.</p></div></li>
-      </ol>
-      <p class="fineprint" id="tracking">Follow progress through your private tracker, with optional email or text updates. <a href="tracking.html">See how tracking works &rarr;</a></p>
-    </section>
-
-    <section id="pricing">
-      <h2>Choose how much you want us to handle.</h2>
-      <div class="scopes">
-        <article>
-          <p class="lane">Report assembly</p>
-          <h3>$59 &middot; You send the comps and your decisions</h3>
-          <p class="price">Your comps, market export, files &amp; decision sheet</p>
-          <p>We enter the data, run the math, build the report and check it. Every appraisal decision stays yours &mdash; comps, ratings, adjustments, value.</p>
-        </article>
-        <article>
-          <p class="lane">Partial desk</p>
-          <h3>$89 &middot; You send the comps</h3>
-          <p class="price">Your comps, market export &amp; files</p>
-          <p>We build the report and draft the adjustments, analysis and value for your review.</p>
-        </article>
-        <article>
-          <p class="lane">Full desk</p>
-          <h3>$149* &middot; We handle the full report.</h3>
-          <p class="price">You inspect, review, and sign.</p>
-          <p class="note">* Price is negotiable depending on volume.</p>
-          <p>We research, pick the comps and prepare the editable report. You inspect, review, sign, and deliver.</p>
-        </article>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta
+      name="description"
+      content="Compare conversion, partial desk and full desk, see the sample workflow, and get plain answers about pricing, review and delivery.">
+    <title>How it works | A&amp;AP</title>
+    <link
+      rel="canonical"
+      href="https://appraisalpartners.net/how-it-works.html">
+    <link rel="icon" type="image/png" href="assets/aap-favicon.png">
+    <link rel="apple-touch-icon" href="assets/aap-apple-touch-icon.png">
+    <link
+      rel="preload"
+      href="assets/open-sans.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin>
+    <link rel="stylesheet" href="assets/site.css">
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="appbar">
+      <div class="wrap appbar-inner">
+        <a class="brand" href="index.html" aria-label="A&amp;AP home"
+          ><img
+            src="assets/aap-mark-light.svg"
+            width="44"
+            height="28"
+            alt=""><span>A&amp;AP</span></a
+        >
+        <nav class="nav" aria-label="Primary">
+          <a href="convert.html">Convert</a
+          ><a href="how-it-works.html" aria-current="page">How it works</a
+          ><a href="about.html">About</a
+          ><a class="btn" href="start.html">Start a report</a>
+        </nav>
+        <details class="mobile-nav">
+          <summary>Menu</summary>
+          <nav class="mobile-menu" aria-label="Mobile">
+            <a href="convert.html">Convert</a
+            ><a href="how-it-works.html" aria-current="page">How it works</a
+            ><a href="about.html">About</a>
+          </nav>
+        </details>
+        <a class="btn mobile-start" href="start.html">Start a report</a>
       </div>
-      <div class="both">
-        <p><strong>Revisions to the agreed assignment are included and take priority.</strong></p>
-        <p>We read every line before it goes back. Before your first report, we confirm we can cover your market and how soon we can be ready.</p>
+    </header>
+    <main class="wrap" id="main" tabindex="-1">
+      <section class="hero page-hero">
+        <p class="eyebrow">The report desk</p>
+        <h1>You inspect and sign.<br>We build the report.</h1>
+        <p class="lede">
+          Choose how much help you need. Your order form keeps the scope, quote,
+          ready day and review together.
+        </p>
+      </section>
+      <section id="services">
+        <div class="section-head"><h2>Three ways to use the desk</h2></div>
+        <div class="grid-3">
+          <article class="card">
+            <h3 class="section-bar">Conversion · $89</h3>
+            <div class="card-body">
+              <p>
+                Send a completed 2.6 and supporting files. We rebuild it as
+                native 3.6, preserve your decisions and flag new questions.
+              </p>
+              <p class="muted">2 business days.</p>
+              <a href="convert.html">Conversion details →</a>
+            </div>
+          </article>
+          <article class="card">
+            <h3 class="section-bar">Partial desk · $89</h3>
+            <div class="card-body">
+              <p>
+                Send your inspection notes, sketch, photos, comps, supporting
+                records and adjustment direction. We assemble the report, write
+                the comments and check it.
+              </p>
+              <p class="muted">2 business days.</p>
+            </div>
+          </article>
+          <article class="card">
+            <h3 class="section-bar">Full desk · $149</h3>
+            <div class="card-body">
+              <p>
+                Send the order, engagement instructions and inspection
+                materials. We research MLS and public records, prepare the comp
+                set and market-supported adjustments, and build the report for
+                your decisions.
+              </p>
+              <p class="muted">3 business days.</p>
+            </div>
+          </article>
+        </div>
+        <p class="addons" id="pricing">
+          2–4 units: $149 partial / $199 full, 3 business days. Rent schedule
+          +$35. Repairs worked out +$30. Turn time starts with complete files.
+        </p>
+      </section>
+      <section class="section" id="walkthrough">
+        <div class="section-head"><h2>From your files to your folder</h2></div>
+        <ol class="steps">
+          <li>
+            <div>
+              <strong>Send your files.</strong>Your order form shows the quote
+              and ready day. Tap READY.
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>We build it.</strong>Matt reviews the report before it
+              comes back.
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Review and approve.</strong>Ask for changes or approve
+              delivery to your TOTAL folder.
+            </div>
+          </li>
+        </ol>
+      </section>
+      <section class="section" id="sample">
+        <div class="section-head"><h2>A sample, from start to finish</h2></div>
+        <div class="product-grid">
+          <figure class="product-tile">
+            <div class="sample">
+              <div class="sample-label">
+                <b>Order form</b><span>Sample</span>
+              </div>
+              <div class="mini-bar">Report preparation</div>
+              <dl class="order-facts">
+                <div>
+                  <dt>File</dt>
+                  <dd>Sample report</dd>
+                </div>
+                <div>
+                  <dt>Quote</dt>
+                  <dd>$89 · Conversion</dd>
+                </div>
+                <div>
+                  <dt>Ready day</dt>
+                  <dd>Wednesday, October 21</dd>
+                </div>
+              </dl>
+              <div class="sample-controls">
+                <span class="status-pill">Ready for your approval</span
+                ><span class="sample-control primary">Approve</span
+                ><span class="sample-control">Request a change</span>
+              </div>
+            </div>
+            <figcaption>
+              <strong>Your order form.</strong> Quote, ready day, status and
+              approval.
+            </figcaption>
+          </figure>
+          <figure class="product-tile">
+            <div class="sample">
+              <div class="sample-label">
+                <b>Same decisions. New form.</b><span>Sample</span>
+              </div>
+              <div class="compare">
+                <div class="compare-panel legacy">
+                  <div class="compare-title">2.6 · Original</div>
+                  <table class="sample-table">
+                    <caption class="visually-hidden">
+                      Original 2.6 sample comparables
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Comp</th>
+                        <th scope="col">Sale</th>
+                        <th scope="col">Adj.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th scope="row">A</th>
+                        <td>$320,000</td>
+                        <td>+$5,000</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">B</th>
+                        <td>$330,000</td>
+                        <td>−$5,000</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">C</th>
+                        <td>$325,000</td>
+                        <td>$0</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div class="sample-value">
+                    Appraiser’s value<strong>$325,000</strong>
+                  </div>
+                </div>
+                <div class="compare-panel">
+                  <div class="compare-title">3.6 · Native</div>
+                  <table class="sample-table">
+                    <caption class="visually-hidden">
+                      Native 3.6 sample comparables
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Comp</th>
+                        <th scope="col">Sale</th>
+                        <th scope="col">Adj.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th scope="row">A</th>
+                        <td>$320,000</td>
+                        <td>+$5,000</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">B</th>
+                        <td>$330,000</td>
+                        <td>−$5,000</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">C</th>
+                        <td>$325,000</td>
+                        <td>$0</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div class="sample-value">
+                    Appraiser’s value<strong>$325,000</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <figcaption>
+              <strong>2.6 in, 3.6 out.</strong> Same comps, adjustments and
+              value.
+            </figcaption>
+          </figure>
+          <figure class="product-tile">
+            <div class="sample check-sample">
+              <div class="sample-label">
+                <b>Final check</b><span>Sample</span>
+              </div>
+              <div class="eo-result">
+                <svg class="check-mark" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m4 12 5 5L20 6" /></svg
+                >E&amp;O: 0 errors
+              </div>
+              <p class="check-note">
+                Software check complete.<br>Matt’s review complete.
+              </p>
+            </div>
+            <figcaption>
+              <strong>Checked before delivery.</strong> Zero E&amp;O errors.
+            </figcaption>
+          </figure>
+          <figure class="product-tile">
+            <div class="sample">
+              <div class="sample-label">
+                <b>Your report folder</b><span>Sample</span>
+              </div>
+              <div class="mini-bar">Completed reports</div>
+              <div class="folder-row">
+                <span>File name</span><small>Saved</small>
+              </div>
+              <div class="folder-row selected">
+                <span class="folder-name"
+                  ><i class="file-icon" aria-hidden="true"></i
+                  >Sample-report.zap</span
+                ><small>Today, 10:42 AM</small>
+              </div>
+              <div class="folder-empty" aria-hidden="true"></div>
+              <p class="check-note">Editable report · Ready to open</p>
+            </div>
+            <figcaption>
+              <strong>In your TOTAL folder.</strong> Open, review, sign.
+            </figcaption>
+          </figure>
+        </div>
+        <div class="review-strip">
+          <b>Sample workflow</b><span>Files complete →</span
+          ><span>In production →</span><span>Your review →</span
+          ><span>In your TOTAL folder</span>
+        </div>
+        <p class="hint">
+          These examples use synthetic data. The order form is where you confirm
+          the scope and authorize work. The software check supports your review.
+        </p>
+      </section>
+      <section class="section" id="faq">
+        <div class="section-head"><h2>A few straight answers</h2></div>
+        <div class="faq-list">
+          <details>
+            <summary>Who makes the appraisal decisions?</summary>
+            <p>
+              You do. You inspect, decide, review, sign and deliver to your
+              client. We prepare the report for you. The desk fee is for
+              production assistance.
+            </p>
+          </details>
+          <details>
+            <summary>What does the software do?</summary>
+            <p>
+              Software does the pulls, assembly and checks. Claude and GPT help
+              with research and drafting. Matt reviews the report; you decide
+              and sign. Your files are never used for training.
+            </p>
+          </details>
+          <details>
+            <summary>
+              Does zero E&amp;O errors mean the appraisal is correct?
+            </summary>
+            <p>
+              It means the report passes the software’s E&amp;O checks. It does
+              not establish appraisal correctness or lender acceptance. Your
+              final review still matters.
+            </p>
+          </details>
+          <details>
+            <summary>When does the clock start?</summary>
+            <p>
+              When the files are complete and you tap READY on the order form.
+              The form shows your quote and ready day before work starts.
+            </p>
+          </details>
+          <details>
+            <summary>What if the 2.6 is missing new information?</summary>
+            <p>
+              We flag the 3.6 questions the old report cannot answer. You supply
+              or confirm the missing facts. We don’t fill gaps with guesses.
+            </p>
+          </details>
+          <details>
+            <summary>Can I ask for changes?</summary>
+            <p>
+              Yes. Request them on the order form. Revisions within the agreed
+              scope are included; new scope is quoted before we proceed.
+            </p>
+          </details>
+          <details>
+            <summary>How do I send the files?</summary>
+            <p>
+              Start with the setup request. Matt gives you a private order
+              folder. Keep assignment files out of the public form and ordinary
+              signup notes.
+            </p>
+          </details>
+          <details>
+            <summary>Is there a subscription or minimum?</summary>
+            <p>
+              No. Send one report when you need help. We confirm capacity and
+              timing before accepting it.
+            </p>
+          </details>
+          <details>
+            <summary>Can I try a closed file first?</summary>
+            <p>
+              Yes, a free first look at a closed file you have actual authority
+              and client permission to share. Select that option on Start.
+            </p>
+          </details>
+          <details>
+            <summary>Where does the finished file go?</summary>
+            <p>
+              After your approval, the native, editable report goes into your
+              own TOTAL folder. Open it, review the appraisal and sign when
+              you’re satisfied.
+            </p>
+          </details>
+        </div>
+      </section>
+      <section class="section cta">
+        <div>
+          <h2>Start when you need a hand.</h2>
+          <div class="contact-links">
+            <a href="tel:+14692968726">(469)&nbsp;296&#8209;8726</a
+            ><a href="mailto:mrr@appraisalpartners.net"
+              >mrr@appraisalpartners.net</a
+            >
+          </div>
+        </div>
+        <a class="btn" href="start.html">Start a report</a>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap footer-inner">
+        <div>
+          <p><strong>Appraisal Partners of Texas, Inc.</strong></p>
+          <p>TX #1361115-CR · CO #CR200002387</p>
+        </div>
+        <nav class="footer-links" aria-label="Legal and credentials">
+          <a
+            href="https://www.asc.gov/appraiser?field_state_name_value=All&amp;field_license_type__value=All&amp;field_first_name__value=Matthew&amp;field_last_name__value=Roth&amp;items_per_page=20&amp;submit=Apply"
+            >Verify credentials</a
+          ><a href="terms.html">Terms</a
+          ><a href="terms-software.html">Software terms</a>
+        </nav>
+        <address>10900 Research Blvd, Suite 160C · Austin, TX 78759</address>
       </div>
-      <p class="fineprint"><strong>These are desk fees</strong> you pay separately from the appraisal fee you charge your client. No subscription or minimum.</p>
-      <p>Have a deadline? Text or call <a href="tel:+14692968726">(469) 296-8726</a> or email <a href="mailto:mrr@appraisalpartners.net?subject=Deadline">mrr@appraisalpartners.net</a> and we will tell you what we can do.</p>
-    </section>
-
-    <section class="delivery" id="return">
-      <h2>A working report. Not more homework.</h2>
-      <ul><li>Editable report, with agreed photos and exhibits in place</li><li>Organized sources and support for your workfile</li><li>Open items clearly marked for your decision</li></ul>
-      <p>You retain the inspection, final analysis, signature, and delivery to your client. XML and PDF are included when part of the accepted order.</p>
-      <p class="fineprint">Software automation and AI assist the production work. Matt personally reviews each report before return.</p>
-    </section>
-
-    <section aria-label="A few practical details">
-      <details id="comps"><summary>Can I steer the comps?</summary><p>Yes. Send your set, ask to see candidates, or request changes in the order thread. You make the final selection. We do not work toward a predetermined value.</p></details>
-      <details id="revisions"><summary>What if a revision comes back?</summary><p>Forward it to us. Revisions within the report as delivered are included, with one additional comparable each time a revision comes back. Materially new scope is quoted before work begins. <a href="terms.html">Full revision terms &rarr;</a></p></details>
-      <details id="boundaries"><summary>Which assignments fit?</summary><p>UAD 3.6 production only. Dallas&ndash;Fort Worth research is established; other markets and packet-based work are checked individually for access, competence, and client and state requirements. No FHA/VA panel or Georgia assignments under current desk policy. Have a legacy report? <a href="convert.html">See conversion &rarr;</a></p><p>Your authority to share materials and the approved data-provider route are confirmed before production. Required assistance disclosures remain part of the handoff. <a href="terms.html">Read the terms &rarr;</a></p></details>
-    </section>
-
-    <div class="cta">
-      <h2>Start with a report you know.</h2>
-      <p>Try an authorized, closed prior assignment for internal evaluation before bringing us live work.</p>
-      <a class="btn" href="start.html">Let&rsquo;s try one &rarr;</a>
-      <p class="contact">Prefer to talk? <a href="tel:+14692968726">(469) 296-8726</a> &middot; <a href="mailto:mrr@appraisalpartners.net">Email Matt</a></p>
-    </div>
-  </main>
-  <footer><span><a href="index.html">A&amp;AP</a></span><span>TX #1361115-CR &middot; CO #CR200002387</span><span><a href="terms.html">Terms</a></span><address>Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address></footer>
-</div>
-</body>
+    </footer>
+  </body>
 </html>
