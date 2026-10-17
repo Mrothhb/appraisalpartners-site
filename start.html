@@ -18,6 +18,7 @@
       type="font/woff2"
       crossorigin>
     <link rel="stylesheet" href="assets/site.css">
+    <link rel="preload" href="assets/schibsted-grotesk-700.ttf" as="font" type="font/ttf" crossorigin>
     <meta name="referrer" content="no-referrer">
     <meta
       name="ap-intake-endpoint"
@@ -25,35 +26,31 @@
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
-    <header class="appbar">
-      <div class="wrap appbar-inner">
-        <a class="brand" href="index.html" aria-label="A&amp;AP home"
-          ><img
-            src="assets/aap-mark-light.svg"
-            width="44"
-            height="28"
-            alt=""><span>A&amp;AP</span></a
-        >
-        <nav class="nav" aria-label="Primary">
-          <a href="convert.html">Convert</a
-          ><a href="how-it-works.html">How it works</a
-          ><a href="about.html">About</a
-          ><a class="btn" href="start.html" aria-current="page"
-            >Start a report</a
-          >
-        </nav>
-        <details class="mobile-nav">
-          <summary>Menu</summary>
-          <nav class="mobile-menu" aria-label="Mobile">
-            <a href="convert.html">Convert</a
-            ><a href="how-it-works.html">How it works</a
-            ><a href="about.html">About</a>
-          </nav>
-        </details>
-        <a class="btn mobile-start" href="start.html">Start a report</a>
-      </div>
-    </header>
-    <main class="wrap" id="main" tabindex="-1">
+<svg width="0" height="0" class="svg-defs" aria-hidden="true">
+  <symbol id="ck" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="currentColor" opacity=".14"/><path d="M5.5 10.5l3 3 6-6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="tick" viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="x" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="currentColor" opacity=".12"/><path d="M7 7l6 6M13 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="down" viewBox="0 0 20 20"><path d="M10 3v13M4.5 10.5L10 16l5.5-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="phone" viewBox="0 0 20 20"><path d="M6.4 2.9c.5-.3 1.2-.1 1.5.4l1.4 2.4c.3.5.2 1.1-.2 1.5L7.9 8.4a9.6 9.6 0 0 0 3.7 3.7l1.2-1.2c.4-.4 1-.5 1.5-.2l2.4 1.4c.5.3.7 1 .4 1.5l-.9 1.7c-.5.9-1.5 1.4-2.5 1.1A13.6 13.6 0 0 1 3.6 6.3c-.3-1 .2-2 1.1-2.5l1.7-.9z" fill="currentColor"/></symbol>
+</svg>
+    <a class="announce num" href="convert.html"><b>New</b><span>Convert your 2.6 to 3.6</span><span class="dot">·</span><span>$49–$89</span><span class="dot">·</span><span>1 business day</span><span class="arrow">&rarr;</span></a>
+<header class="appbar">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="A&amp;AP home"><img src="assets/aap-mark-light.svg" alt="" width="52" height="30"><b>A&amp;AP</b></a>
+    <nav class="nav" aria-label="Site"><a href="index.html#services">Services</a>
+<a href="convert.html">Convert</a>
+<a href="how-it-works.html">How it works</a>
+<a href="about.html">About</a>
+<a href="faq.html">FAQ</a></nav>
+    <a class="btn sm" href="start.html" aria-current="page">Start a report</a>
+    <details class="menu"><summary aria-label="Menu">Menu</summary><nav aria-label="Site, mobile"><a href="index.html#services">Services</a>
+<a href="convert.html">Convert</a>
+<a href="how-it-works.html">How it works</a>
+<a href="about.html">About</a>
+<a href="faq.html">FAQ</a><a class="go" href="start.html" aria-current="page">Start a report</a></nav></details>
+  </div>
+</header>
+    <main class="wrap intake-page" id="main" tabindex="-1">
       <section class="hero page-hero">
         <p class="eyebrow">Start a report</p>
         <h1>Tell Matt what you need.</h1>
@@ -380,22 +377,14 @@
         </aside>
       </div>
     </main>
-    <footer class="site-footer">
-      <div class="wrap footer-inner">
-        <div>
-          <p><strong>Appraisal Partners of Texas, Inc.</strong></p>
-          <p>TX #1361115-CR · CO #CR200002387</p>
-        </div>
-        <nav class="footer-links" aria-label="Legal and credentials">
-          <a
-            href="https://www.asc.gov/appraiser?field_state_name_value=All&amp;field_license_type__value=All&amp;field_first_name__value=Matthew&amp;field_last_name__value=Roth&amp;items_per_page=20&amp;submit=Apply"
-            >Verify credentials</a
-          ><a href="terms.html">Terms</a
-          ><a href="terms-software.html">Software terms</a>
-        </nav>
-        <address>10900 Research Blvd, Suite 160C · Austin, TX 78759</address>
-      </div>
-    </footer>
+    <footer>
+  <div class="wrap num">
+    <div class="line1"><span>Appraisal Partners of Texas, Inc.</span><span class="dot">·</span><span>TX #1361115-CR</span><span class="dot">·</span><span>CO #CR200002387</span></div>
+    <nav class="line1" aria-label="Footer"><a href="convert.html">Convert</a><span class="dot">·</span><a href="how-it-works.html">How it works</a><span class="dot">·</span><a href="about.html">About</a><span class="dot">·</span><a href="faq.html">FAQ</a><span class="dot">·</span><a href="terms.html">Terms</a><span class="dot">·</span><a href="terms-software.html">Software terms</a></nav>
+    <div>10900 Research Blvd, Suite 160C, Austin, TX 78759</div>
+    <div>TOTAL is a product of a la mode. A&amp;AP is not affiliated with a la mode.</div>
+  </div>
+</footer>
     <script>
       (function () {
         var form = document.getElementById("startform");
