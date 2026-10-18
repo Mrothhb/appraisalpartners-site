@@ -20,11 +20,11 @@
      first as a red pop-out (a DOM overlay), then as a red banner pinned at the top until the status changes. A line or
      post-run question marked "required" (true, or a list of lanes) blocks READY, and a partner reviewer's DONE (never
      NEEDS CHANGE): Ready reads "Ready · 2 left" until they are in, and a tap marks the blank ones in red.
-     Each stage names its accepting action: Ready, sending answers, approving or requesting a change. house_prompts.lane "review" is a partner reviewer's form (review help, no value line). house_prompts.lane "desk" (partial and full desk) is the minimal form: client permission and READY; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. No initials on any lane (Matt 2026-10-13). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
+     Each customer stage names its accepting action: Ready, sending answers, approving or requesting a change. house_prompts.lane "review" is a partner reviewer's form (review help, no value line or terms). house_prompts.lane "desk" (partial and full desk) is the minimal form: client permission and READY; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. No initials on any lane (Matt 2026-10-13). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-18.2">
+<html lang="en" data-build="v2026-10-18.3">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -137,6 +137,7 @@ header .conn { color: rgba(255, 255, 255, .78); }
 .pdf-foot { margin: var(--s-3) 0 0; }
 .pdf-foot .pdf-btn { margin: 0; }
 @media (max-width: 500px) { .report { --card-px: 8px; } .report h2 span { display: none; } .pdf-frame { height: 470px; min-height: 0; } }
+.rich { overflow-wrap: anywhere; }
 .rich p { margin: 0 0 var(--s-2); }
 .rich .lead, .rich b { font-weight: 700; }
 .rich b { flex: none; color: inherit; font-size: inherit; line-height: inherit; }   /* not the order card's label look */
@@ -843,7 +844,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       var url = D.terms_url || (a && a.terms === terms && a.terms_url);
       if (!url && /^(service|software)-\d{4}-\d{2}-\d{2}[a-z]?$/.test(terms || ""))
         url = "https://appraisalpartners.net/terms" + (terms.indexOf("software-") === 0 ? "-software" : "") + "-" + terms.replace(/^(service|software)-/, "") + ".html";
-      p.hidden = false; p.textContent = "";
+      p.hidden = (D.house_prompts || {}).lane === "review"; p.textContent = "";
+      if (p.hidden) return;
       var words = customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept our " : "By tapping Ready you accept the price and day above and our ";
       p.appendChild(document.createTextNode(words));
       p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: "terms" }));
