@@ -21,11 +21,11 @@
      post-run question marked "required" (true, or a list of lanes) blocks READY, and a partner reviewer's DONE (never
      NEEDS CHANGE): Ready reads "Ready · 2 left" until they are in, and a tap marks the blank ones in red.
      Under the buttons: "By tapping READY you agree to the ... Terms for this order" (Matt 2026-10-11: READY is the
-     agreement). house_prompts.lane "review" is a partner reviewer's form (review help, no value line). house_prompts.lane "desk" (partial and full desk) is the minimal form: READY only, no checklist; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. No initials on any lane (Matt 2026-10-13). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
+     agreement). house_prompts.lane "review" is a partner reviewer's form (review help, no value line). house_prompts.lane "desk" (partial and full desk) is the minimal form: client permission and READY; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. No initials on any lane (Matt 2026-10-13). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-17.1">
+<html lang="en" data-build="v2026-10-18.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -412,6 +412,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 
 <script type="application/json" id="checklist">
 {
+ "client_permits": {"id": "client_permits", "text": "Does your client (AMC or lender) allow us to help with this report on your behalf, including sharing the file with us?", "kind": "choice", "choices": ["Yes, they allow it", "No", "Not sure"], "required": true},
  "sections": [
   {"title": "We need a few details", "lines": [
    {"kind": "questions"}
@@ -495,16 +496,20 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       a.lane !== ((D.house_prompts || {}).lane || "desk") || (!!D.terms && a.terms !== D.terms));
   }
   // Matt 2026-10-16: once his READY is accepted the form says so plainly and Ready can't be tapped again.
-  function inProduction() { return stage === "open" && state.status === "READY" && savedStatus === "READY" && !quoteChanged() && !!(acceptance() || D.accepted_at) && !asked(); }
+  function permissionHeld() { return (D.house_prompts || {}).lane !== "review" && ["No", "Not sure"].indexOf(state.answers.q_client_permits) >= 0; }
+  function permissionPending() { return permissionHeld() || typeof CHECKLIST !== "undefined" && CHECKLIST.client_permits && (D.house_prompts || {}).lane !== "review" && !state.history.some(function (h) { return h.event === "client_permits"; }); }
+  function inProduction() { return !permissionPending() && stage === "open" && state.status === "READY" && savedStatus === "READY" && !quoteChanged() && !!(acceptance() || D.accepted_at) && !asked(); }
   // Matt 2026-10-16: answers tapped Ready lock the same way; we finish the report from them.
-  function answered() { return stage === "open" && state.status === "READY" && asked(); }
-  function readyNote() { return asked() ? "Got it. Back to work." : quoteChanged() ? "Review the new price and day, then tap Ready." : inProduction() ? "Files checked. In production." : "Checking your files…"; }   // after READY
+  function answered() { return !permissionPending() && stage === "open" && state.status === "READY" && asked(); }
+  function readyNote() { return permissionHeld() ? "On hold. Client permission needs review." : asked() ? "Got it. Back to work." : quoteChanged() ? "Review the new price and day, then tap Ready." : inProduction() ? "Files checked. In production." : "Checking your files…"; }   // after READY
   var NCHANGES = 5;
   var MAX_BODY = 100000;       // Code.gs's limit on one save
   var CHECKLIST = JSON.parse($("checklist").textContent);
   var INLINE = $("order-data") ? JSON.parse($("order-data").textContent) : null;
 
   var T = (INLINE && INLINE.t) || new URLSearchParams(location.search).get("t") || "";
+  var R = INLINE ? "" : (new URLSearchParams(location.search).get("r") || "");
+  var ACTOR = new URLSearchParams(location.search).has("desk") ? "desk" : "";
   var D = {}, O = {}, state = null, stage = "open";
   var controls = {};      // name -> {set}
   var online = false, readOnly = false, edits = 0, savedEdits = 0, timer = null, writing = Promise.resolve();
@@ -604,12 +609,13 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // answer shows under History, read only; one still blank, or asked after the delivery, stays a question.
   var filed = [];
   function askedAt(f) { var e = (f.log || []).filter(function (x) { return x.what === "questions"; }).pop(); return e ? e.at : ""; }
+  function permissionQuestion() { return (D.house_prompts || {}).lane === "review" || !CHECKLIST.client_permits ? [] : [CHECKLIST.client_permits]; }
   var highlighted = [];
   function questions() {           // asked after the run: a box or buttons under each question
     var settled = D.stage === "returned" && (D.house_prompts || {}).lane !== "review" && !!D.delivered_at && !(Date.parse(askedAt(D)) > Date.parse(D.delivered_at));
-    return (D.questions || []).filter(function (q) { return q.kind !== "confirm" && (D.stage !== "returned" || (D.house_prompts || {}).lane === "review" || q.material !== false); }).filter(function (q) {
+    return permissionQuestion().concat((D.questions || []).filter(function (q) { return q.id !== "client_permits"; })).filter(function (q) { return q.kind !== "confirm" && (D.stage !== "returned" || (D.house_prompts || {}).lane === "review" || q.material !== false); }).filter(function (q) {
       var v = state.answers["q_" + q.id];
-      if (settled && v != null && String(v).trim()) { filed.push(q); return false; }
+      if ((q.id === "client_permits" || settled) && v != null && String(v).trim()) { filed.push(q); return false; }
       return true;
     }).map(function (q) {   // a confirm lives in the status block
       var name = "q_" + q.id, row = q.kind === "choice" ? el("div", { cls: "line wide" }, [el("span", { cls: "lbl", text: q.text }), taps(name, q.text, q.choices || [])])
@@ -660,7 +666,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function render(line) {
     var hp = D.house_prompts || {};
     if (!isOpen(line)) return [];
-    // Matt 2026-10-12: partial and full desk (house_prompts.lane "desk") get the minimal form: DRAFT and READY only,
+    // Matt 2026-10-12: partial and full desk (house_prompts.lane "desk") get the minimal form: client permission and READY,
     // plus any prompt the desk adds for the order, post-run questions and, once the report is back, changes.
     if ((hp.lane === "desk" || hp.lane === "regression") && ["prompt", "questions", "changes"].indexOf(line.kind) < 0) return [];
     switch (line.kind) {
@@ -815,15 +821,6 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (agreeQ) { $("agree-value").appendChild(el("span", { text: "VALUE" })); $("agree-value").appendChild(el("b", { text: agreeQ.value })); }
     statusBtns.forEach(function (b) { var st = b.getAttribute("data-s"); b.textContent = st === "NEEDS_CHANGE" ? "Request Changes" : st === "DONE" && signoff() ? "Approve" : WORD[st]; });
     document.querySelectorAll("[data-stage]").forEach(function (c) { var st = c.getAttribute("data-stage"); c.hidden = st !== stage || (st === "open" && built); });
-    // Matt 2026-10-11: tapping READY is the agreement to this order's terms; the lane picks which terms.
-    var selfServ = (D.house_prompts || {}).lane === "self-service";
-    document.querySelectorAll("[data-terms]").forEach(function (p) {
-      p.textContent = ""; p.hidden = stage !== "open" || (built && !!acceptance() && !quoteChanged());
-      if (p.hidden) return;
-      p.appendChild(document.createTextNode("By tapping Ready you accept the price and day above and our "));
-      p.appendChild(el("a", { href: selfServ ? "https://appraisalpartners.net/terms-software.html" : "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener", text: "terms" }));
-      p.appendChild(document.createTextNode("."));
-    });
     paintStatus();
   }
   function paintStatus() {
@@ -837,10 +834,21 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     $("action").classList.toggle("agree", approved && !!agreeQ);
     $("now").closest(".now-row").hidden = customerReturned() && !approved;
     $("help").hidden = approved || customerReturned() || inProduction();
-    document.querySelectorAll("[data-terms]").forEach(function (p) { p.hidden = stage !== "open" || (asked() && !!acceptance() && !quoteChanged()) || inProduction() || answered(); });
+    document.querySelectorAll("[data-terms]").forEach(function (p) {
+      var h = acceptance(), a = h && h.accepted;
+      var offering = stage === "open" && !inProduction() && !answered() && (!a || quoteChanged());
+      var terms = offering ? D.terms : (a && a.terms) || D.terms;
+      var url = offering ? D.terms_url : (a && a.terms_url);
+      if (!url && /^(service|software)-\d{4}-\d{2}-\d{2}$/.test(terms || ""))
+        url = "https://appraisalpartners.net/terms" + (terms.indexOf("software-") === 0 ? "-software" : "") + "-" + terms.replace(/^(service|software)-/, "") + ".html";
+      p.hidden = false; p.textContent = "";
+      p.appendChild(document.createTextNode(offering ? "By tapping Ready you accept the price and day above and our " : "This order is under our "));
+      p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: "terms" }));
+      p.appendChild(document.createTextNode("."));
+    });
     var accepted = acceptance();
     $("acceptance").hidden = !accepted;
-    $("acceptance").textContent = accepted ? "Accepted " + new Date(accepted.at).toLocaleDateString([], { month: "short", day: "numeric" }) + " · " + accepted.accepted.price + " · ready " + accepted.accepted.ready_by : "";
+    $("acceptance").textContent = accepted ? (accepted.by === "desk" ? "Desk go-ahead " : accepted.by === "no tag" ? "Ready (no tag) " : "Accepted ") + new Date(accepted.at).toLocaleDateString([], { month: "short", day: "numeric" }) + " · " + accepted.accepted.price + " · ready " + accepted.accepted.ready_by : "";
     $("quote").hidden = !!accepted && !quoteChanged();
     if (answered()) $("help").innerHTML = "Got it. Your answers are in and we're <b>finishing your report</b>. We'll email you when it's in your TOTAL folder.";
     $("agree-value").hidden = !approved || !agreeQ;
@@ -868,8 +876,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       (D.deliveries || []).forEach(function (d) { entries.push({ event: d.kind === "updated" ? "updated" : "delivered", at: d.at }); });
       entries.sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); });
     }
-    var h = entries.reverse().filter(function (e) { return e.accepted || e.event === "post_change" || e.event === "delivered" || e.event === "updated" || e.status === "DONE"; }).map(function (e) {
-      if (e.accepted) return "Accepted · " + e.accepted.price + " · ready " + e.accepted.ready_by + " · " + e.accepted.lane + " · " + e.accepted.terms + " · " + when(e.at);
+    var h = entries.reverse().filter(function (e) { return e.accepted || e.event === "client_permits" || e.event === "post_change" || e.event === "delivered" || e.event === "updated" || e.status === "DONE"; }).map(function (e) {
+      if (e.event === "client_permits") return "Client permission · " + e.answer + " · " + when(e.at);
+      if (e.accepted) return (e.by === "desk" ? "Desk go-ahead · " : e.by === "no tag" ? "Ready (no tag) · " : "Accepted · ") + e.accepted.price + " · ready " + e.accepted.ready_by + " · " + e.accepted.lane + " · " + e.accepted.terms + " · " + when(e.at);
       return (e.event === "post_change" ? "Change requested" : e.event === "delivered" ? "Delivered" : e.event === "updated" ? "Updated" : "Approved") + " " + when(e.at);
     });
     $("history-list").textContent = "";
@@ -911,7 +920,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // 2026-10-13: a READY tapped at the top sent nine post-run questions blank).
   function paintNow() {
     var s = state.status, left = stage === "open" || signoff() ? missing() : [];
-    $("now").textContent = approved ? "Approved" : inProduction() ? "In production" + (O.ready_by ? " · ready " + O.ready_by.replace(/\s+\d.*$/, "") : "") : answered() ? "Finishing your report" : quoteChanged() ? WORD.DRAFT : WORD[s];
+    $("now").textContent = permissionHeld() ? "On hold · client permission" : approved ? "Approved" : inProduction() ? "In production" + (O.ready_by ? " · ready " + O.ready_by.replace(/\s+\d.*$/, "") : "") : answered() ? "Finishing your report" : quoteChanged() ? WORD.DRAFT : WORD[s];
     if (s !== "DRAFT") $("saved").hidden = true;
     statusBtns.forEach(function (b) {
       if (signoff() && b.getAttribute("data-s") === "DONE") {
@@ -937,7 +946,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // TOTAL's preview pane preflights every cross-origin fetch, and Google never answers a preflight. So the page reads
   // through a <script> tag (JSONP) and writes with no-cors posts it cannot read; a read then shows whether it saved.
   function body(send) {
-    return { t: T, status: state.status, answers: state.answers, changes: state.changes, send: !!send };
+    return { t: T, r: R, actor: ACTOR, quote: { price: O.price || "", ready_by: O.ready_by || "", lane: (D.house_prompts || {}).lane || "desk", terms: D.terms }, status: state.status, answers: state.answers, changes: state.changes, send: !!send };
   }
   // A browser signed in to several Google accounts gets its JSONP request redirected to /u/N/ and failing, because a
   // <script> load carries Google's cookies. So a browser reads with a cookie-free fetch first; only where that fails
@@ -977,7 +986,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     // Same simple POST as saves, no confirmation or UI. Old backends safely reject it.
     setTimeout(function () {
       try {
-        post(JSON.stringify({ t: T, opened: { source: INLINE ? "workfile" : "web",
+        post(JSON.stringify({ t: T, r: R, actor: ACTOR, opened: { source: INLINE ? "workfile" : "web",
           device: /Android.*Mobile|iPhone|iPod|Windows Phone/i.test(navigator.userAgent || "") ? "phone" : "desktop" } }), true)
           .catch(function () {});
       } catch (e) {}
@@ -994,7 +1003,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var text = $("post-text").value.trim();
     if (!text) { $("post-error").textContent = "Tell us what should change."; $("post-error").hidden = false; $("post-text").focus(); return; }
     if (!postDraft || postDraft.text !== text) postDraft = { id: "pc_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2) + "_" + Math.random().toString(36).slice(2), text: text };
-    var request = postDraft, doc = JSON.stringify({ t: T, post_change: request });
+    var request = postDraft, payload = { t: T, post_change: request };
+    if (D.recipient_attribution) { payload.r = R; payload.actor = ACTOR; }
+    var doc = JSON.stringify(payload);
     postBusy = true; $("post-error").hidden = true; $("post-send").textContent = "Sending…"; paintStatus();
     function once() {
       return post(doc).catch(function () {}).then(read).then(function (r) {
@@ -1021,6 +1032,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     function confirm(tries) {
       return read().then(function (r) {
         var v = r.saved;
+        var seen = JSON.parse(doc).quote;
+        if (send && s === "READY" && r.form && seen &&
+            (seen.price !== ((r.form.order || {}).price || "") || seen.ready_by !== ((r.form.order || {}).ready_by || "") ||
+             seen.lane !== ((r.form.house_prompts || {}).lane || "desk") || (r.form.terms && seen.terms !== r.form.terms)))
+          throw { code: "quote_changed", form: r.form, saved: v };
         if (r.form && r.form.stage === "returned" && (r.form.house_prompts || {}).lane === "review" && v && v.status === "DONE") {
           if (send && s === "DONE") { checkedForm = r.form; return v; }
           throw { code: "approved", form: r.form, saved: v };
@@ -1072,6 +1088,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     } else if (code === "stage") {
       state.status = e.status; paintStatus();
       banner(STAGES[stage].refused, "warn");
+    } else if (code === "quote_changed") {
+      if (e.form) refresh(e.form);
+      if (e.saved) apply(e.saved);
+      state.status = "DRAFT"; paintStatus();
+      banner("The price or day changed. Review it and tap Ready again.", "warn");
     } else if (code === "too_large") {
       banner("Too long to save. Shorten it a little.", "warn");
     } else {
@@ -1195,6 +1216,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (edits === savedEdits) {      // saved answers win over the prefill; never over unsent typing
       if (saved.answers && typeof saved.answers === "object") state.answers = Object.assign({}, D.prefill || {}, saved.answers);
       if (Array.isArray(saved.changes)) { state.changes = saved.changes.slice(0, NCHANGES); while (state.changes.length < NCHANGES) state.changes.push(""); }
+      if (controls.q_client_permits && saved.answers && saved.answers.q_client_permits) refresh(D);
       paintAll();
     }
     paintStatus();
@@ -1202,7 +1224,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return JSON.stringify(f.order || {}) !== JSON.stringify(O) || JSON.stringify(f.house_prompts || {}) !== JSON.stringify(D.house_prompts || {}) || (f.terms || "") !== (D.terms || "") || (f.stage || "open") !== stage || f.signoff !== D.signoff || JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || "") || (f.note_kind || "") !== (D.note_kind || "") || (f.report_pdf || "") !== (D.report_pdf || "") || (f.accepted_at || "") !== (D.accepted_at || "") || (f.delivered_at || "") !== (D.delivered_at || "") || JSON.stringify(f.deliveries || []) !== JSON.stringify(D.deliveries || []) || askedAt(f) !== askedAt(D); }
+  function newer(f) { return f.recipient_attribution !== D.recipient_attribution || JSON.stringify(f.order || {}) !== JSON.stringify(O) || JSON.stringify(f.house_prompts || {}) !== JSON.stringify(D.house_prompts || {}) || (f.terms || "") !== (D.terms || "") || (f.stage || "open") !== stage || f.signoff !== D.signoff || JSON.stringify(f.questions || []) !== JSON.stringify(D.questions || []) || (f.public_note || "") !== (D.public_note || "") || (f.note_kind || "") !== (D.note_kind || "") || (f.report_pdf || "") !== (D.report_pdf || "") || (f.accepted_at || "") !== (D.accepted_at || "") || (f.delivered_at || "") !== (D.delivered_at || "") || JSON.stringify(f.deliveries || []) !== JSON.stringify(D.deliveries || []) || askedAt(f) !== askedAt(D); }
   function refresh(f) {
     D = f; O = D.order || {}; controls = {}; $("sections").innerHTML = "";
     renderOrder(); renderSections(); paintAll(); setStage(D.stage); document.querySelectorAll("textarea").forEach(grow);
