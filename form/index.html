@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-18.3">
+<html lang="en" data-build="v2026-10-18.4">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -308,6 +308,12 @@ textarea[rows="1"] { min-height: 44px; }
 .checks label { display: flex; align-items: center; gap: var(--s-2); min-height: 44px; cursor: pointer; }
 .checks input { width: 22px; height: 22px; margin: 0; accent-color: var(--primary); }
 
+/* A two-option start is explicitly enabled in that order's data. */
+.start-options #sections h2, .start-options #history { display: none; }
+.start-options .service-option .taps { display: grid; width: 100%; }
+.start-options .service-option .tap { justify-content: flex-start; white-space: nowrap; }
+.start-options .terms-line { font-style: italic; }
+
 /* Changes or questions: five numbered boxes */
 .changes .line { border-bottom: 0; padding: var(--s-1) 0; }
 .changes .line .n { flex: none; width: 24px; color: var(--ink-2); font-weight: 600; font-size: var(--fs-14); font-variant-numeric: tabular-nums; padding-top: 12px; }
@@ -498,10 +504,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // Matt 2026-10-16: once his READY is accepted the form says so plainly and Ready can't be tapped again.
   function permissionHeld() { return (D.house_prompts || {}).lane !== "review" && ["No", "Not sure"].indexOf(state.answers.q_client_permits) >= 0; }
   function permissionPending() { return permissionHeld() || typeof CHECKLIST !== "undefined" && CHECKLIST.client_permits && (D.house_prompts || {}).lane !== "review" && !state.history.some(function (h) { return h.event === "client_permits"; }); }
-  function inProduction() { return !permissionPending() && stage === "open" && state.status === "READY" && savedStatus === "READY" && !quoteChanged() && !!(acceptance() || D.accepted_at) && !asked(); }
+  function inProduction() { return !startOptions() && !permissionPending() && stage === "open" && state.status === "READY" && savedStatus === "READY" && !quoteChanged() && !!(acceptance() || D.accepted_at) && !asked(); }
   // Matt 2026-10-16: answers tapped Ready lock the same way; we finish the report from them.
-  function answered() { return !permissionPending() && stage === "open" && state.status === "READY" && asked(); }
-  function readyNote() { return permissionHeld() ? "On hold. Client permission needs review." : asked() ? "Got it. Back to work." : quoteChanged() ? "Review the new price and day, then tap Ready." : inProduction() ? "Files checked. In production." : "Checking your files…"; }   // after READY
+  function answered() { return !startOptions() && !permissionPending() && stage === "open" && state.status === "READY" && asked(); }
+  function optionSent() { return startOptions() && !permissionPending() && state.status === "READY" && savedStatus === "READY" && !!acceptance() && !quoteChanged(); }
+  function readyNote() { return permissionHeld() ? "On hold. Client permission needs review." : optionSent() ? "Got it. We’ll ask for the details next." : asked() ? "Got it. Back to work." : quoteChanged() ? "Review the new price and day, then tap Ready." : inProduction() ? "Files checked. In production." : "Checking your files…"; }   // after READY
   var NCHANGES = 5;
   var MAX_BODY = 100000;       // Code.gs's limit on one save
   var CHECKLIST = JSON.parse($("checklist").textContent);
@@ -613,17 +620,20 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // answer shows under History, read only; one still blank, or asked after the delivery, stays a question.
   var filed = [];
   function askedAt(f) { var e = (f.log || []).filter(function (x) { return x.what === "questions"; }).pop(); return e ? e.at : ""; }
+  function startOptions() { return stage === "open" && (D.house_prompts || {}).start_options === true; }
   function permissionQuestion() { return (D.house_prompts || {}).lane === "review" || !CHECKLIST.client_permits ? [] : [CHECKLIST.client_permits]; }
   var highlighted = [];
   function questions() {           // asked after the run: a box or buttons under each question
     var settled = D.stage === "returned" && (D.house_prompts || {}).lane !== "review" && !!D.delivered_at && !(Date.parse(askedAt(D)) > Date.parse(D.delivered_at));
-    return permissionQuestion().concat((D.questions || []).filter(function (q) { return q.id !== "client_permits"; })).filter(function (q) { return q.kind !== "confirm" && (D.stage !== "returned" || (D.house_prompts || {}).lane === "review" || q.material !== false); }).filter(function (q) {
+    var items = (D.questions || []).filter(function (q) { return q.id !== "client_permits"; });
+    return (startOptions() ? items.concat(permissionQuestion()) : permissionQuestion().concat(items)).filter(function (q) { return q.kind !== "confirm" && (D.stage !== "returned" || (D.house_prompts || {}).lane === "review" || q.material !== false); }).filter(function (q) {
       var v = state.answers["q_" + q.id];
       if ((q.id === "client_permits" || settled) && v != null && String(v).trim()) { filed.push(q); return false; }
       return true;
     }).map(function (q) {   // a confirm lives in the status block
       var name = "q_" + q.id, row = q.kind === "choice" ? el("div", { cls: "line wide" }, [el("span", { cls: "lbl", text: q.text }), taps(name, q.text, q.choices || [])])
         : q.short ? text(name, q.text, { short: true }) : text(name, q.text, { multi: true, rows: "1" });
+      if (startOptions() && q.id === "service_option") { row.classList.add("service-option"); row.querySelector(".lbl").hidden = true; }
       if (needs(q.required) || (D.house_prompts || {}).lane === "self-service") musts.push({ key: name, node: row });
       if (q.highlight === true) { highlighted.push(row); return null; }
       return row;
@@ -808,7 +818,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var review = (D.house_prompts || {}).lane === "review";
     var regression = (D.house_prompts || {}).lane === "regression";    // a regression form shows like the desk lane
     var desk = (D.house_prompts || {}).lane === "desk" || regression;
-    $("help").innerHTML = review ? "Review it in TOTAL; please don't sign. Changes? Tap <b>Request Changes</b>. Good to go? Tap <b>Done</b>." :
+    document.body.classList.toggle("start-options", startOptions());
+    $("help").innerHTML = startOptions() ? "Pick one, then tap Ready." : review ? "Review it in TOTAL; please don't sign. Changes? Tap <b>Request Changes</b>. Good to go? Tap <b>Done</b>." :
       regression ? "Save the report, pick the factors, tap <b>Ready</b>. Results show at the top; you decide what to use." :
       built0 ? "Answer each, then tap <b>Ready</b>." :
       stage === "open" && O.files_by === "email" ? "Tap <b>Ready</b> to start." : STAGES[stage].help;   // files by email, no Workfile
@@ -828,7 +839,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     paintStatus();
   }
   function paintStatus() {
-    var locked = readOnly || approved || pendingTaps > 0 || inProduction() || answered();
+    var locked = readOnly || approved || pendingTaps > 0 || inProduction() || answered() || optionSent();
     $("form").disabled = locked;
     $("form").hidden = inProduction();
     $("form").classList.toggle("approved", approved);
@@ -846,6 +857,14 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
         url = "https://appraisalpartners.net/terms" + (terms.indexOf("software-") === 0 ? "-software" : "") + "-" + terms.replace(/^(service|software)-/, "") + ".html";
       p.hidden = (D.house_prompts || {}).lane === "review"; p.textContent = "";
       if (p.hidden) return;
+      if (startOptions()) {
+        p.appendChild(document.createTextNode("By tapping Ready you accept your option’s price, day and terms: "));
+        [["Self-service", "terms-software.html"], ["Partial", "terms.html"]].forEach(function (term, i) {
+          if (i) p.appendChild(document.createTextNode(" · "));
+          p.appendChild(el("a", { href: "https://appraisalpartners.net/" + term[1], target: "_blank", rel: "noopener noreferrer", text: term[0] }));
+        });
+        return;
+      }
       var words = customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept our " : "By tapping Ready you accept the price and day above and our ";
       p.appendChild(document.createTextNode(words));
       p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: "terms" }));
@@ -855,6 +874,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     $("acceptance").hidden = !accepted;
     $("acceptance").textContent = accepted ? "Accepted " + new Date(accepted.at).toLocaleDateString([], { month: "short", day: "numeric" }) + (accepted.accepted.price ? " · " + accepted.accepted.price : "") + (accepted.accepted.ready_by ? " · ready " + accepted.accepted.ready_by : "") : "";
     $("quote").hidden = !!accepted && !quoteChanged();
+    if (optionSent()) $("help").textContent = "Got it. We’ll ask for the details next.";
     if (answered()) $("help").innerHTML = "Got it. Your answers are in and we're <b>finishing your report</b>. We'll email you when it's in your TOTAL folder.";
     $("agree-value").hidden = !approved || !agreeQ;
     var paymentDue = !!String(O.payment_due || "").trim();
