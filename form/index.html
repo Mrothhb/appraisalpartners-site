@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-19.2">
+<html lang="en" data-build="v2026-10-19.3">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -835,7 +835,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     document.body.classList.toggle("start-options", startOptions());
     $("help").innerHTML = startOptions() ? "Pick one, then tap Ready." : review ? "Review it in TOTAL; please don't sign. Changes? Tap <b>Request Changes</b>. Good to go? Tap <b>Done</b>." :
       regression ? "Save the report, pick the factors, tap <b>Ready</b>. Results show at the top; you decide what to use." :
-      built0 ? "Answer each, then tap <b>Ready</b>." :
+      built0 ? "Answer each, then tap <b>Send answers</b>." :
       stage === "open" && O.files_by === "email" ? "Tap <b>Ready</b> to start." : STAGES[stage].help;   // files by email, no Workfile
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = review || desk || stage === "returned"; });
     // After the run the questions are all that is left to answer: the START sections (already answered) step aside.
