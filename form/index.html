@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-19.3">
+<html lang="en" data-build="v2026-10-19.4">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -234,6 +234,7 @@ textarea[rows="1"] { min-height: 44px; }
 .banner::before { content: ""; flex: none; width: 18px; height: 18px; margin-top: 2px; background: center / 18px 18px no-repeat; }
 .banner.ok { background: var(--success-bg); color: var(--success-ink); border-color: var(--success-line); border-left-color: var(--success-edge); }
 .banner.ok::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='9' fill='%232b7e26' opacity='.14'/%3E%3Cpath d='M5.5 10.5l3 3 6-6.5' fill='none' stroke='%23236b1f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+#selfservice p { margin: 0; } #selfservice ul { margin: var(--s-2) 0 0; padding-left: 1.2em; } #selfservice li + li { margin-top: 2px; }
 .banner.warn { background: var(--warning-bg); color: var(--warning-ink); border-color: var(--warning-line); border-left-color: var(--warning-edge); }
 .banner.warn::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='9' fill='%23e5a53a' opacity='.18'/%3E%3Cpath d='M10 5.5v5' stroke='%237a4300' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='10' cy='14' r='1.2' fill='%237a4300'/%3E%3C/svg%3E"); }
 #payment, #notready { background: var(--danger); color: #fff; border-color: var(--danger); border-left-color: rgba(0,0,0,.28); font-size: 16px; font-weight: 600; }
@@ -391,6 +392,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
     <div class="now-row"><p class="status-now" id="now"></p> <span class="saved" id="saved" hidden>Saved</span></div>
   </section>
   <div class="banner" id="payment" role="status" hidden></div>
+  <div class="banner warn" id="selfservice" role="note" hidden><div><p><b>Self-service: Matt does not review this report.</b></p><ul><li>He does not discuss values or the report.</li><li>Questions, issues and changes go in writing, on this form or by email.</li><li>Appraisal help from Matt is a separate service, billed for his time, and only where state rules allow it.</li></ul></div></div>
   <div class="card" id="returned-intro" hidden><p id="returned-headline">Your report is in your TOTAL folder. Review and edit it there.</p><p class="note" id="delivered-at" hidden></p><p class="note" id="legacy-approved" hidden></p></div>
   <div class="banner" id="notready" role="status" hidden></div>
   <section class="card" id="calls" aria-label="Our calls" hidden></section>
@@ -746,6 +748,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function renderOrder() {
     var due = String(O.payment_due || "").trim();
     $("payment").hidden = !due;
+    $("selfservice").hidden = (D.house_prompts || {}).lane !== "self-service";   // Matt 2026-10-19: VERY clear on every self-service form
     $("payment").textContent = "";
     if (due) $("payment").textContent = "Payment due: " + due + ". Your file follows payment.";
     var pay = String(O.pay_link || "").trim();      // the desk's card link (formlink.py); only a plain https address becomes a button
