@@ -20,11 +20,11 @@
      first as a red pop-out (a DOM overlay), then as a red banner pinned at the top until the status changes. A line or
      post-run question marked "required" (true, or a list of lanes) blocks READY, and a partner reviewer's DONE (never
      NEEDS CHANGE): Ready reads "Ready · 2 left" until they are in, and a tap marks the blank ones in red.
-     Each customer stage names its accepting action: Ready, sending answers, approving or requesting a change. house_prompts.lane "review" is a partner reviewer's form (review help, no value line or terms). house_prompts.lane "desk" (partial and full desk) is the minimal form: client permission and READY; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. No initials on any lane (Matt 2026-10-13). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
+     Each customer stage names its accepting action: Ready, sending answers, approving or requesting a change. house_prompts.lane "review" is a partner reviewer's form (review help, no value line or terms). house_prompts.client_permits false leaves the client-permission question off that order (Matt, 2026-10-19). house_prompts.lane "desk" (partial and full desk) is the minimal form: client permission and READY; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. No initials on any lane (Matt 2026-10-13). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-18.6">
+<html lang="en" data-build="v2026-10-19.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -515,8 +515,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       a.lane !== ((D.house_prompts || {}).lane || "desk") || (!!D.terms && a.terms !== D.terms));
   }
   // Matt 2026-10-16: once his READY is accepted the form says so plainly and Ready can't be tapped again.
-  function permissionHeld() { return (D.house_prompts || {}).lane !== "review" && ["No", "Not sure"].indexOf(state.answers.q_client_permits) >= 0; }
-  function permissionPending() { return permissionHeld() || typeof CHECKLIST !== "undefined" && CHECKLIST.client_permits && (D.house_prompts || {}).lane !== "review" && !state.history.some(function (h) { return h.event === "client_permits"; }); }
+  function permitsOff() { return (D.house_prompts || {}).client_permits === false; }   // Matt 2026-10-19: per order, no permission question
+  function permissionHeld() { return (D.house_prompts || {}).lane !== "review" && !permitsOff() && ["No", "Not sure"].indexOf(state.answers.q_client_permits) >= 0; }
+  function permissionPending() { return permissionHeld() || typeof CHECKLIST !== "undefined" && CHECKLIST.client_permits && (D.house_prompts || {}).lane !== "review" && !permitsOff() && !state.history.some(function (h) { return h.event === "client_permits"; }); }
   function inProduction() { return !startOptions() && !permissionPending() && stage === "open" && state.status === "READY" && savedStatus === "READY" && !quoteChanged() && !!(acceptance() || D.accepted_at) && !asked(); }
   // Matt 2026-10-16: answers tapped Ready lock the same way; we finish the report from them.
   function answered() { return !startOptions() && !permissionPending() && stage === "open" && state.status === "READY" && asked(); }
@@ -634,7 +635,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   var filed = [];
   function askedAt(f) { var e = (f.log || []).filter(function (x) { return x.what === "questions"; }).pop(); return e ? e.at : ""; }
   function startOptions() { return stage === "open" && (D.house_prompts || {}).start_options === true; }
-  function permissionQuestion() { return (D.house_prompts || {}).lane === "review" || !CHECKLIST.client_permits ? [] : [CHECKLIST.client_permits]; }
+  function permissionQuestion() { return (D.house_prompts || {}).lane === "review" || permitsOff() || !CHECKLIST.client_permits ? [] : [CHECKLIST.client_permits]; }
   var highlighted = [];
   function questions() {           // asked after the run: a box or buttons under each question
     var settled = D.stage === "returned" && (D.house_prompts || {}).lane !== "review" && !!D.delivered_at && !(Date.parse(askedAt(D)) > Date.parse(D.delivered_at));
