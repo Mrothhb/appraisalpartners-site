@@ -734,21 +734,20 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     m = t.match(/(-?)\$?\s*(\d*\.?\d+)\s*(k\b)?/i);
     return m ? (m[1] ? -1 : 1) * parseFloat(m[2]) * (m[3] ? 1000 : 1) : null;
   }
-  // Other lines (Matt 2026-10-20): a part is on the grid only when it is a short label, one comp list and one signed dollar
-  // amount and nothing else: "comp 1 location -10,000", "Location -10,000 (comps 1, 5) and -20,000 (comps 2, 3)". A
-  // concession counts only while his concessions answer says adjust, and that answer wants each concession named, or
-  // "no concessions". Anything else leaves the comps it names, or every comp when it can't say which, "+ lines not in the grid".
+  // Other lines (Matt 2026-10-20): a part is on the grid only when it is one comp list, one signed dollar amount and at most
+  // a two-word label before the amount, nothing else: "comp 1 location -10,000", "Location -10,000 (comps 1, 5) and
+  // -20,000 (comps 2, 3)". A concession counts only while his concessions answer says adjust, and that answer wants each
+  // concession named, or "no concessions". Anything else leaves the comps it names, or every comp when it can't say
+  // which, "+ lines not in the grid".
   var LIST = /\bcomps?\s*#?\s*(\d+(?:(?:\s*-\s*(?=\d{1,2}\b)|\s*(?:to|through|thru)\s*)\d+)?(?:\s*(?:,|&|and)\s*#?\s*\d+(?:(?:\s*-\s*(?=\d{1,2}\b)|\s*(?:to|through|thru)\s*)\d+)?)*)/gi;
-  var P = "[\\s():.,#]*", WORD = "(?!(?:no|not|if|or|unless|maybe|tbd|except|without|pending)\\b)[a-z][a-z'-]*", LABEL = "(?:" + WORD + "(?:\\s+" + WORD + ")?" + P + ")?";
-  var PART = new RegExp("^" + P + LABEL + "(?:§(\\d+)" + P + ")?" + LABEL + "\\$?\\s*([-+])\\s*\\$?\\s*(\\d*\\.?\\d+)(k\\b)?" + P + "(?:each" + P + ")?(?:§(\\d+)" + P + ")?$", "i");
-  var ZERO = new RegExp("^" + P + LABEL + "\\$?0+(?:\\.0+)?" + P + "$", "i");
-  var CONC = /concession|credit|seller[\s-]*(paid|contribution)|closing cost|buy-?down/i;
+  var PUNCT = /[\s():.,#]/g, TAG = /^(?!.*\b(no|not|if|or|unless|maybe|tbd|except|without|pending|up|to|about|approx\w*|around|roughly|nearly|almost|over|under|least|most|est\w*|thousand|hundred|million|grand)\b)[a-z][a-z'-]*(\s+[a-z][a-z'-]*)?$/i;
+  var CONC = /concession|credit|seller[\s-]*(paid|contribution|assist\w*)|closing[\s-]*costs?|buy[\s-]*downs?|assistance|incentive|allowance|prepaid/i;
   var NOCONC = /^\s*(no( other)? (seller )?(concessions?|credits?)|(concessions?|credits?)\s*:?\s*(none|0|n\/?a))\s*\.?\s*$/i;
   function others() {
     var o = { by: {}, gross: {}, part: {}, all: false }, adjust = /^adjust/i.test(String(ans("concessions") || "")), told = false;
     String(ans("rate_other") || "").replace(/[−–—]/g, "-").replace(/(\d),(?=\d{3}\b)/g, "$1").split(/[;\n]+/).forEach(function (t) {
       if (NOCONC.test(t)) { told = true; return; }
-      if (!t.trim() || /^\s*(none|no|n\/?a|nil|zero|no( other)? adjustments?)\s*\.?\s*$/i.test(t) || ZERO.test(t)) return;
+      if (!t.trim() || /^\s*(none|no|n\/?a|nil|zero|no( other)? adjustments?)\s*\.?\s*$/i.test(t) || /^[^\d§]*?\$?0+(\.0+)?[\s.]*$/.test(t) && TAG.test(t.replace(/\$?0+(\.0+)?/, "").replace(PUNCT, " ").trim() || "x")) return;   // a zero
       var conc = CONC.test(t), lists = [], pairs = [], s = t.replace(LIST, function (m, list) {
         var ns = [], ok = true;
         list.split(/\s*(?:,|&|and)\s*/i).forEach(function (p) {
@@ -758,11 +757,13 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
         lists.push({ ns: ns, ok: ok }); return " §" + (lists.length - 1) + " ";
       });
       told = told || conc;
-      var parts = s.split(/\band\b|[,&]/i).filter(function (x) { return /[a-z0-9§]/i.test(x); });
+      var parts = s.split(/\band\b|[,&]/i).filter(function (x) { return x.replace(PUNCT, ""); });   // a stray "?" is a part too
       var plain = lists.length && lists.every(function (l) { return l.ok; }) && (adjust || !conc) && parts.every(function (x) {
-        var m = PART.exec(x), i = m && (m[1] != null ? m[1] : m[5]);
-        if (i == null || m[1] != null && m[5] != null) return false;
-        pairs.push([lists[+i].ns, (m[2] === "-" ? -1 : 1) * parseFloat(m[3]) * (m[4] ? 1000 : 1)]); return true;
+        var m = /^(.*?)\$?\s*([-+])\s*\$?\s*(\d*\.?\d+)(k\b)?(.*)$/i.exec(x), ls = x.match(/§\d+/g) || [];
+        if (!m || ls.length !== 1 || !/^[\s():.,#]*(each[\s():.,#]*)?(§\d+[\s():.,#]*)?$/i.test(m[5])) return false;   // nothing after the amount
+        var tag = m[1].replace(/§\d+/, " ").replace(PUNCT, " ").trim();
+        if (tag && !TAG.test(tag)) return false;
+        pairs.push([lists[+ls[0].slice(1)].ns, (m[2] === "-" ? -1 : 1) * parseFloat(m[3]) * (m[4] ? 1000 : 1)]); return true;
       });
       if (!plain) {
         lists.forEach(function (l) { l.ns.forEach(function (n) { o.part[n] = true; }); });
@@ -781,7 +782,10 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function money(v) { return "$" + Math.round(v).toLocaleString("en-US"); }
   function signed(v) { v = Math.round(v); return (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toLocaleString("en-US"); }
   function pct(v, p) { v = v / p * 100; return (v < 0 ? "−" : "") + Math.abs(v).toFixed(1) + "%"; }
-  function picked(n, what) { var v = ans("comp" + n + "_" + what); return v != null ? v : ((D.comps || [])[n - 1] || {})[what] || ""; }   // his answer, a blank too; else the record's
+  function picked(n, what) {        // his answer under either key, a saved blank too; else the record's
+    var k = "comp" + n + "_" + what, v = ans(k);
+    return v != null && String(v).trim() || k in state.answers || "q_" + k in state.answers ? (v == null ? "" : v) : ((D.comps || [])[n - 1] || {})[what] || "";
+  }
   function rating(n, what) { var v = picked(n, what); return v === "Same" ? ans("subject_" + what) || "Same" : v; }
   function grade(v) { var m = /^[QC]([1-6])$/.exec(v || ""); return m ? +m[1] : null; }
   // An amount is null while a rate or fact it needs is missing (a ?); an explicit 0 rate, or no difference, is 0.
