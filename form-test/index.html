@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-20.3">
+<html lang="en" data-build="v2026-10-20.3.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1168,7 +1168,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     }).then(function (v) {
       if (send) pendingTaps--;
       savedEdits = Math.max(savedEdits, at); savedAt = v.updatedAt; savedStatus = v.status;
-      if (checkedForm) { refresh(checkedForm); apply(v); }
+      if (checkedForm) { if (newer(checkedForm)) refresh(checkedForm); apply(v); }   // a save never changes the form: only the desk's change re-renders (Chase 2026-10-20: every autosave jumped the page to the top)
       if (Array.isArray(v.history)) { state.history = v.history; paintStatus(); }
       var n = v.notificationAt && v.notificationAt[s];   // set when this save reserved the email notice
       return { notification: n && (!before || n > before) ? "sent" : "suppressed" };
@@ -1321,7 +1321,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       if (saved.answers && typeof saved.answers === "object") state.answers = Object.assign({}, D.prefill || {}, saved.answers);
       if (Array.isArray(saved.changes)) { state.changes = saved.changes.slice(0, NCHANGES); while (state.changes.length < NCHANGES) state.changes.push(""); }
       if (controls.q_client_permits && saved.answers && saved.answers.q_client_permits) refresh(F);
-      if (laneOptions(F).length) refresh(F);
+      if (laneOptions(F).length && laneForm(F, state.answers).selected_lane !== D.selected_lane) refresh(F);   // only a different saved lane re-renders
       paintAll();
     }
     paintStatus();
@@ -1329,11 +1329,31 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || JSON.stringify(f.lane_options || []) !== JSON.stringify(F.lane_options || []) || JSON.stringify(f.order || {}) !== JSON.stringify(F.order || {}) || JSON.stringify(f.house_prompts || {}) !== JSON.stringify(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || JSON.stringify(f.questions || []) !== JSON.stringify(F.questions || []) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || (f.delivered_at || "") !== (F.delivered_at || "") || JSON.stringify(f.deliveries || []) !== JSON.stringify(F.deliveries || []) || askedAt(f) !== askedAt(F); }
+  function canon(v) { return JSON.stringify(v, function (k, x) { return x && typeof x === "object" && !Array.isArray(x) ? Object.keys(x).sort().reduce(function (o, j) { o[j] = x[j]; return o; }, {}) : x; }); }   // key order is never a change
+  function newer(f) { return f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.questions || []) !== canon(F.questions || []) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
+  // A re-render keeps the reader's place (Chase 2026-10-20): the scroll, then the box or button in focus and its
+  // selection; with nothing in focus it takes none.
+  function focusable() { return Array.prototype.slice.call(document.querySelectorAll("#main input, #main textarea, #main button, #main a[href]")); }
+  function sig(n) { var g = n.closest("[aria-label], label"); return [n.tagName, n.id, n.type, n.tagName === "BUTTON" ? n.value || n.textContent : "", g ? g.getAttribute("aria-label") || g.textContent : ""].join("|"); }
+  function keepPlace() {
+    var a = document.activeElement, i = focusable().indexOf(a);
+    return { y: window.scrollY, a: i < 0 ? null : a, i: i, sig: i < 0 ? "" : sig(a), sel: i >= 0 && typeof a.selectionStart === "number" ? [a.selectionStart, a.selectionEnd, a.selectionDirection] : null };
+  }
+  function restorePlace(p) {
+    window.scrollTo(window.scrollX, p.y);
+    if (!p.a || p.a.isConnected) return;   // nothing had focus, or its control was not rebuilt
+    var best = null;
+    focusable().forEach(function (n, i) { if (sig(n) === p.sig && (!best || Math.abs(i - p.i) < Math.abs(best.i - p.i))) best = { n: n, i: i }; });
+    if (!best) return;
+    best.n.focus({ preventScroll: true });
+    if (p.sel && typeof best.n.selectionStart === "number") try { best.n.setSelectionRange(p.sel[0], p.sel[1], p.sel[2]); } catch (e) {}
+  }
   function refresh(f) {
+    var at = keepPlace();
     F = f; D = laneForm(F, state.answers); O = D.order || {}; controls = {}; $("sections").innerHTML = "";
     renderOrder(); renderSections(); renderLanes(); paintAll(); setStage(D.stage); document.querySelectorAll("textarea").forEach(grow);
     if (state.status === "READY" && stage === "open") banner(readyNote(), "ok");
+    restorePlace(at);
   }
   function boot(form, saved) {
     D = form || {}; O = D.order || {};
