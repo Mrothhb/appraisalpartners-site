@@ -709,9 +709,9 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     return el("div", { cls: "line wide" }, [el("span", { cls: "lbl", text: label }), box]);
   }
   function grid() { return (D.grid_comps && D.grid_comps.length) ? D.grid_comps : [1, 2, 3]; }   // comp numbers on the grid
-  function unrated(n, what) {      // a comp's rating is open while neither its prefill nor its comp record has it
+  function unrated(n, what) {      // a comp's rating is open while neither its prefill nor its comp record has it (open self-service: always)
     var c = (D.comps || [])[n - 1] || {};
-    return blank("comp" + n + "_" + what) && !c[what];
+    return blank("comp" + n + "_" + what) && (valueLast() || !c[what]);
   }
   function comps(line) {
     if (gridFacts()) return [];      // rated in the grid (Chase 2026-10-20)
@@ -734,24 +734,32 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     m = t.match(/(-?)\$?\s*(\d*\.?\d+)\s*(k\b)?/i);
     return m ? (m[1] ? -1 : 1) * parseFloat(m[2]) * (m[3] ? 1000 : 1) : null;
   }
-  // Other lines (Matt 2026-10-20): each part naming its comps and a signed amount is on the grid, "comp 1 location -10,000"
-  // or "Location -10,000 (comps 1, 5) and -20,000 (comps 2, 3)", one amount per comp list. Any other part leaves the comps
-  // it names (all of them, when it names none) "+ lines not in the grid", so nobody anchors on a figure that leaves it out.
+  // Other lines (Matt 2026-10-20): a part naming its comps and one signed amount is on the grid, "comp 1 location -10,000"
+  // or "Location -10,000 (comps 1, 5) and -20,000 (comps 2, 3)"; a concession only while his concessions answer says adjust.
+  // Anything else (units, %, "or", TBD, a bare number, a part naming no comp) leaves the comps it names, or every comp when
+  // it can't say which, "+ lines not in the grid", so nobody anchors on a figure that leaves it out.
+  var LIST = /\bcomps?\s*#?\s*(\d+(?:(?:\s*-\s*(?=\d{1,2}\b)|\s*(?:to|through|thru)\s*)\d+)?(?:\s*(?:,|&|and)\s*#?\s*\d+(?:(?:\s*-\s*(?=\d{1,2}\b)|\s*(?:to|through|thru)\s*)\d+)?)*)/gi;
+  var UNSURE = /%|\/|±|~|\?|\b(per|or|tbd|approx\w*|about|around|roughly|maybe|between|up\s+to|less|more|than|plus|minus|unknown|sf|sq|sqft|ft|foot|feet|ac|acres?|mo|months?|yrs?|years?)\b/i;
   function others() {
-    var o = { by: {}, gross: {}, part: {}, all: false };
-    String(ans("rate_other") || "").replace(/[\u2212\u2013\u2014]/g, "-").replace(/(\d),(?=\d{3}\b)/g, "$1").split(/[;\n]+/).forEach(function (t) {
-      var lists = [], amounts = [], rest = t.replace(/\bcomps?\s*#?\s*(\d+(?:(?:-|\s*(?:to|through|thru)\s*)\d+)?(?:\s*(?:,|&|and)\s*#?\s*\d+(?:(?:-|\s*(?:to|through|thru)\s*)\d+)?)*)/gi, function (m, list) {
-        var ns = [];
+    var o = { by: {}, gross: {}, part: {}, all: false }, adjust = /^adjust/i.test(String(ans("concessions") || ""));
+    String(ans("rate_other") || "").replace(/[−–—]/g, "-").replace(/(\d),(?=\d{3}\b)/g, "$1").split(/[;\n]+/).forEach(function (t) {
+      if (!t.trim() || /^\s*(none|no|n\/?a|nil|zero|no( other)? adjustments?)\s*\.?\s*$/i.test(t) || /\d/.test(t) && !/[1-9]/.test(t) && !/comp/i.test(t)) return;   // a zero
+      var lists = [], named = [], pairs = [], s = t.replace(LIST, function (m, list) {
+        var ns = [], ok = true;
         list.split(/\s*(?:,|&|and)\s*/i).forEach(function (p) {
-          var r = /(\d+)\D*(\d+)?/.exec(p), lo = +r[1], hi = r[2] ? +r[2] : lo;
-          for (var n = lo; n <= (hi >= lo && hi - lo <= 20 ? hi : lo); n++) ns.push(n);
+          var r = /(\d+)(?:\D+(\d+))?/.exec(p), lo = +r[1], hi = r[2] ? +r[2] : lo, a = Math.min(lo, hi), b = Math.max(lo, hi);
+          if (hi < lo || b - a > 20) { ok = false; ns.push(a, b); } else for (var n = a; n <= b; n++) ns.push(n);
         });
-        lists.push(ns); return " ";
+        lists.push({ ns: ns, ok: ok }); named = named.concat(ns); return " §" + (lists.length - 1) + " ";
       });
-      rest.replace(/([-+]?)\s*\$?\s*(\d*\.?\d+)\s*(k\b)?/gi, function (m, sign, v, k) { v = parseFloat(v) * (k ? 1000 : 1); amounts.push(sign ? (sign === "-" ? -v : v) : v === 0 ? 0 : null); return m; });   // no sign, no direction
-      if (!lists.length) { if (t.trim() && !/^\s*(none|no|n\/?a|nil|zero)\b/i.test(t) && !(amounts.length && amounts.every(function (a) { return a === 0; }))) o.all = true; return; }
-      var plain = !/%|\/|\bper\b|\b(sf|sq|ft|feet|acres?)\b/i.test(rest) && amounts.length === lists.length && amounts.every(fig);
-      lists.forEach(function (ns, i) { ns.forEach(function (n) { if (!plain) o.part[n] = true; else { o.by[n] = (o.by[n] || 0) + amounts[i]; o.gross[n] = (o.gross[n] || 0) + Math.abs(amounts[i]); } }); });
+      var parts = s.split(/\band\b|[,&]/i).filter(function (x) { return /[a-z0-9§]/i.test(x); });
+      var plain = lists.length && lists.every(function (l) { return l.ok; }) && !UNSURE.test(s) && (adjust || !/concession/i.test(t)) && parts.every(function (x) {
+        var ls = x.match(/§\d+/g) || [], am = [], rest = x.replace(/§\d+/g, " ").replace(/\$?\s*([-+])\s*\$?\s*(\d*\.?\d+)\s*(k\b)?/gi, function (m, sign, v, k) { am.push((sign === "-" ? -1 : 1) * parseFloat(v) * (k ? 1000 : 1)); return " "; });
+        if (ls.length !== 1 || am.length !== 1 || /[\d$]|(?:^|[^a-z])[+-]|[+-](?![a-z])/i.test(rest)) return false;   // one comp list and one signed amount each, nothing left over
+        pairs.push([lists[+ls[0].slice(1)].ns, am[0]]); return true;
+      });
+      if (!plain) { named.forEach(function (n) { o.part[n] = true; }); if (!lists.length || parts.some(function (x) { return x.indexOf("§") < 0; })) o.all = true; return; }
+      pairs.forEach(function (pr) { pr[0].forEach(function (n) { o.by[n] = (o.by[n] || 0) + pr[1]; o.gross[n] = (o.gross[n] || 0) + Math.abs(pr[1]); }); });
     });
     return o;
   }
@@ -762,7 +770,8 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function money(v) { return "$" + Math.round(v).toLocaleString("en-US"); }
   function signed(v) { v = Math.round(v); return (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toLocaleString("en-US"); }
   function pct(v, p) { v = v / p * 100; return (v < 0 ? "−" : "") + Math.abs(v).toFixed(1) + "%"; }
-  function rating(n, what) { var v = ans("comp" + n + "_" + what) || ((D.comps || [])[n - 1] || {})[what] || ""; return v === "Same" ? ans("subject_" + what) || "Same" : v; }
+  function picked(n, what) { var v = ans("comp" + n + "_" + what); return v != null ? v : ((D.comps || [])[n - 1] || {})[what] || ""; }   // his answer, a blank too; else the record's
+  function rating(n, what) { var v = picked(n, what); return v === "Same" ? ans("subject_" + what) || "Same" : v; }
   function grade(v) { var m = /^[QC]([1-6])$/.exec(v || ""); return m ? +m[1] : null; }
   // An amount is null while a rate or fact it needs is missing (a ?); an explicit 0 rate, or no difference, is 0.
   function rate(key, s, c) { var r = num(ans(key)); return r === 0 || fig(s) && s === c ? 0 : r == null || !fig(s) || !fig(c) ? null : r * (s - c); }   // more is better
@@ -852,7 +861,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     $("pick-title").textContent = "Comp " + x.n + " " + what + ": " + (x.c.address || String(x.c.id || "").split(" · ").pop());
     box.textContent = "";
     lineFor("comps")[what].forEach(function (o) {
-      var b = box.appendChild(el("button", { type: "button", cls: "tap", "aria-pressed": String((ans("comp" + x.n + "_" + what) || x.c[what]) === o), text: o }));
+      var b = box.appendChild(el("button", { type: "button", cls: "tap", "aria-pressed": String(picked(x.n, what) === o), text: o }));
       b.addEventListener("click", function () { put(name, state.answers[name] === o ? "" : o); if (controls[name]) controls[name].set(state.answers[name]); closePick(); changed(); });
     });
     picking = cell; $("pick").hidden = false; document.querySelector(".wrap").inert = true;
@@ -995,9 +1004,9 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     fit();
     return [el("div", { cls: "changes" }, rows.concat([more]))];
   }
-  // On an open self-service form the prefill never closes a call the grid reads: it is his default there, still editable.
-  var CALL = /^(rate_\w+|time_adjustment|subject_(quality|condition)|comp\d+_(quality|condition)|most_weight)$/;
-  function blank(k) { var v = (D.prefill || {})[k]; return v == null || v === "" || v === false || valueLast() && CALL.test(k); }
+  // On an open self-service form the prefill closes only his inspection facts; every call stays open, its prefill his default.
+  var FACT = /^(inspected_by|helper|il_amc_fee|updates)$/;
+  function blank(k) { var v = (D.prefill || {})[k]; return v == null || v === "" || v === false || valueLast() && !FACT.test(k); }
   function isOpen(line) {          // an "open" line shows only while their own data leaves it blank
     if (!line.open) return true;
     if (line.kind === "comps") return grid().some(function (n) { return unrated(n, "quality") || unrated(n, "condition"); });
@@ -1684,6 +1693,9 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   // goes out as his. They and the prefill sit beneath anything he saved for the same call, under either key (Astra 2026-10-20).
   function answersFrom(mine) {
     var self = (D.house_prompts || {}).lane === "self-service", low = Object.assign({}, D.prefill || {}, self && D.our_calls || {});
+    if (valueLast()) (D.comps || []).forEach(function (c, i) {   // a rating in a comp's record is his default too, beneath the rest
+      ["quality", "condition"].forEach(function (w) { var k = "comp" + (i + 1) + "_" + w; if (c[w] && !(k in low)) low[k] = c[w]; });
+    });
     if (self) Object.keys(low).forEach(function (k) { if (mine && twin(k) in mine) delete low[k]; });
     return Object.assign(low, mine || {});
   }
