@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-20.2">
+<html lang="en" data-build="v2026-10-20.3">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -172,7 +172,9 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 .pdf-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); min-height: 48px; margin: 0; padding: 0 var(--s-6); border: 1px solid var(--primary); border-radius: var(--r-2); background: #fff; color: var(--primary); font: 600 16px/1 var(--font); text-decoration: none; white-space: nowrap; transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease); }
 .pdf-btn:hover { background: var(--tint); color: var(--primary-hover); border-color: var(--primary-hover); }
 .pdf-btn::before { content: ""; flex: none; width: 18px; height: 18px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 1.5h5.5l3 3v10h-8.5z' fill='none' stroke='%230b6fc1' stroke-width='1.4' stroke-linejoin='round'/%3E%3Cpath d='M9.5 1.5v3h3' fill='none' stroke='%230b6fc1' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") center / 16px 16px no-repeat; }
-#report { display: flex; }
+#report { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+#report .pdf-btn { flex: 1 1 200px; }
+.pdf-btn.dl::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.5v9M4.5 7l3.5 3.5L11.5 7M2.5 14.5h11' fill='none' stroke='%230b6fc1' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 
 /* ---------- buttons: the site's .btn (filled) and .btn.ghost (outlined) ---------- */
 .status { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
@@ -209,12 +211,13 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 .agree-value { margin: 0 0 var(--s-4); color: var(--ink); }
 .agree-value span { display: block; margin: 0 0 var(--s-1); font: 600 13px/1.4 var(--font); letter-spacing: .12em; text-transform: uppercase; color: var(--primary); }
 .agree-value b { display: block; font: 700 32px/1.1 var(--display); letter-spacing: -.02em; color: var(--bar); font-variant-numeric: tabular-nums; }
-.approved .more, .approved .talk-row { display: none; }
+.approved .more, #form.approved .talk-row { display: none; }
 #post-request { margin-top: var(--s-2); }
 #post-request .st { width: 100%; }
 #post-request .line { display: block; margin: 0 0 var(--s-3); padding: 0; border: 0; min-height: 0; }
 #post-request .lbl { display: block; margin-bottom: var(--s-2); font-size: 14px; font-weight: 600; }
-#post-text { width: 100%; resize: vertical; }
+#post-text { width: 100%; min-height: calc(8 * 1.5em + 22px); resize: vertical; }   /* the big change box: about 8 lines */
+#post-request .talk-row { margin-top: var(--s-2); }
 #post-sent, #post-error { margin: 0 0 var(--s-3); }
 #post-error { color: var(--danger); }
 .build { margin: var(--s-3) 0 0; text-align: center; font-size: 11px; color: var(--ink-2); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
@@ -325,6 +328,7 @@ label.line { cursor: pointer; }
 .mic.on { background: var(--danger); border-color: var(--danger); animation: pulse 1.4s infinite; }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(167,42,42,.45); } 50% { box-shadow: 0 0 0 10px rgba(167,42,42,0); } }
 .mic svg { width: 18px; height: 24px; }
+.changes .talk-row { margin: var(--s-1) 0 0 32px; }
 
 /* ---------- History: the site's collapsed question, "+" at the right, blue when open ---------- */
 details.history { padding: 0; overflow: hidden; font-size: 17px; color: var(--ink); line-height: 1.65; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
@@ -402,6 +406,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <div class="banner" id="payment" role="status" hidden></div>
   <div class="banner warn" id="selfservice" role="note" hidden><div><p><b>Self-service: Matt and his team do not review this report.</b></p><ul><li>No one will discuss values or the report.</li><li>Questions, issues and changes go in writing, on this form or by email.</li><li>Appraisal help from Matt or his team is a separate service, billed for his time, and only where state rules allow it.</li><li>You are using the A&amp;AP software intelligence system directly. We strongly encourage you to review this report and ensure the system makes all changes to your liking.</li><li>Bugs, errors and software issues should be escalated to Matt and his team immediately. Appraisal discussion and questions remain in this form or by email.</li></ul></div></div>
   <div class="card" id="returned-intro" hidden><p id="returned-headline">Your report is in your TOTAL folder. Review and edit it there.</p><p class="note" id="delivered-at" hidden></p><p class="note" id="legacy-approved" hidden></p></div>
+  <section class="card report" id="report" aria-label="Your report" hidden></section>
   <div class="banner" id="notready" role="status" hidden></div>
   <section class="card" id="calls" aria-label="Our calls" hidden></section>
 
@@ -410,22 +415,21 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <section class="card statusbox" id="action" aria-label="Status">
     <p class="status-help" id="help"></p>
     <p class="agree-value" id="agree-value" hidden></p>
-    <div class="status" data-status></div>
     <div id="post-request" hidden>
       <h2 id="post-title" hidden>Request a change</h2>
       <p class="note" id="post-sent" hidden></p>
       <button type="button" class="st" id="post-open">Request a change</button>
       <div id="post-box" hidden>
         <div class="line"><label class="lbl" for="post-text">What should change?</label>
-          <textarea id="post-text" rows="3" maxlength="4000"></textarea></div>
+          <textarea id="post-text" rows="8" maxlength="4000" placeholder="Type or talk your changes"></textarea></div>
         <button type="button" class="st" id="post-send">Send</button>
       </div>
       <p class="note" id="post-error" role="status" hidden></p>
     </div>
+    <div class="status" data-status></div>
     <p class="terms-line" data-terms></p>
     <div id="banner" aria-live="polite"></div>
   </section>
-  <section class="card report" id="report" aria-label="Your report" hidden></section>
   <details class="card history" id="history" hidden><summary>History</summary><ul id="history-list"></ul></details>
   </div>
 
@@ -594,9 +598,9 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     if (opts.short) input.className = "short";
     input.addEventListener("input", function () { state.answers[name] = input.value; grow(input); changed(); });
     controls[name] = { set: function (v) { v = v == null ? "" : String(v); if (input.value !== v) input.value = v; grow(input); } };
-    var row = el("div", { cls: "line" + (opts.multi || opts.wide ? " wide" : "") }, [el("label", { cls: "lbl", "for": id, text: label }), input]);
-    if (opts.talk) row.appendChild(talkRow(input));
-    return row;
+    // every free-text box gets the mic (Matt 2026-10-20); "talk" lines also show the full how-to
+    return el("div", { cls: "line" + (opts.multi || opts.wide || !opts.short ? " wide" : "") },
+      [el("label", { cls: "lbl", "for": id, text: label }), input, !opts.short && talkRow(input, !opts.talk)]);
   }
   function taps(name, label, options) {
     var box = el("div", { cls: "taps", role: "group", "aria-label": label }), btns = [];
@@ -717,7 +721,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       var input = el("textarea", { rows: "1", "aria-label": "Change or question " + (n + 1) });
       input.addEventListener("input", function () { state.changes[n] = input.value; grow(input); changed(); });
       controls["change" + (n + 1)] = { set: function () { var v = state.changes[n] || ""; if (input.value !== v) { input.value = v; grow(input); } fit(); } };
-      rows.push(el("div", { cls: "line wide" }, [el("div", { cls: "id" }, [el("span", { cls: "n", text: String(n + 1) + "." }), input])]));
+      rows.push(el("div", { cls: "line wide" }, [el("div", { cls: "id" }, [el("span", { cls: "n", text: String(n + 1) + "." }), input]), talkRow(input, true)]));
     })(n);
     more.addEventListener("click", function () { shown = Math.min(count, shown + 1); fit(); var b = rows[shown - 1].querySelector("textarea"); b.focus(); grow(b); });
     fit();
@@ -857,8 +861,9 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     var due = !!String(O.payment_due || "").trim();
     box.textContent = ""; box.hidden = stage !== "returned" || !m;
     if (box.hidden) return;
-    box.appendChild(el("a", { cls: "pdf-btn", href: "https://drive.google.com/file/d/" + (m[1] || m[2]) + "/view",
-      target: !!INLINE && location.protocol === "file:" ? "_self" : "_blank", rel: "noopener", text: due ? "View PDF (view only)" : "View PDF" }));
+    var id = m[1] || m[2], target = !!INLINE && location.protocol === "file:" ? "_self" : "_blank";
+    box.appendChild(el("a", { cls: "pdf-btn", href: "https://drive.google.com/file/d/" + id + "/view", target: target, rel: "noopener", text: due ? "Open PDF (view only)" : "Open PDF" }));
+    if (!due) box.appendChild(el("a", { cls: "pdf-btn dl", href: "https://drive.google.com/uc?export=download&id=" + id, target: target, rel: "noopener", text: "Download PDF" }));
   }
   function paintAll() { Object.keys(controls).forEach(function (k) { controls[k].set(state.answers[k]); }); }
 
@@ -1087,6 +1092,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     grow($("post-text")); $("post-text").focus();
   });
   $("post-text").addEventListener("input", function () { grow(this); $("post-error").hidden = true; });
+  $("post-text").parentNode.appendChild(talkRow($("post-text")));
   $("post-send").addEventListener("click", function () {
     if ((!customerReturned() && !approved) || postBusy || readOnly || !online) return;
     var text = $("post-text").value.trim();
@@ -1245,7 +1251,8 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   }
 
   // ---------- talk ----------
-  function talkRow(ta) {
+  var talking = null;     // the one mic listening now: its stop
+  function talkRow(ta, quiet) {   // quiet: the mic and "Tap to talk"; with no speech in the browser, nothing (the keyboard's mic still works)
     var ua = navigator.userAgent, phone = /iPhone|iPad|iPod|Android/i.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
     var keyboard = phone ? "Tap the box, then the mic on your keyboard, and talk."
       : /Windows/i.test(ua) ? "Click the box, press Windows key + H, and talk."
@@ -1254,20 +1261,21 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     var hint = el("span", { cls: "talk-hint", text: keyboard });
     var row = el("div", { cls: "talk-row" }, [hint]);
-    if (!SR) return row;
+    if (!SR) return quiet ? null : row;
     var mic = el("button", { type: "button", cls: "mic", "aria-label": "Start listening", "aria-pressed": "false" });
     mic.innerHTML = '<svg viewBox="0 0 15 20" aria-hidden="true"><rect x="4" y="0.5" width="7" height="12" rx="3.5" fill="currentColor"/><path d="M1.5 9.5 a6 6 0 0 0 12 0" stroke="currentColor" stroke-width="1.6" fill="none"/><line x1="7.5" y1="15.5" x2="7.5" y2="19" stroke="currentColor" stroke-width="1.6"/></svg>';
     row.insertBefore(mic, hint);
-    hint.textContent = "Tap the mic and talk, or: " + keyboard.charAt(0).toLowerCase() + keyboard.slice(1);
+    hint.textContent = quiet ? "Tap to talk" : "Tap the mic and talk, or: " + keyboard.charAt(0).toLowerCase() + keyboard.slice(1);
     var rec = null, wanted = false, pending = "", android = /Android/i.test(ua);
-    function off(why) { wanted = false; mic.classList.remove("on"); mic.setAttribute("aria-pressed", "false"); if (why) hint.textContent = why; }
+    function stop() { wanted = false; try { rec && rec.stop(); } catch (e) {} }
+    function off(why) { wanted = false; if (talking === stop) talking = null; mic.classList.remove("on"); mic.setAttribute("aria-pressed", "false"); if (why) hint.textContent = why; }
     function append(w) {
-      if (readOnly || approved || $("form").disabled) return;
+      if (readOnly || ta.matches(":disabled")) return;
       w = (w || "").trim(); if (!w) return;
       var v = ta.value, sep = (!v || /\s$/.test(v)) ? "" : " ";
       if (!v || /[.!?]\s*$/.test(v)) w = w.charAt(0).toUpperCase() + w.slice(1);
-      ta.value = v + sep + w; grow(ta);
-      state.answers[ta.id.slice(2)] = ta.value; changed();
+      ta.value = v + sep + w;
+      ta.dispatchEvent(new Event("input"));   // the box's own listener grows and saves it
     }
     function start() {
       rec = new SR(); rec.lang = "en-US"; rec.interimResults = true; rec.continuous = !android;
@@ -1284,14 +1292,16 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       };
       rec.onend = function () {
         if (pending) { append(pending); pending = ""; }
-        if (wanted && !$("form").disabled) { try { start(); return; } catch (e) { wanted = false; } }
+        if (wanted && !ta.matches(":disabled")) { try { start(); return; } catch (e) { wanted = false; } }
         if (mic.classList.contains("on")) off("Stopped. Tap the mic to talk more.");
       };
       rec.start();
     }
     mic.addEventListener("click", function () {
-      if (wanted) { wanted = false; try { rec && rec.stop(); } catch (e) {} return; }
-      wanted = true;
+      if (wanted) { stop(); return; }
+      if (readOnly || ta.matches(":disabled")) return;
+      if (talking) talking();
+      talking = stop; wanted = true;
       try { start(); } catch (e) { off("The mic is blocked here. " + keyboard); }
     });
     return row;
