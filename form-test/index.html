@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-20.6.2">
+<html lang="en" data-build="v2026-10-20.6.3">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -329,7 +329,7 @@ table.grid { width: 100%; border-collapse: separate; border-spacing: 0; font-siz
 .grid .total th, .grid .total td { background: #fff; border-top: 1px solid var(--line-2); }
 .grid .total td:nth-child(2) { background: var(--canvas); }
 .grid .total + .total th, .grid .total + .total td { border-top: 0; }
-.grid .adjusted th, .grid .adjusted td .f { color: var(--bar); font-weight: 700; }
+.grid .adjusted th, .grid .adjusted td .f { color: var(--bar); font-weight: 700; } .grid .adjusted td .a { white-space: normal; font-weight: 400; }
 .grid .pick { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-start; width: 100%; min-height: 44px; margin: -5px 0; padding: 5px 0; border: 0; border-radius: var(--r-1); background: none; color: var(--primary); font: inherit; font-weight: 600; text-align: right; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .grid .pick:hover { background: var(--tint); }
 .grid .pick .f:empty::before { content: "Rate"; text-decoration: underline; text-underline-offset: 3px; }
@@ -533,7 +533,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
    {"kind": "text", "key": "rate_other", "label": "Other: what and $", "open": true},
    {"kind": "choice", "key": "concessions", "label": "Concessions on comps", "options": ["Adjust what the market paid for them", "Don't adjust"], "open": true}
   ]},
-  {"title": "Your grid", "stage": "open", "note": "It fills in as you type your rates. Tap a comp's quality or condition to rate it; Same means same as the house. A ? is a line still missing a rate or a fact. Other lines and concessions are not in it, and no threshold or rounding is applied.", "lines": [
+  {"title": "Your grid", "stage": "open", "note": "It fills in as you type your rates. Tap a comp's quality or condition to rate it; Same means same as the house. A ? is a line still missing a rate or a fact. Other lines and concessions are in it when each names its comps and a signed amount (comp 1 location -10,000); any other shows as + lines not in the grid. No threshold or rounding is applied.", "lines": [
    {"kind": "grid"}
   ]},
   {"title": "Your value", "stage": "open", "lines": [
@@ -633,18 +633,33 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     return n;
   }
   function changed() { edits++; $("saved").hidden = true; paintNow(); paintGrid(); afterEdit(); }
-  // One answer per call (Astra 2026-10-20): a START line and its END twin (q_<key>) move together, wherever either shows.
+  // One answer per call (Astra 2026-10-20): on an open self-service form a START line and its END twin (q_<key>) move
+  // together, wherever either shows; every other lane keeps each answer as saved.
   function twin(k) { return k.indexOf("q_") === 0 ? k.slice(2) : "q_" + k; }
   function put(name, v) {
     state.answers[name] = v;
     var t = twin(name);
-    if (controls[t] || t in state.answers) { state.answers[t] = v; if (controls[t]) controls[t].set(v); }
+    if (valueLast() && (controls[t] || t in state.answers)) { state.answers[t] = v; if (controls[t]) controls[t].set(v); }
   }
-  function grow(t) {
-    if (t.tagName !== "TEXTAREA" || !t.isConnected) return;
+  var ruler = document.createElement("canvas").getContext("2d");
+  function grow(t) {               // a box grows to its text; a short one widens, and drops under its label past its room ("10/sf per step" on a phone)
+    if (!t.isConnected) return;
+    if (t.className === "short") {
+      var cs = getComputedStyle(t), need;
+      ruler.font = cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+      need = Math.ceil(ruler.measureText(t.value).width + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)) + 4;
+      t.parentNode.classList.remove("wide"); t.style.width = "";
+      if (!t.offsetWidth || need <= t.offsetWidth) return;     // not laid out yet (the pass after showing measures it), or it fits
+      t.style.width = need + "px"; need += Math.max(0, t.scrollWidth - t.clientWidth); t.style.width = need + "px";   // the caret's room too
+      if (t.offsetWidth < need) { t.style.width = ""; t.parentNode.classList.add("wide"); }
+      return;
+    }
+    if (t.tagName !== "TEXTAREA") return;
     t.style.height = "auto"; t.style.height = (t.scrollHeight + 3) + "px";
   }
-  window.addEventListener("resize", function () { document.querySelectorAll("textarea").forEach(grow); });
+  var GROWS = "textarea, input.short";
+  function regrow() { document.querySelectorAll(GROWS).forEach(grow); }
+  window.addEventListener("resize", regrow);
 
   // ---------- one line each (names match the PDF's fields) ----------
   function check(name, label, cls, href) {
@@ -719,6 +734,27 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     m = t.match(/(-?)\$?\s*(\d*\.?\d+)\s*(k\b)?/i);
     return m ? (m[1] ? -1 : 1) * parseFloat(m[2]) * (m[3] ? 1000 : 1) : null;
   }
+  // Other lines (Matt 2026-10-20): each part naming its comps and a signed amount is on the grid, "comp 1 location -10,000"
+  // or "Location -10,000 (comps 1, 5) and -20,000 (comps 2, 3)", one amount per comp list. Any other part leaves the comps
+  // it names (all of them, when it names none) "+ lines not in the grid", so nobody anchors on a figure that leaves it out.
+  function others() {
+    var o = { by: {}, gross: {}, part: {}, all: false };
+    String(ans("rate_other") || "").replace(/[\u2212\u2013\u2014]/g, "-").replace(/(\d),(?=\d{3}\b)/g, "$1").split(/[;\n]+/).forEach(function (t) {
+      var lists = [], amounts = [], rest = t.replace(/\bcomps?\s*#?\s*(\d+(?:(?:-|\s*(?:to|through|thru)\s*)\d+)?(?:\s*(?:,|&|and)\s*#?\s*\d+(?:(?:-|\s*(?:to|through|thru)\s*)\d+)?)*)/gi, function (m, list) {
+        var ns = [];
+        list.split(/\s*(?:,|&|and)\s*/i).forEach(function (p) {
+          var r = /(\d+)\D*(\d+)?/.exec(p), lo = +r[1], hi = r[2] ? +r[2] : lo;
+          for (var n = lo; n <= (hi >= lo && hi - lo <= 20 ? hi : lo); n++) ns.push(n);
+        });
+        lists.push(ns); return " ";
+      });
+      rest.replace(/([-+]?)\s*\$?\s*(\d*\.?\d+)\s*(k\b)?/gi, function (m, sign, v, k) { v = parseFloat(v) * (k ? 1000 : 1); amounts.push(sign ? (sign === "-" ? -v : v) : v === 0 ? 0 : null); return m; });   // no sign, no direction
+      if (!lists.length) { if (t.trim() && !/^\s*(none|no|n\/?a|nil|zero)\b/i.test(t) && !(amounts.length && amounts.every(function (a) { return a === 0; }))) o.all = true; return; }
+      var plain = !/%|\/|\bper\b|\b(sf|sq|ft|feet|acres?)\b/i.test(rest) && amounts.length === lists.length && amounts.every(fig);
+      lists.forEach(function (ns, i) { ns.forEach(function (n) { if (!plain) o.part[n] = true; else { o.by[n] = (o.by[n] || 0) + amounts[i]; o.gross[n] = (o.gross[n] || 0) + Math.abs(amounts[i]); } }); });
+    });
+    return o;
+  }
   var SF = ["sf", "sq", "sqft", "ft", "foot", "feet"], AC = ["ac", "acre", "acres"];
   function per(t, unit) { return (String(t).toLowerCase().match(/[a-z]+/g) || []).some(function (w) { return unit.indexOf(w) >= 0; }); }   // by word: "after" is not "ft"
   function ans(k) { var q = state.answers["q_" + k]; return q != null && String(q).trim() ? q : state.answers[k]; }   // an END answer (q_<key>) replaces its line
@@ -756,7 +792,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function any(k) { return function (f) { return people(f).some(function (p) { return fig(p[k]); }); }; }
   function some(k) { return function (f) { return people(f).some(function (p) { return p[k] > 0; }); }; }
   function count(k) { return function (p) { return fig(p[k]) ? p[k].toLocaleString("en-US") : ""; }; }
-  var GRID = [   // TOTAL's order; key: the rate it needs; show: the line is on when a property has the fact; adj: the comp's amount, or null
+  var GRID = [   // TOTAL's order; key: the rate it needs; show: the line is on when a property has the fact; adj: the comp's amount, or null; gross: its parts' size
     { label: "Price", fact: function (p, subject) { return subject || !fig(p.price) ? "" : money(p.price); },
       sub: function (p) { return p.status && !/^(sold|closed|settled)/i.test(p.status) ? p.status : ""; } },
     { label: "Contract", key: "time_adjustment", show: function (f) { return !!f.s.effective && f.list.some(function (x) { return x.c.contract; }); },
@@ -772,7 +808,8 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     { label: "Basement", key: "rate_basement", show: some("basement"), fact: count("basement"), adj: function (f, x) { return rate("rate_basement", f.s.basement, x.c.basement); } },
     { label: "Garage", key: "rate_garage", show: any("garage"), fact: count("garage"), adj: function (f, x) { return rate("rate_garage", f.s.garage, x.c.garage); } },
     { label: "Carport", key: "rate_carport", show: any("carport"), fact: count("carport"), adj: function (f, x) { return rate("rate_carport", f.s.carport, x.c.carport); } },
-    { label: "Pool", key: "rate_pool", show: some("pool"), fact: function (p) { return fig(p.pool) ? (p.pool ? "Yes" : "No") : ""; }, adj: function (f, x) { return rate("rate_pool", f.s.pool, x.c.pool); } }
+    { label: "Pool", key: "rate_pool", show: some("pool"), fact: function (p) { return fig(p.pool) ? (p.pool ? "Yes" : "No") : ""; }, adj: function (f, x) { return rate("rate_pool", f.s.pool, x.c.pool); } },
+    { label: "Other", key: "rate_other", fact: function () { return ""; }, adj: function (f, x) { return others().by[x.n] || 0; }, gross: function (f, x) { return others().gross[x.n] || 0; } }
   ];
   function gridFacts() {           // open self-service forms only (FHA and the rest keep their ratings list); no prices, no grid
     if (!valueLast()) return null;
@@ -790,7 +827,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       var cells = [], mark = el("span", { cls: "a miss" }), tr = body.appendChild(el("tr", cls ? { cls: cls } : null, [el("th", { cls: "row", scope: "row" }, [label, mark])]));
       [null].concat(f.list).forEach(function (x) {
         var host = tr.appendChild(el("td"));
-        if (x && what && unrated(x.n, what)) {    // his call: a tap opens its choices
+        if (x && what) {    // his call: a tap opens its choices; a rating in the comp's record or the prefill is only his default
           host = host.appendChild(el("button", { type: "button", cls: "pick", "aria-label": "Comp " + x.n + " " + what }));
           host.addEventListener("click", function () { pickRating(x, what, this); });
         }
@@ -815,7 +852,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     $("pick-title").textContent = "Comp " + x.n + " " + what + ": " + (x.c.address || String(x.c.id || "").split(" · ").pop());
     box.textContent = "";
     lineFor("comps")[what].forEach(function (o) {
-      var b = box.appendChild(el("button", { type: "button", cls: "tap", "aria-pressed": String(state.answers[name] === o), text: o }));
+      var b = box.appendChild(el("button", { type: "button", cls: "tap", "aria-pressed": String((ans("comp" + x.n + "_" + what) || x.c[what]) === o), text: o }));
       b.addEventListener("click", function () { put(name, state.answers[name] === o ? "" : o); if (controls[name]) controls[name].set(state.answers[name]); closePick(); changed(); });
     });
     picking = cell; $("pick").hidden = false; document.querySelector(".wrap").inert = true;
@@ -844,13 +881,16 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
         line.cells[i][1].classList.toggle("muted", !!line.g.sub);
         line.cells[i][1].classList.toggle("miss", miss);
         if (miss) { totals[i - 1].miss++; if (his(line.g, t, x)) totals[i - 1].his++; unknown = true; }
-        if (fig(a)) { totals[i - 1].net += a; totals[i - 1].gross += Math.abs(a); }
+        if (fig(a)) { totals[i - 1].net += a; totals[i - 1].gross += line.g.gross ? line.g.gross(f, x) : Math.abs(a); }
       });
       line.cells.mark.textContent = !unknown ? "" : !t ? "no rate" : num(t) == null ? "not figured" : "";
     });
-    var sales = [], pend = [], open = [], ours = [];
+    var sales = [], pend = [], open = [], ours = [], partial = [], o = others();
     f.list.forEach(function (x, i) {      // a column with a ? shows no totals and stays out of the range until complete
       var t = totals[i], p = x.c.price, priced = fig(p) && p > 0, done = priced && !t.miss;
+      t.part = done && (o.all || !!o.part[x.n]);   // an Other line the grid can't figure: his adjusted price is partial
+      v.adjusted[i + 1][1].textContent = t.part ? "+ lines not in the grid" : ""; v.adjusted[i + 1][1].classList.toggle("miss", t.part);
+      if (t.part) partial.push(x.n);
       [v.net, v.gross, v.adjusted].forEach(function (r) { r[i + 1][0].classList.toggle("miss", priced && !done); });
       v.net[i + 1][0].textContent = done ? signed(t.net) : priced ? "?" : ""; v.net[i + 1][1].textContent = done ? pct(t.net, p) : "";
       v.gross[i + 1][0].textContent = done ? Math.round(t.gross).toLocaleString("en-US") : priced ? "?" : ""; v.gross[i + 1][1].textContent = done ? pct(t.gross, p) : "";
@@ -859,11 +899,12 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       if (done) (/^(sold|closed|settled)/i.test(x.c.status || "Sold") ? sales : pend).push(t.price); else if (priced) (t.his ? open : ours).push(x.n);
     });
     function span(a) { var lo = Math.min.apply(null, a), hi = Math.max.apply(null, a); return money(lo) + (hi > lo ? " to " + money(hi) : ""); }
-    var most = f.list.map(function (x, i) { return String(x.n) === String(ans("most_weight")) ? totals[i].price : null; }).filter(fig)[0];
+    var most = f.list.map(function (x, i) { return String(x.n) === String(ans("most_weight")) ? totals[i] : null; }).filter(function (t) { return t && fig(t.price); })[0];
     var out = [open.length && "comp " + open.join(", ") + " (fill in the lines marked ?)", ours.length && "comp " + ours.join(", ") + " (a fact we're missing; we'll fill this in)"].filter(Boolean);
     var said = (sales.length || pend.length ? "Adjusted range: " + (sales.length ? span(sales) : "") + (pend.length ? (sales.length ? "; " : "") + (f.list.some(function (x) { return /^active/i.test(x.c.status || ""); }) ? "listings and pendings " : "pendings ") + span(pend) : "") + "." : "") +
       (!out.length ? "" : (sales.length || pend.length ? " Not yet in it: " : "No adjusted range yet: ") + out.join("; ") + ".") +
-      (fig(most) ? " Comp " + ans("most_weight") + ", your most weight: " + money(most) + "." : "");
+      (partial.length ? " Comp " + partial.join(", ") + ": + lines not in the grid." : "") +
+      (most ? " Comp " + ans("most_weight") + ", your most weight: " + money(most.price) + (most.part ? " + lines not in the grid" : "") + "." : "");
     ranges.forEach(function (p) { p.textContent = said; p.hidden = !said; });
     if (!v.placed) setTimeout(function () { v.placed = true; v.box.scrollLeft = gridLeft; }, 0);   // once shown (setStage)
   }
@@ -954,7 +995,9 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     fit();
     return [el("div", { cls: "changes" }, rows.concat([more]))];
   }
-  function blank(k) { var v = (D.prefill || {})[k]; return v == null || v === "" || v === false; }
+  // On an open self-service form the prefill never closes a call the grid reads: it is his default there, still editable.
+  var CALL = /^(rate_\w+|time_adjustment|subject_(quality|condition)|comp\d+_(quality|condition)|most_weight)$/;
+  function blank(k) { var v = (D.prefill || {})[k]; return v == null || v === "" || v === false || valueLast() && CALL.test(k); }
   function isOpen(line) {          // an "open" line shows only while their own data leaves it blank
     if (!line.open) return true;
     if (line.kind === "comps") return grid().some(function (n) { return unrated(n, "quality") || unrated(n, "condition"); });
@@ -1099,7 +1142,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       text: "Review version " + D.review.id.slice(0, 8) }));
   }
   function paintAll() {
-    Object.keys(controls).forEach(function (k) {   // one answer per call: a START box shows its END answer, an END box left blank its START one
+    if (valueLast()) Object.keys(controls).forEach(function (k) {   // one answer per call: a START box shows its END answer, an END box left blank its START one
       var a = state.answers, q = "q_" + k;
       if (k.indexOf("q_") === 0 || !(q in a || controls[q])) return;
       if (String(a[q] == null ? "" : a[q]).trim()) a[k] = a[q]; else if (controls[q] && String(a[k] == null ? "" : a[k]).trim()) a[q] = a[k];
@@ -1638,16 +1681,16 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     if (p.sel && typeof best.n.selectionStart === "number") try { best.n.setSelectionRange(p.sel[0], p.sel[1], p.sel[2]); } catch (e) {}
   }
   // Matt 2026-10-20: our calls (our_calls) open as his defaults on a self-service form, every one editable; what he leaves
-  // goes out as his. They sit beneath anything he saved for the same call, under either key (Astra 2026-10-20).
+  // goes out as his. They and the prefill sit beneath anything he saved for the same call, under either key (Astra 2026-10-20).
   function answersFrom(mine) {
-    var ours = Object.assign({}, (D.house_prompts || {}).lane === "self-service" && D.our_calls || {});
-    Object.keys(ours).forEach(function (k) { if (mine && twin(k) in mine) delete ours[k]; });
-    return Object.assign({}, D.prefill || {}, ours, mine || {});
+    var self = (D.house_prompts || {}).lane === "self-service", low = Object.assign({}, D.prefill || {}, self && D.our_calls || {});
+    if (self) Object.keys(low).forEach(function (k) { if (mine && twin(k) in mine) delete low[k]; });
+    return Object.assign(low, mine || {});
   }
   function refresh(f) {
     var at = keepPlace();
     F = f; D = laneForm(F, state.answers); O = D.order || {}; controls = {}; $("sections").innerHTML = "";
-    renderOrder(); renderSections(); renderLanes(); paintAll(); setStage(D.stage); document.querySelectorAll("textarea").forEach(grow);
+    renderOrder(); renderSections(); renderLanes(); paintAll(); setStage(D.stage); regrow();
     if (state.status === "READY" && stage === "open") banner(readyNote(), "ok");
     restorePlace(at);
   }
@@ -1667,7 +1710,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     setStage(D.stage);
     if (saved) apply(saved);
     $("gate").hidden = true; $("main").hidden = false;
-    document.querySelectorAll("textarea").forEach(grow);
+    regrow(); if (document.fonts) document.fonts.ready.then(regrow);   // again once Open Sans is in
     noteOpened();
   }
   // A draft still waiting on its pause in typing goes out when the page is closed or put away.
