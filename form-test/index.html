@@ -20,11 +20,11 @@
      first as a red pop-out (a DOM overlay), then as a red banner pinned at the top until the status changes. A line or
      post-run question marked "required" (true, or a list of lanes) blocks READY, and a partner reviewer's DONE (never
      NEEDS CHANGE): Ready reads "Ready · 2 left" until they are in, and a tap marks the blank ones in red.
-     Each customer stage names its accepting action: Ready, sending answers, approving or requesting a change. house_prompts.lane "review" is a partner reviewer's form (review help, no value line or terms). house_prompts.client_permits false leaves the client-permission question off that order (Matt, 2026-10-19). house_prompts.lane "desk" (partial and full desk) is the minimal form: client permission and READY; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. No initials on any lane (Matt 2026-10-13). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
+     Each customer stage names its accepting action: Ready, sending answers, approving or requesting a change. house_prompts.lane "review" is a partner reviewer's form (review help, no value line or terms). The client-permission question is off on every order; house_prompts.client_permits true turns it on for one order (Matt, 2026-10-20). house_prompts.lane "desk" (partial and full desk) is the minimal form: client permission and READY; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. No initials on any lane (Matt 2026-10-13). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-19.10">
+<html lang="en" data-build="v2026-10-20.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -525,7 +525,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       a.lane !== (D.selected_lane || (D.house_prompts || {}).lane || "desk") || (!!D.terms && a.terms !== D.terms));
   }
   // Matt 2026-10-16: once his READY is accepted the form says so plainly and Ready can't be tapped again.
-  function permitsOff() { return (D.house_prompts || {}).client_permits === false; }   // Matt 2026-10-19: per order, no permission question
+  function permitsOff() { return (D.house_prompts || {}).client_permits !== true; }   // Matt 2026-10-20: off unless an order sets client_permits true
   function permissionHeld() { return (D.house_prompts || {}).lane !== "review" && !permitsOff() && ["No", "Not sure"].indexOf(state.answers.q_client_permits) >= 0; }
   function permissionPending() { return permissionHeld() || typeof CHECKLIST !== "undefined" && CHECKLIST.client_permits && (D.house_prompts || {}).lane !== "review" && !permitsOff() && !state.history.some(function (h) { return h.event === "client_permits"; }); }
   function inProduction() { return !startOptions() && !permissionPending() && stage === "open" && state.status === "READY" && savedStatus === "READY" && !quoteChanged() && !!(acceptance() || D.accepted_at) && !asked(); }
@@ -964,7 +964,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       (D.deliveries || []).forEach(function (d) { entries.push({ event: d.kind === "updated" ? "updated" : "delivered", at: d.at }); });
       entries.sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); });
     }
-    var h = entries.reverse().filter(function (e) { return e.accepted || e.event === "client_permits" || e.event === "post_change" || e.event === "delivered" || e.event === "updated" || e.status === "DONE"; }).map(function (e) {
+    var h = entries.reverse().filter(function (e) { return e.accepted || (e.event === "client_permits" && !permitsOff()) || e.event === "post_change" || e.event === "delivered" || e.event === "updated" || e.status === "DONE"; }).map(function (e) {
       if (e.event === "client_permits") return "Client permission · " + e.answer + " · " + when(e.at);
       if (e.accepted) return (e.by === "desk" ? "Desk go-ahead · " : e.by === "no tag" ? "Accepted (no tag) · " : "Accepted · ") + e.accepted.price + " · ready " + e.accepted.ready_by + " · " + e.accepted.lane + " · " + e.accepted.terms + " · " + when(e.at);
       return (e.event === "post_change" ? "Change requested" : e.event === "delivered" ? "Delivered" : e.event === "updated" ? "Updated" : "Approved") + " " + when(e.at);
