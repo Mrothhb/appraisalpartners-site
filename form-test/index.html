@@ -763,8 +763,8 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       var plain = lists.length && lists.every(function (l) { return l.ok; }) && (adjust || !conc) && !/(\band|&)[\s():.,#]*$/i.test(s) && parts.every(function (x) {
         var m = /^(.*?)\$?\s*([-+])\s*\$?\s*(\d*\.?\d+)(k\b)?(.*)$/i.exec(x), ls = x.match(/§\d+/g) || [];
         if (!m || ls.length !== 1 || !/^[\s():.,#]*(each[\s():.,#]*)?(§\d+[\s():.,#]*)?$/i.test(m[5])) return false;   // nothing after the amount
-        var l = tag(m[1].replace(/§\d+/, " "));
-        if (l && !TAG.test(l)) return false;
+        var l = m[1].replace(/§\d+/, " ");
+        if (/(?:^|[^a-z])[+-]|[+-](?![a-z])/i.test(l) || (l = tag(l)) && !TAG.test(l)) return false;   // a hyphen only inside a word ("built-ins")
         pairs.push([lists[+ls[0].slice(1)].ns, (m[2] === "-" ? -1 : 1) * parseFloat(m[3]) * (m[4] ? 1000 : 1)]); return true;
       });
       if (!plain) {
