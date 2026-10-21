@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-20.5">
+<html lang="en" data-build="v2026-10-20.6.3">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -310,6 +310,36 @@ label.line { cursor: pointer; }
 .comp .rate { display: flex; align-items: center; gap: var(--s-2) var(--s-3); margin: var(--s-2) 0 0 32px; flex-wrap: wrap; }
 .comp .rate .lbl { flex: none; width: 76px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
 
+/* the mini grid (Chase 2026-10-20): TOTAL's sales grid, sideways, in its own scroller from card edge to card edge; the
+   labels stay pinned and the page itself never scrolls sideways. Seven comps fit the 760 px page as they are. */
+.gridbox { margin: 0 calc(var(--card-px) * -1); overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+table.grid { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; line-height: 1.35; }
+.grid th, .grid td { min-width: 76px; padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; white-space: nowrap; font-weight: 400; }
+.grid tr:last-child th, .grid tr:last-child td { border-bottom: 0; }
+.grid thead th { vertical-align: top; white-space: normal; background: var(--tint); color: var(--ink); font-weight: 600; font-size: 12px; line-height: 1.3; }
+.grid th.row { position: sticky; left: 0; z-index: 1; min-width: 88px; padding-left: var(--card-px); text-align: left; background: #fff; color: var(--ink-2); font-weight: 600; box-shadow: inset -1px 0 0 var(--line); }
+.grid thead th.row { background: var(--tint); }
+.grid td:nth-child(2), .grid thead th:nth-child(2) { background: var(--canvas); }
+.grid .f, .grid .a, .grid .addr, .grid .who { display: block; }
+.grid .a { font-size: 12px; font-weight: 600; color: var(--deep); }
+.grid .a.muted { color: var(--ink-2); font-weight: 400; }
+.grid td .a.miss, .grid th .a.miss, .grid .total td .f.miss { color: var(--warning-ink); }
+.grid .who { color: var(--primary); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.grid thead .n { display: grid; width: fit-content; margin-left: auto; place-items: center; min-width: 22px; height: 20px; margin-bottom: 2px; padding: 0 5px; border-radius: var(--r-1); background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; }
+.grid .total th, .grid .total td { background: #fff; border-top: 1px solid var(--line-2); }
+.grid .total td:nth-child(2) { background: var(--canvas); }
+.grid .total + .total th, .grid .total + .total td { border-top: 0; }
+.grid .adjusted th, .grid .adjusted td .f { color: var(--bar); font-weight: 700; } .grid .adjusted td .a { white-space: normal; font-weight: 400; }
+.grid .pick { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-start; width: 100%; min-height: 44px; margin: -5px 0; padding: 5px 0; border: 0; border-radius: var(--r-1); background: none; color: var(--primary); font: inherit; font-weight: 600; text-align: right; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.grid .pick:hover { background: var(--tint); }
+.grid .pick .f:empty::before { content: "Rate"; text-decoration: underline; text-underline-offset: 3px; }
+.grid .pick:disabled { cursor: default; color: var(--ink); background: none; } .grid .pick:disabled .f:empty::before { content: ""; }
+#pick .pop-title { background: var(--primary); font-size: 18px; }
+#pick-taps { padding: var(--s-5); }
+.grid-range { margin: var(--s-4) 0 0; font-size: 16px; font-weight: 600; color: var(--bar); font-variant-numeric: tabular-nums; }
+.grid-range:empty { display: none; }
+.line .grid-range { margin: 0; padding: var(--s-2) var(--s-3); border-left: 4px solid var(--primary); background: var(--tint); font-size: 15px; }
+
 /* changes or questions: numbered boxes, "Add another" as the site's arrow link */
 .changes .line { border-bottom: 0; padding: var(--s-1) 0; }
 .changes .line .n { flex: none; width: 24px; color: var(--ink-2); font-weight: 600; font-size: 14px; font-variant-numeric: tabular-nums; padding-top: 12px; }
@@ -436,6 +466,12 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 
   <p class="foot"><span>The value is yours alone; we enter it exactly as you give it.</span><span class="dot" aria-hidden="true">·</span><span>A&amp;AP</span></p>
 </div>
+<div class="pop" id="pick" role="dialog" aria-modal="true" aria-labelledby="pick-title" hidden>
+  <div class="pop-box">
+    <p class="pop-title" id="pick-title"></p>
+    <div class="taps" id="pick-taps"></div>
+  </div>
+</div>
 <div class="pop" id="pop" role="alertdialog" aria-modal="true" aria-labelledby="pop-title" aria-describedby="pop-why" hidden>
   <div class="pop-box">
     <p class="pop-title" id="pop-title">Not ready yet</p>
@@ -488,12 +524,20 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
    {"kind": "text", "key": "rate_age", "label": "Age, $ per year", "short": true, "open": true},
    {"kind": "text", "key": "rate_condition", "label": "Condition difference, $ (per step, or per comp)", "short": true, "open": true},
    {"kind": "text", "key": "rate_quality", "label": "Quality difference, $ (per step, or per comp)", "short": true, "open": true},
-   {"kind": "text", "key": "rate_garage", "label": "Garage or parking, $ per space", "short": true, "open": true},
+   {"kind": "text", "key": "rate_garage", "label": "Garage, $ per space", "short": true, "open": true},
+   {"kind": "text", "key": "rate_carport", "label": "Carport, $ per space", "short": true, "open": true},
    {"kind": "text", "key": "rate_full_bath", "label": "Full bath, $ each", "short": true, "open": true},
    {"kind": "text", "key": "rate_half_bath", "label": "Half bath, $ each", "short": true, "open": true},
    {"kind": "text", "key": "rate_basement", "label": "Finished basement, $ per sq ft", "short": true, "open": true},
+   {"kind": "text", "key": "rate_pool", "label": "Pool, $", "short": true, "open": true},
    {"kind": "text", "key": "rate_other", "label": "Other: what and $", "open": true},
    {"kind": "choice", "key": "concessions", "label": "Concessions on comps", "options": ["Adjust what the market paid for them", "Don't adjust"], "open": true}
+  ]},
+  {"title": "Your grid", "stage": "open", "note": "It fills in as you type your rates. Tap a comp's quality or condition to rate it; Same means same as the house. A ? is a line still missing a rate or a fact. Other lines and concessions are in it when each names its comps and a signed amount (comp 1 location -10,000; no concessions, when none); any other shows as + lines not in the grid. No threshold or rounding is applied.", "lines": [
+   {"kind": "grid"}
+  ]},
+  {"title": "Your value", "stage": "open", "lines": [
+   {"kind": "value"}
   ]},
   {"title": "Anything else", "stage": "open", "lines": [
    {"kind": "multi", "key": "notes", "label": "Any assumption, condition or instruction only you can give. Or just say it all here.", "talk": true, "open": true}
@@ -588,12 +632,34 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     (kids || []).forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
     return n;
   }
-  function changed() { edits++; $("saved").hidden = true; paintNow(); afterEdit(); }
-  function grow(t) {
-    if (t.tagName !== "TEXTAREA" || !t.isConnected) return;
+  function changed() { edits++; $("saved").hidden = true; paintNow(); paintGrid(); afterEdit(); }
+  // One answer per call (Astra 2026-10-20): on an open self-service form a START line and its END twin (q_<key>) move
+  // together, wherever either shows; every other lane keeps each answer as saved.
+  function twin(k) { return k.indexOf("q_") === 0 ? k.slice(2) : "q_" + k; }
+  function put(name, v) {
+    state.answers[name] = v;
+    var t = twin(name);
+    if (valueLast() && (controls[t] || t in state.answers)) { state.answers[t] = v; if (controls[t]) controls[t].set(v); }
+  }
+  var ruler = document.createElement("canvas").getContext("2d");
+  function grow(t) {               // a box grows to its text; a short one widens, and drops under its label past its room ("10/sf per step" on a phone)
+    if (!t.isConnected) return;
+    if (t.className === "short") {
+      var cs = getComputedStyle(t), need;
+      ruler.font = cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+      need = Math.ceil(ruler.measureText(t.value).width + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)) + 4;
+      t.parentNode.classList.remove("wide"); t.style.width = "";
+      if (!t.offsetWidth || need <= t.offsetWidth) return;     // not laid out yet (the pass after showing measures it), or it fits
+      t.style.width = need + "px"; need += Math.max(0, t.scrollWidth - t.clientWidth); t.style.width = need + "px";   // the caret's room too
+      if (t.offsetWidth < need) { t.style.width = ""; t.parentNode.classList.add("wide"); }
+      return;
+    }
+    if (t.tagName !== "TEXTAREA") return;
     t.style.height = "auto"; t.style.height = (t.scrollHeight + 3) + "px";
   }
-  window.addEventListener("resize", function () { document.querySelectorAll("textarea").forEach(grow); });
+  var GROWS = "textarea, input.short";
+  function regrow() { document.querySelectorAll(GROWS).forEach(grow); }
+  window.addEventListener("resize", regrow);
 
   // ---------- one line each (names match the PDF's fields) ----------
   function check(name, label, cls, href) {
@@ -609,7 +675,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var id = "f-" + name;
     var input = opts.multi ? el("textarea", { id: id, rows: opts.rows || "3" }) : el("input", { id: id, type: "text", autocomplete: "off" });
     if (opts.short) input.className = "short";
-    input.addEventListener("input", function () { state.answers[name] = input.value; grow(input); changed(); });
+    input.addEventListener("input", function () { put(name, input.value); grow(input); changed(); });
     controls[name] = { set: function (v) { v = v == null ? "" : String(v); if (input.value !== v) input.value = v; grow(input); } };
     // every free-text box gets the mic (Matt 2026-10-20); "talk" lines also show the full how-to
     return el("div", { cls: "line" + (opts.multi || opts.wide || !opts.short ? " wide" : "") },
@@ -621,7 +687,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     options.forEach(function (o) {
       var b = el("button", { type: "button", cls: "tap", value: o, "aria-pressed": "false", text: o });
       b.addEventListener("click", function () {
-        state.answers[name] = state.answers[name] === o ? "" : o;     // tap again to clear
+        put(name, state.answers[name] === o ? "" : o);     // tap again to clear
         paint(state.answers[name]); changed();
       });
       btns.push(b); box.appendChild(b);
@@ -643,11 +709,12 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     return el("div", { cls: "line wide" }, [el("span", { cls: "lbl", text: label }), box]);
   }
   function grid() { return (D.grid_comps && D.grid_comps.length) ? D.grid_comps : [1, 2, 3]; }   // comp numbers on the grid
-  function unrated(n, what) {      // a comp's rating is open while neither its prefill nor its comp record has it
+  function unrated(n, what) {      // a comp's rating is open while neither its prefill nor its comp record has it (open self-service: always)
     var c = (D.comps || [])[n - 1] || {};
-    return blank("comp" + n + "_" + what) && !c[what];
+    return blank("comp" + n + "_" + what) && (valueLast() || !c[what]);
   }
   function comps(line) {
+    if (gridFacts()) return [];      // rated in the grid (Chase 2026-10-20)
     return grid().filter(function (n) { return unrated(n, "quality") || unrated(n, "condition"); }).map(function (n) {
       var c = (D.comps || [])[n - 1] || {}, rows = [el("div", { cls: "id" }, [el("span", { cls: "n", text: String(n) }), c.address || c.id || "Comp " + n])];
       ["quality", "condition"].forEach(function (what) {
@@ -656,6 +723,216 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       });
       return el("div", { cls: "comp" }, rows);
     });
+  }
+  // The mini grid (Chase Elmore 2026-10-20: "sideways ... like TOTAL"): Subject and each comp in his order, every line
+  // his rate times the difference, live as he types. The facts ride in the order data (subject, and each comp's record
+  // in comps); the grid saves nothing, so his rates and ratings stay ordinary answers. A line no property has stays off.
+  function num(v) {                // the first number, sign kept: "-$5,000", "45/sf", "5k", "0.5%"; "none", "n/a" or "no adjustment" is 0; text naming a comp, or with no number, is not figured
+    var t = String(v == null ? "" : v).replace(/,/g, "").replace(/[\u2212\u2013\u2014]/g, "-"), m;
+    if (/comp/i.test(t)) return null;
+    if (/^\s*(none|no|n\/?a|nil|zero)\b/i.test(t)) return 0;
+    m = t.match(/(-?)\$?\s*(\d*\.?\d+)\s*(k\b)?/i);
+    return m ? (m[1] ? -1 : 1) * parseFloat(m[2]) * (m[3] ? 1000 : 1) : null;
+  }
+  // Other lines (Matt 2026-10-20): a part is on the grid only when it is one comp list, one signed dollar amount and, before
+  // the amount, a known label or none, nothing else: "comp 1 location -10,000", "Location -10,000 (comps 1, 5) and -20,000
+  // (comps 2, 3)". A concession counts only while his concessions answer says adjust, and that answer wants each
+  // concession named, or "no concessions". Anything else leaves the comps it names, or every comp when it can't say
+  // which, "+ lines not in the grid".
+  var LIST = /\bcomps?\s*#?\s*(\d+(?:(?:\s*-\s*(?=\d{1,2}\b)|\s*(?:to|through|thru)\s*)\d+)?(?:\s*(?:,|&|and)\s*#?\s*\d+(?:(?:\s*-\s*(?=\d{1,2}\b)|\s*(?:to|through|thru)\s*)\d+)?)*)/gi;
+  var PUNCT = /[\s():.,#]/g, TAG = /^((superior|inferior) )?(location|view|site view|design|style|lot|adu|guest (house|quarters)|fireplaces?|storage|storage (buildings?|sheds?)|sheds?|(work)?shop|barns?|outbuildings?|porch(es)?|patio|deck|fenc(e|ing)|window units?|central air|hvac|heating|cooling|energy|solar|built ins?|functional utility|kitchen|updates?|remodel|concessions?|(seller|sales) (concessions?|credits?)|credits?)$/i;   // the labels the grid knows
+  var CONC = /concession|credit|seller[\s-]*(paid|contribution|assist\w*)|closing[\s-]*costs?|buy[\s-]*downs?|assistance|incentive|allowance|prepaid/i;
+  var NOCONC = /^\s*(no( other)? (seller )?(concessions?|credits?)|(concessions?|credits?)\s*:?\s*(none|0|n\/?a))\s*\.?\s*$/i;
+  function tag(t) { return t.replace(PUNCT, " ").replace(/[\s-]+/g, " ").trim().toLowerCase(); }
+  function others() {
+    var o = { by: {}, gross: {}, part: {}, all: false }, adjust = /^adjust/i.test(String(ans("concessions") || "")), told = false;
+    String(ans("rate_other") || "").replace(/[−–—]/g, "-").replace(/(\d),(?=\d{3}\b)/g, "$1").split(/[;\n]+/).forEach(function (t) {
+      if (NOCONC.test(t)) { told = true; return; }
+      var zero = /^([^\d$]*?)\$?0+(\.0+)?[\s.]*$/.exec(t), z = zero && tag(zero[1]);
+      if (!t.trim() || /^\s*(none|no|n\/?a|nil|zero|no( other)? adjustments?)\s*\.?\s*$/i.test(t) || zero && (!z || TAG.test(z))) return;   // a zero
+      var conc = CONC.test(t), lists = [], pairs = [], s = t.replace(LIST, function (m, list) {
+        var ns = [], ok = true;
+        list.split(/\s*(?:,|&|and)\s*/i).forEach(function (p) {
+          var r = /(\d+)(?:\D+(\d+))?/.exec(p), lo = +r[1], hi = r[2] ? +r[2] : lo;
+          if (hi < lo || hi - lo > 20) ok = false; else for (var n = lo; n <= hi; n++) if (ns.indexOf(n) < 0) ns.push(n);
+        });
+        lists.push({ ns: ns, ok: ok }); return " §" + (lists.length - 1) + " ";
+      });
+      told = told || conc;
+      var parts = s.split(/\band\b|[,&]/i).filter(function (x) { return x.replace(PUNCT, ""); });   // a stray "?" is a part too
+      var plain = lists.length && lists.every(function (l) { return l.ok; }) && (adjust || !conc) && !/(\band|&)[\s():.,#]*$/i.test(s) && parts.every(function (x) {
+        var m = /^(.*?)\$?\s*([-+])\s*\$?\s*(\d*\.?\d+)(k\b)?(.*)$/i.exec(x), ls = x.match(/§\d+/g) || [];
+        if (!m || ls.length !== 1 || !/^[\s():.,#]*(each[\s():.,#]*)?(§\d+[\s():.,#]*)?$/i.test(m[5])) return false;   // nothing after the amount
+        var l = m[1].replace(/§\d+/, " ");
+        if (/(?:^|[^a-z])[+-]|[+-](?![a-z])/i.test(l) || (l = tag(l)) && !TAG.test(l)) return false;   // a hyphen only inside a word ("built-ins")
+        pairs.push([lists[+ls[0].slice(1)].ns, (m[2] === "-" ? -1 : 1) * parseFloat(m[3]) * (m[4] ? 1000 : 1)]); return true;
+      });
+      if (!plain) {
+        lists.forEach(function (l) { l.ns.forEach(function (n) { o.part[n] = true; }); });
+        if (!lists.length || lists.some(function (l) { return !l.ok; }) || parts.some(function (x) { return x.indexOf("§") < 0; })) o.all = true;
+        return;
+      }
+      pairs.forEach(function (pr) { pr[0].forEach(function (n) { o.by[n] = (o.by[n] || 0) + pr[1]; o.gross[n] = (o.gross[n] || 0) + Math.abs(pr[1]); }); });
+    });
+    if (adjust && !told) o.all = true;   // concessions to adjust, and none named
+    return o;
+  }
+  var SF = ["sf", "sq", "sqft", "ft", "foot", "feet"], AC = ["ac", "acre", "acres"];
+  function per(t, unit) { return (String(t).toLowerCase().match(/[a-z]+/g) || []).some(function (w) { return unit.indexOf(w) >= 0; }); }   // by word: "after" is not "ft"
+  function ans(k) { var q = state.answers["q_" + k]; return q != null && String(q).trim() ? q : state.answers[k]; }   // an END answer (q_<key>) replaces its line
+  function fig(v) { return typeof v === "number" && isFinite(v); }
+  function money(v) { return "$" + Math.round(v).toLocaleString("en-US"); }
+  function signed(v) { v = Math.round(v); return (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toLocaleString("en-US"); }
+  function pct(v, p) { v = v / p * 100; return (v < 0 ? "−" : "") + Math.abs(v).toFixed(1) + "%"; }
+  function picked(n, what) {        // his answer under either key, a saved blank too; else the record's
+    var k = "comp" + n + "_" + what, v = ans(k);
+    return v != null && String(v).trim() || k in state.answers || "q_" + k in state.answers ? (v == null ? "" : v) : ((D.comps || [])[n - 1] || {})[what] || "";
+  }
+  function rating(n, what) { var v = picked(n, what); return v === "Same" ? ans("subject_" + what) || "Same" : v; }
+  function grade(v) { var m = /^[QC]([1-6])$/.exec(v || ""); return m ? +m[1] : null; }
+  // An amount is null while a rate or fact it needs is missing (a ?); an explicit 0 rate, or no difference, is 0.
+  function rate(key, s, c) { var r = num(ans(key)); return r === 0 || fig(s) && s === c ? 0 : r == null || !fig(s) || !fig(c) ? null : r * (s - c); }   // more is better
+  function step(what, x) {         // a rating step: $ flat, $ per sq ft of the comp ("/sf") or % of its price
+    var t = String(ans("rate_" + what) || ""), r = num(t), was = rating(x.n, what), s = grade(ans("subject_" + what)), c = grade(was);
+    if (r === 0 || was === "Same" || s != null && s === c) return 0;
+    if (r == null || s == null || c == null) return null;
+    if (/%/.test(t)) r = r / 100 * x.c.price; else if (per(t, SF)) r = fig(x.c.gla) ? r * x.c.gla : null;
+    return r == null ? null : r * (c - s);
+  }
+  function his(g, t, x) {          // a ? he clears himself (a rate, or a rating); any other ? is a fact we fill in
+    return num(t) == null || !!g.pick && (grade(ans("subject_" + g.pick)) == null || grade(rating(x.n, g.pick)) == null);
+  }
+  function site(f, x) {            // the order's unit (subject.site_unit "ac", or square feet); a rate in the other unit converts
+    var t = String(ans("rate_site") || ""), r = num(t), acres = f.s.site_unit === "ac";
+    if (r === 0 || fig(f.s.site) && f.s.site === x.c.site) return 0;
+    if (r == null || !fig(f.s.site) || !fig(x.c.site)) return null;
+    if (!acres && per(t, AC)) r = r / 43560; else if (acres && per(t, SF)) r = r * 43560;
+    return r * (f.s.site - x.c.site);
+  }
+  function time(f, x) {            // % per month from the contract date to the effective date; an active listing has none, so 0
+    var r = num(ans("time_adjustment")), m = (Date.parse(f.s.effective) - Date.parse(x.c.contract)) / 864e5 / 30.4375;
+    return r === 0 || !x.c.contract && /^active/i.test(x.c.status || "") ? 0 : r == null || !isFinite(m) || !fig(x.c.price) ? null : x.c.price * r / 100 * m;
+  }
+  function day(iso) { var d = new Date(iso + "T12:00:00"); return isNaN(d) ? "" : d.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "2-digit" }); }
+  function people(f) { return [f.s].concat(f.list.map(function (x) { return x.c; })); }
+  function any(k) { return function (f) { return people(f).some(function (p) { return fig(p[k]); }); }; }
+  function some(k) { return function (f) { return people(f).some(function (p) { return p[k] > 0; }); }; }
+  function count(k) { return function (p) { return fig(p[k]) ? p[k].toLocaleString("en-US") : ""; }; }
+  var GRID = [   // TOTAL's order; key: the rate it needs; show: the line is on when a property has the fact; adj: the comp's amount, or null; gross: its parts' size
+    { label: "Price", fact: function (p, subject) { return subject || !fig(p.price) ? "" : money(p.price); },
+      sub: function (p) { return p.status && !/^(sold|closed|settled)/i.test(p.status) ? p.status : ""; } },
+    { label: "Contract", key: "time_adjustment", show: function (f) { return !!f.s.effective && f.list.some(function (x) { return x.c.contract; }); },
+      fact: function (p, subject) { return subject ? "" : day(p.contract); }, adj: time },
+    { label: "Site", key: "rate_site", show: any("site"), fact: function (p) { return fig(p.site) ? p.site.toLocaleString("en-US") + ((D.subject || {}).site_unit === "ac" ? " ac" : " sf") : ""; }, adj: site },
+    { label: "Year built", key: "rate_age", show: any("year_built"), fact: function (p) { return fig(p.year_built) ? String(p.year_built) : ""; },
+      adj: function (f, x) { return rate("rate_age", f.s.year_built, x.c.year_built); } },
+    { label: "Quality", key: "rate_quality", pick: "quality", fact: function (p, subject, n) { return subject ? ans("subject_quality") || "" : rating(n, "quality"); }, adj: function (f, x) { return step("quality", x); } },
+    { label: "Condition", key: "rate_condition", pick: "condition", fact: function (p, subject, n) { return subject ? ans("subject_condition") || "" : rating(n, "condition"); }, adj: function (f, x) { return step("condition", x); } },
+    { label: "Living area", key: "rate_gla", show: any("gla"), fact: count("gla"), adj: function (f, x) { return rate("rate_gla", f.s.gla, x.c.gla); } },
+    { label: "Full baths", key: "rate_full_bath", show: any("full_baths"), fact: count("full_baths"), adj: function (f, x) { return rate("rate_full_bath", f.s.full_baths, x.c.full_baths); } },
+    { label: "Half baths", key: "rate_half_bath", show: some("half_baths"), fact: count("half_baths"), adj: function (f, x) { return rate("rate_half_bath", f.s.half_baths, x.c.half_baths); } },
+    { label: "Basement", key: "rate_basement", show: some("basement"), fact: count("basement"), adj: function (f, x) { return rate("rate_basement", f.s.basement, x.c.basement); } },
+    { label: "Garage", key: "rate_garage", show: any("garage"), fact: count("garage"), adj: function (f, x) { return rate("rate_garage", f.s.garage, x.c.garage); } },
+    { label: "Carport", key: "rate_carport", show: any("carport"), fact: count("carport"), adj: function (f, x) { return rate("rate_carport", f.s.carport, x.c.carport); } },
+    { label: "Pool", key: "rate_pool", show: some("pool"), fact: function (p) { return fig(p.pool) ? (p.pool ? "Yes" : "No") : ""; }, adj: function (f, x) { return rate("rate_pool", f.s.pool, x.c.pool); } },
+    { label: "Other", key: "rate_other", fact: function () { return ""; }, adj: function (f, x) { return others().by[x.n] || 0; }, gross: function (f, x) { return others().gross[x.n] || 0; } }
+  ];
+  function gridFacts() {           // open self-service forms only (FHA and the rest keep their ratings list); no prices, no grid
+    if (!valueLast()) return null;
+    var list = grid().map(function (n) { return { n: n, c: (D.comps || [])[n - 1] || {} }; });
+    return list.some(function (x) { return fig(x.c.price); }) ? { s: D.subject || {}, list: list } : null;
+  }
+  var gridView = null, gridLeft = 0;
+  function gridLines() {
+    var f = gridFacts(); gridView = null;
+    if (!f) return [];
+    var lines = GRID.filter(function (g) { return !g.show || g.show(f); }), body = el("tbody"), head = el("tr", null, [el("th", { cls: "row", scope: "col" }),
+      el("th", { scope: "col" }, [el("span", { cls: "who", text: "Subject" }), el("span", { cls: "addr", text: f.s.address || "" })])]);
+    f.list.forEach(function (x) { head.appendChild(el("th", { scope: "col" }, [el("span", { cls: "n", text: String(x.n) }), el("span", { cls: "addr", text: x.c.address || String(x.c.id || "").split(" · ").pop() || "Comp " + x.n })])); });
+    function row(label, cls, what) {
+      var cells = [], mark = el("span", { cls: "a miss" }), tr = body.appendChild(el("tr", cls ? { cls: cls } : null, [el("th", { cls: "row", scope: "row" }, [label, mark])]));
+      [null].concat(f.list).forEach(function (x) {
+        var host = tr.appendChild(el("td"));
+        if (x && what) {    // his call: a tap opens its choices; a rating in the comp's record or the prefill is only his default
+          host = host.appendChild(el("button", { type: "button", cls: "pick", "aria-label": "Comp " + x.n + " " + what }));
+          host.addEventListener("click", function () { pickRating(x, what, this); });
+        }
+        cells.push([host.appendChild(el("span", { cls: "f" })), host.appendChild(el("span", { cls: "a" }))]);
+      });
+      cells.mark = mark;
+      return cells;
+    }
+    gridView = { f: f, lines: lines.map(function (g) { return { g: g, cells: row(g.label, "", g.pick) }; }),
+      off: GRID.filter(function (g) { return g.adj && lines.indexOf(g) < 0; }), net: row("Net", "total"), gross: row("Gross", "total"), adjusted: row("Adjusted", "total adjusted") };
+    var box = el("div", { cls: "gridbox" }, [el("table", { cls: "grid num" }, [el("thead", null, [head]), body])]);
+    box.addEventListener("scroll", function () { gridLeft = box.scrollLeft; }, { passive: true });
+    gridView.box = box;
+    var gla = lineFor("rate_gla");
+    return [gla && isOpen(gla) ? text(gla.key, gla.label, { short: true }) : null, box, el("p", { cls: "grid-range", "data-range": "" })].filter(Boolean);
+  }
+  function lineFor(key) { var hit = null; CHECKLIST.sections.forEach(function (sec) { sec.lines.forEach(function (l) { if (l.key === key || l.kind === key) hit = l; }); }); return hit; }
+  var picking = null;
+  function pickRating(x, what, cell) {   // the comp's choices for that rating; tap again to clear, as on every tap line
+    var name = "comp" + x.n + "_" + what, box = $("pick-taps");
+    if (String(state.answers["q_" + name] || "").trim()) name = "q_" + name;   // his END answer is the one shown (ans); put() moves both
+    $("pick-title").textContent = "Comp " + x.n + " " + what + ": " + (x.c.address || String(x.c.id || "").split(" · ").pop());
+    box.textContent = "";
+    lineFor("comps")[what].forEach(function (o) {
+      var b = box.appendChild(el("button", { type: "button", cls: "tap", "aria-pressed": String(picked(x.n, what) === o), text: o }));
+      b.addEventListener("click", function () { put(name, state.answers[name] === o ? "" : o); if (controls[name]) controls[name].set(state.answers[name]); closePick(); changed(); });
+    });
+    picking = cell; $("pick").hidden = false; document.querySelector(".wrap").inert = true;
+    (box.querySelector('[aria-pressed="true"]') || box.firstChild).focus();
+  }
+  function closePick() {
+    if ($("pick").hidden) return;
+    $("pick").hidden = true; document.querySelector(".wrap").inert = false;
+    if (picking && picking.isConnected) picking.focus({ preventScroll: true });
+    picking = null;
+  }
+  function paintGrid() {           // every amount from his answers now; the scroller keeps its place across a redraw
+    var v = gridView, ranges = document.querySelectorAll("[data-range]");
+    if (!v || !v.box.isConnected) { ranges.forEach(function (p) { p.hidden = true; }); return; }
+    var f = v.f, totals = f.list.map(function () { return { net: 0, gross: 0, miss: 0, his: 0 }; });
+    v.off.forEach(function (g) {          // a line off the grid for want of facts still counts once it has a rate (Astra 2026-10-20)
+      var t = String(ans(g.key) || "").trim();
+      if (t && num(t) !== 0) f.list.forEach(function (x, i) { var a = g.adj(f, x); if (fig(a)) { totals[i].net += a; totals[i].gross += Math.abs(a); } else totals[i].miss++; });
+    });
+    v.lines.forEach(function (line) {
+      var t = String(ans(line.g.key) || "").trim(), unknown = false;
+      [f.s].concat(f.list.map(function (x) { return x.c; })).forEach(function (p, i) {
+        var x = f.list[i - 1], a = i && line.g.adj ? line.g.adj(f, x) : null, miss = !!i && !!line.g.adj && !fig(a);
+        line.cells[i][0].textContent = line.g.fact(p, !i, x && x.n);
+        line.cells[i][1].textContent = line.g.sub ? line.g.sub(p) : miss ? "?" : fig(a) && Math.round(a) ? signed(a) : "";
+        line.cells[i][1].classList.toggle("muted", !!line.g.sub);
+        line.cells[i][1].classList.toggle("miss", miss);
+        if (miss) { totals[i - 1].miss++; if (his(line.g, t, x)) totals[i - 1].his++; unknown = true; }
+        if (fig(a)) { totals[i - 1].net += a; totals[i - 1].gross += line.g.gross ? line.g.gross(f, x) : Math.abs(a); }
+      });
+      line.cells.mark.textContent = !unknown ? "" : !t ? "no rate" : num(t) == null ? "not figured" : "";
+    });
+    var sales = [], pend = [], open = [], ours = [], partial = [], o = others();
+    f.list.forEach(function (x, i) {      // a column with a ? shows no totals and stays out of the range until complete
+      var t = totals[i], p = x.c.price, priced = fig(p) && p > 0, done = priced && !t.miss;
+      t.part = done && (o.all || !!o.part[x.n]);   // an Other line the grid can't figure: his adjusted price is partial
+      v.adjusted[i + 1][1].textContent = t.part ? "+ lines not in the grid" : ""; v.adjusted[i + 1][1].classList.toggle("miss", t.part);
+      if (t.part) partial.push(x.n);
+      [v.net, v.gross, v.adjusted].forEach(function (r) { r[i + 1][0].classList.toggle("miss", priced && !done); });
+      v.net[i + 1][0].textContent = done ? signed(t.net) : priced ? "?" : ""; v.net[i + 1][1].textContent = done ? pct(t.net, p) : "";
+      v.gross[i + 1][0].textContent = done ? Math.round(t.gross).toLocaleString("en-US") : priced ? "?" : ""; v.gross[i + 1][1].textContent = done ? pct(t.gross, p) : "";
+      v.adjusted[i + 1][0].textContent = done ? money(p + t.net) : priced ? "?" : "";
+      t.price = done ? p + t.net : null;
+      if (done) (/^(sold|closed|settled)/i.test(x.c.status || "Sold") ? sales : pend).push(t.price); else if (priced) (t.his ? open : ours).push(x.n);
+    });
+    function span(a) { var lo = Math.min.apply(null, a), hi = Math.max.apply(null, a); return money(lo) + (hi > lo ? " to " + money(hi) : ""); }
+    var most = f.list.map(function (x, i) { return String(x.n) === String(ans("most_weight")) ? totals[i] : null; }).filter(function (t) { return t && fig(t.price); })[0];
+    var out = [open.length && "comp " + open.join(", ") + " (fill in the lines marked ?)", ours.length && "comp " + ours.join(", ") + " (a fact we're missing; we'll fill this in)"].filter(Boolean);
+    var said = (sales.length || pend.length ? "Adjusted range: " + (sales.length ? span(sales) : "") + (pend.length ? (sales.length ? "; " : "") + (f.list.some(function (x) { return /^active/i.test(x.c.status || ""); }) ? "listings and pendings " : "pendings ") + span(pend) : "") + "." : "") +
+      (!out.length ? "" : (sales.length || pend.length ? " Not yet in it: " : "No adjusted range yet: ") + out.join("; ") + ".") +
+      (partial.length ? " Comp " + partial.join(", ") + ": + lines not in the grid." : "") +
+      (most ? " Comp " + ans("most_weight") + ", your most weight: " + money(most.price) + (most.part ? " + lines not in the grid" : "") + "." : "");
+    ranges.forEach(function (p) { p.textContent = said; p.hidden = !said; });
+    if (!v.placed) setTimeout(function () { v.placed = true; v.box.scrollLeft = gridLeft; }, 0);   // once shown (setStage)
   }
   // Matt 2026-10-15: once the report is delivered, a question he answered before the delivery leaves the form and his
   // answer shows under History, read only; one still blank, or asked after the delivery, stays a question.
@@ -693,17 +970,21 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function startOptions() { return laneOptions(F).length > 1 || stage === "open" && (D.house_prompts || {}).start_options === true; }
   function permissionQuestion() { return (D.house_prompts || {}).lane === "review" || permitsOff() || !CHECKLIST.client_permits ? [] : [CHECKLIST.client_permits]; }
   var highlighted = [];
-  function questions() {           // asked after the run: a box or buttons under each question
+  // Chase 2026-10-20: the value comes last on a self-service form, after his grid; elsewhere the questions stay together.
+  var VALUE = ["value", "value_confirm", "value_why", "value_recheck", "exposure"];   // end-questions.json's value set
+  function valueLast() { return (D.house_prompts || {}).lane === "self-service" && (D.stage || "open") === "open"; }
+  function questions(last) {       // asked after the run: a box or buttons under each question; last: the value set only
     var settled = D.stage === "returned" && (D.house_prompts || {}).lane !== "review" && !!D.delivered_at && !(Date.parse(askedAt(D)) > Date.parse(D.delivered_at));
     var items = (D.questions || []).filter(function (q) { return q.id !== "client_permits"; });
     return (startOptions() ? items.concat(permissionQuestion()) : permissionQuestion().concat(items)).filter(function (q) { return q.kind !== "confirm" && (D.stage !== "returned" || (D.house_prompts || {}).lane === "review" || q.material !== false); }).filter(function (q) {
       var v = state.answers["q_" + q.id];
       if ((q.id === "client_permits" || settled) && v != null && String(v).trim()) { filed.push(q); return false; }
-      return true;
+      return !valueLast() || (VALUE.indexOf(q.id) >= 0) === last;
     }).map(function (q) {   // a confirm lives in the status block
       var name = "q_" + q.id, row = q.kind === "choice" ? el("div", { cls: "line wide" }, [el("span", { cls: "lbl", text: q.text }), taps(name, q.text, q.choices || [])])
         : q.short ? text(name, q.text, { short: true }) : text(name, q.text, { multi: true, rows: "1" });
       if (startOptions() && q.id === "service_option") { row.classList.add("service-option"); row.querySelector(".lbl").hidden = true; }
+      if (last && q.id === "value" && gridFacts()) row.insertBefore(el("p", { cls: "grid-range", "data-range": "" }), row.children[1]);   // his range beside his value
       if (needs(q.required) || (D.house_prompts || {}).lane === "self-service") musts.push({ key: name, node: row });
       if (q.highlight === true) { highlighted.push(row); return null; }
       return row;
@@ -740,7 +1021,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     fit();
     return [el("div", { cls: "changes" }, rows.concat([more]))];
   }
-  function blank(k) { var v = (D.prefill || {})[k]; return v == null || v === "" || v === false; }
+  // On an open self-service form the prefill closes only his inspection facts; every call stays open, its prefill his default.
+  var FACT = /^(inspected_by|helper|il_amc_fee|updates)$/;
+  function blank(k) { var v = (D.prefill || {})[k]; return v == null || v === "" || v === false || valueLast() && !FACT.test(k); }
   function isOpen(line) {          // an "open" line shows only while their own data leaves it blank
     if (!line.open) return true;
     if (line.kind === "comps") return grid().some(function (n) { return unrated(n, "quality") || unrated(n, "condition"); });
@@ -760,9 +1043,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
         var href = line.href && typeof line.href === "object" ? line.href[lane] : line.href;
         return [check(line.key, lbl, null, href)];
       }
-      case "text": return [text(line.key, line.label, { short: line.short, wide: line.wide })];
+      case "text": return line.key === "rate_gla" && gridFacts() || /^rate_(carport|pool)$/.test(line.key) && hp.lane !== "self-service" ? []   // it sits in the grid; carport and pool are self-service rates
+        : [text(line.key, line.label, { short: line.short, wide: line.wide })];
       case "multi": return [text(line.key, line.label, { multi: true, talk: line.talk })];
       case "choice": {
+        if (line.key === "most_weight" && valueLast() !== !!line.last) return [];   // self-service weighs his comps with the value
         var opts = line.options === "comps" ? grid().map(String) : line.options;
         return [choice(line.key, line.label, opts)];
       }
@@ -773,7 +1058,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       }
       case "checks": return [checks(line.label, line.items)];
       case "comps": return comps(line);
-      case "questions": return questions();
+      case "questions": return questions(false);
+      case "value": return valueLast() ? render(Object.assign({ last: true }, lineFor("most_weight"))).concat(questions(true)) : [];
+      case "grid": return gridLines();
       case "changes": return D.stage === "returned" && (hp.lane !== "review") ? [] : changes(line.count || NCHANGES);
     }
     return [];
@@ -880,7 +1167,14 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (D.review && D.review.pdf === D.report_pdf) box.appendChild(el("p", { cls: "note", "data-review-version": D.review.id,
       text: "Review version " + D.review.id.slice(0, 8) }));
   }
-  function paintAll() { Object.keys(controls).forEach(function (k) { controls[k].set(state.answers[k]); }); }
+  function paintAll() {
+    if (valueLast()) Object.keys(controls).forEach(function (k) {   // one answer per call: a START box shows its END answer, an END box left blank its START one
+      var a = state.answers, q = "q_" + k;
+      if (k.indexOf("q_") === 0 || !(q in a || controls[q])) return;
+      if (String(a[q] == null ? "" : a[q]).trim()) a[k] = a[q]; else if (controls[q] && String(a[k] == null ? "" : a[k]).trim()) a[q] = a[k];
+    });
+    Object.keys(controls).forEach(function (k) { controls[k].set(state.answers[k]); }); paintGrid();
+  }
 
   // ---------- status ----------
   var statusBtns = [], agreeQ = null;   // agreeQ: the review view's value to agree ("confirm" question)
@@ -1028,7 +1322,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     $("pop-why").textContent = ""; $("pop-why").appendChild(rich(text)); popKind = kind; p.hidden = false; wrap.inert = true; $("pop-ok").focus();
   }
   $("pop-ok").addEventListener("click", function () { pop(false); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") pop(false); });
+  $("pick").addEventListener("click", function (e) { if (e.target === this) closePick(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { pop(false); closePick(); } });
   // The status, read only, sits just above its buttons; Ready carries how many required answers are left (Matt
   // 2026-10-13: a READY tapped at the top sent nine post-run questions blank).
   function paintNow() {
@@ -1380,7 +1675,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     conn(approved ? "Approved" : "Connected");
     if (approved) { clearTimeout(timer); timer = null; tapped = null; savedEdits = edits; pop(false); }
     if (edits === savedEdits) {      // saved answers win over the prefill; never over unsent typing
-      if (saved.answers && typeof saved.answers === "object") state.answers = Object.assign({}, D.prefill || {}, saved.answers);
+      var mine = saved.answers && typeof saved.answers === "object" ? saved.answers : savedAt ? null : {};   // nothing saved yet: the desk's latest defaults
+      if (mine) state.answers = answersFrom(mine);
       if (Array.isArray(saved.changes)) { state.changes = saved.changes.slice(0, NCHANGES); while (state.changes.length < NCHANGES) state.changes.push(""); }
       if (controls.q_client_permits && saved.answers && saved.answers.q_client_permits) refresh(F);
       if (laneOptions(F).length && laneForm(F, state.answers).selected_lane !== D.selected_lane) refresh(F);   // only a different saved lane re-renders
@@ -1391,7 +1687,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
+  function newer(f) { return f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
   function canon(v) { return JSON.stringify(v, function (k, x) { return x && typeof x === "object" && !Array.isArray(x) ? Object.keys(x).sort().reduce(function (o, j) { o[j] = x[j]; return o; }, {}) : x; }); }   // key order is never a change
   // A re-render keeps the reader's place (Chase 2026-10-20): the scroll, then the box or button in focus and its
   // selection; with nothing in focus it takes none.
@@ -1410,19 +1706,31 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     best.n.focus({ preventScroll: true });
     if (p.sel && typeof best.n.selectionStart === "number") try { best.n.setSelectionRange(p.sel[0], p.sel[1], p.sel[2]); } catch (e) {}
   }
+  // Matt 2026-10-20: our calls (our_calls) open as his defaults on a self-service form, every one editable; what he leaves
+  // goes out as his. They and the prefill sit beneath anything he saved for the same call, under either key (Astra 2026-10-20).
+  function answersFrom(mine) {
+    var self = (D.house_prompts || {}).lane === "self-service", low = Object.assign({}, D.prefill || {}, self && D.our_calls || {});
+    if (valueLast()) (D.comps || []).forEach(function (c, i) {   // a rating in a comp's record is his default too, beneath the rest
+      ["quality", "condition"].forEach(function (w) { var k = "comp" + (i + 1) + "_" + w; if (c[w] && !(k in low)) low[k] = c[w]; });
+    });
+    if (self) Object.keys(low).forEach(function (k) { if (mine && twin(k) in mine) delete low[k]; });
+    return Object.assign(low, mine || {});
+  }
   function refresh(f) {
     var at = keepPlace();
     F = f; D = laneForm(F, state.answers); O = D.order || {}; controls = {}; $("sections").innerHTML = "";
-    renderOrder(); renderSections(); renderLanes(); paintAll(); setStage(D.stage); document.querySelectorAll("textarea").forEach(grow);
+    renderOrder(); renderSections(); renderLanes(); paintAll(); setStage(D.stage); regrow();
     if (state.status === "READY" && stage === "open") banner(readyNote(), "ok");
     restorePlace(at);
   }
   function boot(form, saved) {
     D = form || {}; O = D.order || {};
     // His saved answers are in before the lines are drawn: a delivered form files the ones he answered under History.
-    state = { status: D.status || "DRAFT", answers: Object.assign({}, D.prefill || {}, saved && saved.answers && typeof saved.answers === "object" ? saved.answers : null), changes: (D.changes || []).slice(), history: [] };
+    var mine = saved && saved.answers && typeof saved.answers === "object" ? saved.answers : null;
+    state = { status: D.status || "DRAFT", answers: Object.assign({}, D.prefill || {}, mine), changes: (D.changes || []).slice(), history: [] };
     while (state.changes.length < NCHANGES) state.changes.push("");
     F = form || {}; D = laneForm(F, state.answers); O = D.order || {};
+    state.answers = answersFrom(mine);
     renderOrder();
     renderSections();
     renderLanes();
@@ -1431,7 +1739,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     setStage(D.stage);
     if (saved) apply(saved);
     $("gate").hidden = true; $("main").hidden = false;
-    document.querySelectorAll("textarea").forEach(grow);
+    regrow(); if (document.fonts) document.fonts.ready.then(regrow);   // again once Open Sans is in
     noteOpened();
   }
   // A draft still waiting on its pause in typing goes out when the page is closed or put away.
@@ -1458,7 +1766,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       polling = false;
       if (pendingTaps || readAt !== savedAt || edits !== savedEdits) return;
       var was = state.status;
-      if (r.form && newer(r.form)) { refresh(r.form); if (r.saved) apply(r.saved); }   // his cleared boxes too
+      if (r.form && newer(r.form)) { refresh(r.form); if (r.saved) apply(r.saved); else if (!savedAt) apply({}); }   // his cleared boxes too; never saved: our latest calls
       if (r.form && (r.form.stage || "open") !== stage) { D.stage = r.form.stage; setStage(r.form.stage); }
       if (r.saved && (r.saved.updatedAt !== savedAt || r.saved.status !== state.status || JSON.stringify(r.saved.post_changes || []) !== JSON.stringify(state.post_changes || []))) apply(r.saved);
       if (was === "READY" && state.status === "DRAFT") banner("Back to Draft: something is still needed.", "warn");
