@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-20.6.3">
+<html lang="en" data-build="v2026-10-21.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -195,6 +195,7 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 .st[data-s="DONE"]:disabled { background: var(--success); border-color: var(--success); color: #fff; }
 .st:not([data-s="READY"]):not([data-s="DONE"]):active:not(:hover), .tap:not([aria-pressed="true"]):active:not(:hover), .pdf-btn:active:not(:hover), .pay-btn:active:not(:hover) { border-color: var(--primary-active); }
 .line.need { box-shadow: inset 4px 0 0 var(--danger); padding-left: var(--s-3); } .line.need .lbl { color: var(--danger); }
+.rate.need, .pick.need { box-shadow: inset 0 0 0 2px var(--danger); }
 
 /* ---------- the status card: help, button, terms line and message, one even gap ---------- */
 .statusbox:not(.agree) { display: flex; flex-direction: column; gap: var(--s-4); }
@@ -636,10 +637,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // One answer per call (Astra 2026-10-20): on an open self-service form a START line and its END twin (q_<key>) move
   // together, wherever either shows; every other lane keeps each answer as saved.
   function twin(k) { return k.indexOf("q_") === 0 ? k.slice(2) : "q_" + k; }
+  var own = {};                     // keys he saved or touched: a lane switch keeps them (Astra 2026-10-21)
   function put(name, v) {
-    state.answers[name] = v;
+    state.answers[name] = v; own[name] = true;
     var t = twin(name);
-    if (valueLast() && (controls[t] || t in state.answers)) { state.answers[t] = v; if (controls[t]) controls[t].set(v); }
+    if (valueLast() && (controls[t] || t in state.answers)) { state.answers[t] = v; own[t] = true; if (controls[t]) controls[t].set(v); }
   }
   var ruler = document.createElement("canvas").getContext("2d");
   function grow(t) {               // a box grows to its text; a short one widens, and drops under its label past its room ("10/sf per step" on a phone)
@@ -664,7 +666,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // ---------- one line each (names match the PDF's fields) ----------
   function check(name, label, cls, href) {
     var input = el("input", { type: "checkbox" });
-    input.addEventListener("change", function () { state.answers[name] = input.checked; changed(); });
+    input.addEventListener("change", function () { state.answers[name] = input.checked; own[name] = true; changed(); });
     controls[name] = { set: function (v) { input.checked = !!v; } };
     var lbl = el("span", { cls: "lbl", text: label + (href ? " " : "") });
     if (href) lbl.appendChild(el("a", { href: href, target: "_blank", rel: "noopener", text: "Read the terms" }));
@@ -673,7 +675,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function text(name, label, opts) {
     opts = opts || {};
     var id = "f-" + name;
-    var input = opts.multi ? el("textarea", { id: id, rows: opts.rows || "3" }) : el("input", { id: id, type: "text", autocomplete: "off" });
+    var input = opts.multi ? el("textarea", { id: id, rows: opts.rows || "3", "data-call": name }) : el("input", { id: id, type: "text", autocomplete: "off", "data-call": name });
     if (opts.short) input.className = "short";
     input.addEventListener("input", function () { put(name, input.value); grow(input); changed(); });
     controls[name] = { set: function (v) { v = v == null ? "" : String(v); if (input.value !== v) input.value = v; grow(input); } };
@@ -682,7 +684,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       [el("label", { cls: "lbl", "for": id, text: label }), input, !opts.short && talkRow(input, !opts.talk)]);
   }
   function taps(name, label, options) {
-    var box = el("div", { cls: "taps", role: "group", "aria-label": label }), btns = [];
+    var box = el("div", { cls: "taps", role: "group", "aria-label": label, "data-call": name }), btns = [];
     function paint(v) { btns.forEach(function (b) { b.setAttribute("aria-pressed", String(b.value === v)); }); }
     options.forEach(function (o) {
       var b = el("button", { type: "button", cls: "tap", value: o, "aria-pressed": "false", text: o });
@@ -854,7 +856,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       [null].concat(f.list).forEach(function (x) {
         var host = tr.appendChild(el("td"));
         if (x && what) {    // his call: a tap opens its choices; a rating in the comp's record or the prefill is only his default
-          host = host.appendChild(el("button", { type: "button", cls: "pick", "aria-label": "Comp " + x.n + " " + what }));
+          host = host.appendChild(el("button", { type: "button", cls: "pick", "aria-label": "Comp " + x.n + " " + what, "data-call": "comp" + x.n + "_" + what }));
           host.addEventListener("click", function () { pickRating(x, what, this); });
         }
         cells.push([host.appendChild(el("span", { cls: "f" })), host.appendChild(el("span", { cls: "a" }))]);
@@ -960,6 +962,10 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       b.disabled = readOnly || pendingTaps > 0 || optionSent();
       b.addEventListener("click", function () {
         state.answers.q_service_option = option.id; nudged = false;
+        // That lane's defaults now, as on a reload: the old lane's untouched defaults go; what he saved or touched stays, blanks too.
+        var was = answersFrom({}), mine = {};
+        Object.keys(state.answers).forEach(function (k) { if (own[k] || !(k in was) || state.answers[k] !== was[k]) mine[k] = state.answers[k]; });
+        D = laneForm(F, state.answers); state.answers = answersFrom(mine);
         refresh(F); changed();
       });
       cards.appendChild(b);
@@ -985,7 +991,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
         : q.short ? text(name, q.text, { short: true }) : text(name, q.text, { multi: true, rows: "1" });
       if (startOptions() && q.id === "service_option") { row.classList.add("service-option"); row.querySelector(".lbl").hidden = true; }
       if (last && q.id === "value" && gridFacts()) row.insertBefore(el("p", { cls: "grid-range", "data-range": "" }), row.children[1]);   // his range beside his value
-      if (needs(q.required) || (D.house_prompts || {}).lane === "self-service") musts.push({ key: name, node: row });
+      if (needs(q.required) || (D.house_prompts || {}).lane === "self-service" && (!callsFirst() || q.material !== false)) musts.push({ key: name, node: row });   // calls first: the ship check's rule
       if (q.highlight === true) { highlighted.push(row); return null; }
       return row;
     }).filter(Boolean);
@@ -997,8 +1003,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function needs(r) { return r === true || (Array.isArray(r) && r.indexOf((D.house_prompts || {}).lane || "default") >= 0); }
   function missing() {             // required lines and questions on show and still empty
     return musts.filter(function (m) {
-      var v = state.answers[m.key], card = m.node.closest("section");
-      return m.node.isConnected && card && !card.hidden && !(v === true || typeof v === "number" || (typeof v === "string" && v.trim()));
+      var v = m.call ? ans(m.key) : state.answers[m.key], card = m.node.closest("section");   // a call counts under either key, as at launch
+      return m.node.isConnected && card && !card.hidden && (!m.when || m.when()) && !(v === true || typeof v === "number" || (typeof v === "string" && v.trim()));
     });
   }
   function changes(count) {         // one box to start; "Add another" opens the next, up to Code.gs's five
@@ -1087,6 +1093,23 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       if (sec.stage) { card.setAttribute("data-stage", sec.stage); card.hidden = true; }   // setStage shows it
       nodes.forEach(function (n) { card.appendChild(n); });
       host.appendChild(card);
+    });
+    callMusts(host);
+  }
+  // Matt 2026-10-21 (Chase Elmore): "after he picks self service lane immediately show him the your calls form for self
+  // service so we capture all his calls before launch". house_prompts.calls_first on a self-service form makes each call
+  // the ship check asks for (formlink.py selfservice_missing) required before Ready; launch waits for them too.
+  var CALL = /^(rate_\w+|subject_(quality|condition)|most_weight|premise|hbu_present_use|price_trend|supply|time_adjustment|concessions|prior_sale_ok|contract_ok|influence_effect|site_value|market_rent|search_net|condition_as_is|repairs|comp\d+_(quality|condition))$/;
+  function callsFirst() { return valueLast() && (D.house_prompts || {}).calls_first === true; }
+  function callMusts(host) {
+    if (!callsFirst()) return;
+    var homes = [D.subject || {}].concat(D.comps || []), premise = function () { return String(ans("premise") || ""); };
+    host.querySelectorAll("[data-call]").forEach(function (n) {
+      var k = n.getAttribute("data-call");
+      if (!CALL.test(k) || musts.some(function (m) { return m.key === k; })) return;
+      if (/^rate_(carport|pool)$/.test(k) && !homes.some(function (h) { return fig(h[k.slice(5)]) && h[k.slice(5)] > 0; })) return;   // only where a property has one
+      musts.push({ key: k, call: true, node: n.closest(".line, .rate") || n, when: k === "condition_as_is" ? function () { return /^Subject to/.test(premise()); }
+        : k === "repairs" ? function () { return /^Subject to (repair|completion)$/.test(premise()); } : null });
     });
   }
   function renderOrder() {
@@ -1676,7 +1699,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (approved) { clearTimeout(timer); timer = null; tapped = null; savedEdits = edits; pop(false); }
     if (edits === savedEdits) {      // saved answers win over the prefill; never over unsent typing
       var mine = saved.answers && typeof saved.answers === "object" ? saved.answers : savedAt ? null : {};   // nothing saved yet: the desk's latest defaults
-      if (mine) state.answers = answersFrom(mine);
+      if (mine) { state.answers = answersFrom(mine); Object.keys(mine).forEach(function (k) { own[k] = true; }); }
       if (Array.isArray(saved.changes)) { state.changes = saved.changes.slice(0, NCHANGES); while (state.changes.length < NCHANGES) state.changes.push(""); }
       if (controls.q_client_permits && saved.answers && saved.answers.q_client_permits) refresh(F);
       if (laneOptions(F).length && laneForm(F, state.answers).selected_lane !== D.selected_lane) refresh(F);   // only a different saved lane re-renders
@@ -1713,7 +1736,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (valueLast()) (D.comps || []).forEach(function (c, i) {   // a rating in a comp's record is his default too, beneath the rest
       ["quality", "condition"].forEach(function (w) { var k = "comp" + (i + 1) + "_" + w; if (c[w] && !(k in low)) low[k] = c[w]; });
     });
-    if (self) Object.keys(low).forEach(function (k) { if (mine && twin(k) in mine) delete low[k]; });
+    Object.keys(low).forEach(function (k) { if (mine && twin(k) in mine) delete low[k]; });   // every lane: a lane switch never revives a call he cleared
     return Object.assign(low, mine || {});
   }
   function refresh(f) {
@@ -1730,7 +1753,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     state = { status: D.status || "DRAFT", answers: Object.assign({}, D.prefill || {}, mine), changes: (D.changes || []).slice(), history: [] };
     while (state.changes.length < NCHANGES) state.changes.push("");
     F = form || {}; D = laneForm(F, state.answers); O = D.order || {};
-    state.answers = answersFrom(mine);
+    state.answers = answersFrom(mine); Object.keys(mine || {}).forEach(function (k) { own[k] = true; });
     renderOrder();
     renderSections();
     renderLanes();
