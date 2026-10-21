@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-20.6.3">
+<html lang="en" data-build="v2026-10-21.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -195,6 +195,7 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 .st[data-s="DONE"]:disabled { background: var(--success); border-color: var(--success); color: #fff; }
 .st:not([data-s="READY"]):not([data-s="DONE"]):active:not(:hover), .tap:not([aria-pressed="true"]):active:not(:hover), .pdf-btn:active:not(:hover), .pay-btn:active:not(:hover) { border-color: var(--primary-active); }
 .line.need { box-shadow: inset 4px 0 0 var(--danger); padding-left: var(--s-3); } .line.need .lbl { color: var(--danger); }
+.rate.need, .pick.need { box-shadow: inset 0 0 0 2px var(--danger); }
 
 /* ---------- the status card: help, button, terms line and message, one even gap ---------- */
 .statusbox:not(.agree) { display: flex; flex-direction: column; gap: var(--s-4); }
@@ -673,7 +674,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function text(name, label, opts) {
     opts = opts || {};
     var id = "f-" + name;
-    var input = opts.multi ? el("textarea", { id: id, rows: opts.rows || "3" }) : el("input", { id: id, type: "text", autocomplete: "off" });
+    var input = opts.multi ? el("textarea", { id: id, rows: opts.rows || "3", "data-call": name }) : el("input", { id: id, type: "text", autocomplete: "off", "data-call": name });
     if (opts.short) input.className = "short";
     input.addEventListener("input", function () { put(name, input.value); grow(input); changed(); });
     controls[name] = { set: function (v) { v = v == null ? "" : String(v); if (input.value !== v) input.value = v; grow(input); } };
@@ -682,7 +683,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       [el("label", { cls: "lbl", "for": id, text: label }), input, !opts.short && talkRow(input, !opts.talk)]);
   }
   function taps(name, label, options) {
-    var box = el("div", { cls: "taps", role: "group", "aria-label": label }), btns = [];
+    var box = el("div", { cls: "taps", role: "group", "aria-label": label, "data-call": name }), btns = [];
     function paint(v) { btns.forEach(function (b) { b.setAttribute("aria-pressed", String(b.value === v)); }); }
     options.forEach(function (o) {
       var b = el("button", { type: "button", cls: "tap", value: o, "aria-pressed": "false", text: o });
@@ -854,7 +855,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       [null].concat(f.list).forEach(function (x) {
         var host = tr.appendChild(el("td"));
         if (x && what) {    // his call: a tap opens its choices; a rating in the comp's record or the prefill is only his default
-          host = host.appendChild(el("button", { type: "button", cls: "pick", "aria-label": "Comp " + x.n + " " + what }));
+          host = host.appendChild(el("button", { type: "button", cls: "pick", "aria-label": "Comp " + x.n + " " + what, "data-call": "comp" + x.n + "_" + what }));
           host.addEventListener("click", function () { pickRating(x, what, this); });
         }
         cells.push([host.appendChild(el("span", { cls: "f" })), host.appendChild(el("span", { cls: "a" }))]);
@@ -960,6 +961,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       b.disabled = readOnly || pendingTaps > 0 || optionSent();
       b.addEventListener("click", function () {
         state.answers.q_service_option = option.id; nudged = false;
+        D = laneForm(F, state.answers); state.answers = answersFrom(state.answers);   // that lane's defaults now, as on a reload
         refresh(F); changed();
       });
       cards.appendChild(b);
@@ -998,7 +1000,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function missing() {             // required lines and questions on show and still empty
     return musts.filter(function (m) {
       var v = state.answers[m.key], card = m.node.closest("section");
-      return m.node.isConnected && card && !card.hidden && !(v === true || typeof v === "number" || (typeof v === "string" && v.trim()));
+      return m.node.isConnected && card && !card.hidden && (!m.when || m.when()) && !(v === true || typeof v === "number" || (typeof v === "string" && v.trim()));
     });
   }
   function changes(count) {         // one box to start; "Add another" opens the next, up to Code.gs's five
@@ -1087,6 +1089,22 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       if (sec.stage) { card.setAttribute("data-stage", sec.stage); card.hidden = true; }   // setStage shows it
       nodes.forEach(function (n) { card.appendChild(n); });
       host.appendChild(card);
+    });
+    callMusts(host);
+  }
+  // Matt 2026-10-21 (Chase Elmore): "after he picks self service lane immediately show him the your calls form for self
+  // service so we capture all his calls before launch". house_prompts.calls_first on a self-service form makes each call
+  // the ship check asks for (formlink.py selfservice_missing) required before Ready; launch waits for them too.
+  var CALL = /^(rate_\w+|subject_(quality|condition)|most_weight|premise|hbu_present_use|price_trend|supply|time_adjustment|concessions|prior_sale_ok|contract_ok|influence_effect|site_value|market_rent|search_net|condition_as_is|repairs|comp\d+_(quality|condition))$/;
+  function callMusts(host) {
+    if (!valueLast() || (D.house_prompts || {}).calls_first !== true) return;
+    var homes = [D.subject || {}].concat(D.comps || []), premise = function () { return String(ans("premise") || ""); };
+    host.querySelectorAll("[data-call]").forEach(function (n) {
+      var k = n.getAttribute("data-call");
+      if (!CALL.test(k) || musts.some(function (m) { return m.key === k; })) return;
+      if (/^rate_(carport|pool)$/.test(k) && !homes.some(function (h) { return h[k.slice(5)] > 0; })) return;   // only where a property has one
+      musts.push({ key: k, node: n.closest(".line, .rate") || n, when: k === "condition_as_is" ? function () { return /^Subject to/.test(premise()); }
+        : k === "repairs" ? function () { return /^Subject to (repair|completion)$/.test(premise()); } : null });
     });
   }
   function renderOrder() {
