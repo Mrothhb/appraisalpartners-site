@@ -16,7 +16,7 @@
      Nothing about the status sits above the lines (Matt 2026-10-13): one block at the bottom holds the status (answers
      autosave; no Draft button), the help line, the buttons, the terms line, the saved message and the history, and
      READY with a question blank warns once, then sends on the next tap. The one thing above the lines is a READY the
-     desk sent back: note_kind "not_ready" (formlink.py --send-back) shows public_note as "Not ready yet" while DRAFT,
+     legacy desk reset: note_kind "not_ready" (new --send-back notes use "advisory" and retain READY) shows public_note as "Not ready yet" while DRAFT,
      first as a red pop-out (a DOM overlay), then as a red banner pinned at the top until the status changes. A line or
      post-run question marked "required" (true, or a list of lanes) blocks READY, and a partner reviewer's DONE (never
      NEEDS CHANGE): Ready reads "Ready · 2 left" until they are in, and a tap marks the blank ones in red.
@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-21.2">
+<html lang="en" data-build="v2026-10-22.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -588,7 +588,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function inProduction() { return filesChecked() && !!state.go && state.go.files_checked_at === D.accepted_at && sameQuote(state.go, currentQuote()); }
   function answered() { return customerReady() && asked(); }
   function optionSent() { return customerReady(); }
-  function readyNote() { return permissionHeld() ? "On hold. Client permission needs review." : quoteChanged() ? "Review the new price and day, then tap Ready. Nothing starts yet." : inProduction() ? "Start production received." : filesChecked() ? "Files checked. Nothing starts until you tap Start production." : "Your files and answers are in. We're checking your files. Nothing starts yet."; }
+  function readyNote() { return permissionHeld() ? "On hold. Client permission needs review." : quoteChanged() ? "Review the new price and day, then tap Ready. Nothing starts yet." : inProduction() ? "Start production received." : filesChecked() ? "Files checked. Tap Start production to authorize the run." : "Your files and answers are in. We're checking your files. Nothing starts yet."; }
   var NCHANGES = 5;
   var MAX_BODY = 100000;       // Code.gs's limit on one save
   var CHECKLIST = JSON.parse($("checklist").textContent);
@@ -961,7 +961,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
         [el("strong", { text: option.label }), el("span", { text: option.line })]);
       b.disabled = readOnly || pendingTaps > 0 || optionSent();
       b.addEventListener("click", function () {
-        state.answers.q_service_option = option.id; nudged = false;
+        state.answers.q_service_option = option.id;
         // That lane's defaults now, as on a reload: the old lane's untouched defaults go; what he saved or touched stays, blanks too.
         var was = answersFrom({}), mine = {};
         Object.keys(state.answers).forEach(function (k) { if (own[k] || !(k in was) || state.answers[k] !== was[k]) mine[k] = state.answers[k]; });
@@ -996,9 +996,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       return row;
     }).filter(Boolean);
   }
-  // Matt 2026-10-13: a line or question marked "required" (true, or a list of lanes; "default" when the order names
-  // none) must be answered before READY sends (open) or DONE sends (returned; NEEDS CHANGE never asks): the page marks
-  // what is missing, and READY leaves the form DRAFT.
+  // Missing intake facts are marked and travel with READY; approval and client permission remain boundaries.
   var musts = [];
   function needs(r) { return r === true || (Array.isArray(r) && r.indexOf((D.house_prompts || {}).lane || "default") >= 0); }
   function missing() {             // required lines and questions on show and still empty
@@ -1223,7 +1221,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       built0 ? (O.files_by === "email" ? "Answer each, then tap <b>Send answers</b>." : "Save the report in TOTAL so your files come through, then tap <b>Send answers</b>.") :
       stage === "open" && O.files_by === "email" ? "Tap <b>Ready</b> to have us check your files. Nothing starts yet." : STAGES[stage].help;   // files by email, no Workfile
     if (stage === "open" && !review && $("help").innerHTML.indexOf("Nothing starts") < 0)
-      $("help").innerHTML += " Nothing starts until you tap Start production after we check your files.";
+      $("help").innerHTML += " Tap Start production after we check your files to authorize the run.";
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = review || desk || stage === "returned"; });
     // After the run the questions are all that is left to answer: the START sections (already answered) step aside.
     var built = (D.questions || []).length > 0;
@@ -1577,7 +1575,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function closed() {               // the order is closed: no form, just the one line
     readOnly = true; pop(false); $("form").disabled = true; $("main").hidden = true; $("gate").hidden = false; gate(CLOSED); conn("Closed");
     if (stage === "open" && !review && $("help").innerHTML.indexOf("Nothing starts") < 0)
-      $("help").innerHTML += " Nothing starts until you tap Start production after we check your files.";
+      $("help").innerHTML += " Tap Start production after we check your files to authorize the run.";
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = true; });
   }
   function afterEdit() {
@@ -1593,20 +1591,20 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function blanks() {              // post-run questions still blank (some may rightly stay blank)
     return (D.questions || []).filter(function (q) { var v = state.answers["q_" + q.id]; return q.kind !== "confirm" && (v == null || !String(v).trim()); }).length;
   }
-  var nudged = false;              // Matt 2026-10-13: READY with a question blank warns once; the next READY sends anyway
   function setStatus(s) {
     if (readOnly || approved || pendingTaps || (customerReturned() && (!signoff() || !reviewReady() || signedOff() || s !== "DONE"))) return;
     var gaps = s === "READY" || s === "DONE" ? missing() : [];
-    if (gaps.length) {               // required answers missing: say what and never send; READY stays (or goes back to) DRAFT
-      gaps.forEach(function (m) { m.node.classList.add("need"); });
-      gaps[0].node.scrollIntoView({ block: "center" });
-      var first = gaps[0].node.querySelector("input, textarea, button"); if (first) first.focus({ preventScroll: true });
-      banner(gaps.length === 1 ? "Answer the marked question." : "Answer the marked questions.", "warn");
+    var blocking = s === "DONE" ? gaps : gaps.filter(function (m) { return m.key === "q_client_permits"; });
+    if (blocking.length) {
+      blocking.forEach(function (m) { m.node.classList.add("need"); });
+      blocking[0].node.scrollIntoView({ block: "center" });
+      var first = blocking[0].node.querySelector("input, textarea, button"); if (first) first.focus({ preventScroll: true });
+      banner(blocking.length === 1 ? "Answer the marked question." : "Answer the marked questions.", "warn");
       if (s === "READY" && state.status === "READY") setStatus("DRAFT");
       return;
     }
-    if (s === "READY" && !nudged && blanks()) {
-      nudged = true; banner("Some questions are blank. Tap Ready again to send.", "warn"); return;
+    if (s === "READY" && gaps.length) {
+      gaps.forEach(function (m) { m.node.classList.add("need"); });
     }
     if (agreeQ && (s === "DONE" || s === "NEEDS_CHANGE")) state.answers["q_" + agreeQ.id] = s === "DONE" ? "agreed " + agreeQ.value : "";   // Agree is his DONE
     clearTimeout(timer); timer = null;
@@ -1615,7 +1613,6 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (s === "READY") { fastUntil = Date.now() + 60000; pollSoon(); banner("Sending your files and answers for checking. Nothing starts yet.", "ok"); }
     if (connecting) { tapped = s; if (s !== "READY") banner("Sending…", "ok"); return; }
     if (!online) { banner("Not connected, not sent. Your answers are still here.", "warn"); return; }
-    nudged = false;
     conn("Sending…");
     write(true).then(function (r) {
       conn(approved ? "Approved" : "Saved " + when(new Date().toISOString()));
