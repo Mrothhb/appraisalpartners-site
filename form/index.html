@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-25.3">
+<html lang="en" data-build="v2026-10-25.4">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -125,7 +125,7 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 .note { font-size: 15px; color: var(--ink-2); line-height: 1.5; margin: 0 0 var(--s-2); }
 #gate p { color: var(--ink-2); }
 
-/* ---------- the order: code and status on one line, the address as the headline, the price as on the site ---------- */
+/* ---------- the order: code and status on one line, the address as the headline ---------- */
 .order { font-size: 16px; }
 .order-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap; margin: 0 0 var(--s-2); }
 .order-head .order-fact { padding: 0; }
@@ -604,7 +604,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function inProduction() { return filesChecked() && !!state.go && state.go.files_checked_at === D.accepted_at && sameQuote(state.go, currentQuote()); }
   function answered() { return customerReady() && asked(); }
   function optionSent() { return customerReady(); }
-  function readyNote() { return permissionHeld() ? "On hold. Client permission needs review." : quoteChanged() ? "Review the new price and day, then tap Ready. Nothing starts yet." : inProduction() ? "Start production received." : filesChecked() ? "Files checked. Tap Start production to authorize the run." : "Your files and answers are in. We're checking your files. Nothing starts yet."; }
+  function readyNote() { return permissionHeld() ? "On hold. Client permission needs review." : quoteChanged() ? "Review the updated order, then tap Ready. Nothing starts yet." : inProduction() ? "Start production received." : filesChecked() ? "Files checked. Tap Start production to authorize the run." : "Your files and answers are in. We're checking your files. Nothing starts yet."; }
   var NCHANGES = 5;
   var MAX_BODY = 100000;       // Code.gs's limit on one save
   var CHECKLIST = JSON.parse($("checklist").textContent);
@@ -987,22 +987,23 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if ((start.answers || {}).q_rush === true) {
       // A quoted day is a local calendar date, never UTC midnight.
       var quoted = /^\d{4}-\d{2}-\d{2}$/.test(O.rush_due_date || "") ? new Date(O.rush_due_date + "T12:00:00") : null;
-      $("chosen-quote").textContent = O.rush_fee && quoted && !isNaN(quoted.getTime()) ? "Rush · " + O.rush_fee + " · Due " + date(quoted) : "Rush: due date and fee quoted by orders@";
+      $("chosen-quote").textContent = quoted && !isNaN(quoted.getTime()) ? "Rush · Due " + date(quoted) : "Rush: due date from orders@";
     } else {
-      $("chosen-quote").textContent = [start.quote.price, isNaN(due.getTime()) ? "Due date from orders@" : "Due " + date(due)].filter(Boolean).join(" · ");
+      $("chosen-quote").textContent = isNaN(due.getTime()) ? "Due date from orders@" : "Due " + date(due);
     }
   }
   function minimalStart() { return F.minimal_start === true && (D.stage || "open") === "open" && !askedAt(F); }
   function simpleStart() { return minimalStart() && (D.house_prompts || {}).lane !== "self-service"; }
+  function choosingLane() { return laneOptions(F).length > 1 && (D.stage || "open") === "open" && !askedAt(F) && !startRecord() && !acceptance() && !state.go; }
   function renderLanes() {
     var box = $("lane-picker"), options = laneOptions(F);
-    box.textContent = ""; box.hidden = !!startRecord() || options.length < 2;
+    box.textContent = ""; box.hidden = !choosingLane();
     if (box.hidden) return;
     box.appendChild(el("h2", { text: "Pick your lane" }));
     var cards = el("div", { cls: "taps" });
     options.forEach(function (option) {
       var b = el("button", { type: "button", cls: "tap", "aria-pressed": String(state.answers.q_service_option === option.id) },
-        [el("strong", { text: option.label }), minimalStart() ? null : el("span", { text: option.line })]);
+        [el("strong", { text: option.label + (option.price && option.label.indexOf(option.price) < 0 ? " · " + option.price : "") }), minimalStart() ? null : el("span", { text: option.line })]);
       b.disabled = readOnly || pendingTaps > 0 || optionSent();
       b.addEventListener("click", function () {
         if (startRecord()) return;
@@ -1172,13 +1173,13 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var due = String(O.payment_due || "").trim();
     $("payment").hidden = !due;
     $("selfservice").hidden = (D.house_prompts || {}).lane !== "self-service";   // Matt 2026-10-19: VERY clear on every self-service form
-    var tb = $("testbanner"), bt = String(D.banner || "").trim();   // Matt 2026-10-19: a big bright note at the top, set per order (formlink banner)
+    var tb = $("testbanner"), bt = String(D.banner || "").trim().replace(/\s*·\s*\$[\d,.]+(?=\s*(?:·|$))/g, "");   // Legacy fixed headers keep their lane and date, without the fee.
     tb.hidden = !bt; tb.textContent = "";
     bt.split(/([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/).forEach(function (part, i) {
       if (part) tb.appendChild(i % 2 ? el("a", { href: "mailto:" + part, text: part }) : document.createTextNode(part));
     });
     $("payment").textContent = "";
-    if (due) $("payment").textContent = "Payment due: " + due + ". Your file follows payment.";
+    if (due) $("payment").textContent = "Payment due. Your file follows payment.";
     var pay = String(O.pay_link || "").trim();      // the desk's card link (formlink.py); only a plain https address becomes a button
     if (due && /^https:\/\/[^\s"'<>]+$/.test(pay))
       $("payment").appendChild(el("a", { cls: "pay-btn", href: pay, target: !!INLINE && location.protocol === "file:" ? "_self" : "_blank", rel: "noopener", text: "Pay by card" }));
@@ -1208,7 +1209,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     fact("Property", O.property);
     fact("Client", O.client);
     fact("Client due", O.due_date);
-    box.appendChild(el("p", { id: "quote", cls: "note", text: [O.price, O.ready_by ? "ready " + O.ready_by : ""].filter(Boolean).join(" · ") }));
+    box.appendChild(el("p", { id: "quote", cls: "note", text: O.ready_by ? "Ready " + O.ready_by : "" }));
     box.appendChild(el("p", { id: "acceptance", cls: "note", hidden: true }));
     if (!returned && D.public_note && D.note_kind !== "not_ready") box.appendChild(rich(D.public_note, "note"));
   }
@@ -1297,7 +1298,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function paintStatus() {
     paintChosen();
-    $("lane-picker").hidden = !!startRecord() || laneOptions(F).length < 2;
+    $("lane-picker").hidden = !choosingLane();
     var locked = readOnly || approved || pendingTaps > 0 || inProduction() || answered() || optionSent();
     $("form").disabled = locked;
     $("form").hidden = inProduction();
@@ -1327,14 +1328,14 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
         });
         return;
       }
-      var words = simpleStart() ? "Start accepts our " : filesChecked() && !inProduction() ? "By tapping Start production you accept the price and day above and our " : customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept " + (laneOptions(F).length ? "the price and day above and our " : "our ") : "By tapping Ready you accept the price and day above and our ";
+      var words = simpleStart() ? "Start accepts our " : filesChecked() && !inProduction() ? "By tapping Start production you accept our " : customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept our " : "By tapping Ready you accept our ";
       p.appendChild(document.createTextNode(words));
       p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: laneOptions(F).length ? ((D.house_prompts || {}).lane === "self-service" ? "Software Terms" : "Service Terms") : "terms" }));
       p.appendChild(document.createTextNode("."));
     });
     var accepted = acceptance();
     $("acceptance").hidden = !!startRecord() || !accepted;
-    $("acceptance").textContent = accepted ? "Accepted " + new Date(accepted.at).toLocaleDateString([], { month: "short", day: "numeric" }) + (accepted.accepted.price ? " · " + accepted.accepted.price : "") + (accepted.accepted.ready_by ? " · ready " + accepted.accepted.ready_by : "") : "";
+    $("acceptance").textContent = accepted ? "Accepted " + new Date(accepted.at).toLocaleDateString([], { month: "short", day: "numeric" }) + (accepted.accepted.ready_by ? " · ready " + accepted.accepted.ready_by : "") : "";
     $("quote").hidden = !!startRecord() || simpleStart() || laneOptions(F).length && !D.selected_lane || stage !== "open" && !!accepted && !quoteChanged();
     $("start-production").hidden = !filesChecked() || inProduction() || (D.house_prompts || {}).lane === "review";
     $("start-production").textContent = simpleStart() ? "Start" : "Start production";
@@ -1369,8 +1370,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     }
     var h = entries.reverse().filter(function (e) { return e.accepted || (e.event === "client_permits" && !permitsOff()) || e.event === "go" || e.event === "post_change" || e.event === "delivered" || e.event === "updated" || e.status === "DONE"; }).map(function (e) {
       if (e.event === "client_permits") return "Client permission · " + e.answer + " · " + when(e.at);
-      if (e.event === "go") return "Start production · " + e.quote.lane + " · " + e.quote.price + " · ready " + e.quote.ready_by + " · " + when(e.at);
-      if (e.accepted) return (e.by === "desk" ? "Desk go-ahead · " : e.by === "no tag" ? "Accepted (no tag) · " : "Accepted · ") + e.accepted.price + " · ready " + e.accepted.ready_by + " · " + e.accepted.lane + " · " + e.accepted.terms + " · " + when(e.at);
+      if (e.event === "go") return "Start production · " + e.quote.lane + " · ready " + e.quote.ready_by + " · " + when(e.at);
+      if (e.accepted) return (e.by === "desk" ? "Desk go-ahead · " : e.by === "no tag" ? "Accepted (no tag) · " : "Accepted · ") + "ready " + e.accepted.ready_by + " · " + e.accepted.lane + " · " + e.accepted.terms + " · " + when(e.at);
       return (e.event === "post_change" ? "Change requested" : e.event === "delivered" ? "Delivered" : e.event === "updated" ? "Updated" : "Approved") + " " + when(e.at);
     });
     $("history-list").textContent = "";
@@ -1628,7 +1629,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       if (e.form) refresh(e.form);
       if (e.saved) apply(e.saved);
       state.status = "DRAFT"; paintStatus();
-      banner("The price or day changed. Review it and tap Ready again.", "warn");
+      banner("The order changed. Review it and tap Ready again.", "warn");
     } else if (code === "too_large") {
       banner("Too long to save. Shorten it a little.", "warn");
     } else {
