@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-22.1">
+<html lang="en" data-build="v2026-10-25.3">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -129,6 +129,7 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 .order { font-size: 16px; }
 .order-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap; margin: 0 0 var(--s-2); }
 .order-head .order-fact { padding: 0; }
+.order-head .order-fact b { flex: none; }
 .order .order-fact { display: flex; gap: var(--s-2); align-items: baseline; padding: var(--s-1) 0; overflow-wrap: anywhere; }
 .order b { flex: 0 0 5.5em; color: var(--ink-2); font-weight: 600; font-size: 13px; line-height: 1.5; }
 .order > .order-fact:nth-of-type(2) { display: block; margin: var(--s-1) 0 var(--s-3); font: 700 clamp(22px, 1vw + 16px, 26px)/1.2 var(--display); letter-spacing: -.015em; color: var(--bar); text-wrap: balance; }
@@ -294,8 +295,18 @@ label.line { cursor: pointer; }
 
 /* The audit supplies the lanes and their one-line descriptions. */
 #lane-picker .taps { display: grid; gap: var(--s-3); }
-#lane-picker .tap { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); padding: var(--s-4); text-align: left; line-height: 1.5; }
+#lane-picker .tap { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); min-height: 60px; padding: var(--s-4) 60px var(--s-4) var(--s-4); border-width: 2px; text-align: left; line-height: 1.5; box-shadow: 0 2px 0 var(--edge); }
+#lane-picker .tap::after { content: ""; position: absolute; right: 20px; top: calc(50% - 12px); width: 24px; height: 24px; border: 2px solid currentColor; border-radius: var(--r-2); text-align: center; line-height: 20px; }
+#lane-picker .tap[aria-pressed="true"]::after { content: "✓"; }
+#lane-picker .tap:hover:not(:disabled) { box-shadow: 0 3px 0 var(--primary-hover); }
+#action .st.wait:disabled { background: var(--field-off); color: var(--ink-2); border-color: var(--edge); }
 #lane-picker .tap span { font-weight: 400; }
+#lane-picker .rush { margin-top: var(--s-4); border-bottom: 0; }
+.standard-fees { width: 100%; max-width: 440px; margin-top: var(--s-4); border-collapse: collapse; font-size: 13px; }
+.standard-fees caption { text-align: left; font-weight: 700; padding-bottom: var(--s-2); }
+.standard-fees th, .standard-fees td { padding: var(--s-1) 0; border-bottom: 1px solid var(--edge); }
+.standard-fees th { text-align: left; font-weight: 400; }
+.standard-fees td { text-align: right; white-space: nowrap; padding-left: var(--s-4); }
 
 /* Your call: the amber card Matt keeps, in the site's warning palette, its title a kicker */
 .card.question-highlight { border: 2px solid var(--warning-edge); background: var(--warning-bg); }
@@ -429,6 +440,11 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
 
   <div id="main" hidden>
+  <section class="card" id="chosen" aria-label="Your chosen service" hidden>
+    <strong id="chosen-lane"></strong>
+    <p id="chosen-quote"></p>
+    <p class="note">To change your lane or rush choice, reply to the orders@ email.</p>
+  </section>
   <div class="test-banner" id="testbanner" role="note" hidden></div>
   <section class="card order" id="order" aria-label="The order">
     <div class="now-row"><p class="status-now" id="now"></p> <span class="saved" id="saved" hidden>Saved</span></div>
@@ -582,7 +598,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function customerReady() {
     var submission = state.customer_submission;
     return !permissionPending() && stage === "open" && state.status === "READY" && savedStatus === "READY" &&
-      !!submission && submission.by !== "desk" && submission.status === "READY" && sameQuote(submission.quote, currentQuote()) && !quoteChanged();
+      !!submission && submission.by !== "desk" && submission.status === "READY" && sameQuote(submission.quote, currentQuote()) && !quoteChanged() && !(Date.parse(askedAt(D)) > Date.parse(submission.at));
   }
   function filesChecked() { return customerReady() && !!D.accepted_at && state.invalidated_check !== D.accepted_at && sameQuote(D.accepted_quote, currentQuote()); }
   function inProduction() { return filesChecked() && !!state.go && state.go.files_checked_at === D.accepted_at && sameQuote(state.go, currentQuote()); }
@@ -944,23 +960,52 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function laneForm(f, answers) {
     var options = laneOptions(f), pick = options.length === 1 ? options[0] : options.filter(function (o) { return o.id === answers.q_service_option; })[0];
     if (!options.length) return f;
-    var hp = Object.assign({}, f.house_prompts || {}, pick && pick.house_prompts || {}, { lane: pick && pick.id === "self-service" ? "self-service" : "desk" });
+    var hp = Object.assign({}, f.house_prompts || {}, pick && pick.house_prompts || {}, { lane: pick && /^self-service(?:-conversion)?$/.test(pick.id) ? "self-service" : "desk" });
     delete hp.start_options;
     return Object.assign({}, f, { order: Object.assign({}, f.order, { price: pick ? pick.price : "", ready_by: pick ? pick.ready_by : "" }),
       house_prompts: hp, selected_lane: pick ? pick.id : "", terms: pick ? pick.terms : "", terms_url: "",
       questions: pick ? pick.questions || [] : [], public_note: pick ? pick.public_note || "" : "" });
   }
+  var laneNames = { partial: "Partial", "partial-conversion": "Partial with 2.6 to 3.6 conversion", full: "Full",
+    "self-service": "Self-service", "self-service-conversion": "Self-service with 2.6 to 3.6 conversion" };
+  function startRecord() {
+    return (state.customer_submissions || []).concat(state.customer_submission || []).filter(function (s) {
+      return s.by !== "desk" && s.status === "READY" && s.quote && laneNames[s.quote.lane];
+    })[0];
+  }
+  function paintChosen() {
+    var start = startRecord();
+    $("chosen").hidden = !start || (D.house_prompts || {}).lane === "review";
+    if ($("chosen").hidden) return;
+    var lane = start.quote.lane, self = lane.indexOf("self-service") === 0, due = new Date(start.at), days = self ? 1 : 3;
+    while (days && !isNaN(due.getTime())) {
+      due.setDate(due.getDate() + 1);
+      if (due.getDay() !== 0 && due.getDay() !== 6) days--;
+    }
+    var date = function (d) { return d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric", year: "numeric" }); };
+    $("chosen-lane").textContent = "Chosen: " + laneNames[lane] + " · " + (self ? "within 1 working day" : "2 to 3 working days");
+    if ((start.answers || {}).q_rush === true) {
+      // A quoted day is a local calendar date, never UTC midnight.
+      var quoted = /^\d{4}-\d{2}-\d{2}$/.test(O.rush_due_date || "") ? new Date(O.rush_due_date + "T12:00:00") : null;
+      $("chosen-quote").textContent = O.rush_fee && quoted && !isNaN(quoted.getTime()) ? "Rush · " + O.rush_fee + " · Due " + date(quoted) : "Rush: due date and fee quoted by orders@";
+    } else {
+      $("chosen-quote").textContent = [start.quote.price, isNaN(due.getTime()) ? "Due date from orders@" : "Due " + date(due)].filter(Boolean).join(" · ");
+    }
+  }
+  function minimalStart() { return F.minimal_start === true && (D.stage || "open") === "open" && !askedAt(F); }
+  function simpleStart() { return minimalStart() && (D.house_prompts || {}).lane !== "self-service"; }
   function renderLanes() {
     var box = $("lane-picker"), options = laneOptions(F);
-    box.textContent = ""; box.hidden = options.length < 2;
+    box.textContent = ""; box.hidden = !!startRecord() || options.length < 2;
     if (box.hidden) return;
     box.appendChild(el("h2", { text: "Pick your lane" }));
     var cards = el("div", { cls: "taps" });
     options.forEach(function (option) {
       var b = el("button", { type: "button", cls: "tap", "aria-pressed": String(state.answers.q_service_option === option.id) },
-        [el("strong", { text: option.label }), el("span", { text: option.line })]);
+        [el("strong", { text: option.label }), minimalStart() ? null : el("span", { text: option.line })]);
       b.disabled = readOnly || pendingTaps > 0 || optionSent();
       b.addEventListener("click", function () {
+        if (startRecord()) return;
         state.answers.q_service_option = option.id;
         // That lane's defaults now, as on a reload: the old lane's untouched defaults go; what he saved or touched stays, blanks too.
         var was = answersFrom({}), mine = {};
@@ -971,6 +1016,18 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       cards.appendChild(b);
     });
     box.appendChild(cards);
+    if (minimalStart()) {
+      box.appendChild(check("q_rush", "Need it within 1 working day? Check here. We quote the rush fee before we start.", "rush"));
+      var table = el("table", { cls: "standard-fees" }, [el("caption", { text: "Standard fees" })]);
+      var rows = options.map(function (o) { return { label: o.fee_label || o.label, price: o.price }; });
+      rows = rows.concat((F.standard_fees || []).filter(function (r) {
+        return !/^Self-service/.test(r.label) || !options.some(function (o) { return o.id === "self-service"; });
+      }), [{ label: "Rush", price: "Quoted up front" }]);
+      rows.forEach(function (r) {
+        if (r.price) table.appendChild(el("tr", null, [el("th", { scope: "row", text: r.label }), el("td", { text: r.price })]));
+      });
+      box.appendChild(table);
+    }
     if (!D.selected_lane) musts.push({ key: "q_service_option", node: box });
   }
   function startOptions() { return laneOptions(F).length > 1 || stage === "open" && (D.house_prompts || {}).start_options === true; }
@@ -1072,6 +1129,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function renderSections() {
     var host = $("sections");
     musts = []; filed = []; highlighted = [];
+    if (simpleStart()) return;
     CHECKLIST.sections.forEach(function (sec) {
       if (laneOptions(F).length && !D.selected_lane) return;
       if ((laneOptions(F).length || D.selected_lane) && (D.house_prompts || {}).lane !== "self-service" &&   // self-service keeps its calls page (Matt 2026-10-19)
@@ -1149,7 +1207,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     head.appendChild(nowRow);
     fact("Property", O.property);
     fact("Client", O.client);
-    fact("Due", O.due_date);
+    fact("Client due", O.due_date);
     box.appendChild(el("p", { id: "quote", cls: "note", text: [O.price, O.ready_by ? "ready " + O.ready_by : ""].filter(Boolean).join(" · ") }));
     box.appendChild(el("p", { id: "acceptance", cls: "note", hidden: true }));
     if (!returned && D.public_note && D.note_kind !== "not_ready") box.appendChild(rich(D.public_note, "note"));
@@ -1238,6 +1296,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     paintStatus();
   }
   function paintStatus() {
+    paintChosen();
+    $("lane-picker").hidden = !!startRecord() || laneOptions(F).length < 2;
     var locked = readOnly || approved || pendingTaps > 0 || inProduction() || answered() || optionSent();
     $("form").disabled = locked;
     $("form").hidden = inProduction();
@@ -1247,7 +1307,10 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     $("now").classList.toggle("approved", approved);
     $("action").classList.toggle("agree", approved && !!agreeQ);
     $("now").closest(".now-row").hidden = customerReturned() && !approved;
-    $("help").hidden = approved || customerReturned() || inProduction();
+    $("help").hidden = approved || customerReturned() || inProduction() || simpleStart() && !customerReady();
+    $("order").hidden = simpleStart();
+    $("testbanner").hidden = simpleStart() || !String(D.banner || "").trim();
+    $("payment").hidden = simpleStart() || !String(O.payment_due || "").trim();
     document.querySelectorAll("[data-terms]").forEach(function (p) {
       var h = acceptance(), a = h && h.accepted;
       var terms = D.terms || (a && a.terms);
@@ -1264,18 +1327,19 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
         });
         return;
       }
-      var words = filesChecked() && !inProduction() ? "By tapping Start production you accept the price and day above and our " : customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept " + (laneOptions(F).length ? "the price and day above and our " : "our ") : "By tapping Ready you accept the price and day above and our ";
+      var words = simpleStart() ? "Start accepts our " : filesChecked() && !inProduction() ? "By tapping Start production you accept the price and day above and our " : customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept " + (laneOptions(F).length ? "the price and day above and our " : "our ") : "By tapping Ready you accept the price and day above and our ";
       p.appendChild(document.createTextNode(words));
-      p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: laneOptions(F).length ? (D.selected_lane === "self-service" ? "Software Terms" : "Service Terms") : "terms" }));
+      p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: laneOptions(F).length ? ((D.house_prompts || {}).lane === "self-service" ? "Software Terms" : "Service Terms") : "terms" }));
       p.appendChild(document.createTextNode("."));
     });
     var accepted = acceptance();
-    $("acceptance").hidden = !accepted;
+    $("acceptance").hidden = !!startRecord() || !accepted;
     $("acceptance").textContent = accepted ? "Accepted " + new Date(accepted.at).toLocaleDateString([], { month: "short", day: "numeric" }) + (accepted.accepted.price ? " · " + accepted.accepted.price : "") + (accepted.accepted.ready_by ? " · ready " + accepted.accepted.ready_by : "") : "";
-    $("quote").hidden = laneOptions(F).length && !D.selected_lane || stage !== "open" && !!accepted && !quoteChanged();
+    $("quote").hidden = !!startRecord() || simpleStart() || laneOptions(F).length && !D.selected_lane || stage !== "open" && !!accepted && !quoteChanged();
     $("start-production").hidden = !filesChecked() || inProduction() || (D.house_prompts || {}).lane === "review";
+    $("start-production").textContent = simpleStart() ? "Start" : "Start production";
     $("start-production").disabled = readOnly || !online || pendingTaps > 0 || goBusy;
-    document.querySelectorAll("#lane-picker button").forEach(function (b) { b.disabled = locked; });
+    document.querySelectorAll("#lane-picker button, #lane-picker input").forEach(function (b) { b.disabled = locked || !!startRecord(); });
     if (optionSent()) $("help").textContent = readyNote();
     if (answered()) $("help").textContent = readyNote();
     $("agree-value").hidden = !approved || !agreeQ;
@@ -1292,8 +1356,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (customerReturned()) $("post-box").hidden = false;
     statusBtns.forEach(function (b) {
       b.setAttribute("aria-pressed", String(b.getAttribute("data-s") === state.status));
-      b.hidden = approved || (customerReturned() ? !signoff() || !reviewReady() || signedOff() || b.getAttribute("data-s") !== "DONE" : STAGES[stage].statuses.indexOf(b.getAttribute("data-s")) < 0 || b.getAttribute("data-s") === "DRAFT");   // answers autosave
-      b.disabled = locked || (inProduction() && b.getAttribute("data-s") === "READY");
+      b.hidden = simpleStart() && filesChecked() || approved || (customerReturned() ? !signoff() || !reviewReady() || signedOff() || b.getAttribute("data-s") !== "DONE" : STAGES[stage].statuses.indexOf(b.getAttribute("data-s")) < 0 || b.getAttribute("data-s") === "DRAFT");   // answers autosave
+      b.disabled = locked || (b.getAttribute("data-s") === "READY" && (inProduction() || minimalStart() && !D.selected_lane));
     });
     document.querySelectorAll("[data-status]").forEach(function (bar) { bar.hidden = approved || (customerReturned() && (!signoff() || !reviewReady() || signedOff())); bar.classList.toggle("one", stage === "open" || signoff()); });
     var entries = state.history.slice();
@@ -1357,8 +1421,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
         b.classList.toggle("wait", left.length > 0); return;
       }
       if (b.getAttribute("data-s") !== "READY") return;
-      var go = asked() && !startOptions() ? "Send answers" : WORD.READY;
-      b.textContent = inProduction() ? "Start production received" : answered() ? "Answers sent" : left.length ? go + " · " + left.length + " left" : go;
+      var go = simpleStart() ? "Start" : asked() && !startOptions() ? "Send answers" : WORD.READY;
+      b.textContent = inProduction() ? "Start production received" : answered() ? "Answers sent" : left.length && !simpleStart() ? go + " · " + left.length + " left" : go;
       b.classList.toggle("wait", left.length > 0);
     });
     musts.forEach(function (m) { if (left.indexOf(m) < 0) m.node.classList.remove("need"); });
@@ -1690,6 +1754,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     state.approved_review = saved.approved_review || null;
     state.go = saved.go || null;
     state.customer_submission = saved.customer_submission || null;
+    state.customer_submissions = saved.customer_submissions || [];
     state.invalidated_check = saved.invalidated_check || null;
     approved = stage === "returned" && (D.house_prompts || {}).lane === "review" && state.status === "DONE";
     conn(approved ? "Approved" : "Connected");
@@ -1698,6 +1763,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       var mine = saved.answers && typeof saved.answers === "object" ? saved.answers : savedAt ? null : {};   // nothing saved yet: the desk's latest defaults
       if (mine) { state.answers = answersFrom(mine); Object.keys(mine).forEach(function (k) { own[k] = true; }); }
       if (Array.isArray(saved.changes)) { state.changes = saved.changes.slice(0, NCHANGES); while (state.changes.length < NCHANGES) state.changes.push(""); }
+      var start = startRecord();
+      if (start) {
+        state.answers.q_service_option = start.quote.lane;
+        state.answers.q_rush = (start.answers || {}).q_rush === true;
+      }
       if (controls.q_client_permits && saved.answers && saved.answers.q_client_permits) refresh(F);
       if (laneOptions(F).length && laneForm(F, state.answers).selected_lane !== D.selected_lane) refresh(F);   // only a different saved lane re-renders
       paintAll();
@@ -1707,7 +1777,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
+  function newer(f) { return canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
   function canon(v) { return JSON.stringify(v, function (k, x) { return x && typeof x === "object" && !Array.isArray(x) ? Object.keys(x).sort().reduce(function (o, j) { o[j] = x[j]; return o; }, {}) : x; }); }   // key order is never a change
   // A re-render keeps the reader's place (Chase 2026-10-20): the scroll, then the box or button in focus and its
   // selection; with nothing in focus it takes none.
