@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-25.4">
+<html lang="en" data-build="v2026-10-25.5">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -994,12 +994,12 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function minimalStart() { return F.minimal_start === true && (D.stage || "open") === "open" && !askedAt(F); }
   function simpleStart() { return minimalStart() && (D.house_prompts || {}).lane !== "self-service"; }
-  function choosingLane() { return laneOptions(F).length > 1 && (D.stage || "open") === "open" && !askedAt(F) && !startRecord() && !acceptance() && !state.go; }
+  function choosingLane() { return laneOptions(F).length > 0 && (D.stage || "open") === "open" && !askedAt(F) && !startRecord() && !acceptance() && !state.go; }
   function renderLanes() {
     var box = $("lane-picker"), options = laneOptions(F);
     box.textContent = ""; box.hidden = !choosingLane();
     if (box.hidden) return;
-    box.appendChild(el("h2", { text: "Pick your lane" }));
+    if (options.length > 1) box.appendChild(el("h2", { text: "Pick your lane" }));
     var cards = el("div", { cls: "taps" });
     options.forEach(function (option) {
       var b = el("button", { type: "button", cls: "tap", "aria-pressed": String(state.answers.q_service_option === option.id) },
@@ -1017,7 +1017,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       cards.appendChild(b);
     });
     box.appendChild(cards);
-    if (minimalStart()) {
+    if (minimalStart() && options.length > 1) {
       box.appendChild(check("q_rush", "Need it within 1 working day? Check here. We quote the rush fee before we start.", "rush"));
       var table = el("table", { cls: "standard-fees" }, [el("caption", { text: "Standard fees" })]);
       var rows = options.map(function (o) { return { label: o.fee_label || o.label, price: o.price }; });
