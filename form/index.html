@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-26.2">
+<html lang="en" data-build="v2026-10-26.3">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -443,7 +443,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <section class="card" id="chosen" aria-label="Your chosen service" hidden>
     <strong id="chosen-lane"></strong>
     <p id="chosen-quote"></p>
-    <p class="note">To change your lane or rush choice, reply to the orders@ email.</p>
+    <p class="note">To change your lane or rush choice, reply to orders@aandap.com.</p>
   </section>
   <div class="test-banner" id="testbanner" role="note" hidden></div>
   <section class="card order" id="order" aria-label="The order">
@@ -987,9 +987,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if ((start.answers || {}).q_rush === true) {
       // A quoted day is a local calendar date, never UTC midnight.
       var quoted = /^\d{4}-\d{2}-\d{2}$/.test(O.rush_due_date || "") ? new Date(O.rush_due_date + "T12:00:00") : null;
-      $("chosen-quote").textContent = quoted && !isNaN(quoted.getTime()) ? "Rush · Due " + date(quoted) : "Rush: due date from orders@";
+      $("chosen-quote").textContent = quoted && !isNaN(quoted.getTime()) ? "Rush · Due " + date(quoted) : "Rush: due date from orders@aandap.com";
     } else {
-      $("chosen-quote").textContent = isNaN(due.getTime()) ? "Due date from orders@" : "Due " + date(due);
+      $("chosen-quote").textContent = isNaN(due.getTime()) ? "Due date from orders@aandap.com" : "Due " + date(due);
     }
   }
   function minimalStart() { return F.minimal_start === true && (D.stage || "open") === "open" && !askedAt(F); }
