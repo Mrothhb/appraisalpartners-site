@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-25.5">
+<html lang="en" data-build="v2026-10-26.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1003,7 +1003,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var cards = el("div", { cls: "taps" });
     options.forEach(function (option) {
       var b = el("button", { type: "button", cls: "tap", "aria-pressed": String(state.answers.q_service_option === option.id) },
-        [el("strong", { text: option.label + (option.price && option.label.indexOf(option.price) < 0 ? " · " + option.price : "") }), minimalStart() ? null : el("span", { text: option.line })]);
+        [el("strong", { text: option.label }), minimalStart() ? null : el("span", { text: option.line })]);
       b.disabled = readOnly || pendingTaps > 0 || optionSent();
       b.addEventListener("click", function () {
         if (startRecord()) return;
@@ -1022,7 +1022,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       var table = el("table", { cls: "standard-fees" }, [el("caption", { text: "Standard fees" })]);
       var rows = options.map(function (o) { return { label: o.fee_label || o.label, price: o.price }; });
       rows = rows.concat((F.standard_fees || []).filter(function (r) {
-        return !/^Self-service/.test(r.label) || !options.some(function (o) { return o.id === "self-service"; });
+        return !/^Self-service/.test(r.label);
       }), [{ label: "Rush", price: "Quoted up front" }]);
       rows.forEach(function (r) {
         if (r.price) table.appendChild(el("tr", null, [el("th", { scope: "row", text: r.label }), el("td", { text: r.price })]));
