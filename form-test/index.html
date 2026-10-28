@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.22">
+<html lang="en" data-build="v2026-10-28.23">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -258,6 +258,8 @@ textarea[rows="1"] { min-height: 44px; }
 .banner.ok { background: var(--success-bg); color: var(--success-ink); border-color: var(--success-line); border-left-color: var(--success-edge); }
 .banner.ok::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='9' fill='%232b7e26' opacity='.14'/%3E%3Cpath d='M5.5 10.5l3 3 6-6.5' fill='none' stroke='%23236b1f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 #selfservice { margin: 0 0 var(--gap); } #selfservice p { margin: 0; } #selfservice ul { margin: var(--s-2) 0 0; padding-left: 1.2em; } #selfservice li + li { margin-top: 2px; }
+#start-missing { margin-bottom: var(--s-4); }
+#start-missing ul { margin: var(--s-2) 0 0; padding-left: 1.2em; }
 .banner.warn { background: var(--warning-bg); color: var(--warning-ink); border-color: var(--warning-line); border-left-color: var(--warning-edge); }
 .test-banner { margin: 0; padding: 20px 22px; border: 3px solid #e0a100; border-radius: 12px; background: #ffe14d; color: #1f1a00; font: 700 20px/1.4 var(--font); text-align: center; }
 .test-banner a { color: #1f1a00; text-decoration: underline; overflow-wrap: anywhere; }
@@ -501,6 +503,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <section class="card report" id="report" aria-label="Your report" hidden></section>
 
   <section class="card statusbox" id="action" aria-label="Status">
+    <div class="banner warn" id="start-missing" role="status" hidden></div>
     <p class="status-help" id="help"></p>
     <p class="agree-value" id="agree-value" hidden></p>
     <div id="post-request" hidden>
@@ -1705,13 +1708,18 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     if (lastRequest && (D.resolved_post_changes || []).indexOf(lastRequest.id) >= 0) lastRequest = null;
     $("post-sent").hidden = !lastRequest;
     $("post-sent").textContent = lastRequest ? "Change request sent " + when(lastRequest.at) + ". We'll update your report and let you know." : "";
+    $("start-missing").hidden = true;
     if (minimalCalls()) {
       $("lane-picker").hidden = !choosingLane();
       var gaps=[];
-      if(!minimalChecked()) gaps.push(String(D.public_note || "complete file").replace(/^still needed:\s*/i, "").replace(/\.$/, ""));   // one "Missing:" line
-      else if(!minimalFactsReady()) gaps.push("comps from your file");
-      missing().forEach(function(m){gaps.push(m.key==="q_value"?"your value":m.key==="q_exposure"?"exposure time":m.key==="adjustments_by"?"who fills adjustments":m.label || m.node.querySelector("label")?.textContent || "adjustment rates");});
-      $("help").textContent = gaps.length ? "Missing: " + [...new Set(gaps)].join("; ") + "." : "Save to come back, or Start your report.";
+      if(!minimalChecked()) gaps.push("Files: " + String(D.public_note || "complete file").replace(/^(?:Missing:\s*)?(?:Still needed:\s*)?/i, "").replace(/[.;\s]+$/, ""));
+      else if(!minimalFactsReady()) gaps.push("Comps from your file");
+      var calls = missing().map(function(m){return m.key==="inspection_ok"?"inspection confirmation":m.key==="premise"?"premise":m.key==="q_value"?"your value":m.key==="q_exposure"?"exposure time":m.key==="adjustments_by"?"who fills adjustments":m.label || m.node.querySelector("label")?.textContent || "adjustment rates";});
+      if(calls.length) gaps.push("Required calls: " + [...new Set(calls)].join(", "));
+      $("start-missing").hidden = !gaps.length || inProduction();
+      $("start-missing").replaceChildren(el("div", null, [el("b", {text: "We can't start your report until we have:"}), el("ul", null, gaps.map(function(gap){return el("li", {text: gap});}))]));
+      $("help").hidden = $("help").hidden || !$("start-missing").hidden;
+      $("help").textContent = "Save to come back, or Start your report.";
       $("start-production").hidden = true;
       $("quote").hidden = false;
       $("quote").textContent = "Self-service · " + (O.price || "$59") + " · within 1 working day";
