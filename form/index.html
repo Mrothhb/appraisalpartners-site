@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.25">
+<html lang="en" data-build="v2026-10-28.26">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -235,10 +235,10 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 .approved .more, #form.approved .talk-row { display: none; }
 #post-request { margin-top: var(--s-2); }
 #post-request .st { width: 100%; }
-#post-request .line { display: block; margin: 0 0 var(--s-3); padding: 0; border: 0; min-height: 0; }
+#post-request .line, #feedback .line { display: block; margin: 0 0 var(--s-3); padding: 0; border: 0; min-height: 0; }
 #post-request .lbl { display: block; margin-bottom: var(--s-2); font-size: 14px; font-weight: 600; }
 #post-text { width: 100%; min-height: calc(8 * 1.5em + 22px); resize: vertical; }   /* the big change box: about 8 lines */
-#post-request .talk-row { margin-top: var(--s-2); }
+#post-request .talk-row, #feedback .talk-row { margin-top: var(--s-2); }
 #post-sent, #post-error { margin: 0 0 var(--s-3); }
 #post-error { color: var(--danger); }
 .build { margin: var(--s-3) 0 0; text-align: center; font-size: 11px; color: var(--ink-2); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
@@ -1802,7 +1802,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     });
   }
   $("feedback-text").addEventListener("input", function(){grow(this);});
-  $("feedback-text").parentNode.appendChild(talkRow($("feedback-text")));
+  var feedbackTalk = talkRow($("feedback-text"), true);
+  if (feedbackTalk) $("feedback-text").parentNode.appendChild(feedbackTalk);
   $("feedback-send").addEventListener("click", function(){
     if (feedbackBusy || readOnly || !online) return;
     var text = $("feedback-text").value.trim();
