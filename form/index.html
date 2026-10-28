@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.20">
+<html lang="en" data-build="v2026-10-28.21">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1122,7 +1122,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var comps = D.comps || [], rows = D.adjustment_rows || [];
     var mode = host.appendChild(el("section", {cls:"card"}, [el("h2", {text:"Your adjustments"}), el("p", {cls:"note", text:"The grid is optional. Choose who fills your adjustments."})]));
     var picker=mode.appendChild(el("div",{cls:"line choice"})), modeButtons=[];
-    [["customer","I'll enter my adjustments"],["archer_profile","Let Archer fill from my profile"]].forEach(function(option){
+    [["customer","I'll enter my adjustments"],["archer_profile","Fill from my usual rates — I approve at review"]].forEach(function(option){
       var button=picker.appendChild(el("button",{type:"button",cls:"tap",text:option[1],"aria-pressed":"false","data-adjustments-by":option[0]}));
       button.addEventListener("click",function(){put("adjustments_by",option[0]);controls.adjustments_by.set(option[0]);changed();paintStatus();});
       modeButtons.push(button);
