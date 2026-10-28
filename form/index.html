@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.28">
+<html lang="en" data-build="v2026-10-28.29">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1270,16 +1270,16 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       });
       cards.appendChild(b);
     });
-    box.appendChild(cards);
+    if (options.length > 1 || (D.house_prompts || {}).lane === "self-service") box.appendChild(cards);
     if (minimalStart()) {
       if ((D.house_prompts || {}).lane === "self-service" && options.length > 1) box.appendChild(check("q_rush", "Need it within 1 working day? Check here. We quote the rush fee before we start.", "rush"));
       var table = el("table", { cls: "standard-fees" }, [el("caption", { text: "Standard fees" })]);
-      var rows = options.map(function (o) { return { label: o.fee_label || o.label, price: o.price }; });
+      var rows = options.map(function (o) { return { label: o.fee_label || o.label, price: o.price, ready_by: o.ready_by }; });
       rows = rows.concat((F.standard_fees || []).filter(function (r) {
         return !/^Self-service/.test(r.label);
       }), (D.house_prompts || {}).lane === "self-service" ? [{ label: "Rush", price: "Quoted up front" }] : []);
       rows.forEach(function (r) {
-        if (r.price) table.appendChild(el("tr", null, [el("th", { scope: "row", text: r.label }), el("td", { text: r.price })]));
+        if (r.price) table.appendChild(el("tr", null, [el("th", { scope: "row", text: r.label }), el("td", { text: r.price }), (D.house_prompts || {}).lane !== "self-service" && r.ready_by ? el("td", { text: "Ready " + r.ready_by }) : null]));
       });
       box.appendChild(table);
     }
@@ -1636,7 +1636,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     $("action").classList.toggle("agree", approved && !!agreeQ);
     $("now").closest(".now-row").hidden = customerReturned() && !approved;
     $("help").hidden = approved || customerReturned() || inProduction() || simpleStart() && !customerReady();
-    $("order").hidden = simpleStart();
+    $("order").hidden = false;
     $("testbanner").hidden = simpleStart() || !String(D.banner || "").trim();
     $("payment").hidden = simpleStart() || !String(O.payment_due || "").trim();
     document.querySelectorAll("[data-terms]").forEach(function (p) {
