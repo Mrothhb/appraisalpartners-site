@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.26">
+<html lang="en" data-build="v2026-10-28.27">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1720,7 +1720,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (minimalCalls()) {
       $("lane-picker").hidden = !choosingLane();
       var gaps=[];
-      if(!minimalChecked()) gaps.push("Files: " + String(D.public_note || "complete file").replace(/^(?:Missing:\s*)?(?:Still needed:\s*)?/i, "").replace(/[.;\s]+$/, ""));
+      if(!minimalChecked()) gaps.push("Files: " + String((D.house_prompts || {}).files_missing?.join("; ") || D.public_note || "complete file").replace(/^(?:Missing:\s*)?(?:Still needed:\s*)?/i, "").replace(/[.;\s]+$/, ""));
       else if(!minimalFactsReady()) gaps.push("Comps from your file");
       var calls = missing().map(function(m){return m.key==="inspection_ok"?"inspection confirmation":m.key==="premise"?"premise":m.key==="q_value"?"your value":m.key==="q_exposure"?"exposure time":m.key==="adjustments_by"?"who fills adjustments":m.label || m.node.querySelector("label")?.textContent || "adjustment rates";});
       if(calls.length) gaps.push("Required calls: " + [...new Set(calls)].join(", "));
