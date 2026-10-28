@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.2">
+<html lang="en" data-build="v2026-10-28.3">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -95,7 +95,7 @@
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 html, body { margin: 0; background: var(--canvas); color: var(--ink); font: 400 16px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
-body { background: var(--canvas) linear-gradient(var(--bar), var(--bar)) top / 100% var(--bar-h) no-repeat; }
+body { container-type: inline-size; background: var(--canvas) linear-gradient(var(--bar), var(--bar)) top / 100% var(--bar-h) no-repeat; }
 p { margin: 0; }
 b, strong { font-weight: 600; }
 button, input, textarea { font: inherit; }
@@ -178,6 +178,20 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 #report .pdf-btn { flex: 1 1 200px; }
 #report .note { flex: 1 1 100%; margin: 0; }
 #report iframe { display: block; flex: 1 1 100%; width: 100%; height: 72vh; height: 72svh; min-height: 360px; max-height: 900px; border: 1px solid var(--line); border-radius: var(--r-2); background: var(--tint); }
+#report.has-total { width: min(1400px, 100cqw); padding-inline: 0; border-inline: 0; }
+#report.has-total > h2 { margin-inline: 0; }
+#report.has-total > h2, #report.has-total > .note { padding-inline: 16px; }
+.report-switch { display: flex; gap: 4px; padding: 4px; margin-inline: 16px; border: 1px solid var(--line); border-radius: var(--r-2); background: var(--tint); }
+.report-switch button { min-height: 44px; padding: 8px 24px; border: 0; border-radius: 4px; background: transparent; color: var(--primary); font: 600 16px var(--font); cursor: pointer; }
+.report-switch button[aria-pressed="true"] { background: var(--primary); color: white; }
+.total-pages, .report-pdf { flex: 1 1 100%; min-width: 0; }
+.report-pdf { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.total-pages figure { margin: 0 0 20px; }
+.total-pages figcaption { padding: 9px 16px; background: var(--bar); color: white; font: 600 14px/1.4 var(--font); }
+.total-pages a, .total-pages img { display: block; width: 100%; }
+.total-pages img { height: auto; background: white; }
+.total-pages .note { padding: 0 16px 12px; }
+#report [hidden] { display: none; }
 .pdf-btn.dl::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.5v9M4.5 7l3.5 3.5L11.5 7M2.5 14.5h11' fill='none' stroke='%230b6fc1' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 
 /* ---------- buttons: the site's .btn (filled) and .btn.ghost (outlined) ---------- */
@@ -1243,15 +1257,34 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function renderReport() {
     var box = $("report"), m = /^https:\/\/drive\.google\.com\/(?:file\/d\/([A-Za-z0-9_-]+)|(?:open|uc)\?(?:[^#]*&)?id=([A-Za-z0-9_-]+))/.exec(D.report_pdf || "");
     var due = !!String(O.payment_due || "").trim();
-    var shown = stage === "returned" && m ? [m[1] || m[2], due, D.review && D.review.pdf === D.report_pdf ? D.review.id : ""].join(" ") : "";
-    if (shown && box.getAttribute("data-shown") === shown) return;   // same PDF: keep the reader's place in the viewer
+    var images = (Array.isArray(D.report_images) ? D.report_images : []).filter(function (p) { return p && p.pdf === D.report_pdf && /^[A-Za-z0-9_-]+$/.test(p.id || "") && p.label; });
+    var shown = stage === "returned" && m ? [m[1] || m[2], due, D.review && D.review.pdf === D.report_pdf ? D.review.id : "", JSON.stringify(images)].join(" ") : "";
+    if (shown && box.getAttribute("data-shown") === shown) return;
     box.textContent = ""; box.hidden = !shown; box.setAttribute("data-shown", shown);
+    box.classList.toggle("has-total", !!images.length);
     if (box.hidden) return;
     var id = m[1] || m[2], target = !!INLINE && location.protocol === "file:" ? "_self" : "_blank";
     box.appendChild(el("h2", { text: "Your report" }));
-    box.appendChild(el("a", { cls: "pdf-btn", href: "https://drive.google.com/file/d/" + id + "/view", target: target, rel: "noopener", text: due ? "Open full screen (view only)" : "Open full screen" }));
-    if (!due) box.appendChild(el("a", { cls: "pdf-btn dl", href: "https://drive.google.com/uc?export=download&id=" + id, target: target, rel: "noopener", text: "Download PDF" }));
-    box.appendChild(el("iframe", { src: "https://drive.google.com/file/d/" + id + "/preview", title: "Your report PDF", allow: "autoplay" }));   // Matt 2026-10-28: the PDF right on the form
+    var pdf = el("div", { cls: "report-pdf" });
+    pdf.appendChild(el("a", { cls: "pdf-btn", href: "https://drive.google.com/file/d/" + id + "/view", target: target, rel: "noopener", text: due ? "Open full screen (view only)" : "Open full screen" }));
+    if (!due) pdf.appendChild(el("a", { cls: "pdf-btn dl", href: "https://drive.google.com/uc?export=download&id=" + id, target: target, rel: "noopener", text: "Download PDF" }));
+    pdf.appendChild(el("iframe", { src: "https://drive.google.com/file/d/" + id + "/preview", title: "Your report PDF", allow: "autoplay", loading: "lazy" }));
+    if (images.length) {
+      var pages = el("div", { cls: "total-pages" }), tabs = el("div", { cls: "report-switch", role: "group", "aria-label": "Report view" });
+      pages.appendChild(el("p", { cls: "note", text: "Tap any section to open full size." }));
+      images.forEach(function (p) {
+        var img = el("img", { src: "https://lh3.googleusercontent.com/d/" + p.id + "=s0", alt: p.label, loading: "lazy", decoding: "async" });
+        if (p.width && p.height) { img.width = p.width; img.height = p.height; }
+        pages.appendChild(el("figure", {}, [el("figcaption", { text: p.label }), el("a", { href: "https://lh3.googleusercontent.com/d/" + p.id + "=s0", target: target, rel: "noopener", "aria-label": p.label + " — open full size" }, [img])]));
+      });
+      ["TOTAL view", "PDF"].forEach(function (label, i) {
+        var btn = el("button", { type: "button", text: label, "aria-pressed": String(!i) });
+        btn.addEventListener("click", function () { pages.hidden = !!i; pdf.hidden = !i; Array.from(tabs.children).forEach(function (b) { b.setAttribute("aria-pressed", String(b === btn)); }); });
+        tabs.appendChild(btn);
+      });
+      box.appendChild(tabs); box.appendChild(pages); pdf.hidden = true;
+    }
+    box.appendChild(pdf);
     if (D.review && D.review.pdf === D.report_pdf) box.appendChild(el("p", { cls: "note", "data-review-version": D.review.id,
       text: "Review version " + D.review.id.slice(0, 8) }));
   }
@@ -1786,7 +1819,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
+  function newer(f) { return canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
   function canon(v) { return JSON.stringify(v, function (k, x) { return x && typeof x === "object" && !Array.isArray(x) ? Object.keys(x).sort().reduce(function (o, j) { o[j] = x[j]; return o; }, {}) : x; }); }   // key order is never a change
   // A re-render keeps the reader's place (Chase 2026-10-20): the scroll, then the box or button in focus and its
   // selection; with nothing in focus it takes none.
