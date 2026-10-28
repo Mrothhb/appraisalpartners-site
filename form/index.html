@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.24">
+<html lang="en" data-build="v2026-10-28.25">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -526,6 +526,14 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   </section>
   <details class="card history" id="history" hidden><summary>History</summary><ul id="history-list"></ul></details>
   </div>
+
+  <section class="card" id="feedback" aria-labelledby="feedback-title" hidden>
+    <h2 id="feedback-title">Questions, requests or feedback</h2>
+    <div class="line"><textarea id="feedback-text" rows="2" maxlength="3000" aria-label="Questions, requests or feedback"></textarea></div>
+    <button type="button" class="st" id="feedback-send">Send</button>
+    <p class="note" id="feedback-note" role="status"></p>
+    <ul id="feedback-list"></ul>
+  </section>
 
   <p class="foot"><span>The value is yours alone; we enter it exactly as you give it.</span><span class="dot" aria-hidden="true">·</span><span>A&amp;AP</span></p>
 </div>
@@ -1615,6 +1623,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     paintStatus();
   }
   function paintStatus() {
+    paintFeedback();
     paintChosen();
     $("lane-picker").hidden = !choosingLane();
     var locked = readOnly || approved || pendingTaps > 0 || inProduction() || answered() || optionSent() && !minimalCalls();
@@ -1778,6 +1787,50 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var b = $("banner"); b.hidden = !msg; b.textContent = msg || ""; b.className = msg ? "banner " + (kind || "ok") : "";
   }
   function conn(msg) { $("conn").textContent = msg; }
+
+  var feedbackBusy = false, feedbackDraft = null;
+  function paintFeedback() {
+    if (!state) return;
+    $("feedback").hidden = !online;
+    $("feedback-send").disabled = $("feedback-text").disabled = feedbackBusy || readOnly || !online;
+    $("feedback-send").textContent = feedbackBusy ? "Sending…" : "Send";
+    $("feedback-list").textContent = "";
+    Object.keys(state.answers || {}).filter(function(k){return /^q_fb_[a-z0-9_]+$/.test(k);}).sort().forEach(function(k){
+      try { var entry = JSON.parse(state.answers[k]);
+        $("feedback-list").appendChild(el("li", {text: when(entry.at) + " · " + entry.text}));
+      } catch(e) {}
+    });
+  }
+  $("feedback-text").addEventListener("input", function(){grow(this);});
+  $("feedback-text").parentNode.appendChild(talkRow($("feedback-text")));
+  $("feedback-send").addEventListener("click", function(){
+    if (feedbackBusy || readOnly || !online) return;
+    var text = $("feedback-text").value.trim();
+    if (!text) { $("feedback-text").focus(); return; }
+    if (!feedbackDraft || feedbackDraft.text !== text) feedbackDraft = {
+      key: "q_fb_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,12),
+      at: new Date().toISOString(), text: text
+    };
+    var entry = feedbackDraft, value = JSON.stringify({at:entry.at,text:entry.text});
+    feedbackBusy = true; $("feedback-note").textContent = ""; paintFeedback();
+    // Read latest first; the feedback append preserves every appraisal field server-side.
+    function once(){return read().then(function(r){
+      var payload = body(false);
+      payload.status = (r.saved || {}).status || "DRAFT";
+      payload.answers = Object.assign({}, (r.saved || {}).answers || {});
+      payload.changes = (r.saved || {}).changes || [];
+      payload.answers[entry.key] = value; payload.feedback = true;
+      return post(JSON.stringify(payload)).catch(function(){}).then(read);
+    }).then(function(r){
+      if (!r.saved || (r.saved.answers || {})[entry.key] !== value) throw {};
+      state.answers[entry.key] = value; own[entry.key] = true;
+    });}
+    // Share the save chain so an in-flight autosave cannot erase the new entry.
+    writing = writing.catch(function(){}).then(once).catch(function(){return wait(1500).then(once);}).then(function(){
+      feedbackBusy = false; feedbackDraft = null; $("feedback-text").value = "";
+      $("feedback-note").textContent = "Sent. We'll reply by email."; paintFeedback();
+    },function(){feedbackBusy = false; $("feedback-note").textContent = "Not sent. Try again."; paintFeedback();});
+  });
 
   // ---------- saving ----------
   // TOTAL's preview pane preflights every cross-origin fetch, and Google never answers a preflight. So the page reads
