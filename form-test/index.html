@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.8">
+<html lang="en" data-build="v2026-10-28.9">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -441,6 +441,10 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 .minimal-grid .grid small, .minimal-grid .mls { display:block; font-size:11px; font-weight:400; white-space:normal; }
 .minimal-grid .grid thead th > span { display:block; }
 .minimal-grid .mini-rating { min-width:44px; min-height:44px; border:1px solid var(--line); color:var(--primary); background:white; border-radius:5px; margin:5px 0 0 4px; font:inherit; }
+.minimal-value .lbl { flex-basis:100%; }
+.minimal-value input[type="text"] { width:170px; max-width:100%; }
+.minimal-value .grid-range { flex:1 1 240px; }
+.minimal-grid .adjusted td { font-weight:700; color:var(--bar); }
 .weight-note { flex-basis:100%; color:var(--ink-2); }
 </style>
 </head>
@@ -1085,7 +1089,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       weight.appendChild(el("small", {cls:"weight-note",text:"Adjustment size alone does not tell us which sale you trust most."}));
       value.appendChild(weight); musts.push({key:"most_weight", call:true, node:weight});
     }
-    var val = text("q_value", "Your value, $", {short:true});
+    var val = text("q_value", "Your value, $", {short:true}); val.classList.add("minimal-value");
     val.appendChild(el("p", {cls:"grid-range", "data-range":""}));
     value.appendChild(val); musts.push({key:"q_value", node:val, valid:function(v){return numberOnly(v)>0;}});
     var exp = choice("q_exposure", "Exposure time", ["Under 30 days","30 to 60 days","60 to 90 days","Over 90 days"]);
