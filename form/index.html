@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.5">
+<html lang="en" data-build="v2026-10-28.6">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -641,7 +641,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   var approved = false;        // only the internal reviewer lane keeps its historical DONE lock
   var postBusy = false, postDraft = null;
   function customerReturned() { return stage === "returned" && (D.house_prompts || {}).lane !== "review"; }
-  function signoff() { return customerReturned() && D.signoff === true && (!D.delivered_at || D.review &&
+  function approveShips() { return (D.house_prompts || {}).approve_ships !== false && (!D.delivered_at || (D.house_prompts || {}).approve_ships === true); }
+  function approveLabel() { return approveShips() ? "Approve and deliver" : "Approve"; }
+  function signoff() { return customerReturned() && D.signoff === true && (!D.delivered_at || (D.house_prompts || {}).approve_ships === false && D.review || D.review &&
     !(D.deliveries || []).some(function (d) { return d.review_id === D.review.id; })); }
   function reviewMatches(f, saved) {
     return !!f.review && f.review.pdf === f.report_pdf &&
@@ -655,7 +657,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function approvalNote() {
     var h = state.history.filter(function (e) { return e.status === "DONE"; });
-    return "Approved " + when(h.length ? h[h.length - 1].at : savedAt) + (signoff() ? ". It goes to your TOTAL folder next." : ". Your final report is on its way to your folder.");
+    return "Approved " + when(h.length ? h[h.length - 1].at : savedAt) + (approveShips() ? ". It goes to your TOTAL folder next." : ". Your report is in your TOTAL folder.");
   }
 
   // ---------- small DOM helpers ----------
@@ -1213,7 +1215,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       var memo = rich(D.note_kind !== "not_ready" ? D.public_note : "", "memo", true);
       callsBox.hidden = !memo.children.length;
       if (!callsBox.hidden) {
-        callsBox.appendChild(el("h2", { text: "For your review" }));
+        if (typeof (D.house_prompts || {}).approve_ships !== "boolean") callsBox.appendChild(el("h2", { text: "For your review" }));
         callsBox.appendChild(memo);
       }
     } else if (returned) {
@@ -1343,7 +1345,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (box1) box1.placeholder = agreeQ ? "Describe your requested change." : "";
     $("agree-value").textContent = "";
     if (agreeQ) { $("agree-value").appendChild(el("span", { text: "VALUE" })); $("agree-value").appendChild(el("b", { text: agreeQ.value })); }
-    statusBtns.forEach(function (b) { var st = b.getAttribute("data-s"); b.textContent = st === "NEEDS_CHANGE" ? "Request Changes" : st === "DONE" && signoff() ? "Approve and deliver" : WORD[st]; });
+    statusBtns.forEach(function (b) { var st = b.getAttribute("data-s"); b.textContent = st === "NEEDS_CHANGE" ? "Request Changes" : st === "DONE" && signoff() ? approveLabel() : WORD[st]; });
     document.querySelectorAll("[data-stage]").forEach(function (c) { var st = c.getAttribute("data-stage"); c.hidden = st !== stage || (st === "open" && built && (D.house_prompts || {}).lane !== "self-service"); });   // Matt 2026-10-19: self-service keeps its calls page with questions
     paintStatus();
   }
@@ -1397,7 +1399,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     $("agree-value").hidden = !approved || !agreeQ;
     var paymentDue = !!String(O.payment_due || "").trim();
     $("returned-intro").hidden = !customerReturned();
-    $("returned-headline").textContent = signoff() ? signedOff() ? approvalNote() : !reviewReady() ? (state.post_changes || []).length ? "Your changes are with us. We'll post your review PDF below." : "Your review PDF will appear below." : "Your report is ready for your review. Tap Approve and deliver to send it to your TOTAL folder, or request a change below." : paymentDue ? "Your report is ready. It goes to your folder once payment is received." : "Your report is in your TOTAL folder. Review and edit it there.";
+    $("returned-headline").textContent = signoff() ? signedOff() ? approvalNote() : !reviewReady() ? (state.post_changes || []).length ? "Your changes are with us. We'll post your review PDF below." : "Your review PDF will appear below." : (approveShips() ? "Your report is ready for your review. Tap Approve and deliver to send it to your TOTAL folder, or request a change below." : "Your report is in your TOTAL folder. Review it below, then approve or request a change.") : paymentDue ? "Your report is ready. It goes to your folder once payment is received." : "Your report is in your TOTAL folder. Review and edit it there.";
     $("delivered-at").hidden = paymentDue || !D.delivered_at;
     $("delivered-at").textContent = D.delivered_at ? "Delivered " + when(D.delivered_at) : "";
     var legacyApproval = state.history.filter(function (e) { return e.status === "DONE"; });
@@ -1469,7 +1471,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (s !== "DRAFT") $("saved").hidden = true;
     statusBtns.forEach(function (b) {
       if (signoff() && b.getAttribute("data-s") === "DONE") {
-        b.textContent = left.length ? "Approve and deliver · " + left.length + " left" : "Approve and deliver";
+        b.textContent = left.length ? approveLabel() + " · " + left.length + " left" : approveLabel();
         b.classList.toggle("wait", left.length > 0); return;
       }
       if (b.getAttribute("data-s") !== "READY") return;

@@ -16,7 +16,7 @@
      Nothing about the status sits above the lines (Matt 2026-10-13): one block at the bottom holds the status (answers
      autosave; no Draft button), the help line, the buttons, the terms line, the saved message and the history, and
      READY with a question blank warns once, then sends on the next tap. The one thing above the lines is a READY the
-     desk sent back: note_kind "not_ready" (formlink.py --send-back) shows public_note as "Not ready yet" while DRAFT,
+     legacy desk reset: note_kind "not_ready" (new --send-back notes use "advisory" and retain READY) shows public_note as "Not ready yet" while DRAFT,
      first as a red pop-out (a DOM overlay), then as a red banner pinned at the top until the status changes. A line or
      post-run question marked "required" (true, or a list of lanes) blocks READY, and a partner reviewer's DONE (never
      NEEDS CHANGE): Ready reads "Ready · 2 left" until they are in, and a tap marks the blank ones in red.
@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-21.2">
+<html lang="en" data-build="v2026-10-28.6">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -95,7 +95,7 @@
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 html, body { margin: 0; background: var(--canvas); color: var(--ink); font: 400 16px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
-body { background: var(--canvas) linear-gradient(var(--bar), var(--bar)) top / 100% var(--bar-h) no-repeat; }
+body { container-type: inline-size; background: var(--canvas) linear-gradient(var(--bar), var(--bar)) top / 100% var(--bar-h) no-repeat; }
 p { margin: 0; }
 b, strong { font-weight: 600; }
 button, input, textarea { font: inherit; }
@@ -125,10 +125,11 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 .note { font-size: 15px; color: var(--ink-2); line-height: 1.5; margin: 0 0 var(--s-2); }
 #gate p { color: var(--ink-2); }
 
-/* ---------- the order: code and status on one line, the address as the headline, the price as on the site ---------- */
+/* ---------- the order: code and status on one line, the address as the headline ---------- */
 .order { font-size: 16px; }
 .order-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap; margin: 0 0 var(--s-2); }
 .order-head .order-fact { padding: 0; }
+.order-head .order-fact b { flex: none; }
 .order .order-fact { display: flex; gap: var(--s-2); align-items: baseline; padding: var(--s-1) 0; overflow-wrap: anywhere; }
 .order b { flex: 0 0 5.5em; color: var(--ink-2); font-weight: 600; font-size: 13px; line-height: 1.5; }
 .order > .order-fact:nth-of-type(2) { display: block; margin: var(--s-1) 0 var(--s-3); font: 700 clamp(22px, 1vw + 16px, 26px)/1.2 var(--display); letter-spacing: -.015em; color: var(--bar); text-wrap: balance; }
@@ -172,8 +173,27 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 .pdf-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); min-height: 48px; margin: 0; padding: 0 var(--s-6); border: 1px solid var(--primary); border-radius: var(--r-2); background: #fff; color: var(--primary); font: 600 16px/1 var(--font); text-decoration: none; white-space: nowrap; transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease); }
 .pdf-btn:hover { background: var(--tint); color: var(--primary-hover); border-color: var(--primary-hover); }
 .pdf-btn::before { content: ""; flex: none; width: 18px; height: 18px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 1.5h5.5l3 3v10h-8.5z' fill='none' stroke='%230b6fc1' stroke-width='1.4' stroke-linejoin='round'/%3E%3Cpath d='M9.5 1.5v3h3' fill='none' stroke='%230b6fc1' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") center / 16px 16px no-repeat; }
-#report { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+#report { display: flex; flex-wrap: wrap; gap: var(--s-3); width: min(1100px, calc(100vw - 2 * var(--gutter))); margin-left: 50%; transform: translateX(-50%); }
+#report h2 { flex: 1 1 100%; margin-bottom: 0; }
 #report .pdf-btn { flex: 1 1 200px; }
+#report .note { flex: 1 1 100%; margin: 0; }
+#report iframe { display: block; flex: 1 1 100%; width: 100%; height: 72vh; height: 72svh; min-height: 360px; max-height: 900px; border: 1px solid var(--line); border-radius: var(--r-2); background: var(--tint); }
+#report.has-total { width: min(1400px, 100cqw); padding-inline: 0; border-inline: 0; }
+#report.has-total > h2 { margin-inline: 0; }
+#report.has-total > h2, #report.has-total > .note { padding-inline: 16px; }
+.report-switch { display: flex; gap: 4px; padding: 4px; margin-inline: 16px; border: 1px solid var(--line); border-radius: var(--r-2); background: var(--tint); }
+.report-switch button { min-height: 44px; padding: 8px 24px; border: 0; border-radius: 4px; background: transparent; color: var(--primary); font: 600 16px var(--font); cursor: pointer; }
+.report-switch button[aria-pressed="true"] { background: var(--primary); color: white; }
+.total-pages, .report-pdf { flex: 1 1 100%; min-width: 0; }
+.report-pdf { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.total-pages .total-phone { display: none; }
+@media (max-width: 600px) { .total-pages .total-phone { display: block; } .total-pages .total-desktop { display: none; } }
+.total-pages figure { margin: 0 0 20px; }
+.total-pages figcaption { padding: 9px 16px; background: var(--bar); color: white; font: 600 14px/1.4 var(--font); }
+.total-pages a, .total-pages img { display: block; width: 100%; }
+.total-pages img { height: auto; background: white; margin-inline: auto; }
+.total-pages .note { padding: 0 16px 12px; }
+#report [hidden] { display: none; }
 .pdf-btn.dl::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.5v9M4.5 7l3.5 3.5L11.5 7M2.5 14.5h11' fill='none' stroke='%230b6fc1' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 
 /* ---------- buttons: the site's .btn (filled) and .btn.ghost (outlined) ---------- */
@@ -294,8 +314,18 @@ label.line { cursor: pointer; }
 
 /* The audit supplies the lanes and their one-line descriptions. */
 #lane-picker .taps { display: grid; gap: var(--s-3); }
-#lane-picker .tap { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); padding: var(--s-4); text-align: left; line-height: 1.5; }
+#lane-picker .tap { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); min-height: 60px; padding: var(--s-4) 60px var(--s-4) var(--s-4); border-width: 2px; text-align: left; line-height: 1.5; box-shadow: 0 2px 0 var(--edge); }
+#lane-picker .tap::after { content: ""; position: absolute; right: 20px; top: calc(50% - 12px); width: 24px; height: 24px; border: 2px solid currentColor; border-radius: var(--r-2); text-align: center; line-height: 20px; }
+#lane-picker .tap[aria-pressed="true"]::after { content: "✓"; }
+#lane-picker .tap:hover:not(:disabled) { box-shadow: 0 3px 0 var(--primary-hover); }
+#action .st.wait:disabled { background: var(--field-off); color: var(--ink-2); border-color: var(--edge); }
 #lane-picker .tap span { font-weight: 400; }
+#lane-picker .rush { margin-top: var(--s-4); border-bottom: 0; }
+.standard-fees { width: 100%; max-width: 440px; margin-top: var(--s-4); border-collapse: collapse; font-size: 13px; }
+.standard-fees caption { text-align: left; font-weight: 700; padding-bottom: var(--s-2); }
+.standard-fees th, .standard-fees td { padding: var(--s-1) 0; border-bottom: 1px solid var(--edge); }
+.standard-fees th { text-align: left; font-weight: 400; }
+.standard-fees td { text-align: right; white-space: nowrap; padding-left: var(--s-4); }
 
 /* Your call: the amber card Matt keeps, in the site's warning palette, its title a kicker */
 .card.question-highlight { border: 2px solid var(--warning-edge); background: var(--warning-bg); }
@@ -385,6 +415,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 /* ---------- a phone ---------- */
 @media (max-width: 720px) { :root { --gutter: 16px; } }
 @media (max-width: 480px) {
+  #report { --card-px: 8px; }
   .status { grid-template-columns: minmax(0, 1fr); }
   .st, .pdf-btn, .pay-btn, .tap { white-space: normal; text-align: center; line-height: 1.3; padding-block: var(--s-3); }
   .start-options .service-option .tap { line-height: 1.3; padding-block: var(--s-3); }
@@ -429,6 +460,11 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
 
   <div id="main" hidden>
+  <section class="card" id="chosen" aria-label="Your chosen service" hidden>
+    <strong id="chosen-lane"></strong>
+    <p id="chosen-quote"></p>
+    <p class="note">To change your lane or rush choice, reply to orders@aandap.com.</p>
+  </section>
   <div class="test-banner" id="testbanner" role="note" hidden></div>
   <section class="card order" id="order" aria-label="The order">
     <div class="now-row"><p class="status-now" id="now"></p> <span class="saved" id="saved" hidden>Saved</span></div>
@@ -437,11 +473,11 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <div class="banner" id="payment" role="status" hidden></div>
   <div class="banner warn" id="selfservice" role="note" hidden><div><p><b>Self-service: Matt and his team do not review this report.</b></p><ul><li>No one will discuss values or the report.</li><li>Questions, issues and changes go in writing, on this form or by email.</li><li>Appraisal help from Matt or his team is a separate service, billed for his time, and only where state rules allow it.</li><li>You are using the A&amp;AP software intelligence system directly. We strongly encourage you to review this report and ensure the system makes all changes to your liking.</li><li>Bugs, errors and software issues should be escalated to Matt and his team immediately. Appraisal discussion and questions remain in this form or by email.</li></ul></div></div>
   <div class="card" id="returned-intro" hidden><p id="returned-headline">Your report is in your TOTAL folder. Review and edit it there.</p><p class="note" id="delivered-at" hidden></p><p class="note" id="legacy-approved" hidden></p></div>
-  <section class="card report" id="report" aria-label="Your report" hidden></section>
   <div class="banner" id="notready" role="status" hidden></div>
   <section class="card" id="calls" aria-label="Our calls" hidden></section>
 
   <fieldset id="form"><div id="sections"></div></fieldset>
+  <section class="card report" id="report" aria-label="Your report" hidden></section>
 
   <section class="card statusbox" id="action" aria-label="Status">
     <p class="status-help" id="help"></p>
@@ -582,13 +618,13 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function customerReady() {
     var submission = state.customer_submission;
     return !permissionPending() && stage === "open" && state.status === "READY" && savedStatus === "READY" &&
-      !!submission && submission.by !== "desk" && submission.status === "READY" && sameQuote(submission.quote, currentQuote()) && !quoteChanged();
+      !!submission && submission.by !== "desk" && submission.status === "READY" && sameQuote(submission.quote, currentQuote()) && !quoteChanged() && !(Date.parse(askedAt(D)) > Date.parse(submission.at));
   }
   function filesChecked() { return customerReady() && !!D.accepted_at && state.invalidated_check !== D.accepted_at && sameQuote(D.accepted_quote, currentQuote()); }
   function inProduction() { return filesChecked() && !!state.go && state.go.files_checked_at === D.accepted_at && sameQuote(state.go, currentQuote()); }
   function answered() { return customerReady() && asked(); }
   function optionSent() { return customerReady(); }
-  function readyNote() { return permissionHeld() ? "On hold. Client permission needs review." : quoteChanged() ? "Review the new price and day, then tap Ready. Nothing starts yet." : inProduction() ? "Start production received." : filesChecked() ? "Files checked. Nothing starts until you tap Start production." : "Your files and answers are in. We're checking your files. Nothing starts yet."; }
+  function readyNote() { return permissionHeld() ? "On hold. Client permission needs review." : quoteChanged() ? "Review the updated order, then tap Ready. Nothing starts yet." : inProduction() ? "Start production received." : filesChecked() ? "Files checked. Tap Start production to authorize the run." : "Your files and answers are in. We're checking your files. Nothing starts yet."; }
   var NCHANGES = 5;
   var MAX_BODY = 100000;       // Code.gs's limit on one save
   var CHECKLIST = JSON.parse($("checklist").textContent);
@@ -605,7 +641,9 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   var approved = false;        // only the internal reviewer lane keeps its historical DONE lock
   var postBusy = false, postDraft = null;
   function customerReturned() { return stage === "returned" && (D.house_prompts || {}).lane !== "review"; }
-  function signoff() { return customerReturned() && D.signoff === true && (!D.delivered_at || D.review &&
+  function approveShips() { return (D.house_prompts || {}).approve_ships !== false && (!D.delivered_at || (D.house_prompts || {}).approve_ships === true); }
+  function approveLabel() { return approveShips() ? "Approve and deliver" : "Approve"; }
+  function signoff() { return customerReturned() && D.signoff === true && (!D.delivered_at || (D.house_prompts || {}).approve_ships === false && D.review || D.review &&
     !(D.deliveries || []).some(function (d) { return d.review_id === D.review.id; })); }
   function reviewMatches(f, saved) {
     return !!f.review && f.review.pdf === f.report_pdf &&
@@ -619,7 +657,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   }
   function approvalNote() {
     var h = state.history.filter(function (e) { return e.status === "DONE"; });
-    return "Approved " + when(h.length ? h[h.length - 1].at : savedAt) + (signoff() ? ". It goes to your TOTAL folder next." : ". Your final report is on its way to your folder.");
+    return "Approved " + when(h.length ? h[h.length - 1].at : savedAt) + (approveShips() ? ". It goes to your TOTAL folder next." : ". Your report is in your TOTAL folder.");
   }
 
   // ---------- small DOM helpers ----------
@@ -944,24 +982,54 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function laneForm(f, answers) {
     var options = laneOptions(f), pick = options.length === 1 ? options[0] : options.filter(function (o) { return o.id === answers.q_service_option; })[0];
     if (!options.length) return f;
-    var hp = Object.assign({}, f.house_prompts || {}, pick && pick.house_prompts || {}, { lane: pick && pick.id === "self-service" ? "self-service" : "desk" });
+    var hp = Object.assign({}, f.house_prompts || {}, pick && pick.house_prompts || {}, { lane: pick && /^self-service(?:-conversion)?$/.test(pick.id) ? "self-service" : "desk" });
     delete hp.start_options;
     return Object.assign({}, f, { order: Object.assign({}, f.order, { price: pick ? pick.price : "", ready_by: pick ? pick.ready_by : "" }),
       house_prompts: hp, selected_lane: pick ? pick.id : "", terms: pick ? pick.terms : "", terms_url: "",
       questions: pick ? pick.questions || [] : [], public_note: pick ? pick.public_note || "" : "" });
   }
+  var laneNames = { partial: "Partial", "partial-conversion": "Partial with 2.6 to 3.6 conversion", full: "Full",
+    "self-service": "Self-service", "self-service-conversion": "Self-service with 2.6 to 3.6 conversion" };
+  function startRecord() {
+    return (state.customer_submissions || []).concat(state.customer_submission || []).filter(function (s) {
+      return s.by !== "desk" && s.status === "READY" && s.quote && laneNames[s.quote.lane];
+    })[0];
+  }
+  function paintChosen() {
+    var start = startRecord();
+    $("chosen").hidden = !start || (D.house_prompts || {}).lane === "review";
+    if ($("chosen").hidden) return;
+    var lane = start.quote.lane, self = lane.indexOf("self-service") === 0, due = new Date(start.at), days = self ? 1 : 3;
+    while (days && !isNaN(due.getTime())) {
+      due.setDate(due.getDate() + 1);
+      if (due.getDay() !== 0 && due.getDay() !== 6) days--;
+    }
+    var date = function (d) { return d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric", year: "numeric" }); };
+    $("chosen-lane").textContent = "Chosen: " + laneNames[lane] + " · " + (self ? "within 1 working day" : "2 to 3 working days");
+    if ((start.answers || {}).q_rush === true) {
+      // A quoted day is a local calendar date, never UTC midnight.
+      var quoted = /^\d{4}-\d{2}-\d{2}$/.test(O.rush_due_date || "") ? new Date(O.rush_due_date + "T12:00:00") : null;
+      $("chosen-quote").textContent = quoted && !isNaN(quoted.getTime()) ? "Rush · Due " + date(quoted) : "Rush: due date from orders@aandap.com";
+    } else {
+      $("chosen-quote").textContent = isNaN(due.getTime()) ? "Due date from orders@aandap.com" : "Due " + date(due);
+    }
+  }
+  function minimalStart() { return F.minimal_start === true && (D.stage || "open") === "open" && !askedAt(F); }
+  function simpleStart() { return minimalStart() && (D.house_prompts || {}).lane !== "self-service"; }
+  function choosingLane() { return laneOptions(F).length > 0 && (D.stage || "open") === "open" && !askedAt(F) && !startRecord() && !acceptance() && !state.go; }
   function renderLanes() {
     var box = $("lane-picker"), options = laneOptions(F);
-    box.textContent = ""; box.hidden = options.length < 2;
+    box.textContent = ""; box.hidden = !choosingLane();
     if (box.hidden) return;
-    box.appendChild(el("h2", { text: "Pick your lane" }));
+    if (options.length > 1) box.appendChild(el("h2", { text: "Pick your lane" }));
     var cards = el("div", { cls: "taps" });
     options.forEach(function (option) {
       var b = el("button", { type: "button", cls: "tap", "aria-pressed": String(state.answers.q_service_option === option.id) },
-        [el("strong", { text: option.label }), el("span", { text: option.line })]);
+        [el("strong", { text: option.label }), minimalStart() ? null : el("span", { text: option.line })]);
       b.disabled = readOnly || pendingTaps > 0 || optionSent();
       b.addEventListener("click", function () {
-        state.answers.q_service_option = option.id; nudged = false;
+        if (startRecord()) return;
+        state.answers.q_service_option = option.id;
         // That lane's defaults now, as on a reload: the old lane's untouched defaults go; what he saved or touched stays, blanks too.
         var was = answersFrom({}), mine = {};
         Object.keys(state.answers).forEach(function (k) { if (own[k] || !(k in was) || state.answers[k] !== was[k]) mine[k] = state.answers[k]; });
@@ -971,6 +1039,18 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       cards.appendChild(b);
     });
     box.appendChild(cards);
+    if (minimalStart()) {
+      if (options.length > 1) box.appendChild(check("q_rush", "Need it within 1 working day? Check here. We quote the rush fee before we start.", "rush"));
+      var table = el("table", { cls: "standard-fees" }, [el("caption", { text: "Standard fees" })]);
+      var rows = options.map(function (o) { return { label: o.fee_label || o.label, price: o.price }; });
+      rows = rows.concat((F.standard_fees || []).filter(function (r) {
+        return !/^Self-service/.test(r.label);
+      }), [{ label: "Rush", price: "Quoted up front" }]);
+      rows.forEach(function (r) {
+        if (r.price) table.appendChild(el("tr", null, [el("th", { scope: "row", text: r.label }), el("td", { text: r.price })]));
+      });
+      box.appendChild(table);
+    }
     if (!D.selected_lane) musts.push({ key: "q_service_option", node: box });
   }
   function startOptions() { return laneOptions(F).length > 1 || stage === "open" && (D.house_prompts || {}).start_options === true; }
@@ -996,9 +1076,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       return row;
     }).filter(Boolean);
   }
-  // Matt 2026-10-13: a line or question marked "required" (true, or a list of lanes; "default" when the order names
-  // none) must be answered before READY sends (open) or DONE sends (returned; NEEDS CHANGE never asks): the page marks
-  // what is missing, and READY leaves the form DRAFT.
+  // Missing intake facts are marked and travel with READY; approval and client permission remain boundaries.
   var musts = [];
   function needs(r) { return r === true || (Array.isArray(r) && r.indexOf((D.house_prompts || {}).lane || "default") >= 0); }
   function missing() {             // required lines and questions on show and still empty
@@ -1074,6 +1152,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function renderSections() {
     var host = $("sections");
     musts = []; filed = []; highlighted = [];
+    if (simpleStart()) return;
     CHECKLIST.sections.forEach(function (sec) {
       if (laneOptions(F).length && !D.selected_lane) return;
       if ((laneOptions(F).length || D.selected_lane) && (D.house_prompts || {}).lane !== "self-service" &&   // self-service keeps its calls page (Matt 2026-10-19)
@@ -1116,13 +1195,13 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     var due = String(O.payment_due || "").trim();
     $("payment").hidden = !due;
     $("selfservice").hidden = (D.house_prompts || {}).lane !== "self-service";   // Matt 2026-10-19: VERY clear on every self-service form
-    var tb = $("testbanner"), bt = String(D.banner || "").trim();   // Matt 2026-10-19: a big bright note at the top, set per order (formlink banner)
+    var tb = $("testbanner"), bt = String(D.banner || "").trim().replace(/\s*·\s*\$[\d,.]+(?=\s*(?:·|$))/g, "");   // Legacy fixed headers keep their lane and date, without the fee.
     tb.hidden = !bt; tb.textContent = "";
     bt.split(/([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/).forEach(function (part, i) {
       if (part) tb.appendChild(i % 2 ? el("a", { href: "mailto:" + part, text: part }) : document.createTextNode(part));
     });
     $("payment").textContent = "";
-    if (due) $("payment").textContent = "Payment due: " + due + ". Your file follows payment.";
+    if (due) $("payment").textContent = "Payment due. Your file follows payment.";
     var pay = String(O.pay_link || "").trim();      // the desk's card link (formlink.py); only a plain https address becomes a button
     if (due && /^https:\/\/[^\s"'<>]+$/.test(pay))
       $("payment").appendChild(el("a", { cls: "pay-btn", href: pay, target: !!INLINE && location.protocol === "file:" ? "_self" : "_blank", rel: "noopener", text: "Pay by card" }));
@@ -1136,7 +1215,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       var memo = rich(D.note_kind !== "not_ready" ? D.public_note : "", "memo", true);
       callsBox.hidden = !memo.children.length;
       if (!callsBox.hidden) {
-        callsBox.appendChild(el("h2", { text: "For your review" }));
+        if (typeof (D.house_prompts || {}).approve_ships !== "boolean") callsBox.appendChild(el("h2", { text: "For your review" }));
         callsBox.appendChild(memo);
       }
     } else if (returned) {
@@ -1151,8 +1230,8 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     head.appendChild(nowRow);
     fact("Property", O.property);
     fact("Client", O.client);
-    fact("Due", O.due_date);
-    box.appendChild(el("p", { id: "quote", cls: "note", text: [O.price, O.ready_by ? "ready " + O.ready_by : ""].filter(Boolean).join(" · ") }));
+    fact("Client due", O.due_date);
+    box.appendChild(el("p", { id: "quote", cls: "note", text: O.ready_by ? "Ready " + O.ready_by : "" }));
     box.appendChild(el("p", { id: "acceptance", cls: "note", hidden: true }));
     if (!returned && D.public_note && D.note_kind !== "not_ready") box.appendChild(rich(D.public_note, "note"));
   }
@@ -1179,14 +1258,45 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     return box;
   }
   // A private Drive preview stays viewable during payment holds; viewer permissions prevent download, print and copy.
+  function sizeTotalImages() {
+    document.querySelectorAll(".total-pages img").forEach(function (img) {
+      var width = img.naturalWidth || Number(img.getAttribute("width"));
+      if (width) img.style.maxWidth = (width / (window.devicePixelRatio || 1)) + "px";
+    });
+  }
+  window.addEventListener("resize", sizeTotalImages);
   function renderReport() {
     var box = $("report"), m = /^https:\/\/drive\.google\.com\/(?:file\/d\/([A-Za-z0-9_-]+)|(?:open|uc)\?(?:[^#]*&)?id=([A-Za-z0-9_-]+))/.exec(D.report_pdf || "");
     var due = !!String(O.payment_due || "").trim();
-    box.textContent = ""; box.hidden = stage !== "returned" || !m;
+    var images = (Array.isArray(D.report_images) ? D.report_images : []).filter(function (p) { return p && p.pdf === D.report_pdf && /^[A-Za-z0-9_-]+$/.test(p.id || "") && p.label; });
+    var shown = stage === "returned" && m ? [m[1] || m[2], due, D.review && D.review.pdf === D.report_pdf ? D.review.id : "", JSON.stringify(images)].join(" ") : "";
+    if (shown && box.getAttribute("data-shown") === shown) return;
+    box.textContent = ""; box.hidden = !shown; box.setAttribute("data-shown", shown);
+    box.classList.toggle("has-total", !!images.length);
     if (box.hidden) return;
     var id = m[1] || m[2], target = !!INLINE && location.protocol === "file:" ? "_self" : "_blank";
-    box.appendChild(el("a", { cls: "pdf-btn", href: "https://drive.google.com/file/d/" + id + "/view", target: target, rel: "noopener", text: due ? "Open PDF (view only)" : "Open PDF" }));
-    if (!due) box.appendChild(el("a", { cls: "pdf-btn dl", href: "https://drive.google.com/uc?export=download&id=" + id, target: target, rel: "noopener", text: "Download PDF" }));
+    box.appendChild(el("h2", { text: "Your report" }));
+    var pdf = el("div", { cls: "report-pdf" });
+    pdf.appendChild(el("a", { cls: "pdf-btn", href: "https://drive.google.com/file/d/" + id + "/view", target: target, rel: "noopener", text: due ? "Open full screen (view only)" : "Open full screen" }));
+    if (!due) pdf.appendChild(el("a", { cls: "pdf-btn dl", href: "https://drive.google.com/uc?export=download&id=" + id, target: target, rel: "noopener", text: "Download PDF" }));
+    pdf.appendChild(el("iframe", { src: "https://drive.google.com/file/d/" + id + "/preview", title: "Your report PDF", allow: "autoplay", loading: "lazy" }));
+    if (images.length) {
+      var pages = el("div", { cls: "total-pages" }), tabs = el("div", { cls: "report-switch", role: "group", "aria-label": "Report view" });
+      pages.appendChild(el("p", { cls: "note", text: "Tap any section to open full size." }));
+      images.forEach(function (p) {
+        var img = el("img", { src: "https://lh3.googleusercontent.com/d/" + p.id + "=s0", alt: p.label, loading: "lazy", decoding: "async" });
+        if (p.width && p.height) { img.width = p.width; img.height = p.height; img.style.maxWidth = (p.width / (window.devicePixelRatio || 1)) + "px"; }
+        img.addEventListener("load", sizeTotalImages);
+        pages.appendChild(el("figure", { cls: p.display === "phone" ? "total-phone" : p.display === "desktop" ? "total-desktop" : "" }, [el("figcaption", { text: p.label }), el("a", { href: "https://lh3.googleusercontent.com/d/" + p.id + "=s0", target: target, rel: "noopener", "aria-label": p.label + " — open full size" }, [img])]));
+      });
+      ["TOTAL view", "PDF"].forEach(function (label, i) {
+        var btn = el("button", { type: "button", text: label, "aria-pressed": String(!i) });
+        btn.addEventListener("click", function () { pages.hidden = !!i; pdf.hidden = !i; Array.from(tabs.children).forEach(function (b) { b.setAttribute("aria-pressed", String(b === btn)); }); });
+        tabs.appendChild(btn);
+      });
+      box.appendChild(tabs); box.appendChild(pages); pdf.hidden = true;
+    }
+    box.appendChild(pdf);
     if (D.review && D.review.pdf === D.report_pdf) box.appendChild(el("p", { cls: "note", "data-review-version": D.review.id,
       text: "Review version " + D.review.id.slice(0, 8) }));
   }
@@ -1223,7 +1333,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       built0 ? (O.files_by === "email" ? "Answer each, then tap <b>Send answers</b>." : "Save the report in TOTAL so your files come through, then tap <b>Send answers</b>.") :
       stage === "open" && O.files_by === "email" ? "Tap <b>Ready</b> to have us check your files. Nothing starts yet." : STAGES[stage].help;   // files by email, no Workfile
     if (stage === "open" && !review && $("help").innerHTML.indexOf("Nothing starts") < 0)
-      $("help").innerHTML += " Nothing starts until you tap Start production after we check your files.";
+      $("help").innerHTML += " Tap Start production after we check your files to authorize the run.";
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = review || desk || stage === "returned"; });
     // After the run the questions are all that is left to answer: the START sections (already answered) step aside.
     var built = (D.questions || []).length > 0;
@@ -1235,11 +1345,13 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     if (box1) box1.placeholder = agreeQ ? "Describe your requested change." : "";
     $("agree-value").textContent = "";
     if (agreeQ) { $("agree-value").appendChild(el("span", { text: "VALUE" })); $("agree-value").appendChild(el("b", { text: agreeQ.value })); }
-    statusBtns.forEach(function (b) { var st = b.getAttribute("data-s"); b.textContent = st === "NEEDS_CHANGE" ? "Request Changes" : st === "DONE" && signoff() ? "Approve and deliver" : WORD[st]; });
+    statusBtns.forEach(function (b) { var st = b.getAttribute("data-s"); b.textContent = st === "NEEDS_CHANGE" ? "Request Changes" : st === "DONE" && signoff() ? approveLabel() : WORD[st]; });
     document.querySelectorAll("[data-stage]").forEach(function (c) { var st = c.getAttribute("data-stage"); c.hidden = st !== stage || (st === "open" && built && (D.house_prompts || {}).lane !== "self-service"); });   // Matt 2026-10-19: self-service keeps its calls page with questions
     paintStatus();
   }
   function paintStatus() {
+    paintChosen();
+    $("lane-picker").hidden = !choosingLane();
     var locked = readOnly || approved || pendingTaps > 0 || inProduction() || answered() || optionSent();
     $("form").disabled = locked;
     $("form").hidden = inProduction();
@@ -1249,7 +1361,10 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     $("now").classList.toggle("approved", approved);
     $("action").classList.toggle("agree", approved && !!agreeQ);
     $("now").closest(".now-row").hidden = customerReturned() && !approved;
-    $("help").hidden = approved || customerReturned() || inProduction();
+    $("help").hidden = approved || customerReturned() || inProduction() || simpleStart() && !customerReady();
+    $("order").hidden = simpleStart();
+    $("testbanner").hidden = simpleStart() || !String(D.banner || "").trim();
+    $("payment").hidden = simpleStart() || !String(O.payment_due || "").trim();
     document.querySelectorAll("[data-terms]").forEach(function (p) {
       var h = acceptance(), a = h && h.accepted;
       var terms = D.terms || (a && a.terms);
@@ -1266,24 +1381,25 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
         });
         return;
       }
-      var words = filesChecked() && !inProduction() ? "By tapping Start production you accept the price and day above and our " : customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept " + (laneOptions(F).length ? "the price and day above and our " : "our ") : "By tapping Ready you accept the price and day above and our ";
+      var words = simpleStart() ? "Start accepts our " : filesChecked() && !inProduction() ? "By tapping Start production you accept our " : customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept our " : "By tapping Ready you accept our ";
       p.appendChild(document.createTextNode(words));
-      p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: laneOptions(F).length ? (D.selected_lane === "self-service" ? "Software Terms" : "Service Terms") : "terms" }));
+      p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: laneOptions(F).length ? ((D.house_prompts || {}).lane === "self-service" ? "Software Terms" : "Service Terms") : "terms" }));
       p.appendChild(document.createTextNode("."));
     });
     var accepted = acceptance();
-    $("acceptance").hidden = !accepted;
-    $("acceptance").textContent = accepted ? "Accepted " + new Date(accepted.at).toLocaleDateString([], { month: "short", day: "numeric" }) + (accepted.accepted.price ? " · " + accepted.accepted.price : "") + (accepted.accepted.ready_by ? " · ready " + accepted.accepted.ready_by : "") : "";
-    $("quote").hidden = laneOptions(F).length && !D.selected_lane || stage !== "open" && !!accepted && !quoteChanged();
+    $("acceptance").hidden = !!startRecord() || !accepted;
+    $("acceptance").textContent = accepted ? "Accepted " + new Date(accepted.at).toLocaleDateString([], { month: "short", day: "numeric" }) + (accepted.accepted.ready_by ? " · ready " + accepted.accepted.ready_by : "") : "";
+    $("quote").hidden = !!startRecord() || simpleStart() || laneOptions(F).length && !D.selected_lane || stage !== "open" && !!accepted && !quoteChanged();
     $("start-production").hidden = !filesChecked() || inProduction() || (D.house_prompts || {}).lane === "review";
+    $("start-production").textContent = simpleStart() ? "Start" : "Start production";
     $("start-production").disabled = readOnly || !online || pendingTaps > 0 || goBusy;
-    document.querySelectorAll("#lane-picker button").forEach(function (b) { b.disabled = locked; });
+    document.querySelectorAll("#lane-picker button, #lane-picker input").forEach(function (b) { b.disabled = locked || !!startRecord(); });
     if (optionSent()) $("help").textContent = readyNote();
     if (answered()) $("help").textContent = readyNote();
     $("agree-value").hidden = !approved || !agreeQ;
     var paymentDue = !!String(O.payment_due || "").trim();
     $("returned-intro").hidden = !customerReturned();
-    $("returned-headline").textContent = signoff() ? signedOff() ? approvalNote() : !reviewReady() ? (state.post_changes || []).length ? "Your changes are with us. We'll post your review PDF here." : "Your review PDF will appear here." : "Your report is ready for your review. Tap Approve and deliver to send it to your TOTAL folder, or request a change below." : paymentDue ? "Your report is ready. It goes to your folder once payment is received." : "Your report is in your TOTAL folder. Review and edit it there.";
+    $("returned-headline").textContent = signoff() ? signedOff() ? approvalNote() : !reviewReady() ? (state.post_changes || []).length ? "Your changes are with us. We'll post your review PDF below." : "Your review PDF will appear below." : (approveShips() ? "Your report is ready for your review. Tap Approve and deliver to send it to your TOTAL folder, or request a change below." : "Your report is in your TOTAL folder. Review it below, then approve or request a change.") : paymentDue ? "Your report is ready. It goes to your folder once payment is received." : "Your report is in your TOTAL folder. Review and edit it there.";
     $("delivered-at").hidden = paymentDue || !D.delivered_at;
     $("delivered-at").textContent = D.delivered_at ? "Delivered " + when(D.delivered_at) : "";
     var legacyApproval = state.history.filter(function (e) { return e.status === "DONE"; });
@@ -1294,8 +1410,8 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     if (customerReturned()) $("post-box").hidden = false;
     statusBtns.forEach(function (b) {
       b.setAttribute("aria-pressed", String(b.getAttribute("data-s") === state.status));
-      b.hidden = approved || (customerReturned() ? !signoff() || !reviewReady() || signedOff() || b.getAttribute("data-s") !== "DONE" : STAGES[stage].statuses.indexOf(b.getAttribute("data-s")) < 0 || b.getAttribute("data-s") === "DRAFT");   // answers autosave
-      b.disabled = locked || (inProduction() && b.getAttribute("data-s") === "READY");
+      b.hidden = simpleStart() && filesChecked() || approved || (customerReturned() ? !signoff() || !reviewReady() || signedOff() || b.getAttribute("data-s") !== "DONE" : STAGES[stage].statuses.indexOf(b.getAttribute("data-s")) < 0 || b.getAttribute("data-s") === "DRAFT");   // answers autosave
+      b.disabled = locked || (b.getAttribute("data-s") === "READY" && (inProduction() || minimalStart() && !D.selected_lane));
     });
     document.querySelectorAll("[data-status]").forEach(function (bar) { bar.hidden = approved || (customerReturned() && (!signoff() || !reviewReady() || signedOff())); bar.classList.toggle("one", stage === "open" || signoff()); });
     var entries = state.history.slice();
@@ -1307,8 +1423,8 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     }
     var h = entries.reverse().filter(function (e) { return e.accepted || (e.event === "client_permits" && !permitsOff()) || e.event === "go" || e.event === "post_change" || e.event === "delivered" || e.event === "updated" || e.status === "DONE"; }).map(function (e) {
       if (e.event === "client_permits") return "Client permission · " + e.answer + " · " + when(e.at);
-      if (e.event === "go") return "Start production · " + e.quote.lane + " · " + e.quote.price + " · ready " + e.quote.ready_by + " · " + when(e.at);
-      if (e.accepted) return (e.by === "desk" ? "Desk go-ahead · " : e.by === "no tag" ? "Accepted (no tag) · " : "Accepted · ") + e.accepted.price + " · ready " + e.accepted.ready_by + " · " + e.accepted.lane + " · " + e.accepted.terms + " · " + when(e.at);
+      if (e.event === "go") return "Start production · " + e.quote.lane + " · ready " + e.quote.ready_by + " · " + when(e.at);
+      if (e.accepted) return (e.by === "desk" ? "Desk go-ahead · " : e.by === "no tag" ? "Accepted (no tag) · " : "Accepted · ") + "ready " + e.accepted.ready_by + " · " + e.accepted.lane + " · " + e.accepted.terms + " · " + when(e.at);
       return (e.event === "post_change" ? "Change requested" : e.event === "delivered" ? "Delivered" : e.event === "updated" ? "Updated" : "Approved") + " " + when(e.at);
     });
     $("history-list").textContent = "";
@@ -1355,12 +1471,12 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     if (s !== "DRAFT") $("saved").hidden = true;
     statusBtns.forEach(function (b) {
       if (signoff() && b.getAttribute("data-s") === "DONE") {
-        b.textContent = left.length ? "Approve and deliver · " + left.length + " left" : "Approve and deliver";
+        b.textContent = left.length ? approveLabel() + " · " + left.length + " left" : approveLabel();
         b.classList.toggle("wait", left.length > 0); return;
       }
       if (b.getAttribute("data-s") !== "READY") return;
-      var go = asked() && !startOptions() ? "Send answers" : WORD.READY;
-      b.textContent = inProduction() ? "Start production received" : answered() ? "Answers sent" : left.length ? go + " · " + left.length + " left" : go;
+      var go = simpleStart() ? "Start" : asked() && !startOptions() ? "Send answers" : WORD.READY;
+      b.textContent = inProduction() ? "Start production received" : answered() ? "Answers sent" : left.length && !simpleStart() ? go + " · " + left.length + " left" : go;
       b.classList.toggle("wait", left.length > 0);
     });
     musts.forEach(function (m) { if (left.indexOf(m) < 0) m.node.classList.remove("need"); });
@@ -1566,7 +1682,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       if (e.form) refresh(e.form);
       if (e.saved) apply(e.saved);
       state.status = "DRAFT"; paintStatus();
-      banner("The price or day changed. Review it and tap Ready again.", "warn");
+      banner("The order changed. Review it and tap Ready again.", "warn");
     } else if (code === "too_large") {
       banner("Too long to save. Shorten it a little.", "warn");
     } else {
@@ -1577,7 +1693,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function closed() {               // the order is closed: no form, just the one line
     readOnly = true; pop(false); $("form").disabled = true; $("main").hidden = true; $("gate").hidden = false; gate(CLOSED); conn("Closed");
     if (stage === "open" && !review && $("help").innerHTML.indexOf("Nothing starts") < 0)
-      $("help").innerHTML += " Nothing starts until you tap Start production after we check your files.";
+      $("help").innerHTML += " Tap Start production after we check your files to authorize the run.";
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = true; });
   }
   function afterEdit() {
@@ -1593,20 +1709,20 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function blanks() {              // post-run questions still blank (some may rightly stay blank)
     return (D.questions || []).filter(function (q) { var v = state.answers["q_" + q.id]; return q.kind !== "confirm" && (v == null || !String(v).trim()); }).length;
   }
-  var nudged = false;              // Matt 2026-10-13: READY with a question blank warns once; the next READY sends anyway
   function setStatus(s) {
     if (readOnly || approved || pendingTaps || (customerReturned() && (!signoff() || !reviewReady() || signedOff() || s !== "DONE"))) return;
     var gaps = s === "READY" || s === "DONE" ? missing() : [];
-    if (gaps.length) {               // required answers missing: say what and never send; READY stays (or goes back to) DRAFT
-      gaps.forEach(function (m) { m.node.classList.add("need"); });
-      gaps[0].node.scrollIntoView({ block: "center" });
-      var first = gaps[0].node.querySelector("input, textarea, button"); if (first) first.focus({ preventScroll: true });
-      banner(gaps.length === 1 ? "Answer the marked question." : "Answer the marked questions.", "warn");
+    var blocking = s === "DONE" ? gaps : gaps.filter(function (m) { return m.key === "q_client_permits"; });
+    if (blocking.length) {
+      blocking.forEach(function (m) { m.node.classList.add("need"); });
+      blocking[0].node.scrollIntoView({ block: "center" });
+      var first = blocking[0].node.querySelector("input, textarea, button"); if (first) first.focus({ preventScroll: true });
+      banner(blocking.length === 1 ? "Answer the marked question." : "Answer the marked questions.", "warn");
       if (s === "READY" && state.status === "READY") setStatus("DRAFT");
       return;
     }
-    if (s === "READY" && !nudged && blanks()) {
-      nudged = true; banner("Some questions are blank. Tap Ready again to send.", "warn"); return;
+    if (s === "READY" && gaps.length) {
+      gaps.forEach(function (m) { m.node.classList.add("need"); });
     }
     if (agreeQ && (s === "DONE" || s === "NEEDS_CHANGE")) state.answers["q_" + agreeQ.id] = s === "DONE" ? "agreed " + agreeQ.value : "";   // Agree is his DONE
     clearTimeout(timer); timer = null;
@@ -1615,7 +1731,6 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     if (s === "READY") { fastUntil = Date.now() + 60000; pollSoon(); banner("Sending your files and answers for checking. Nothing starts yet.", "ok"); }
     if (connecting) { tapped = s; if (s !== "READY") banner("Sending…", "ok"); return; }
     if (!online) { banner("Not connected, not sent. Your answers are still here.", "warn"); return; }
-    nudged = false;
     conn("Sending…");
     write(true).then(function (r) {
       conn(approved ? "Approved" : "Saved " + when(new Date().toISOString()));
@@ -1693,6 +1808,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     state.approved_review = saved.approved_review || null;
     state.go = saved.go || null;
     state.customer_submission = saved.customer_submission || null;
+    state.customer_submissions = saved.customer_submissions || [];
     state.invalidated_check = saved.invalidated_check || null;
     approved = stage === "returned" && (D.house_prompts || {}).lane === "review" && state.status === "DONE";
     conn(approved ? "Approved" : "Connected");
@@ -1701,6 +1817,11 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       var mine = saved.answers && typeof saved.answers === "object" ? saved.answers : savedAt ? null : {};   // nothing saved yet: the desk's latest defaults
       if (mine) { state.answers = answersFrom(mine); Object.keys(mine).forEach(function (k) { own[k] = true; }); }
       if (Array.isArray(saved.changes)) { state.changes = saved.changes.slice(0, NCHANGES); while (state.changes.length < NCHANGES) state.changes.push(""); }
+      var start = startRecord();
+      if (start) {
+        state.answers.q_service_option = start.quote.lane;
+        state.answers.q_rush = (start.answers || {}).q_rush === true;
+      }
       if (controls.q_client_permits && saved.answers && saved.answers.q_client_permits) refresh(F);
       if (laneOptions(F).length && laneForm(F, state.answers).selected_lane !== D.selected_lane) refresh(F);   // only a different saved lane re-renders
       paintAll();
@@ -1710,7 +1831,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
+  function newer(f) { return canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
   function canon(v) { return JSON.stringify(v, function (k, x) { return x && typeof x === "object" && !Array.isArray(x) ? Object.keys(x).sort().reduce(function (o, j) { o[j] = x[j]; return o; }, {}) : x; }); }   // key order is never a change
   // A re-render keeps the reader's place (Chase 2026-10-20): the scroll, then the box or button in focus and its
   // selection; with nothing in focus it takes none.
