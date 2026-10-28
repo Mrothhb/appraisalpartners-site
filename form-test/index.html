@@ -434,6 +434,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   *, *::before, *::after { transition: none !important; animation: none !important; }
   .mic.on { box-shadow: 0 0 0 3px rgba(167,42,42,.45); }
 }
+.minimal-calls .wrap { max-width:1200px; }
 .minimal-grid .grid th.row { min-width: 140px; width: 140px; }
 .minimal-grid .grid td, .minimal-grid .grid thead th:not(.row) { min-width: 125px; }
 .minimal-grid .grid th.row input { display:block; width:90px; min-height:44px; margin-top:5px; padding:7px; }
@@ -1056,7 +1057,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       var rendered = rows.map(function (r) {
         var tr = body.appendChild(el("tr")), label = tr.appendChild(el("th", { cls: "row", scope: "row" }));
         label.appendChild(el("label", { "for": "f-" + r.key, text: r.label }));
-        label.appendChild(el("small", { text: "Subject: " + (r.subject == null ? "?" : typeof r.subject === "number" ? r.subject.toLocaleString("en-US") : r.subject) }));
+        label.appendChild(el("small", { text: "Subject: " + (r.subject == null ? "?" : typeof r.subject === "number" && r.fact !== "year_built" ? r.subject.toLocaleString("en-US") : r.subject) }));
         var input = label.appendChild(el("input", { id: "f-" + r.key, type: "text", inputmode: "decimal", autocomplete: "off", "data-call": r.key, "aria-label": r.label + " dollars per " + r.unit }));
         label.appendChild(el("small", { text: "$ / " + r.unit }));
         controls[r.key] = { set: function (v) { input.value = v == null ? "" : v; } };
@@ -1099,7 +1100,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       line.cells.forEach(function(cell,i){
         var delta=minimalDelta(r,i), amount=delta===0?0:delta==null||rate==null?null:delta*rate;
         cell.textContent="";
-        cell.appendChild(el("span",{cls:"f",text:delta==null?"?":delta===0?"Same":signed(delta)+" "+r.unit}));
+        cell.appendChild(el("span",{cls:"f",text:delta==null?"?":delta===0?"Same":(delta>0?"+":"−")+Math.abs(delta).toLocaleString("en-US",{maximumFractionDigits:4})+" "+r.unit}));
         cell.appendChild(el("span",{cls:"a",text:amount==null?"—":signed(amount)}));
         if(differs) totals[i]=totals[i]==null||amount==null?null:totals[i]+amount;
       });
@@ -1301,6 +1302,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     });
   }
   function renderOrder() {
+    document.body.classList.toggle("minimal-calls", minimalCalls());
     var due = String(O.payment_due || "").trim();
     $("payment").hidden = !due;
     $("selfservice").hidden = (D.house_prompts || {}).lane !== "self-service";   // Matt 2026-10-19: VERY clear on every self-service form
@@ -1383,7 +1385,6 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     box.textContent = ""; box.hidden = !shown; box.setAttribute("data-shown", shown);
     box.classList.toggle("has-total", !!images.length);
     if (box.hidden) return;
-    if (minimalCalls()) { box.hidden = true; return; }
     var id = m[1] || m[2], target = !!INLINE && location.protocol === "file:" ? "_self" : "_blank";
     box.appendChild(el("h2", { text: "Your report" }));
     var pdf = el("div", { cls: "report-pdf" });
@@ -1823,7 +1824,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       clearTimeout(timer);
       timer = setTimeout(function () { timer = null; write(false).then(function () { conn("Saved " + when(new Date().toISOString())); $("saved").hidden = false; }, function () {}); }, 1500);
     } else {
-      banner("Changed. Tap " + (stage === "open" ? (asked() && !startOptions() ? "Send answers" : "Ready") : "Request Changes") + " to save.", "warn");
+      banner("Changed. Tap " + (stage === "open" ? (minimalCalls() ? "Start" : asked() && !startOptions() ? "Send answers" : "Ready") : "Request Changes") + " to save.", "warn");
     }
   }
   function blanks() {              // post-run questions still blank (some may rightly stay blank)
