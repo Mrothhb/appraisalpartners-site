@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.27">
+<html lang="en" data-build="v2026-10-28.28">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1245,9 +1245,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     paintCallLines();
   }
 
-  function minimalStart() { if(minimalCalls())return true; return F.minimal_start === true && (D.stage || "open") === "open" && !askedAt(F); }
+  function minimalStart() { if(minimalCalls())return true; return F.minimal_start === true && (D.stage || "open") === "open" && !(D.questions || []).length; }
   function simpleStart() { return minimalStart() && (D.house_prompts || {}).lane !== "self-service"; }
-  function choosingLane() { return laneOptions(F).length > 0 && (D.stage || "open") === "open" && !askedAt(F) && !startRecord() && !acceptance() && !state.go; }
+  function choosingLane() { return laneOptions(F).length > 0 && (D.stage || "open") === "open" && (minimalStart() || !askedAt(F)) && !startRecord() && !acceptance() && !state.go; }
   function renderLanes() {
     var box = $("lane-picker"), options = laneOptions(F);
     box.textContent = ""; box.hidden = !choosingLane();
@@ -1272,12 +1272,12 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     });
     box.appendChild(cards);
     if (minimalStart()) {
-      if (options.length > 1) box.appendChild(check("q_rush", "Need it within 1 working day? Check here. We quote the rush fee before we start.", "rush"));
+      if ((D.house_prompts || {}).lane === "self-service" && options.length > 1) box.appendChild(check("q_rush", "Need it within 1 working day? Check here. We quote the rush fee before we start.", "rush"));
       var table = el("table", { cls: "standard-fees" }, [el("caption", { text: "Standard fees" })]);
       var rows = options.map(function (o) { return { label: o.fee_label || o.label, price: o.price }; });
       rows = rows.concat((F.standard_fees || []).filter(function (r) {
         return !/^Self-service/.test(r.label);
-      }), [{ label: "Rush", price: "Quoted up front" }]);
+      }), (D.house_prompts || {}).lane === "self-service" ? [{ label: "Rush", price: "Quoted up front" }] : []);
       rows.forEach(function (r) {
         if (r.price) table.appendChild(el("tr", null, [el("th", { scope: "row", text: r.label }), el("td", { text: r.price })]));
       });
