@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.4">
+<html lang="en" data-build="v2026-10-28.5">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -191,7 +191,7 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 .total-pages figure { margin: 0 0 20px; }
 .total-pages figcaption { padding: 9px 16px; background: var(--bar); color: white; font: 600 14px/1.4 var(--font); }
 .total-pages a, .total-pages img { display: block; width: 100%; }
-.total-pages img { height: auto; background: white; }
+.total-pages img { height: auto; background: white; margin-inline: auto; }
 .total-pages .note { padding: 0 16px 12px; }
 #report [hidden] { display: none; }
 .pdf-btn.dl::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.5v9M4.5 7l3.5 3.5L11.5 7M2.5 14.5h11' fill='none' stroke='%230b6fc1' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
@@ -1256,6 +1256,13 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     return box;
   }
   // A private Drive preview stays viewable during payment holds; viewer permissions prevent download, print and copy.
+  function sizeTotalImages() {
+    document.querySelectorAll(".total-pages img").forEach(function (img) {
+      var width = img.naturalWidth || Number(img.getAttribute("width"));
+      if (width) img.style.maxWidth = (width / (window.devicePixelRatio || 1)) + "px";
+    });
+  }
+  window.addEventListener("resize", sizeTotalImages);
   function renderReport() {
     var box = $("report"), m = /^https:\/\/drive\.google\.com\/(?:file\/d\/([A-Za-z0-9_-]+)|(?:open|uc)\?(?:[^#]*&)?id=([A-Za-z0-9_-]+))/.exec(D.report_pdf || "");
     var due = !!String(O.payment_due || "").trim();
@@ -1276,7 +1283,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       pages.appendChild(el("p", { cls: "note", text: "Tap any section to open full size." }));
       images.forEach(function (p) {
         var img = el("img", { src: "https://lh3.googleusercontent.com/d/" + p.id + "=s0", alt: p.label, loading: "lazy", decoding: "async" });
-        if (p.width && p.height) { img.width = p.width; img.height = p.height; }
+        if (p.width && p.height) { img.width = p.width; img.height = p.height; img.style.maxWidth = (p.width / (window.devicePixelRatio || 1)) + "px"; }
+        img.addEventListener("load", sizeTotalImages);
         pages.appendChild(el("figure", { cls: p.display === "phone" ? "total-phone" : p.display === "desktop" ? "total-desktop" : "" }, [el("figcaption", { text: p.label }), el("a", { href: "https://lh3.googleusercontent.com/d/" + p.id + "=s0", target: target, rel: "noopener", "aria-label": p.label + " — open full size" }, [img])]));
       });
       ["TOTAL view", "PDF"].forEach(function (label, i) {
