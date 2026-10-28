@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.23">
+<html lang="en" data-build="v2026-10-28.24">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -613,7 +613,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 </script>
 
 <script>
-var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDtDduuMMWfV1kYpmnyQpnVkuVGbRy--euZqvLh1ErQ/exec";   // the web app's /exec URL (SETUP.md); while empty, the page says it is not connected
+var API = "TEST_API_URL";   // the web app's /exec URL (SETUP.md); while empty, the page says it is not connected
 (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
@@ -1088,6 +1088,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     card.hidden=false;
     if(section.note)card.appendChild(el("p",{cls:"note",text:section.note}));
     section.lines.forEach(function(line){
+      if (["comps_roster", "search_net"].indexOf(line.key) >= 0) return;
       var options=callOptions(line), context=(D.house_prompts||{})[line.context], label=line.label+(context ? " · "+context : "");
       var input=line.kind === "check" ? check(line.key,label) : options ? choice(line.key,label,options) : text(line.key,label,{multi:line.kind === "multi",short:!!line.numeric});
       if(line.key === "calls_ok") {var original=controls.calls_ok.set;controls.calls_ok.set=function(v){original(v === true && ans("calls_checked_at") === (D.accepted_at||""));};}
@@ -1440,11 +1441,9 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     });
     callMusts(host);
   }
-  // Matt 2026-10-21 (Chase Elmore): "after he picks self service lane immediately show him the your calls form for self
-  // service so we capture all his calls before launch". house_prompts.calls_first on a self-service form makes each call
-  // the ship check asks for (formlink.py selfservice_missing) required before Ready; launch waits for them too.
+  // Legacy calls-first data applies only outside the current self-service template.
   var CALL = /^(rate_\w+|subject_(quality|condition)|most_weight|premise|hbu_present_use|price_trend|supply|time_adjustment|concessions|prior_sale_ok|contract_ok|influence_effect|site_value|market_rent|search_net|condition_as_is|repairs|comp\d+_(quality|condition))$/;
-  function callsFirst() { return valueLast() && (D.house_prompts || {}).calls_first === true; }
+  function callsFirst() { return valueLast() && !minimalCalls() && (D.house_prompts || {}).calls_first === true; }
   function callMusts(host) {
     if (!callsFirst()) return;
     var homes = [D.subject || {}].concat(D.comps || []), premise = function () { return String(ans("premise") || ""); };
