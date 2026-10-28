@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.6">
+<html lang="en" data-build="v2026-10-28.7">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1381,7 +1381,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
         });
         return;
       }
-      var words = simpleStart() ? "Start accepts our " : filesChecked() && !inProduction() ? "By tapping Start production you accept our " : customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept our " : "By tapping Ready you accept our ";
+      var words = minimalStart() ? "Start accepts our " : filesChecked() && !inProduction() ? "By tapping Start production you accept our " : customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept our " : "By tapping Ready you accept our ";
       p.appendChild(document.createTextNode(words));
       p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: laneOptions(F).length ? ((D.house_prompts || {}).lane === "self-service" ? "Software Terms" : "Service Terms") : "terms" }));
       p.appendChild(document.createTextNode("."));
@@ -1475,7 +1475,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
         b.classList.toggle("wait", left.length > 0); return;
       }
       if (b.getAttribute("data-s") !== "READY") return;
-      var go = simpleStart() ? "Start" : asked() && !startOptions() ? "Send answers" : WORD.READY;
+      var go = minimalStart() ? "Start" : asked() && !startOptions() ? "Send answers" : WORD.READY;
       b.textContent = inProduction() ? "Start production received" : answered() ? "Answers sent" : left.length && !simpleStart() ? go + " · " + left.length + " left" : go;
       b.classList.toggle("wait", left.length > 0);
     });
@@ -1712,7 +1712,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function setStatus(s) {
     if (readOnly || approved || pendingTaps || (customerReturned() && (!signoff() || !reviewReady() || signedOff() || s !== "DONE"))) return;
     var gaps = s === "READY" || s === "DONE" ? missing() : [];
-    var blocking = s === "DONE" ? gaps : gaps.filter(function (m) { return m.key === "q_client_permits"; });
+    var blocking = s === "DONE" || s === "READY" && callsFirst() ? gaps : gaps.filter(function (m) { return m.key === "q_client_permits"; });
     if (blocking.length) {
       blocking.forEach(function (m) { m.node.classList.add("need"); });
       blocking[0].node.scrollIntoView({ block: "center" });
