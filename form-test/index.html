@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.21">
+<html lang="en" data-build="v2026-10-28.22">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1387,7 +1387,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       section.calls.forEach(function(c){
         var key="q_pc_"+section.id+"_"+c.id;
         if(!(key in state.answers))state.answers[key]=String(c.value);
-        card.appendChild(text(key,c.label,{multi:true}));
+        card.appendChild(Array.isArray(c.options) ? choice(key,c.label,c.options) : text(key,c.label,{multi:true}));
         card.appendChild(el("p",{cls:"note proposal-evidence",text:c.evidence}));
       });
       var button=card.appendChild(el("button",{type:"button",cls:"st",text:"Confirm this section"}));
@@ -1708,7 +1708,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     if (minimalCalls()) {
       $("lane-picker").hidden = !choosingLane();
       var gaps=[];
-      if(!minimalChecked()) gaps.push(D.public_note || "complete file");
+      if(!minimalChecked()) gaps.push(String(D.public_note || "complete file").replace(/^still needed:\s*/i, "").replace(/\.$/, ""));   // one "Missing:" line
       else if(!minimalFactsReady()) gaps.push("comps from your file");
       missing().forEach(function(m){gaps.push(m.key==="q_value"?"your value":m.key==="q_exposure"?"exposure time":m.key==="adjustments_by"?"who fills adjustments":m.label || m.node.querySelector("label")?.textContent || "adjustment rates");});
       $("help").textContent = gaps.length ? "Missing: " + [...new Set(gaps)].join("; ") + "." : "Save to come back, or Start your report.";
