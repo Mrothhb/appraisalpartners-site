@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-26.3">
+<html lang="en" data-build="v2026-10-28.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -175,6 +175,8 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 .pdf-btn::before { content: ""; flex: none; width: 18px; height: 18px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 1.5h5.5l3 3v10h-8.5z' fill='none' stroke='%230b6fc1' stroke-width='1.4' stroke-linejoin='round'/%3E%3Cpath d='M9.5 1.5v3h3' fill='none' stroke='%230b6fc1' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") center / 16px 16px no-repeat; }
 #report { display: flex; flex-wrap: wrap; gap: var(--s-3); }
 #report .pdf-btn { flex: 1 1 200px; }
+#report .note { flex: 1 1 100%; margin: 0; }
+#report iframe { display: block; flex: 1 1 100%; width: 100%; height: 80vh; min-height: 420px; max-height: 1100px; border: 1px solid var(--line); border-radius: var(--r-2); background: var(--tint); }
 .pdf-btn.dl::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.5v9M4.5 7l3.5 3.5L11.5 7M2.5 14.5h11' fill='none' stroke='%230b6fc1' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 
 /* ---------- buttons: the site's .btn (filled) and .btn.ghost (outlined) ---------- */
@@ -453,11 +455,11 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <div class="banner" id="payment" role="status" hidden></div>
   <div class="banner warn" id="selfservice" role="note" hidden><div><p><b>Self-service: Matt and his team do not review this report.</b></p><ul><li>No one will discuss values or the report.</li><li>Questions, issues and changes go in writing, on this form or by email.</li><li>Appraisal help from Matt or his team is a separate service, billed for his time, and only where state rules allow it.</li><li>You are using the A&amp;AP software intelligence system directly. We strongly encourage you to review this report and ensure the system makes all changes to your liking.</li><li>Bugs, errors and software issues should be escalated to Matt and his team immediately. Appraisal discussion and questions remain in this form or by email.</li></ul></div></div>
   <div class="card" id="returned-intro" hidden><p id="returned-headline">Your report is in your TOTAL folder. Review and edit it there.</p><p class="note" id="delivered-at" hidden></p><p class="note" id="legacy-approved" hidden></p></div>
-  <section class="card report" id="report" aria-label="Your report" hidden></section>
   <div class="banner" id="notready" role="status" hidden></div>
   <section class="card" id="calls" aria-label="Our calls" hidden></section>
 
   <fieldset id="form"><div id="sections"></div></fieldset>
+  <section class="card report" id="report" aria-label="Your report" hidden></section>
 
   <section class="card statusbox" id="action" aria-label="Status">
     <p class="status-help" id="help"></p>
@@ -1239,10 +1241,13 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function renderReport() {
     var box = $("report"), m = /^https:\/\/drive\.google\.com\/(?:file\/d\/([A-Za-z0-9_-]+)|(?:open|uc)\?(?:[^#]*&)?id=([A-Za-z0-9_-]+))/.exec(D.report_pdf || "");
     var due = !!String(O.payment_due || "").trim();
-    box.textContent = ""; box.hidden = stage !== "returned" || !m;
+    var shown = stage === "returned" && m ? [m[1] || m[2], due, D.review && D.review.pdf === D.report_pdf ? D.review.id : ""].join(" ") : "";
+    if (shown && box.getAttribute("data-shown") === shown) return;   // same PDF: keep the reader's place in the viewer
+    box.textContent = ""; box.hidden = !shown; box.setAttribute("data-shown", shown);
     if (box.hidden) return;
     var id = m[1] || m[2], target = !!INLINE && location.protocol === "file:" ? "_self" : "_blank";
-    box.appendChild(el("a", { cls: "pdf-btn", href: "https://drive.google.com/file/d/" + id + "/view", target: target, rel: "noopener", text: due ? "Open PDF (view only)" : "Open PDF" }));
+    box.appendChild(el("iframe", { src: "https://drive.google.com/file/d/" + id + "/preview", title: "Your report PDF", allow: "autoplay" }));   // Matt 2026-10-28: the PDF right on the form
+    box.appendChild(el("a", { cls: "pdf-btn", href: "https://drive.google.com/file/d/" + id + "/view", target: target, rel: "noopener", text: due ? "Open full screen (view only)" : "Open full screen" }));
     if (!due) box.appendChild(el("a", { cls: "pdf-btn dl", href: "https://drive.google.com/uc?export=download&id=" + id, target: target, rel: "noopener", text: "Download PDF" }));
     if (D.review && D.review.pdf === D.report_pdf) box.appendChild(el("p", { cls: "note", "data-review-version": D.review.id,
       text: "Review version " + D.review.id.slice(0, 8) }));
@@ -1346,7 +1351,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     $("agree-value").hidden = !approved || !agreeQ;
     var paymentDue = !!String(O.payment_due || "").trim();
     $("returned-intro").hidden = !customerReturned();
-    $("returned-headline").textContent = signoff() ? signedOff() ? approvalNote() : !reviewReady() ? (state.post_changes || []).length ? "Your changes are with us. We'll post your review PDF here." : "Your review PDF will appear here." : "Your report is ready for your review. Tap Approve and deliver to send it to your TOTAL folder, or request a change below." : paymentDue ? "Your report is ready. It goes to your folder once payment is received." : "Your report is in your TOTAL folder. Review and edit it there.";
+    $("returned-headline").textContent = signoff() ? signedOff() ? approvalNote() : !reviewReady() ? (state.post_changes || []).length ? "Your changes are with us. We'll post your review PDF below." : "Your review PDF will appear below." : "Your report is ready for your review. Tap Approve and deliver to send it to your TOTAL folder, or request a change below." : paymentDue ? "Your report is ready. It goes to your folder once payment is received." : "Your report is in your TOTAL folder. Review and edit it there.";
     $("delivered-at").hidden = paymentDue || !D.delivered_at;
     $("delivered-at").textContent = D.delivered_at ? "Delivered " + when(D.delivered_at) : "";
     var legacyApproval = state.history.filter(function (e) { return e.status === "DONE"; });
