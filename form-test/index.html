@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-28.29">
+<html lang="en" data-build="v2026-10-29.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -177,7 +177,10 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 #report h2 { flex: 1 1 100%; margin-bottom: 0; }
 #report .pdf-btn { flex: 1 1 200px; }
 #report .note { flex: 1 1 100%; margin: 0; }
-#report iframe { display: block; flex: 1 1 100%; width: 100%; height: 72vh; height: 72svh; min-height: 360px; max-height: 900px; border: 1px solid var(--line); border-radius: var(--r-2); background: var(--tint); }
+/* The PDF reads nearly edge to edge: 95% of the page width on desktop, a 10px gutter on phones. Drive's viewer
+   stops widening a page near 816px, so a wider frame shows it at 816px and scales it up (--pdf-scale, set in code). */
+#report .pdf-frame { position: relative; flex: none; width: calc(100cqw - 2 * max(10px, 2.5cqw)); margin-inline: calc(50% - 50cqw + max(10px, 2.5cqw)); height: 90vh; height: 90svh; min-height: 480px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r-2); background: var(--tint); }
+#report .pdf-frame iframe { position: absolute; top: 0; left: 0; display: block; width: calc(100% / var(--pdf-scale, 1)); height: calc(100% / var(--pdf-scale, 1)); border: 0; transform: scale(var(--pdf-scale, 1)); transform-origin: 0 0; }
 #report.has-total { width: min(1400px, 100cqw); padding-inline: 0; border-inline: 0; }
 #report.has-total > h2 { margin-inline: 0; }
 #report.has-total > h2, #report.has-total > .note { padding-inline: 16px; }
@@ -1552,7 +1555,9 @@ var API = "TEST_API_URL";   // the web app's /exec URL (SETUP.md); while empty, 
     var pdf = el("div", { cls: "report-pdf" });
     pdf.appendChild(el("a", { cls: "pdf-btn", href: "https://drive.google.com/file/d/" + id + "/view", target: target, rel: "noopener", text: due ? "Open full screen (view only)" : "Open full screen" }));
     if (!due) pdf.appendChild(el("a", { cls: "pdf-btn dl", href: "https://drive.google.com/uc?export=download&id=" + id, target: target, rel: "noopener", text: "Download PDF" }));
-    pdf.appendChild(el("iframe", { src: "https://drive.google.com/file/d/" + id + "/preview", title: "Your report PDF", allow: "autoplay", loading: "lazy" }));
+    var frame = el("div", { cls: "pdf-frame" }, [el("iframe", { src: "https://drive.google.com/file/d/" + id + "/preview", title: "Your report PDF", allow: "autoplay", loading: "lazy" })]);
+    if (window.ResizeObserver) new ResizeObserver(function () { if (frame.clientWidth) frame.style.setProperty("--pdf-scale", Math.max(1, frame.clientWidth / 860)); }).observe(frame);
+    pdf.appendChild(frame);
     if (images.length) {
       var pages = el("div", { cls: "total-pages" }), tabs = el("div", { cls: "report-switch", role: "group", "aria-label": "Report view" });
       pages.appendChild(el("p", { cls: "note", text: "Tap any section to open full size." }));
