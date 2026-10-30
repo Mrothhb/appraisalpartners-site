@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-30.9">
+<html lang="en" data-build="v2026-10-30.10">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -260,7 +260,7 @@ textarea[rows="1"] { min-height: 44px; }
 .banner::before { content: ""; flex: none; width: 18px; height: 18px; margin-top: 2px; background: center / 18px 18px no-repeat; }
 .banner.ok { background: var(--success-bg); color: var(--success-ink); border-color: var(--success-line); border-left-color: var(--success-edge); }
 .banner.ok::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='9' fill='%232b7e26' opacity='.14'/%3E%3Cpath d='M5.5 10.5l3 3 6-6.5' fill='none' stroke='%23236b1f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
-#selfservice { margin: 0 0 var(--gap); } #selfservice p { margin: 0; } #selfservice ul { margin: var(--s-2) 0 0; padding-left: 1.2em; } #selfservice li + li { margin-top: 2px; }
+#selfservice, #selfservice-bottom { margin: 0 0 var(--gap); } #selfservice p, #selfservice-bottom p { margin: 0; } #selfservice ul, #selfservice-bottom ul { margin: var(--s-2) 0 0; padding-left: 1.2em; } #selfservice li + li, #selfservice-bottom li + li { margin-top: 2px; }
 #start-missing.start-lock { margin: 0 0 var(--s-2); font-size: 14px; color: var(--ink-2); }   /* one plain line: why Start is locked */
 .optional-line { margin: 0 0 var(--s-3); font-weight: 600; color: var(--ink); }
 /* ---------- Start area (Matt 2026-10-30, round 2: "too noisy… cleaner and easier for these guys"): the To start card counts and ticks
@@ -282,6 +282,7 @@ textarea[rows="1"] { min-height: 44px; }
 .ready-facts li { display: flex; align-items: flex-start; gap: var(--s-3); min-width: 0; font-size: 17px; line-height: 1.45; color: var(--ink); overflow-wrap: anywhere; }
 .ready-facts li > span { flex: 1; min-width: 0; }
 .ready-facts li b { font-size: 18px; font-weight: 700; color: var(--bar); }
+.ready-facts::before { content: "Attention"; justify-self: start; margin: 0 0 calc(-1 * var(--s-2)) var(--s-1); padding: 3px 10px; border-radius: 4px; background: var(--bar); color: #fff; font: 700 12px/1.4 var(--font); letter-spacing: .12em; text-transform: uppercase; }   /* Matt 2026-10-30 (round 5): "ATTENTION" */
 .ready-facts li::before { content: ""; flex: none; width: 28px; height: 28px; margin-top: calc((18px * 1.45 - 28px) / 2); background: center / 28px 28px no-repeat; }
 .ready-facts .final::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b6fc1' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 3h9l5 5v13H5z' fill='%23fff'/%3E%3Cpath d='M14 3v5h5'/%3E%3Cpath d='M8.6 14.3l2.4 2.4 4.6-5' stroke='%232b7e26' stroke-width='2'/%3E%3C/svg%3E"); }
 .ready-facts .tip { margin: 0 calc(-1 * var(--s-4)) calc(-1 * var(--s-4)) calc(-1 * var(--s-3)); padding: var(--s-3) var(--s-4) var(--s-3) var(--s-3); border-top: 1px solid #bfe3cf; border-radius: 0 0 var(--r-2) 0; background: #e3f4ea; color: #0f4a2f; }
@@ -682,10 +683,11 @@ details.optional-calls > .card:last-child {margin-bottom:var(--s-4);}
     <!-- Matt 2026-10-30 (round 2, "too noisy"): on a self-service form the To start card itself counts and ticks the four answers;
          here only the two musts as one strong callout, one quiet lock line, then one Start. -->
     <div id="ready" hidden>
-      <ul class="ready-facts" aria-label="Before you tap Start">
+      <ul class="ready-facts" aria-label="Attention: before you tap Start">
         <!-- Matt 2026-10-30 (round 3): the final-file line in his sense ("the report doesn't begin until all of your work file data is
-             submitted and ready"); the "Best way" tip on its own line, in its own colour. -->
-        <li class="final"><span><b>Your report doesn’t begin until your work file is complete and ready.</b> Inspection, sketch and photos all in. Changes after that are revisions.</span></li>
+             submitted and ready"); the "Best way" tip on its own line, in its own colour. Round 5: an ATTENTION badge at the top (CSS) and
+             the lead starts "Please note:". -->
+        <li class="final"><span><b>Please note: Your report doesn’t begin until your work file is complete and ready.</b> Inspection, sketch and photos all in. Changes after that are revisions.</span></li>
         <li class="time"><span><b>About 2–3 hours to build,</b> plus your review and any fixes.</span></li>
         <li class="tip"><span><b>Best way:</b> line up several orders, tap Start on each, and step away.</span></li>
       </ul>
@@ -716,6 +718,9 @@ details.optional-calls > .card:last-child {margin-bottom:var(--s-4);}
     <div id="banner" aria-live="polite"></div>
   </section>
   <details class="card history" id="history" hidden><summary>History</summary><ul id="history-list"></ul></details>
+  <!-- Matt 2026-10-30 (round 5): the self-service notice once more at the bottom, after Start and the terms line; the same heading and
+       five lines as #selfservice above, word for word, shown together with it. -->
+  <div class="banner warn" id="selfservice-bottom" role="note" hidden><div><p><b>Self-service: Matt and his team do not review this report.</b></p><ul><li>No one will discuss values or the report.</li><li>Questions, issues and changes go in writing, on this form or by email.</li><li>Appraisal help from Matt or his team is a separate service, billed for his time, and only where state rules allow it.</li><li>You are using A&amp;AP’s AI-assisted report-preparation software directly. We strongly encourage you to review this report and ensure the system makes all changes to your liking.</li><li>Bugs, errors and software issues should be escalated to Matt and his team immediately. Appraisal discussion and questions remain in this form or by email.</li></ul></div></div>
   </div>
 
   <details class="card fold" id="feedback" hidden>
@@ -1876,7 +1881,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     document.body.classList.toggle("minimal-calls", minimalCalls());
     var due = String(O.payment_due || "").trim();
     $("payment").hidden = !due;
-    $("selfservice").hidden = (D.house_prompts || {}).lane !== "self-service";   // Matt 2026-10-19: VERY clear on every self-service form
+    $("selfservice").hidden = $("selfservice-bottom").hidden = (D.house_prompts || {}).lane !== "self-service";   // Matt 2026-10-19: VERY clear on every self-service form; 2026-10-30: again at the bottom
     $("final-file").hidden = ["review", "regression"].indexOf((D.house_prompts || {}).lane) >= 0 || (D.stage || "open") !== "open";   // Matt 2026-10-30: firm that the work file is final before we build, every order lane
     $("selfservice-timing").hidden = !selfLane() || (D.stage || "open") !== "open";   // Matt 2026-10-30: say the build time and how best to run them, near Start
     var tb = $("testbanner"), bt = String(D.banner || "").trim().replace(/\s*·\s*\$[\d,.]+(?=\s*(?:·|$))/g, "");
