@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-29.1">
+<html lang="en" data-build="v2026-10-30.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -508,6 +508,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <section class="card statusbox" id="action" aria-label="Status">
     <div class="banner warn" id="start-missing" role="status" hidden></div>
     <p class="status-help" id="help"></p>
+    <p class="note" id="selfservice-timing" hidden>A report takes about 2–3 hours to build, plus your review round. Best way: line up several orders, tap Start on each, and step away.</p>
     <p class="agree-value" id="agree-value" hidden></p>
     <div id="post-request" hidden>
       <h2 id="post-title" hidden>Request a change</h2>
@@ -1471,6 +1472,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var due = String(O.payment_due || "").trim();
     $("payment").hidden = !due;
     $("selfservice").hidden = (D.house_prompts || {}).lane !== "self-service";   // Matt 2026-10-19: VERY clear on every self-service form
+    $("selfservice-timing").hidden = (D.house_prompts || {}).lane !== "self-service" || (D.stage || "open") !== "open";   // Matt 2026-10-30: say the build time and how best to run them, near Start
     var tb = $("testbanner"), bt = String(D.banner || "").trim().replace(/\s*·\s*\$[\d,.]+(?=\s*(?:·|$))/g, "");   // Legacy fixed headers keep their lane and date, without the fee.
     tb.hidden = !bt; tb.textContent = "";
     bt.split(/([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/).forEach(function (part, i) {
