@@ -669,15 +669,15 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   }
   // Matt 2026-10-30: the desk's self-service file check (files_complete + files_checked_at) is recorded before any tap and
   // binds no lane, so a two-option form can Start; other lanes keep the accepted READY check for the quote.
-  function checks() {
+  function fileChecks() {
     var hp = D.house_prompts || {}, out = [];
     if (hp.lane === "self-service" && hp.files_complete === true && hp.files_checked_at) out.push(hp.files_checked_at);
     if (D.accepted_at && state.invalidated_check !== D.accepted_at && sameQuote(D.accepted_quote, currentQuote())) out.push(D.accepted_at);
     return out;
   }
-  function checkedAt() { return checks()[0] || ""; }
+  function checkedAt() { return fileChecks()[0] || ""; }
   function filesChecked() { return customerReady() && !!checkedAt(); }
-  function inProduction() { return filesChecked() && !!state.go && checks().indexOf(state.go.files_checked_at) >= 0 && sameQuote(state.go, currentQuote()); }
+  function inProduction() { return filesChecked() && !!state.go && fileChecks().indexOf(state.go.files_checked_at) >= 0 && sameQuote(state.go, currentQuote()); }
   function answered() { return customerReady() && asked(); }
   function optionSent() { return customerReady(); }
   function readyNote() { if(minimalCalls())return inProduction()?"Start received.":"Saved. Start when your file and calls are complete."; return permissionHeld() ? "On hold. Client permission needs review." : quoteChanged() ? "Review the updated order, then tap Ready. Nothing starts yet." : inProduction() ? "Start production received." : filesChecked() ? "Files checked. Tap Start production to authorize the run." : "Your files and answers are in. We're checking your files. Nothing starts yet."; }
@@ -1988,7 +1988,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       return post(doc).catch(function () {}).then(read).then(function (r) {
         if (r.form) refresh(r.form);
         if (r.saved) apply(r.saved);
-        if (!r.form || !r.saved || !filesChecked() || checks().indexOf(checkStamp) < 0 || !sameQuote(currentQuote(), payload.quote)) throw { code: "changed" };
+        if (!r.form || !r.saved || !filesChecked() || fileChecks().indexOf(checkStamp) < 0 || !sameQuote(currentQuote(), payload.quote)) throw { code: "changed" };
         if (r.saved.go && r.saved.go.files_checked_at === checkStamp && sameQuote(r.saved.go, payload.quote)) return;
         throw {};
       });
