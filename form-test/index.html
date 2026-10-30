@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-30.7">
+<html lang="en" data-build="v2026-10-30.8">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -283,6 +283,9 @@ textarea[rows="1"] { min-height: 44px; }
 .ready-facts li b { font-size: 18px; font-weight: 700; color: var(--bar); }
 .ready-facts li::before { content: ""; flex: none; width: 30px; height: 30px; margin-top: -1px; background: center / 30px 30px no-repeat; }
 .ready-facts .final::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 2.5h7l3.5 3.5v11.5h-10.5z' fill='%23fff' stroke='%230b6fc1' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M12 2.5v3.5h3.5' fill='none' stroke='%230b6fc1' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M7 12l2 2 4-4.5' fill='none' stroke='%232b7e26' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+.ready-facts .tip { margin: 0 calc(-1 * var(--s-4)) calc(-1 * var(--s-4)) calc(-1 * var(--s-3)); padding: var(--s-3) var(--s-4) var(--s-3) var(--s-3); border-top: 1px solid #bfe3cf; border-radius: 0 0 var(--r-2) 0; background: #e3f4ea; color: #0f4a2f; }
+.ready-facts .tip b { color: #1b6b3a; }
+.ready-facts .tip::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='7.5' fill='%23fff' stroke='%231b6b3a' stroke-width='1.5'/%3E%3Cpath d='M10 6.2a2.8 2.8 0 0 1 1.3 5.3c-.5.3-.7.6-.7 1.1' fill='none' stroke='%231b6b3a' stroke-width='1.6' stroke-linecap='round'/%3E%3Ccircle cx='10.6' cy='14.4' r='.9' fill='%231b6b3a'/%3E%3C/svg%3E"); }
 .ready-facts .time::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='7.5' fill='%23fff' stroke='%230b6fc1' stroke-width='1.5'/%3E%3Cpath d='M10 5.5V10l3 2' fill='none' stroke='%230b6fc1' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 .self-start #action .st[data-s="READY"] { min-height: 56px; font-size: 18px; }
 .self-start #action .st[data-s="READY"]:disabled, .self-start #action .st.wait[data-s="READY"]:disabled { background: var(--field-off); color: var(--ink-2); border-color: var(--edge); }
@@ -679,12 +682,15 @@ details.optional-calls > .card:last-child {margin-bottom:var(--s-4);}
          here only the two musts as one strong callout, one quiet lock line, then one Start. -->
     <div id="ready" hidden>
       <ul class="ready-facts" aria-label="Before you tap Start">
-        <li class="final"><span><b>Send your work file only when it’s final:</b> inspection, sketch and photos complete. We build from what you send; changes after that are revisions.</span></li>
-        <li class="time"><span><b>About 2–3 hours to build,</b> plus your review and any fixes. Best way: line up several orders, tap Start on each, and step away.</span></li>
+        <!-- Matt 2026-10-30 (round 3): the final-file line in his sense ("the report doesn't begin until all of your work file data is
+             submitted and ready"); the "Best way" tip on its own line, in its own colour. -->
+        <li class="final"><span><b>Your report doesn’t begin until your work file is complete and ready.</b> Inspection, sketch and photos all in. Changes after that are revisions.</span></li>
+        <li class="time"><span><b>About 2–3 hours to build,</b> plus your review and any fixes.</span></li>
+        <li class="tip"><span><b>Best way:</b> line up several orders, tap Start on each, and step away.</span></li>
       </ul>
     </div>
     <p class="status-help" id="help"></p>
-    <p class="note" id="final-file" hidden><b>Send your work file only when it’s final:</b> inspection, sketch and photos complete. We build from exactly what you send; changes after that are revisions.</p>
+    <p class="note" id="final-file" hidden><b>Your report doesn’t begin until your work file is complete and ready.</b> Inspection, sketch and photos all in. Changes after that are revisions.</p>
     <p class="note" id="selfservice-timing" hidden>A report takes about 2–3 hours to build, plus your review and any fixes. Best way: line up several orders, tap Start on each, and step away.</p>
     <p class="start-lock" id="start-missing" role="status" hidden></p>
     <p class="optional-line" id="optional-line" hidden>Everything else is optional. Leave it blank and we’ll propose every call for you to approve.</p>
