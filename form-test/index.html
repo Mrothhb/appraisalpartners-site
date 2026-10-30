@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-30.6">
+<html lang="en" data-build="v2026-10-30.7">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -263,38 +263,40 @@ textarea[rows="1"] { min-height: 44px; }
 #selfservice { margin: 0 0 var(--gap); } #selfservice p { margin: 0; } #selfservice ul { margin: var(--s-2) 0 0; padding-left: 1.2em; } #selfservice li + li { margin-top: 2px; }
 #start-missing.start-lock { margin: 0 0 var(--s-2); font-size: 14px; color: var(--ink-2); }   /* one plain line: why Start is locked */
 .optional-line { margin: 0 0 var(--s-3); font-weight: 600; color: var(--ink); }
-/* ---------- Ready to start (Matt 2026-10-30): the musts before Start at a glance, the optional callout, two fact rows, one Start ---------- */
-#ready { display: flex; flex-direction: column; gap: var(--s-4); }
-#ready h2 { margin: calc(var(--card-py) * -1 - 1px) calc(var(--card-px) * -1 - 1px) 0; }
+/* ---------- Start area (Matt 2026-10-30, round 2: "too noisy… cleaner and easier for these guys"): the To start card counts and ticks
+   its four answers, one quiet lock line, the two musts as one strong callout, one Start, the terms line and a Save link ---------- */
 .ready-count { font: 600 13px/1.4 var(--font); letter-spacing: .02em; color: rgba(255,255,255,.9); white-space: nowrap; }
-.ready-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line-2); border-radius: var(--r-2); overflow: hidden; background: #fff; }
-.ready-item + .ready-item { border-top: 1px solid var(--line); }
-.ready-tap { display: flex; align-items: center; gap: var(--s-3); width: 100%; min-height: 52px; margin: 0; padding: var(--s-2) var(--s-4); border: 0; border-radius: 0; background: #fff; color: var(--ink); font: 600 16px/1.4 var(--font); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
-.ready-tap[aria-disabled="true"] { cursor: default; }
-.ready-item[data-state="open"] .ready-tap:hover { background: var(--tint); }
-.ready-item[data-state="done"] .ready-tap { color: var(--ink-2); font-weight: 400; }
-.ready-dot { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border: 2px solid var(--edge); border-radius: 50%; background: #fff; }
-.ready-item[data-state="done"] .ready-dot { background: var(--success); border-color: var(--success); }
-.ready-item[data-state="done"] .ready-dot::after { content: ""; width: 10px; height: 5px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: translateY(-1px) rotate(-45deg); }
-.ready-item[data-state="open"] .ready-dot::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--warning-edge); }
-.ready-label { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.ready-label small { display: block; font-size: 13px; font-weight: 400; line-height: 1.4; color: var(--ink-2); }
-.ready-item[data-state="done"] .ready-label b { color: var(--ink); font-weight: 600; }
-.ready-go { flex: none; color: var(--primary); font-size: 14px; font-weight: 600; white-space: nowrap; }
-.ready-go::after { content: " ›"; font-size: 18px; line-height: 1; }
-.ready-optional { display: flex; align-items: flex-start; gap: var(--s-3); margin: 0; padding: var(--s-3) var(--s-4); border: 1px solid var(--tint-line); border-left: 4px solid var(--primary); border-radius: var(--r-2); background: var(--tint); color: var(--ink); font-size: 15px; line-height: 1.5; }
-.ready-optional .badge { flex: none; margin-top: 2px; padding: 1px 9px; border-radius: var(--r-full); background: var(--primary); color: #fff; font: 700 11px/1.6 var(--font); letter-spacing: .08em; text-transform: uppercase; }
-.ready-facts { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2); }
-.ready-facts li { display: flex; align-items: flex-start; gap: var(--s-3); font-size: 14px; line-height: 1.5; color: var(--ink-2); }
-.ready-facts li b { color: var(--ink); font-weight: 600; }
-.ready-facts li::before { content: ""; flex: none; width: 22px; height: 22px; background: center / 20px 20px no-repeat; }
-.ready-facts .final::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 2.5h7l3.5 3.5v11.5h-10.5z' fill='none' stroke='%230b6fc1' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M12 2.5v3.5h3.5' fill='none' stroke='%230b6fc1' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M7 12l2 2 4-4.5' fill='none' stroke='%232b7e26' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
-.ready-facts .time::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='7.5' fill='none' stroke='%230b6fc1' stroke-width='1.5'/%3E%3Cpath d='M10 5.5V10l3 2' fill='none' stroke='%230b6fc1' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+.to-start .call-line > .line { padding: var(--s-4) 0; }
+.to-start .call-line.long .lbl { font-weight: 400; }
+.to-start .call-line[data-done="true"] > .line > .lbl::after { content: "\2713"; margin-left: 6px; color: var(--success); font-weight: 700; }
+.to-start .talk-row, #feedback .talk-row { margin-top: var(--s-1); }
+.to-start .mic, #feedback .mic { width: 36px; height: 36px; } .to-start .mic svg, #feedback .mic svg { width: 14px; height: 19px; }
+.self-start #action { gap: var(--s-5); }
+#start-missing.start-lock { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink-2); text-align: center; overflow-wrap: anywhere; }
+.link-inline { display: inline; margin: 0; padding: 0; border: 0; background: none; color: var(--primary); font: 600 15px/1.5 var(--font); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: rgba(11,111,193,.4); cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
+.link-inline:hover { color: var(--primary-hover); text-decoration-color: currentColor; }
+/* the two musts (Matt 2026-10-30: "GLARINGLY clear and easy to see and read"): one callout, body-size dark text, a larger bold lead, big icons, a strong edge */
+#ready { display: block; }
+.ready-facts { list-style: none; margin: 0; padding: var(--s-4) var(--s-4) var(--s-4) var(--s-3); display: grid; gap: var(--s-4); min-width: 0; border: 1px solid var(--tint-line); border-left: 6px solid var(--primary); border-radius: var(--r-2); background: var(--tint); }
+.ready-facts li { display: flex; align-items: flex-start; gap: var(--s-3); min-width: 0; font-size: 17px; line-height: 1.45; color: var(--ink); overflow-wrap: anywhere; }
+.ready-facts li > span { flex: 1; min-width: 0; }
+.ready-facts li b { font-size: 18px; font-weight: 700; color: var(--bar); }
+.ready-facts li::before { content: ""; flex: none; width: 30px; height: 30px; margin-top: -1px; background: center / 30px 30px no-repeat; }
+.ready-facts .final::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 2.5h7l3.5 3.5v11.5h-10.5z' fill='%23fff' stroke='%230b6fc1' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M12 2.5v3.5h3.5' fill='none' stroke='%230b6fc1' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M7 12l2 2 4-4.5' fill='none' stroke='%232b7e26' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+.ready-facts .time::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='7.5' fill='%23fff' stroke='%230b6fc1' stroke-width='1.5'/%3E%3Cpath d='M10 5.5V10l3 2' fill='none' stroke='%230b6fc1' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 .self-start #action .st[data-s="READY"] { min-height: 56px; font-size: 18px; }
 .self-start #action .st[data-s="READY"]:disabled, .self-start #action .st.wait[data-s="READY"]:disabled { background: var(--field-off); color: var(--ink-2); border-color: var(--edge); }
+.self-start .terms-line { text-align: center; }
 .link-btn { display: block; width: auto; margin: 0 auto; padding: 10px 12px; border: 0; background: none; color: var(--primary); font: 600 15px/1.4 var(--font); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: rgba(11,111,193,.4); cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .link-btn:hover { color: var(--primary-hover); text-decoration-color: currentColor; }
 .link-btn:disabled { color: var(--ink-2); cursor: default; }
+/* a folded card (the feedback box, Matt 2026-10-30: "folded at the bottom"): one line until he opens it */
+details.fold { padding: 0; }
+details.fold > summary { position: relative; list-style: none; display: block; min-height: 56px; padding: var(--s-4) var(--s-12) var(--s-4) var(--card-px); font: 600 16px/1.5 var(--font); color: var(--primary); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::after { content: "+"; position: absolute; right: var(--card-px); top: 50%; transform: translateY(-50%); font: 500 24px/1 var(--display); color: var(--primary); }
+details.fold[open] > summary::after { content: "\2212"; }
+details.fold > .fold-body { padding: 0 var(--card-px) var(--s-5); }
 /* the outbox (Matt 2026-10-30: "user needs immediate feedback"): one plain line only once retries have run out */
 .sync-note { display: flex; align-items: center; gap: var(--s-3); margin: 0; padding: var(--s-3) var(--s-4); border: 1px solid var(--warning-line); border-left: 4px solid var(--warning-edge); border-radius: var(--r-2); background: var(--warning-bg); color: var(--warning-ink); font-size: 14px; line-height: 1.5; }
 .sync-note button { flex: none; margin-left: auto; min-height: 36px; padding: 0 var(--s-4); border: 1px solid var(--warning-edge); border-radius: var(--r-2); background: #fff; color: var(--warning-ink); font: 600 14px/1 var(--font); cursor: pointer; }
@@ -495,14 +497,16 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 #start-calls {margin:0;padding:0;border:0;}
 #save-calls.st {margin:12px 0;width:100%;}
 .fixed-calls .line {margin-top:6px;margin-bottom:6px;}
-details.optional-calls {margin:0 0 var(--gap);}
-details.optional-calls > summary {display:flex;align-items:center;gap:var(--s-3);min-height:56px;padding:var(--s-3) var(--s-4);border:2px solid var(--primary);border-radius:var(--r-2);background:var(--tint);color:var(--primary);font:700 17px/1.4 var(--font);cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent;}
+details.optional-calls {margin:0 0 var(--gap);background:var(--card);border:1px solid var(--line);border-radius:var(--r-2);box-shadow:var(--shadow-1);}
+details.optional-calls > summary {position:relative;display:block;min-height:56px;padding:var(--s-3) var(--s-12) var(--s-3) var(--card-px);cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent;}
 details.optional-calls > summary::-webkit-details-marker {display:none;}
-details.optional-calls > summary::before {content:"+";flex:none;width:28px;height:28px;border-radius:var(--r-full);background:var(--primary);color:#fff;font:700 20px/28px var(--font);text-align:center;}
-details.optional-calls[open] > summary::before {content:"−";}
-details.optional-calls > summary small {margin-left:auto;padding:2px 10px;border:1px solid var(--tint-line);border-radius:var(--r-full);background:#fff;color:var(--ink-2);font:600 13px/1.5 var(--font);}
-details.optional-calls > .note {margin:var(--s-2) var(--s-1) var(--s-4);}
-details.optional-calls:not([open]) > .note {display:none;}
+details.optional-calls > summary::after {content:"+";position:absolute;right:var(--card-px);top:50%;transform:translateY(-50%);font:500 24px/1 var(--display);color:var(--primary);}
+details.optional-calls[open] > summary::after {content:"\2212";}
+details.optional-calls > summary .t {display:block;font:600 16px/1.5 var(--font);color:var(--primary);}
+details.optional-calls > summary small {font:400 14px/1.5 var(--font);color:var(--ink-2);}
+details.optional-calls > summary .optional-note {display:block;margin-top:2px;font:400 14px/1.5 var(--font);color:var(--ink-2);}
+details.optional-calls > .card {margin:0 var(--s-3) var(--s-4);}
+details.optional-calls > .card:last-child {margin-bottom:var(--s-4);}
 .proposal-evidence {border-left:3px solid #c78f32;padding-left:12px;white-space:pre-wrap;}
 /* Report status tracker after Start (Matt 2026-10-30): Astra's component, scoped to .ap-tracker. */
 /* Scoped component. Uses the form's tokens; fallbacks also allow standalone use. */
@@ -671,13 +675,10 @@ details.optional-calls:not([open]) > .note {display:none;}
   <section class="card report" id="report" aria-label="Your report" hidden></section>
 
   <section class="card statusbox" id="action" aria-label="Status">
-    <!-- Matt 2026-10-30 ("needs better styling and more obviousness"): on a self-service form, what is still required before Start
-         as a live list (a tap jumps to an open item), the optional callout, the two fixed facts as icon rows, then one Start. -->
+    <!-- Matt 2026-10-30 (round 2, "too noisy"): on a self-service form the To start card itself counts and ticks the four answers;
+         here only the two musts as one strong callout, one quiet lock line, then one Start. -->
     <div id="ready" hidden>
-      <h2>Ready to start<span class="ready-count" id="ready-count"></span></h2>
-      <ul class="ready-list" id="ready-list" aria-label="Before Start"></ul>
-      <p class="ready-optional"><span class="badge">Optional</span><span><b>Everything else is optional.</b> Leave it blank and we’ll propose every call for you to approve.</span></p>
-      <ul class="ready-facts">
+      <ul class="ready-facts" aria-label="Before you tap Start">
         <li class="final"><span><b>Send your work file only when it’s final:</b> inspection, sketch and photos complete. We build from what you send; changes after that are revisions.</span></li>
         <li class="time"><span><b>About 2–3 hours to build,</b> plus your review and any fixes. Best way: line up several orders, tap Start on each, and step away.</span></li>
       </ul>
@@ -710,13 +711,15 @@ details.optional-calls:not([open]) > .note {display:none;}
   <details class="card history" id="history" hidden><summary>History</summary><ul id="history-list"></ul></details>
   </div>
 
-  <section class="card" id="feedback" aria-labelledby="feedback-title" hidden>
-    <h2 id="feedback-title">Questions, requests or feedback</h2>
-    <div class="line"><textarea id="feedback-text" rows="2" maxlength="3000" aria-label="Questions, requests or feedback"></textarea></div>
-    <button type="button" class="st" id="feedback-send">Send</button>
-    <p class="note" id="feedback-note" role="status"></p>
-    <ul id="feedback-list"></ul>
-  </section>
+  <details class="card fold" id="feedback" hidden>
+    <summary id="feedback-title">Questions or feedback</summary>
+    <div class="fold-body">
+      <div class="line"><textarea id="feedback-text" rows="2" maxlength="3000" aria-label="Questions or feedback"></textarea></div>
+      <button type="button" class="st" id="feedback-send">Send</button>
+      <p class="note" id="feedback-note" role="status"></p>
+      <ul id="feedback-list"></ul>
+    </div>
+  </details>
 
   <p class="foot"><span>The value is yours alone; we enter it exactly as you give it.</span><span class="dot" aria-hidden="true">·</span><span>A&amp;AP</span></p>
 </div>
@@ -1490,7 +1493,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       var options=callOptions(line), context=(D.house_prompts||{})[line.context], label=line.label+((typeof context === "string" && context.trim()) || typeof context === "number" ? " · "+context : "");   // "contract": true is the line's switch, never its context
       var input=line.kind === "check" ? check(line.key,label) : options ? choice(line.key,label,options) : text(line.key,label,{multi:line.kind === "multi",short:!!line.numeric});
       if(line.key === "calls_ok") {var original=controls.calls_ok.set;controls.calls_ok.set=function(v){original(v === true && ans("calls_checked_at") === (D.accepted_at||""));};}
-      var wrap=card.appendChild(el("div",{cls:"call-line","data-call-line":line.key},[input]));
+      var wrap=card.appendChild(el("div",{cls:"call-line"+(label.length>60?" long":""),"data-call-line":line.key},[input]));
       var source=(D.file_calls||{})[line.key], summary=null, opened=false;
       if(source && source.source && line.kind !== "check") {
         summary=el("p",{cls:"file-call"},[el("span",{text:line.label+": "+source.value+" — from your file "}),el("button",{type:"button",cls:"change-call",text:"Change","aria-label":"Change "+line.label})]);
@@ -1519,10 +1522,12 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     $("start-calls").textContent="";
     var sections=D.call_sections, split=sections.findIndex(function(x){return x.slot === "adjustments";});
     callSection(sections[0],host);
-    // Matt 2026-10-30: optional must be obvious. One toggle; it opens by itself when his file or his saved answers fill any of it.
+    var first = host.lastElementChild;   // the To start card: its header counts the answers, each answered line ticks (paintReady)
+    if (first && first.classList.contains("fixed-calls")) { first.classList.add("to-start"); first.querySelector("h2").appendChild(el("span", { cls: "ready-count", "data-start-count": "" })); }
+    // Matt 2026-10-30: optional must be obvious, and quiet (round 2). One row with its promise under it; it opens by itself when his file or his saved answers fill any of it.
     var optionalKeys = [].concat.apply([], sections.slice(1).map(function(sec){return sec.lines.map(function(l){return l.key;});})).concat((D.adjustment_rows || []).map(function(r){return r.key;}), ["adjustments_by"]);
     var filled = optionalKeys.some(function(k){var v=ans(k);return v === true || typeof v === "number" || typeof v === "string" && !!v.trim();});
-    var more = host.appendChild(el("details",{cls:"optional-calls"},[el("summary",null,[el("span",{text:"Add your own calls now"}),el("small",{text:"Optional"})]),el("p",{cls:"note",text:"Leave these blank and we’ll propose every call for you to approve in TOTAL."})]));
+    var more = host.appendChild(el("details",{cls:"optional-calls"},[el("summary",null,[el("span",{cls:"t"},["Add your own calls now ",el("small",{text:"Optional"})]),el("span",{cls:"optional-note",text:"Leave these blank and we’ll propose every call for you to approve."})])]));
     more.open = moreOpen == null ? filled : moreOpen;
     more.dataset.filled = filled;
     more.addEventListener("toggle", function(){moreOpen = more.open;});
@@ -2084,18 +2089,27 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     document.body.classList.toggle("self-start", show);
     $("ready").hidden = !show;
     if (!show) return;
-    ["help", "final-file", "selfservice-timing", "optional-line", "start-missing"].forEach(function (id) { $(id).hidden = true; });   // the card says all of it
-    var rows = readyRows(), left = rows.filter(function (r) { return !r.done; }).length, list = $("ready-list");
-    $("ready-count").textContent = left ? left + " to go" : "All set";
-    list.textContent = "";
-    rows.forEach(function (r) {
-      var b = el("button", { type: "button", cls: "ready-tap" }, [el("span", { cls: "ready-dot", "aria-hidden": "true" }),
-        el("span", { cls: "ready-label" }, [r.done ? el("b", { text: r.label }) : r.label, r.note ? el("small", { text: r.note }) : null]),
-        !r.done && r.target ? el("span", { cls: "ready-go", text: r.key === "q_service_option" ? "Pick" : "Answer", "aria-hidden": "true" }) : null]);
-      b.setAttribute("aria-label", r.label + (r.note ? ", " + r.note : "") + (r.done ? ", done" : r.target ? ", open, tap to answer" : ", open"));
-      if (r.done || !r.target) b.setAttribute("aria-disabled", "true"); else b.addEventListener("click", function () { jumpTo(r.target); });
-      list.appendChild(el("li", { cls: "ready-item", "data-state": r.done ? "done" : "open" }, [b]));
-    });
+    ["help", "final-file", "selfservice-timing", "optional-line"].forEach(function (id) { $(id).hidden = true; });   // the To start card and the lock line say all of it
+    var rows = readyRows(), open = rows.filter(function (r) { return !r.done; });
+    var asks = rows.filter(function (r) { return r.key !== "q_service_option" && r.key !== "files"; });
+    var count = document.querySelector("#sections .to-start [data-start-count]");
+    if (count) count.textContent = asks.filter(function (r) { return r.done; }).length + " of " + asks.length;
+    asks.forEach(function (r) { if (r.target && r.target.dataset) r.target.dataset.done = String(r.done); });
+    // one quiet line under the musts: what Start still waits on, each open item a tap away (the server's rules are unchanged)
+    var lock = $("start-missing"); lock.textContent = ""; lock.className = "start-lock";
+    function go(label, target) { var b = el("button", { type: "button", cls: "link-inline", text: label }); b.addEventListener("click", function () { jumpTo(target); }); return b; }
+    function say(t) { lock.appendChild(document.createTextNode(t)); }
+    var pick = open.filter(function (r) { return r.key === "q_service_option"; })[0], todo = open.filter(function (r) { return r.key !== "q_service_option" && r.key !== "files"; }), file = open.filter(function (r) { return r.key === "files"; })[0];
+    if (pick && !document.querySelector("#sections .to-start")) { lock.appendChild(go("Pick A or B", pick.target)); say(" above to begin."); }   // the four answers appear with his option
+    else if (todo.length === asks.length && asks.length) {
+      if (pick) { lock.appendChild(go("Pick A or B", pick.target)); say(" and answer the " + asks.length + " items above."); }
+      else { say("Answer the " + asks.length + " items above."); }
+    } else {
+      if (pick) { lock.appendChild(go("Pick A or B", pick.target)); say(". "); }
+      if (todo.length) { say("Still to answer: "); todo.forEach(function (r, i) { if (i) say(" · "); lock.appendChild(r.target ? go(r.label, r.target) : document.createTextNode(r.label)); }); say("."); }
+    }
+    if (file) say((lock.textContent ? " " : "") + "Your file: " + file.note.charAt(0).toLowerCase() + file.note.slice(1));
+    lock.hidden = !open.length;
   }
   function jumpTo(node) {
     node.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -2311,7 +2325,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       note.appendChild(el("span", { text: "Not sent yet, we’ll keep trying." }));
       var b = el("button", { type: "button", text: "Retry" }); b.addEventListener("click", retryNow); note.appendChild(b);
     }
-    if (outbox.some(function (i) { return i.kind === "feedback" && i.tries >= STUCK_AFTER; })) $("feedback-note").textContent = "Not sent yet, we’ll keep trying.";
+    if (outbox.some(function (i) { return i.kind === "feedback" && i.tries >= STUCK_AFTER; })) { $("feedback-note").textContent = "Not sent yet, we’ll keep trying."; $("feedback").open = true; }
   }
   function conn(msg) { lastConn = msg; paintSync(); }
   function landed(kind, doc, saved) {
@@ -2353,6 +2367,8 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     });
   }
   $("feedback-text").addEventListener("input", function(){grow(this);});
+  function unfoldFeedback() { if (location.hash === "#feedback") $("feedback").open = true; }   // the tracker's "waiting on you" link points here
+  window.addEventListener("hashchange", unfoldFeedback); unfoldFeedback();
   var feedbackTalk = talkRow($("feedback-text"), true);
   if (feedbackTalk) $("feedback-text").parentNode.appendChild(feedbackTalk);
   $("feedback-send").addEventListener("click", function(){
