@@ -168,8 +168,8 @@ table.cvt tr:last-child td { border-bottom: 0; }
 .card .h small { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; opacity: .8; }
 .card .b { padding: var(--s-5) var(--s-5) var(--s-6); }
 
-/* three ways in */
-.ways { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gutter); }
+/* four ways in */
+.ways { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gutter); }
 .way { display: flex; flex-direction: column; }
 .way .b { display: flex; flex: 1; flex-direction: column; }
 .way .mark { align-self: flex-start; margin-top: auto; }
@@ -177,6 +177,11 @@ table.cvt tr:last-child td { border-bottom: 0; }
 .price { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--s-1) var(--s-3); border-top: 1px solid var(--line); padding-top: var(--s-4); }
 .price b { font: 700 32px/1 var(--display); letter-spacing: -.02em; color: var(--bar); font-variant-numeric: tabular-nums; }
 .price span { color: var(--ink); font-size: 15px; font-weight: 600; }
+.price small { flex-basis: 100%; color: var(--ink-2); font-size: 14px; font-weight: 600; }
+.price b i { font: 600 17px/1 var(--display); font-style: normal; letter-spacing: 0; }
+.way.self .price { margin-top: auto; }
+.way .price span { flex-basis: 100%; }
+@media (min-width: 721px) { .way .price span { min-height: 2lh; } } /* price lines align across a row */
 .mark { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 var(--s-4); font-size: 15px; font-weight: 700; color: var(--success-ink); }
 .mark svg { width: 18px; height: 18px; flex: none; color: var(--success); }
 .addons { grid-column: 1 / -1; margin: calc(var(--s-10) * -1 + var(--s-5)) 0 0; color: var(--ink); font-size: 15px; display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-3); }
@@ -280,6 +285,7 @@ footer a { color: var(--ink-2); }
 
 /* ---------- responsive ---------- */
 @media (max-width: 1080px) {
+  .ways { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hero-copy { grid-column: 1 / span 7; }
   .hero-visual { grid-column: 1 / -1; }
   .split-copy, .fast-copy { grid-column: 1 / span 7; }
@@ -289,8 +295,6 @@ footer a { color: var(--ink-2); }
   .call { grid-column: 1 / -1; }
 }
 @media (max-width: 900px) {
-  .ways { grid-template-columns: 1fr; }
-  .way .b p { min-height: 0; }
   .hero-copy, .split-copy, .fast-copy { grid-column: 1 / -1; }
   .qa { grid-template-columns: 1fr; }
   .qa .q { border-right: 0; border-bottom: 1px solid var(--tint-line); }
@@ -298,6 +302,8 @@ footer a { color: var(--ink-2); }
   .pair .person + .person { border-left: 0; border-top: 1px solid var(--line); }
 }
 @media (max-width: 720px) {
+  .ways { grid-template-columns: 1fr; }
+  .way .b p { min-height: 0; }
   :root { --gutter: 16px; }
   section { padding: var(--s-12) 0; }
   .hero { padding: var(--s-10) 0 var(--s-12); }
