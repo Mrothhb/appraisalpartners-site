@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-30.1">
+<html lang="en" data-build="v2026-10-30.5">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -261,8 +261,8 @@ textarea[rows="1"] { min-height: 44px; }
 .banner.ok { background: var(--success-bg); color: var(--success-ink); border-color: var(--success-line); border-left-color: var(--success-edge); }
 .banner.ok::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='9' fill='%232b7e26' opacity='.14'/%3E%3Cpath d='M5.5 10.5l3 3 6-6.5' fill='none' stroke='%23236b1f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 #selfservice { margin: 0 0 var(--gap); } #selfservice p { margin: 0; } #selfservice ul { margin: var(--s-2) 0 0; padding-left: 1.2em; } #selfservice li + li { margin-top: 2px; }
-#start-missing { margin-bottom: var(--s-4); }
-#start-missing ul { margin: var(--s-2) 0 0; padding-left: 1.2em; }
+#start-missing.start-lock { margin: 0 0 var(--s-2); font-size: 14px; color: var(--ink-2); }   /* one plain line: why Start is locked */
+.optional-line { margin: 0 0 var(--s-3); font-weight: 600; color: var(--ink); }
 .banner.warn { background: var(--warning-bg); color: var(--warning-ink); border-color: var(--warning-line); border-left-color: var(--warning-edge); }
 .test-banner { margin: 0; padding: 20px 22px; border: 3px solid #e0a100; border-radius: 12px; background: #ffe14d; color: #1f1a00; font: 700 20px/1.4 var(--font); text-align: center; }
 .test-banner a { color: #1f1a00; text-decoration: underline; overflow-wrap: anywhere; }
@@ -458,8 +458,135 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 #start-calls {margin:0;padding:0;border:0;}
 #save-calls {margin:12px 0;width:100%;}
 .fixed-calls .line {margin-top:6px;margin-bottom:6px;}
-.optional-calls {border:2px solid #265b83;background:#eef6fb;}
+details.optional-calls {margin:0 0 var(--gap);}
+details.optional-calls > summary {display:flex;align-items:center;gap:var(--s-3);min-height:56px;padding:var(--s-3) var(--s-4);border:2px solid var(--primary);border-radius:var(--r-2);background:var(--tint);color:var(--primary);font:700 17px/1.4 var(--font);cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent;}
+details.optional-calls > summary::-webkit-details-marker {display:none;}
+details.optional-calls > summary::before {content:"+";flex:none;width:28px;height:28px;border-radius:var(--r-full);background:var(--primary);color:#fff;font:700 20px/28px var(--font);text-align:center;}
+details.optional-calls[open] > summary::before {content:"−";}
+details.optional-calls > summary small {margin-left:auto;padding:2px 10px;border:1px solid var(--tint-line);border-radius:var(--r-full);background:#fff;color:var(--ink-2);font:600 13px/1.5 var(--font);}
+details.optional-calls > .note {margin:var(--s-2) var(--s-1) var(--s-4);}
+details.optional-calls:not([open]) > .note {display:none;}
 .proposal-evidence {border-left:3px solid #c78f32;padding-left:12px;white-space:pre-wrap;}
+/* Report status tracker after Start (Matt 2026-10-30): Astra's component, scoped to .ap-tracker. */
+/* Scoped component. Uses the form's tokens; fallbacks also allow standalone use. */
+.ap-tracker {
+  container-type: inline-size;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0 0 var(--gap, 24px);
+  padding: 20px 8px;
+  background: var(--card, #fff);
+  color: var(--ink, #1c1c1c);
+  border: 1px solid var(--line, #e3e3e3);
+  border-radius: var(--r-2, 4px);
+  box-shadow: var(--shadow-1, 0 0 10px -6px rgba(0,0,0,.1));
+  font: 400 11px/1.5 var(--font, "Open Sans", "Segoe UI", system-ui, sans-serif);
+}
+.ap-tracker *, .ap-tracker *::before, .ap-tracker *::after { box-sizing: border-box; }
+.ap-tracker [hidden] { display: none !important; }
+.ap-tracker__list { isolation: isolate; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; }
+.ap-tracker__step { position: relative; min-width: 0; text-align: center; margin: 0; padding: 0; }
+.ap-tracker__step::before { z-index: -1; content: ""; position: absolute; top: 21px; left: -50%; width: 100%; height: 2px; background: var(--line-2, #ccc); }
+.ap-tracker__step:first-child::before { display: none; }
+.ap-tracker__step[data-state="done"]::before,
+.ap-tracker__step[data-state="current"]::before { background: var(--primary, #0b6fc1); }
+.ap-tracker__tap {
+  position: relative; display: flex; align-items: center; flex-direction: column;
+  width: 100%; min-height: 68px; margin: 0; padding: 0 0 4px;
+  border: 0; border-radius: var(--r-1, 2px); background: none; box-shadow: none;
+  color: var(--ink-2, #5f5f5f); font: inherit; line-height: 1.5;
+  cursor: pointer; -webkit-appearance: none; appearance: none; -webkit-tap-highlight-color: transparent;
+}
+.ap-tracker__tap[aria-disabled="true"] { cursor: default; }
+.ap-tracker__tap:focus-visible { outline: 2px solid var(--focus, #0b6fc1); outline-offset: 1px; }
+.ap-tracker__target { display: flex; align-items: center; justify-content: center; height: 44px; width: 44px; }
+.ap-tracker__dot { position: relative; display: grid; place-items: center; width: 22px; height: 22px; border: 2px solid var(--edge, #8a949f); border-radius: 50%; background: var(--card, #fff); }
+.ap-tracker__label { display: block; white-space: nowrap; font-weight: 600; }
+.ap-tracker__step[data-state="done"] .ap-tracker__dot { background: var(--primary, #0b6fc1); border-color: var(--primary, #0b6fc1); }
+.ap-tracker__step[data-state="done"] .ap-tracker__dot::after { content: ""; width: 8px; height: 5px; border-left: 2px solid white; border-bottom: 2px solid white; transform: translateY(-1px) rotate(-45deg); }
+.ap-tracker__step[data-state="current"] .ap-tracker__dot { border-color: var(--primary, #0b6fc1); box-shadow: 0 0 0 4px var(--tint, #eaf3fb); }
+.ap-tracker__step[data-state="current"] .ap-tracker__dot::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--primary, #0b6fc1); }
+.ap-tracker__step[data-state="current"] .ap-tracker__dot::before { content: ""; position: absolute; inset: -6px; border: 2px solid var(--primary, #0b6fc1); border-radius: 50%; animation: ap-tracker-pulse 2.8s ease-out infinite; }
+.ap-tracker__step[data-state="current"] .ap-tracker__label { color: var(--primary, #0b6fc1); font-weight: 700; }
+.ap-tracker__step[data-key="delivered"][data-state="done"] .ap-tracker__dot { background: var(--success, #2b7e26); border-color: var(--success, #2b7e26); }
+.ap-tracker__step[data-key="delivered"][data-state="done"] .ap-tracker__label { color: var(--success-ink, #236b1f); }
+.ap-tracker__time { display: block; min-height: 33px; color: var(--ink-2, #5f5f5f); font-size: 11px; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.ap-tracker__time span { display: block; white-space: nowrap; }
+.ap-tracker__detail { margin: 16px 8px 0; padding: 12px; border: 1px solid var(--tint-line, #d5e6f5); border-radius: var(--r-2, 4px); background: var(--tint, #eaf3fb); color: var(--ink, #1c1c1c); text-align: center; overflow-wrap: anywhere; font-size: 13px; }
+.ap-tracker__detail strong { display: block; font-weight: 600; color: var(--primary, #0b6fc1); }
+.ap-tracker__sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@keyframes ap-tracker-pulse { 0% { transform: scale(.85); opacity: .35; } 80%, 100% { transform: scale(1.2); opacity: 0; } }
+@container (min-width: 500px) {
+  .ap-tracker__label { font-size: 13px; }
+  .ap-tracker__time { min-height: 18px; font-size: 12px; }
+  .ap-tracker__time span { display: inline; }
+  .ap-tracker__time span + span::before { content: " "; }
+}
+/* Small containers / enlarged text: keep the entire sequence legible. */
+@container (max-width: 290px) {
+  .ap-tracker__list { grid-template-columns: 1fr; gap: 8px; }
+  .ap-tracker__step { text-align: left; padding-left: 48px; min-height: 52px; }
+  .ap-tracker__step::before { left: 21px; top: -30px; width: 2px; height: 52px; }
+  .ap-tracker__tap { align-items: flex-start; min-height: 26px; padding-top: 4px; }
+  .ap-tracker__target { position: absolute; left: -48px; top: 0; }
+  .ap-tracker__time { min-height: 18px; }
+  .ap-tracker__time span { display: inline; }
+  .ap-tracker__time span + span::before { content: " "; }
+}
+@media (prefers-reduced-motion: reduce) { .ap-tracker__step[data-state="current"] .ap-tracker__dot::before { animation: none; opacity: 0; } }
+@media (forced-colors: active) {
+  .ap-tracker__dot { border-color: ButtonText !important; }
+  .ap-tracker__step::before { background: GrayText !important; }
+  .ap-tracker__step[data-state="current"] .ap-tracker__dot { outline: 3px solid Highlight; outline-offset: 3px; }
+  .ap-tracker__step[data-state="done"] .ap-tracker__dot::after { border-color: ButtonText; }
+}
+
+/* Waiting is an overlay on the current step, not a seventh stage. */
+.ap-tracker__step[data-waiting][data-state] .ap-tracker__dot {
+  border-color: var(--warning-ink, #7a4300); background: var(--warning-edge, #e5a53a);
+  box-shadow: 0 0 0 4px var(--warning-bg, #fdf3e1);
+}
+.ap-tracker__step[data-waiting][data-state] .ap-tracker__dot::before { content: none; animation: none; }
+.ap-tracker__step[data-waiting][data-state] .ap-tracker__dot::after {
+  content: "!"; width: auto; height: auto; border: 0; border-radius: 0;
+  background: none; transform: none; color: var(--warning-ink, #7a4300); font: 800 14px/1 var(--font, sans-serif);
+}
+.ap-tracker__step[data-waiting][data-state] .ap-tracker__label { color: var(--warning-ink, #7a4300); }
+.ap-tracker__waiting {
+  display: flex; align-items: center; justify-content: center; width: fit-content; max-width: 100%; min-height: 44px;
+  margin: 12px auto 0; padding: 8px 14px; border: 1px solid var(--warning-edge, #e5a53a);
+  border-radius: var(--r-full, 999px); background: var(--warning-bg, #fdf3e1);
+  color: var(--warning-ink, #7a4300); font-size: 13px; font-weight: 600; text-decoration: none; text-align: center;
+}
+.ap-tracker__waiting:focus-visible { outline: 2px solid var(--focus, #0b6fc1); outline-offset: 3px; }
+@media (forced-colors: active) { .ap-tracker__step[data-waiting][data-state] .ap-tracker__dot::after { color: ButtonText; } }
+
+/* Secondary build sequence, anchored beneath Building; no inferred times. */
+.ap-tracker--building .ap-tracker__list { padding-bottom: 56px; }
+.ap-tracker__build {
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 216px; margin: 8px 0 0; padding: 0; list-style: none;
+  color: var(--ink-2, #5f5f5f); font-size: 10px; line-height: 1.5;
+}
+.ap-tracker__build li { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; }
+.ap-tracker__mini-dot { width: 8px; height: 8px; border: 1px solid var(--edge, #8a949f); border-radius: 50%; background: var(--card, #fff); }
+.ap-tracker__build [data-state="done"] .ap-tracker__mini-dot { background: var(--ink-2, #5f5f5f); border-color: var(--ink-2, #5f5f5f); }
+.ap-tracker__build [data-state="current"] { color: var(--primary, #0b6fc1); font-weight: 700; }
+.ap-tracker__build [data-state="current"] .ap-tracker__mini-dot { background: var(--primary, #0b6fc1); border-color: var(--primary, #0b6fc1); outline: 2px solid var(--primary, #0b6fc1); outline-offset: 2px; }
+.ap-tracker__build-times { list-style: none; padding: 0; margin: 12px 0 0; text-align: left; font-size: 11px; }
+.ap-tracker__build-times li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 8px; margin-top: 6px; }
+@container (max-width: 290px) {
+  .ap-tracker--building .ap-tracker__list { padding-bottom: 0; }
+  .ap-tracker__build { position: static; transform: none; width: 100%; margin: 12px 0; }
+}
+@media (forced-colors: active) {
+  .ap-tracker__mini-dot { border-color: ButtonText; }
+  .ap-tracker__build [data-state="done"] .ap-tracker__mini-dot,
+  .ap-tracker__build [data-state="current"] .ap-tracker__mini-dot { background: ButtonText; }
+  .ap-tracker__build [data-state="current"] .ap-tracker__mini-dot { outline-color: Highlight; }
+}
+#calls-saved { margin: 0 0 var(--s-3); }
 </style>
 </head>
 <body>
@@ -489,26 +616,29 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <section class="card" id="chosen" aria-label="Your chosen service" hidden>
     <strong id="chosen-lane"></strong>
     <p id="chosen-quote"></p>
-    <p class="note">To change your lane or rush choice, reply to desk@aandap.com.</p>
+    <p class="note" id="chosen-note">To change your lane or rush choice, reply to desk@aandap.com.</p>
   </section>
   <div class="test-banner" id="testbanner" role="note" hidden></div>
   <section class="card order" id="order" aria-label="The order">
     <div class="now-row"><p class="status-now" id="now"></p> <span class="saved" id="saved" hidden>Saved</span></div>
   </section>
+  <section id="production-tracker" aria-label="Report status" hidden></section>
   <section class="card" id="lane-picker" aria-label="Pick your lane" hidden></section>
   <div class="banner" id="payment" role="status" hidden></div>
-  <div class="banner warn" id="selfservice" role="note" hidden><div><p><b>Self-service: Matt and his team do not review this report.</b></p><ul><li>No one will discuss values or the report.</li><li>Questions, issues and changes go in writing, on this form or by email.</li><li>Appraisal help from Matt or his team is a separate service, billed for his time, and only where state rules allow it.</li><li>You are using the A&amp;AP software intelligence system directly. We strongly encourage you to review this report and ensure the system makes all changes to your liking.</li><li>Bugs, errors and software issues should be escalated to Matt and his team immediately. Appraisal discussion and questions remain in this form or by email.</li></ul></div></div>
+  <div class="banner warn" id="selfservice" role="note" hidden><div><p><b>Self-service: Matt and his team do not review this report.</b></p><ul><li>No one will discuss values or the report.</li><li>Questions, issues and changes go in writing, on this form or by email.</li><li>Appraisal help from Matt or his team is a separate service, billed for his time, and only where state rules allow it.</li><li>You are using A&amp;AP’s AI-assisted report-preparation software directly. We strongly encourage you to review this report and ensure the system makes all changes to your liking.</li><li>Bugs, errors and software issues should be escalated to Matt and his team immediately. Appraisal discussion and questions remain in this form or by email.</li></ul></div></div>
   <div class="card" id="returned-intro" hidden><p id="returned-headline">Your report is in your TOTAL folder. Review and edit it there.</p><p class="note" id="delivered-at" hidden></p><p class="note" id="legacy-approved" hidden></p></div>
   <div class="banner" id="notready" role="status" hidden></div>
   <section class="card" id="calls" aria-label="Our calls" hidden></section>
 
-  <fieldset id="form"><div id="sections"></div></fieldset>
+  <fieldset id="form"><p class="note" id="calls-saved" hidden>Saved at Start. You can change any of them when you review your report.</p><div id="sections"></div></fieldset>
   <section class="card report" id="report" aria-label="Your report" hidden></section>
 
   <section class="card statusbox" id="action" aria-label="Status">
-    <div class="banner warn" id="start-missing" role="status" hidden></div>
     <p class="status-help" id="help"></p>
-    <p class="note" id="selfservice-timing" hidden>A report takes about 2–3 hours to build, plus your review round. Best way: line up several orders, tap Start on each, and step away.</p>
+    <p class="note" id="final-file" hidden><b>Send your work file only when it’s final:</b> inspection, sketch and photos complete. We build from exactly what you send; changes after that are revisions.</p>
+    <p class="note" id="selfservice-timing" hidden>A report takes about 2–3 hours to build, plus your review and any fixes. Best way: line up several orders, tap Start on each, and step away.</p>
+    <p class="start-lock" id="start-missing" role="status" hidden></p>
+    <p class="optional-line" id="optional-line" hidden>Everything else is optional. Leave it blank and we’ll propose every call for you to approve.</p>
     <p class="agree-value" id="agree-value" hidden></p>
     <div id="post-request" hidden>
       <h2 id="post-title" hidden>Request a change</h2>
@@ -626,6 +756,191 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 
 <script>
 var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPwO_MB0iqsrAarETBMjLEdV5GfyFd_tgh_PiEA4z_w/exec";   // the web app's /exec URL (SETUP.md); while empty, the page says it is not connected
+/* No feed, timers, network calls or form-answer writes. */
+(function (global) {
+  'use strict';
+  const definitions = [
+    ['started', 'Started'], ['files', 'Files'], ['building', 'Building'],
+    ['checking', 'Checking'], ['review', 'Review'], ['delivered', 'Delivered']
+  ];
+  const buildDefinitions = [['file', 'File'], ['market', 'Market'], ['subject', 'Subject'], ['total', 'TOTAL']];
+  const instances = new WeakMap();
+  let serial = 0;
+  const day = new Intl.DateTimeFormat(undefined, { weekday: 'short' });
+  const clock = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
+  const full = new Intl.DateTimeFormat(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', timeZoneName: 'short' });
+  function element(tag, className) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    return node;
+  }
+  function initialize(root) {
+    root.classList.add('ap-tracker');
+    root.setAttribute('aria-label', 'Report status');
+    const list = element('ol', 'ap-tracker__list');
+    list.setAttribute('role', 'list');
+    const detail = element('div', 'ap-tracker__detail');
+    detail.id = 'ap-tracker-detail-' + (++serial);
+    detail.hidden = true;
+    detail.setAttribute('role', 'status');
+    const live = element('div', 'ap-tracker__sr');
+    live.setAttribute('role', 'status');
+    live.setAttribute('aria-atomic', 'true');
+    const waitingLink = element('a', 'ap-tracker__waiting');
+    waitingLink.hidden = true;
+    waitingLink.addEventListener('click', () => {
+      const target = document.getElementById(waitingLink.getAttribute('href').slice(1));
+      if (target) {
+        if (target.tabIndex < 0 && !target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+        target.focus({ preventScroll: true });
+      }
+    });
+    const mini = element('ol', 'ap-tracker__build');
+    mini.setAttribute('aria-label', 'Build steps');
+    mini.hidden = true;
+    const instance = { detail, live, waitingLink, mini, build: [], selected: null, rows: [] };
+    instance.rows = definitions.map(([key]) => {
+      const item = element('li', 'ap-tracker__step');
+      item.dataset.key = key;
+      const button = element('button', 'ap-tracker__tap');
+      button.type = 'button';
+      button.setAttribute('aria-controls', detail.id);
+      button.setAttribute('aria-expanded', 'false');
+      const target = element('span', 'ap-tracker__target');
+      target.setAttribute('aria-hidden', 'true');
+      target.append(element('span', 'ap-tracker__dot'));
+      const label = element('span', 'ap-tracker__label');
+      const time = element('time', 'ap-tracker__time');
+      time.setAttribute('aria-hidden', 'true');
+      button.append(target, label);
+      item.append(button, time);
+      if (key === 'building') item.append(mini);
+      list.append(item);
+      const row = { item, button, label, time, date: null, key };
+      button.addEventListener('click', () => {
+        if (!row.canExpand) return;
+        instance.selected = instance.selected === key ? null : key;
+        showDetail(instance);
+      });
+      return row;
+    });
+    root.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { instance.selected = null; showDetail(instance); }
+    });
+    root.replaceChildren(list, waitingLink, detail, live);
+    instances.set(root, instance);
+    return instance;
+  }
+  function showDetail(instance) {
+    const selected = instance.rows.find(row => row.key === instance.selected && row.canExpand);
+    instance.rows.forEach(row => row.button.setAttribute('aria-expanded', String(row === selected)));
+    instance.detail.hidden = !selected;
+    if (!selected) { instance.selected = null; instance.detail.replaceChildren(); return; }
+    const label = element('strong');
+    label.textContent = selected.label.textContent;
+    instance.detail.replaceChildren(label);
+    if (selected.date) {
+      const time = element('time');
+      time.dateTime = selected.date.toISOString();
+      time.textContent = full.format(selected.date);
+      instance.detail.append(time);
+    }
+    if (selected.key === 'building' && instance.build.some(step => step.date)) {
+      const history = element('ul', 'ap-tracker__build-times');
+      instance.build.forEach(step => {
+        const item = element('li');
+        const name = element('span');
+        name.textContent = step.label;
+        const time = element(step.date ? 'time' : 'span');
+        if (step.date) time.dateTime = step.date.toISOString();
+        time.textContent = step.date ? full.format(step.date) : '—';
+        item.append(name, time);
+        history.append(item);
+      });
+      instance.detail.append(history);
+    }
+  }
+  function render(root, status) {
+    if (typeof root === 'string') root = document.querySelector(root);
+    if (!(root instanceof Element)) throw new TypeError('Tracker root is required');
+    const current = definitions.findIndex(([key]) => key === status?.current);
+    if (current < 0 || !Array.isArray(status.steps)) throw new TypeError('Tracker needs steps and a valid current key');
+    const waiting = status.waiting;
+    if (waiting != null && (!['files', 'answer', 'review'].includes(waiting.what) ||
+        typeof waiting.target !== 'string' || !/^#[^\s#]+$/.test(waiting.target))) {
+      throw new TypeError('Waiting needs files, answer or review and a local #anchor target');
+    }
+    const build = status.build;
+    if (build != null && (build.current !== null && !buildDefinitions.some(([key]) => key === build.current) ||
+        !build.at || typeof build.at !== 'object')) {
+      throw new TypeError('Build needs a valid current key or null, and an at object');
+    }
+    const instance = instances.get(root) || initialize(root);
+    const buildIndex = buildDefinitions.findIndex(([key]) => key === build?.current);
+    instance.build = buildDefinitions.map(([key, label], index) => {
+      const parsed = typeof build?.at[key] === 'string' ? new Date(build.at[key]) : null;
+      const date = parsed && !Number.isNaN(parsed.getTime()) ? parsed : null;
+      // Missing stamps stay unknown; a later stamp never invents an earlier time.
+      const state = current === 2 && index === buildIndex ? 'current' :
+        date && (current > 2 || (current === 2 && index < buildIndex)) ? 'done' : 'future';
+      return { key, label, date, state };
+    });
+    instance.mini.hidden = current !== 2;
+    root.classList.toggle('ap-tracker--building', current === 2);
+    instance.mini.replaceChildren(...instance.build.map(step => {
+      const item = element('li');
+      item.dataset.state = step.state;
+      item.setAttribute('aria-label', step.label + ', ' + (step.state === 'done' ? 'complete' : step.state === 'current' ? 'in progress' : 'upcoming'));
+      if (step.state === 'current') item.setAttribute('aria-current', 'true');
+      const dot = element('span', 'ap-tracker__mini-dot');
+      dot.setAttribute('aria-hidden', 'true');
+      const label = element('span');
+      label.textContent = step.label;
+      item.append(dot, label);
+      return item;
+    }));
+    instance.waitingLink.hidden = !waiting;
+    if (waiting) {
+      instance.waitingLink.setAttribute('href', waiting.target);
+      instance.waitingLink.setAttribute('aria-label', 'Waiting on you: ' + waiting.what);
+      instance.waitingLink.textContent = 'Waiting on you · ' + waiting.what[0].toUpperCase() + waiting.what.slice(1);
+    } else {
+      instance.waitingLink.removeAttribute('href');
+      instance.waitingLink.removeAttribute('aria-label');
+      instance.waitingLink.textContent = '';
+    }
+    instance.rows.forEach((row, index) => {
+      const step = status.steps.find(step => step.key === row.key);
+      // Current is authoritative, even if later stages retain an earlier round's times.
+      const state = index < current || (current === 5 && index === 5) ? 'done' : index === current ? 'current' : 'future';
+      const parsed = typeof step?.at === 'string' && step.at ? new Date(step.at) : null;
+      row.date = state !== 'future' && parsed && !Number.isNaN(parsed.getTime()) ? parsed : null;
+      row.item.dataset.state = state;
+      row.item.toggleAttribute('data-waiting', !!waiting && index === current);
+      row.label.textContent = step?.label || definitions[index][1];
+      const stateLabel = waiting && index === current ? 'Waiting on you: ' + waiting.what : state === 'done' ? 'complete' : state === 'current' ? 'in progress' : 'upcoming';
+      const buildLabel = row.key === 'building' && current === 2 && buildIndex >= 0 ? ': ' + buildDefinitions[buildIndex][1] : '';
+      row.button.setAttribute('aria-label', row.label.textContent + buildLabel + ', ' + stateLabel + (row.date ? ', ' + full.format(row.date) : ''));
+      row.canExpand = !!row.date || (row.key === 'building' && current >= 2 && instance.build.some(step => step.date));
+      row.button.setAttribute('aria-disabled', String(!row.canExpand));
+      row.button.tabIndex = row.canExpand ? 0 : -1;
+      if (index === current) row.button.setAttribute('aria-current', 'step');
+      else row.button.removeAttribute('aria-current');
+      row.time.replaceChildren();
+      row.time.removeAttribute('datetime');
+      if (row.date) {
+        row.time.dateTime = row.date.toISOString();
+        const d = element('span'), t = element('span');
+        d.textContent = day.format(row.date); t.textContent = clock.format(row.date);
+        row.time.append(d, document.createTextNode(' '), t);
+      }
+    });
+    showDetail(instance);
+    const announcement = instance.rows[current].label.textContent + (current === 2 && buildIndex >= 0 ? ': ' + buildDefinitions[buildIndex][1] : '') + (waiting ? ', Waiting on you: ' + waiting.what : current === 5 ? ', complete' : ', in progress');
+    if (instance.live.textContent !== announcement) instance.live.textContent = announcement;
+  }
+  global.APStatusTracker = Object.freeze({ render });
+})(window);
 (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
@@ -658,8 +973,17 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     return !permissionPending() && stage === "open" && state.status === "READY" && savedStatus === "READY" &&
       !!submission && submission.by !== "desk" && submission.status === "READY" && sameQuote(submission.quote, currentQuote()) && !quoteChanged() && !(Date.parse(askedAt(D)) > Date.parse(submission.at));
   }
-  function filesChecked() { return customerReady() && !!D.accepted_at && state.invalidated_check !== D.accepted_at && sameQuote(D.accepted_quote, currentQuote()); }
-  function inProduction() { return filesChecked() && !!state.go && state.go.files_checked_at === D.accepted_at && sameQuote(state.go, currentQuote()); }
+  // Matt 2026-10-30: the desk's self-service file check (files_complete + files_checked_at) is recorded before any tap and
+  // binds no lane, so a two-option form can Start; other lanes keep the accepted READY check for the quote.
+  function fileChecks() {
+    var hp = D.house_prompts || {}, out = [];
+    if (hp.lane === "self-service" && hp.files_complete === true && hp.files_checked_at) out.push(hp.files_checked_at);
+    if (D.accepted_at && state.invalidated_check !== D.accepted_at && sameQuote(D.accepted_quote, currentQuote())) out.push(D.accepted_at);
+    return out;
+  }
+  function checkedAt() { return fileChecks()[0] || ""; }
+  function filesChecked() { return customerReady() && !!checkedAt(); }
+  function inProduction() { return filesChecked() && !!state.go && fileChecks().indexOf(state.go.files_checked_at) >= 0 && sameQuote(state.go, currentQuote()); }
   function answered() { return customerReady() && asked(); }
   function optionSent() { return customerReady(); }
   function readyNote() { if(minimalCalls())return inProduction()?"Start received.":"Saved. Start when your file and calls are complete."; return permissionHeld() ? "On hold. Client permission needs review." : quoteChanged() ? "Review the updated order, then tap Ready. Nothing starts yet." : inProduction() ? "Start production received." : filesChecked() ? "Files checked. Tap Start production to authorize the run." : "Your files and answers are in. We're checking your files. Nothing starts yet."; }
@@ -1042,6 +1366,12 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   var laneNames = { partial: "Partial", "partial-conversion": "Partial with 2.6 to 3.6 conversion", full: "Full",
     "self-service": "Self-service", "self-service-conversion": "Self-service with 2.6 to 3.6 conversion" };
+  // Matt 2026-10-30: self-service options read as the emails do, A then B, with a price and never a day.
+  var laneLetters = { "self-service-conversion": "A", "self-service": "B" };
+  function selfOnly() { var o = laneOptions(F); return o.length > 0 && o.every(function (x) { return /^self-service/.test(x.id); }); }
+  function selfLane() { return (D.house_prompts || {}).lane === "self-service" || selfOnly(); }
+  function laneTitle(id) { return (selfOnly() && laneLetters[id] ? laneLetters[id] + " · " : "") + (laneNames[id] || id); }
+  function day(s) { var d = /^\d{4}-\d{2}-\d{2}$/.test(s || "") ? new Date(s + "T12:00:00") : null; return d && !isNaN(d.getTime()) ? d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : s || ""; }
   function startRecord() {
     return (state.customer_submissions || []).concat(state.customer_submission || []).filter(function (s) {
       return s.by !== "desk" && s.status === "READY" && s.quote && laneNames[s.quote.lane];
@@ -1056,8 +1386,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       due.setDate(due.getDate() + 1);
       if (due.getDay() !== 0 && due.getDay() !== 6) days--;
     }
-    var date = function (d) { return d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric", year: "numeric" }); };
-    $("chosen-lane").textContent = "Chosen: " + laneNames[lane] + " · " + (self ? "within 1 working day" : "2 to 3 working days");
+    var date = function (d) { return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }); };
+    $("chosen-quote").hidden = self;
+    $("chosen-note").textContent = self ? "To change your option, reply to desk@aandap.com." : "To change your lane or rush choice, reply to desk@aandap.com.";
+    if (self) { $("chosen-lane").textContent = "Chosen: " + [laneTitle(lane), start.quote.price].filter(Boolean).join(" · "); return; }
+    $("chosen-lane").textContent = "Chosen: " + laneNames[lane] + " · 2 to 3 working days";
     if ((start.answers || {}).q_rush === true) {
       // A quoted day is a local calendar date, never UTC midnight.
       var quoted = /^\d{4}-\d{2}-\d{2}$/.test(O.rush_due_date || "") ? new Date(O.rush_due_date + "T12:00:00") : null;
@@ -1070,7 +1403,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function minimalCalls() { return valueLast() && Array.isArray(D.call_sections); }
   function archerAdjustments() { return ans("adjustments_by") === "archer_profile"; }
   function numberOnly(v) { var t = String(v == null ? "" : v).replace(/[$,]/g, "").trim(); return /^-?(?:\d+\.?\d*|\.\d+)$/.test(t) && isFinite(Number(t)) ? Number(t) : null; }
-  function minimalChecked() { return (D.house_prompts || {}).files_complete === true && !!D.accepted_at && state.invalidated_check !== D.accepted_at && sameQuote(D.accepted_quote, currentQuote()); }
+  function minimalChecked() { return (D.house_prompts || {}).files_complete === true && !!checkedAt(); }
   function minimalFactsReady() { return (D.comps || []).length > 0 && (D.comps || []).every(function(c){return !!c.mls;}) && new Set((D.comps || []).map(function(c){return c.mls;})).size === D.comps.length; }
   var callLines = [], minimalRange = null;
   function callActive(condition) {
@@ -1101,7 +1434,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if(section.note)card.appendChild(el("p",{cls:"note",text:section.note}));
     section.lines.forEach(function(line){
       if (["comps_roster", "search_net"].indexOf(line.key) >= 0) return;
-      var options=callOptions(line), context=(D.house_prompts||{})[line.context], label=line.label+(context ? " · "+context : "");
+      var options=callOptions(line), context=(D.house_prompts||{})[line.context], label=line.label+((typeof context === "string" && context.trim()) || typeof context === "number" ? " · "+context : "");   // "contract": true is the line's switch, never its context
       var input=line.kind === "check" ? check(line.key,label) : options ? choice(line.key,label,options) : text(line.key,label,{multi:line.kind === "multi",short:!!line.numeric});
       if(line.key === "calls_ok") {var original=controls.calls_ok.set;controls.calls_ok.set=function(v){original(v === true && ans("calls_checked_at") === (D.accepted_at||""));};}
       var wrap=card.appendChild(el("div",{cls:"call-line","data-call-line":line.key},[input]));
@@ -1119,7 +1452,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     callLines.push(function(){card.hidden=!!section.when&&!callActive(section.when);});
   }
   function paintCallLines(){callLines.forEach(function(f){f();});}
-  var minimalView = null;
+  var minimalView = null, moreOpen = null;
   function minimalDelta(r, i) {
     if (r.fact === "quality" || r.fact === "condition") {
       var v = picked(i + 1, r.fact), a = grade(ans("subject_"+r.fact)), b = v === "Same" ? a : grade(v);
@@ -1133,7 +1466,14 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     $("start-calls").textContent="";
     var sections=D.call_sections, split=sections.findIndex(function(x){return x.slot === "adjustments";});
     callSection(sections[0],host);
-    host.appendChild(el("section",{cls:"card optional-calls"},[el("h2",{text:"Optional — you can leave everything below blank"}),el("p",{text:"Tap Start and we’ll build the report. You’ll see it in TOTAL and make your calls before anything is delivered."})]));
+    // Matt 2026-10-30: optional must be obvious. One toggle; it opens by itself when his file or his saved answers fill any of it.
+    var optionalKeys = [].concat.apply([], sections.slice(1).map(function(sec){return sec.lines.map(function(l){return l.key;});})).concat((D.adjustment_rows || []).map(function(r){return r.key;}), ["adjustments_by"]);
+    var filled = optionalKeys.some(function(k){var v=ans(k);return v === true || typeof v === "number" || typeof v === "string" && !!v.trim();});
+    var more = host.appendChild(el("details",{cls:"optional-calls"},[el("summary",null,[el("span",{text:"Add your own calls now"}),el("small",{text:"Optional"})]),el("p",{cls:"note",text:"Leave these blank and we’ll propose every call for you to approve in TOTAL."})]));
+    more.open = moreOpen == null ? filled : moreOpen;
+    more.dataset.filled = filled;
+    more.addEventListener("toggle", function(){moreOpen = more.open;});
+    host = more;
     sections.slice(1,split).forEach(function(sec){callSection(sec,host);});
     var comps = D.comps || [], rows = D.adjustment_rows || [];
     var mode = host.appendChild(el("section", {cls:"card"}, [el("h2", {text:"Your adjustments"}), el("p", {cls:"note", text:"The grid is optional. Choose who fills your adjustments."})]));
@@ -1257,11 +1597,12 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     box.textContent = ""; box.hidden = !choosingLane();
     if (box.hidden) return;
     if (minimalCalls() && !laneOptions(F).length) { box.hidden = true; return; }
-    if (options.length > 1) box.appendChild(el("h2", { text: "Pick your lane" }));
+    if (selfOnly()) options = options.slice().sort(function (a, b) { return (laneLetters[a.id] || "Z").localeCompare(laneLetters[b.id] || "Z"); });
+    if (options.length > 1) box.appendChild(el("h2", { text: selfOnly() ? "Pick your option" : "Pick your lane" }));
     var cards = el("div", { cls: "taps" });
     options.forEach(function (option) {
       var b = el("button", { type: "button", cls: "tap", "aria-pressed": String(state.answers.q_service_option === option.id) },
-        [el("strong", { text: option.label }), minimalStart() ? null : el("span", { text: option.line })]);
+        [el("strong", { text: /^self-service/.test(option.id) ? laneTitle(option.id) : option.label }), minimalStart() ? null : el("span", { text: option.line })]);
       b.disabled = readOnly || pendingTaps > 0 || optionSent();
       b.addEventListener("click", function () {
         if (startRecord()) return;
@@ -1276,14 +1617,13 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     });
     if (options.length > 1 || (D.house_prompts || {}).lane === "self-service") box.appendChild(cards);
     if (minimalStart()) {
-      if ((D.house_prompts || {}).lane === "self-service" && options.length > 1) box.appendChild(check("q_rush", "Need it within 1 working day? Check here. We quote the rush fee before we start.", "rush"));
       var table = el("table", { cls: "standard-fees" }, [el("caption", { text: "Standard fees" })]);
-      var rows = options.map(function (o) { return { label: o.fee_label || o.label, price: o.price, ready_by: o.ready_by }; });
-      rows = rows.concat((F.standard_fees || []).filter(function (r) {
+      var rows = options.map(function (o) { var self = /^self-service/.test(o.id); return { label: self ? laneTitle(o.id) : o.fee_label || o.label, price: o.price, ready_by: self ? "" : o.ready_by }; });
+      if (!selfOnly()) rows = rows.concat((F.standard_fees || []).filter(function (r) {   // a self-service form shows its own two prices only
         return !/^Self-service/.test(r.label);
-      }), (D.house_prompts || {}).lane === "self-service" ? [{ label: "Rush", price: "Quoted up front" }] : []);
+      }));
       rows.forEach(function (r) {
-        if (r.price) table.appendChild(el("tr", null, [el("th", { scope: "row", text: r.label }), el("td", { text: r.price }), (D.house_prompts || {}).lane !== "self-service" && r.ready_by ? el("td", { text: "Ready " + r.ready_by }) : null]));
+        if (r.price) table.appendChild(el("tr", null, [el("th", { scope: "row", text: r.label }), el("td", { text: r.price }), (D.house_prompts || {}).lane !== "self-service" && r.ready_by ? el("td", { text: "Ready " + day(r.ready_by) }) : null]));
       });
       box.appendChild(table);
     }
@@ -1472,8 +1812,10 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var due = String(O.payment_due || "").trim();
     $("payment").hidden = !due;
     $("selfservice").hidden = (D.house_prompts || {}).lane !== "self-service";   // Matt 2026-10-19: VERY clear on every self-service form
-    $("selfservice-timing").hidden = (D.house_prompts || {}).lane !== "self-service" || (D.stage || "open") !== "open";   // Matt 2026-10-30: say the build time and how best to run them, near Start
-    var tb = $("testbanner"), bt = String(D.banner || "").trim().replace(/\s*·\s*\$[\d,.]+(?=\s*(?:·|$))/g, "");   // Legacy fixed headers keep their lane and date, without the fee.
+    $("final-file").hidden = ["review", "regression"].indexOf((D.house_prompts || {}).lane) >= 0 || (D.stage || "open") !== "open";   // Matt 2026-10-30: firm that the work file is final before we build, every order lane
+    $("selfservice-timing").hidden = !selfLane() || (D.stage || "open") !== "open";   // Matt 2026-10-30: say the build time and how best to run them, near Start
+    var tb = $("testbanner"), bt = String(D.banner || "").trim().replace(/\s*·\s*\$[\d,.]+(?=\s*(?:·|$))/g, "");
+    if (selfLane()) bt = bt.replace(/\s*·\s*(?:ready|due|within|rush)\b[^·]*/gi, "");   // Matt 2026-10-30: no turn times on self-service   // Legacy fixed headers keep their lane and date, without the fee.
     tb.hidden = !bt; tb.textContent = "";
     bt.split(/([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/).forEach(function (part, i) {
       if (part) tb.appendChild(i % 2 ? el("a", { href: "mailto:" + part, text: part }) : document.createTextNode(part));
@@ -1508,8 +1850,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     head.appendChild(nowRow);
     fact("Property", O.property);
     fact("Client", O.client);
-    fact("Client due", O.due_date);
-    box.appendChild(el("p", { id: "quote", cls: "note", text: O.ready_by ? "Ready " + O.ready_by : "" }));
+    fact("Client due", day(O.due_date));
+    box.appendChild(el("p", { id: "quote", cls: "note", text: O.ready_by && !selfLane() ? "Ready " + day(O.ready_by) : "" }));
     box.appendChild(el("p", { id: "acceptance", cls: "note", hidden: true }));
     if (!returned && !minimalCalls() && D.public_note && D.note_kind !== "not_ready") box.appendChild(rich(D.public_note, "note"));
   }
@@ -1608,11 +1950,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var regression = (D.house_prompts || {}).lane === "regression";    // a regression form shows like the desk lane
     var desk = (D.house_prompts || {}).lane === "desk" || regression;
     document.body.classList.toggle("start-options", startOptions() && !laneOptions(F).length);
-    $("help").innerHTML = laneOptions(F).length ? D.selected_lane ? "Answer each, then tap <b>Ready</b>." : "Pick your lane to see the ready day and price." : startOptions() ? "Pick one, then tap Ready." : review ? "Review it in TOTAL; please don't sign. Changes? Tap <b>Request Changes</b>. Good to go? Tap <b>Done</b>." :
+    $("help").innerHTML = selfOnly() && !D.selected_lane ? "" : laneOptions(F).length ? D.selected_lane ? "Answer each, then tap <b>Ready</b>." : "Pick your lane to see the ready day and price." : startOptions() ? "Pick one, then tap Ready." : review ? "Review it in TOTAL; please don't sign. Changes? Tap <b>Request Changes</b>. Good to go? Tap <b>Done</b>." :
       regression ? "Save the report, pick the factors, tap <b>Ready</b>. Results show at the top; you decide what to use." :
       built0 ? (O.files_by === "email" ? "Answer each, then tap <b>Send answers</b>." : "Save the report in TOTAL so your files come through, then tap <b>Send answers</b>.") :
       stage === "open" && O.files_by === "email" ? "Tap <b>Ready</b> to have us check your files. Nothing starts yet." : STAGES[stage].help;   // files by email, no Workfile
-    if (stage === "open" && !review && $("help").innerHTML.indexOf("Nothing starts") < 0)
+    if (stage === "open" && !review && !selfLane() && $("help").innerHTML.indexOf("Nothing starts") < 0)
       $("help").innerHTML += " Tap Start production after we check your files to authorize the run.";
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = review || desk || stage === "returned"; });
     // After the run the questions are all that is left to answer: the START sections (already answered) step aside.
@@ -1629,13 +1971,42 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     document.querySelectorAll("[data-stage]").forEach(function (c) { var st = c.getAttribute("data-stage"); c.hidden = st !== stage || (st === "open" && built && (D.house_prompts || {}).lane !== "self-service"); });   // Matt 2026-10-19: self-service keeps its calls page with questions
     paintStatus();
   }
+  // The tracker after Start (Matt 2026-10-30): his Start, the run's posted steps (D.progress, fed from its receipt stamps),
+  // then the form's own review and delivery records; a change request after either is a fix round back at Checking.
+  // Price only on self-service: no turn times here.
+  var TRACK = ["started", "files", "building", "checking", "review", "delivered"];
+  function trackerStatus() {
+    if (!state || !state.go || !(selfLane() || /^self-service/.test(state.go.lane || "")) || !(inProduction() || stage === "returned")) return null;
+    var t = function (s) { var n = s ? Date.parse(s) : NaN; return isNaN(n) ? 0 : n; };
+    var P = D.progress || {}, at = P.at || {}, review = D.review && D.review.at, done = D.delivered_at;
+    var current = TRACK.indexOf(P.step) > 1 ? P.step : "files", last = Math.max(t(review), t(done)), fix = null, waiting = null;
+    if (review) current = "review";
+    if (done && t(done) >= t(review)) current = "delivered";
+    (state.post_changes || []).forEach(function (c) { if (c && last && t(c.at) > last) fix = c; });
+    if (fix) current = "checking";
+    var asked = P.waiting && P.waiting.what, answered = asked && (state.post_changes || []).concat(Object.keys(state.answers || {})
+      .filter(function (k) { return /^q_fb_/.test(k); }).map(function (k) { try { return JSON.parse(state.answers[k]); } catch (e) { return null; } }))
+      .some(function (c) { return c && t(c.at) > t(P.waiting.at); });
+    if (asked && !answered && TRACK.indexOf(current) < 4) waiting = { what: asked, target: "#feedback" };
+    if (current === "review" && signoff() && !signedOff()) waiting = { what: "review", target: "#report" };
+    var times = { started: state.go.at, files: at.files || (t((D.house_prompts || {}).files_checked_at) >= t(state.go.at) ? D.house_prompts.files_checked_at : null), building: at.building, checking: fix ? fix.at : at.checking, review: review, delivered: done };
+    return { current: current, waiting: waiting, build: P.build ? { current: current === "building" ? P.sub || null : null, at: P.build } : null,
+      steps: TRACK.map(function (k) { return { key: k, at: times[k] || null }; }) };
+  }
+  function paintTracker() {
+    var status = trackerStatus(), box = $("production-tracker");
+    box.hidden = !status;
+    if (status) APStatusTracker.render(box, status);
+  }
   function paintStatus() {
     paintFeedback();
     paintChosen();
     $("lane-picker").hidden = !choosingLane();
     var locked = readOnly || approved || pendingTaps > 0 || inProduction() || answered() || optionSent() && !minimalCalls();
     $("form").disabled = locked;
-    $("form").hidden = inProduction();
+    $("form").hidden = inProduction() && !selfLane();   // Matt 2026-10-30: his self-service calls stay in view, read-only, after Start
+    $("calls-saved").hidden = !(inProduction() && selfLane());
+    document.querySelectorAll("#form details.optional-calls").forEach(function (d) { d.hidden = !$("calls-saved").hidden && d.dataset.filled !== "true"; });   // nothing of his to show
     $("form").classList.toggle("approved", approved);
     document.querySelectorAll("#form input, #form textarea, #form button, #form select").forEach(function (c) { c.disabled = locked; });
     $("action").classList.toggle("approved", approved);
@@ -1648,11 +2019,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     $("payment").hidden = simpleStart() || !String(O.payment_due || "").trim();
     document.querySelectorAll("[data-terms]").forEach(function (p) {
       var h = acceptance(), a = h && h.accepted;
-      var terms = D.terms || (a && a.terms);
+      var terms = D.terms || (a && a.terms) || (selfOnly() ? laneOptions(F)[0].terms : "");
       var url = D.terms_url || (a && a.terms === terms && a.terms_url);
       if (!url && /^(service|software)-\d{4}-\d{2}-\d{2}[a-z]?$/.test(terms || ""))
         url = "https://appraisalpartners.net/terms" + (terms.indexOf("software-") === 0 ? "-software" : "") + "-" + terms.replace(/^(service|software)-/, "") + ".html";
-      p.hidden = (D.house_prompts || {}).lane === "review" || (laneOptions(F).length > 0 && !D.selected_lane); p.textContent = "";
+      p.hidden = (D.house_prompts || {}).lane === "review" || (laneOptions(F).length > 0 && !D.selected_lane && !selfOnly()); p.textContent = "";
       if (p.hidden) return;
       if (startOptions() && !laneOptions(F).length) {
         p.appendChild(document.createTextNode("Ready sends your files and answers for checking. Nothing starts yet. Terms: "));
@@ -1664,12 +2035,12 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       }
       var words = minimalCalls() || minimalStart() ? "Start accepts our " : filesChecked() && !inProduction() ? "By tapping Start production you accept our " : customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept our " : "By tapping Ready you accept our ";
       p.appendChild(document.createTextNode(words));
-      p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: minimalCalls() ? "Software Terms" : laneOptions(F).length ? ((D.house_prompts || {}).lane === "self-service" ? "Software Terms" : "Service Terms") : "terms" }));
+      p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: minimalCalls() || selfOnly() ? "Software Terms" : laneOptions(F).length ? ((D.house_prompts || {}).lane === "self-service" ? "Software Terms" : "Service Terms") : "terms" }));
       p.appendChild(document.createTextNode("."));
     });
     var accepted = acceptance();
     $("acceptance").hidden = !!startRecord() || !accepted;
-    $("acceptance").textContent = accepted ? "Accepted " + new Date(accepted.at).toLocaleDateString([], { month: "short", day: "numeric" }) + (accepted.accepted.ready_by ? " · ready " + accepted.accepted.ready_by : "") : "";
+    $("acceptance").textContent = accepted ? "Accepted " + new Date(accepted.at).toLocaleDateString([], { month: "short", day: "numeric" }) + (accepted.accepted.ready_by && !/^self-service/.test(accepted.accepted.lane || "") ? " · ready " + day(accepted.accepted.ready_by) : "") : "";
     $("quote").hidden = !!startRecord() || simpleStart() || laneOptions(F).length && !D.selected_lane || stage !== "open" && !!accepted && !quoteChanged();
     $("start-production").hidden = !filesChecked() || inProduction() || (D.house_prompts || {}).lane === "review";
     $("start-production").textContent = simpleStart() ? "Start" : "Start production";
@@ -1705,8 +2076,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     }
     var h = entries.reverse().filter(function (e) { return e.accepted || (e.event === "client_permits" && !permitsOff()) || e.event === "go" || e.event === "post_change" || e.event === "delivered" || e.event === "updated" || e.status === "DONE"; }).map(function (e) {
       if (e.event === "client_permits") return "Client permission · " + e.answer + " · " + when(e.at);
-      if (e.event === "go") return "Start production · " + e.quote.lane + " · ready " + e.quote.ready_by + " · " + when(e.at);
-      if (e.accepted) return (e.by === "desk" ? "Desk go-ahead · " : e.by === "no tag" ? "Accepted (no tag) · " : "Accepted · ") + "ready " + e.accepted.ready_by + " · " + e.accepted.lane + " · " + e.accepted.terms + " · " + when(e.at);
+      var ready = function (q) { return /^self-service/.test(q.lane || "") ? "" : "ready " + day(q.ready_by) + " · "; };
+      if (e.event === "go") return "Start production · " + e.quote.lane + " · " + ready(e.quote) + when(e.at);
+      if (e.accepted) return (e.by === "desk" ? "Desk go-ahead · " : e.by === "no tag" ? "Accepted (no tag) · " : "Accepted · ") + ready(e.accepted) + e.accepted.lane + " · " + e.accepted.terms + " · " + when(e.at);
       return (e.event === "post_change" ? "Change requested" : e.event === "delivered" ? "Delivered" : e.event === "updated" ? "Updated" : "Approved") + " " + when(e.at);
     });
     $("history-list").textContent = "";
@@ -1724,20 +2096,33 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     $("post-sent").hidden = !lastRequest;
     $("post-sent").textContent = lastRequest ? "Change request sent " + when(lastRequest.at) + ". We'll update your report and let you know." : "";
     $("start-missing").hidden = true;
+    $("optional-line").hidden = true;
+    // Matt 2026-10-30: one plain line says why Start is locked, from the first view on.
+    function filesNeed(hp) {
+      if (hp.files_complete === true && hp.files_checked_at) return "";
+      var still = String((hp.files_missing || []).join("; ") || D.public_note || "").replace(/^(?:Missing:\s*)?(?:Still needed:\s*)?/i, "").replace(/[.;\s]+$/, "");
+      return "Still needed: " + (still || "your complete file") + ".";
+    }
+    if (selfOnly() && !D.selected_lane && stage === "open") {
+      var first = filesNeed(Object.assign({}, F.house_prompts || {}, laneOptions(F)[0].house_prompts || {}));
+      $("start-missing").textContent = ["Start unlocks once you pick an option and answer the short To start items.", first].filter(Boolean).join(" ");
+      $("start-missing").hidden = false;
+    }
     if (minimalCalls()) {
       $("lane-picker").hidden = !choosingLane();
-      var gaps=[];
-      if(!minimalChecked()) gaps.push("Files: " + String((D.house_prompts || {}).files_missing?.join("; ") || D.public_note || "complete file").replace(/^(?:Missing:\s*)?(?:Still needed:\s*)?/i, "").replace(/[.;\s]+$/, ""));
-      else if(!minimalFactsReady()) gaps.push("Comps from your file");
+      var gaps=[], files = !minimalChecked() ? filesNeed(D.house_prompts || {}) || "Still needed: your complete file." : !minimalFactsReady() ? "Still needed: your comps from your file." : "";
       var calls = missing().map(function(m){return m.key==="inspection_ok"?"inspection confirmation":m.key==="premise"?"premise":m.key==="q_value"?"your value":m.key==="q_exposure"?"exposure time":m.key==="adjustments_by"?"who fills adjustments":m.label || m.node.querySelector("label")?.textContent || "adjustment rates";});
-      if(calls.length) gaps.push("Required calls: " + [...new Set(calls)].join(", "));
+      if(calls.length) gaps.push("Start unlocks once you answer: " + [...new Set(calls)].join(", ") + ".");
+      else if(files) gaps.push("Start unlocks once your file is in.");
+      if(files) gaps.push(files);
       $("start-missing").hidden = !gaps.length || inProduction();
-      $("start-missing").replaceChildren(el("div", null, [el("b", {text: "We can't start your report until we have:"}), el("ul", null, gaps.map(function(gap){return el("li", {text: gap});}))]));
+      $("start-missing").textContent = gaps.join(" ");
+      $("optional-line").hidden = inProduction() || stage !== "open";
       $("help").hidden = $("help").hidden || !$("start-missing").hidden;
       $("help").textContent = "Save to come back, or Start your report.";
       $("start-production").hidden = true;
       $("quote").hidden = false;
-      $("quote").textContent = "Self-service · " + (O.price || "$59") + " · within 1 working day";
+      $("quote").textContent = [laneTitle(D.selected_lane || "self-service"), O.price].filter(Boolean).join(" · ");
       statusBtns.forEach(function(b) { if(b.dataset.s === "READY") { b.hidden = inProduction(); b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || !minimalChecked() || !minimalFactsReady() || missing().length > 0; } });
     }
     $("save-calls").hidden = !minimalCalls() || inProduction();
@@ -1746,6 +2131,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     paintCallLines();
     proposalPainters.forEach(function(f){f();});
     paintNow();
+    paintTracker();
     // Matt 2026-10-13: a READY the desk sent back says so at the very top, with why, while the form is DRAFT again:
     // a red pop-out when it arrives ("make it red and a popout and very obvious"), then the red banner pinned there.
     var nr = $("notready"), back = D.note_kind === "not_ready" && !!D.public_note && state.status === "DRAFT";
@@ -1932,15 +2318,15 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function startProduction() {
     if (minimalCalls() && missing().length) return;
     if (!filesChecked() || inProduction() || readOnly || !online || pendingTaps > 0 || goBusy) return;
-    var payload = body(true); payload.go = true; payload.files_checked_at = D.accepted_at;
-    var checkedAt = D.accepted_at, doc = JSON.stringify(payload);
+    var payload = body(true); payload.go = true; payload.files_checked_at = checkedAt();
+    var checkStamp = payload.files_checked_at, doc = JSON.stringify(payload);
     goBusy = true; paintStatus();
     function once() {
       return post(doc).catch(function () {}).then(read).then(function (r) {
         if (r.form) refresh(r.form);
         if (r.saved) apply(r.saved);
-        if (!r.form || !r.saved || !filesChecked() || D.accepted_at !== checkedAt || !sameQuote(currentQuote(), payload.quote)) throw { code: "changed" };
-        if (r.saved.go && r.saved.go.files_checked_at === checkedAt && sameQuote(r.saved.go, payload.quote)) return;
+        if (!r.form || !r.saved || !filesChecked() || fileChecks().indexOf(checkStamp) < 0 || !sameQuote(currentQuote(), payload.quote)) throw { code: "changed" };
+        if (r.saved.go && r.saved.go.files_checked_at === checkStamp && sameQuote(r.saved.go, payload.quote)) return;
         throw {};
       });
     }
