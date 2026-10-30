@@ -489,7 +489,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
   <section class="card" id="chosen" aria-label="Your chosen service" hidden>
     <strong id="chosen-lane"></strong>
     <p id="chosen-quote"></p>
-    <p class="note">To change your lane or rush choice, reply to orders@aandap.com.</p>
+    <p class="note">To change your lane or rush choice, reply to desk@aandap.com.</p>
   </section>
   <div class="test-banner" id="testbanner" role="note" hidden></div>
   <section class="card order" id="order" aria-label="The order">
@@ -1060,9 +1060,9 @@ var API = "TEST_API_URL";   // the web app's /exec URL (SETUP.md); while empty, 
     if ((start.answers || {}).q_rush === true) {
       // A quoted day is a local calendar date, never UTC midnight.
       var quoted = /^\d{4}-\d{2}-\d{2}$/.test(O.rush_due_date || "") ? new Date(O.rush_due_date + "T12:00:00") : null;
-      $("chosen-quote").textContent = quoted && !isNaN(quoted.getTime()) ? "Rush · Due " + date(quoted) : "Rush: due date from orders@aandap.com";
+      $("chosen-quote").textContent = quoted && !isNaN(quoted.getTime()) ? "Rush · Due " + date(quoted) : "Rush: due date from desk@aandap.com";
     } else {
-      $("chosen-quote").textContent = isNaN(due.getTime()) ? "Due date from orders@aandap.com" : "Due " + date(due);
+      $("chosen-quote").textContent = isNaN(due.getTime()) ? "Due date from desk@aandap.com" : "Due " + date(due);
     }
   }
   // File facts and customer rates, with the same answer keys used by the report backfill.
