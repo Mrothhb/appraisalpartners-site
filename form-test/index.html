@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-30.5">
+<html lang="en" data-build="v2026-10-30.6">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -263,6 +263,43 @@ textarea[rows="1"] { min-height: 44px; }
 #selfservice { margin: 0 0 var(--gap); } #selfservice p { margin: 0; } #selfservice ul { margin: var(--s-2) 0 0; padding-left: 1.2em; } #selfservice li + li { margin-top: 2px; }
 #start-missing.start-lock { margin: 0 0 var(--s-2); font-size: 14px; color: var(--ink-2); }   /* one plain line: why Start is locked */
 .optional-line { margin: 0 0 var(--s-3); font-weight: 600; color: var(--ink); }
+/* ---------- Ready to start (Matt 2026-10-30): the musts before Start at a glance, the optional callout, two fact rows, one Start ---------- */
+#ready { display: flex; flex-direction: column; gap: var(--s-4); }
+#ready h2 { margin: calc(var(--card-py) * -1 - 1px) calc(var(--card-px) * -1 - 1px) 0; }
+.ready-count { font: 600 13px/1.4 var(--font); letter-spacing: .02em; color: rgba(255,255,255,.9); white-space: nowrap; }
+.ready-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line-2); border-radius: var(--r-2); overflow: hidden; background: #fff; }
+.ready-item + .ready-item { border-top: 1px solid var(--line); }
+.ready-tap { display: flex; align-items: center; gap: var(--s-3); width: 100%; min-height: 52px; margin: 0; padding: var(--s-2) var(--s-4); border: 0; border-radius: 0; background: #fff; color: var(--ink); font: 600 16px/1.4 var(--font); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
+.ready-tap[aria-disabled="true"] { cursor: default; }
+.ready-item[data-state="open"] .ready-tap:hover { background: var(--tint); }
+.ready-item[data-state="done"] .ready-tap { color: var(--ink-2); font-weight: 400; }
+.ready-dot { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border: 2px solid var(--edge); border-radius: 50%; background: #fff; }
+.ready-item[data-state="done"] .ready-dot { background: var(--success); border-color: var(--success); }
+.ready-item[data-state="done"] .ready-dot::after { content: ""; width: 10px; height: 5px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: translateY(-1px) rotate(-45deg); }
+.ready-item[data-state="open"] .ready-dot::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--warning-edge); }
+.ready-label { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.ready-label small { display: block; font-size: 13px; font-weight: 400; line-height: 1.4; color: var(--ink-2); }
+.ready-item[data-state="done"] .ready-label b { color: var(--ink); font-weight: 600; }
+.ready-go { flex: none; color: var(--primary); font-size: 14px; font-weight: 600; white-space: nowrap; }
+.ready-go::after { content: " ›"; font-size: 18px; line-height: 1; }
+.ready-optional { display: flex; align-items: flex-start; gap: var(--s-3); margin: 0; padding: var(--s-3) var(--s-4); border: 1px solid var(--tint-line); border-left: 4px solid var(--primary); border-radius: var(--r-2); background: var(--tint); color: var(--ink); font-size: 15px; line-height: 1.5; }
+.ready-optional .badge { flex: none; margin-top: 2px; padding: 1px 9px; border-radius: var(--r-full); background: var(--primary); color: #fff; font: 700 11px/1.6 var(--font); letter-spacing: .08em; text-transform: uppercase; }
+.ready-facts { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2); }
+.ready-facts li { display: flex; align-items: flex-start; gap: var(--s-3); font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.ready-facts li b { color: var(--ink); font-weight: 600; }
+.ready-facts li::before { content: ""; flex: none; width: 22px; height: 22px; background: center / 20px 20px no-repeat; }
+.ready-facts .final::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 2.5h7l3.5 3.5v11.5h-10.5z' fill='none' stroke='%230b6fc1' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M12 2.5v3.5h3.5' fill='none' stroke='%230b6fc1' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M7 12l2 2 4-4.5' fill='none' stroke='%232b7e26' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+.ready-facts .time::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='7.5' fill='none' stroke='%230b6fc1' stroke-width='1.5'/%3E%3Cpath d='M10 5.5V10l3 2' fill='none' stroke='%230b6fc1' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+.self-start #action .st[data-s="READY"] { min-height: 56px; font-size: 18px; }
+.self-start #action .st[data-s="READY"]:disabled, .self-start #action .st.wait[data-s="READY"]:disabled { background: var(--field-off); color: var(--ink-2); border-color: var(--edge); }
+.link-btn { display: block; width: auto; margin: 0 auto; padding: 10px 12px; border: 0; background: none; color: var(--primary); font: 600 15px/1.4 var(--font); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: rgba(11,111,193,.4); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.link-btn:hover { color: var(--primary-hover); text-decoration-color: currentColor; }
+.link-btn:disabled { color: var(--ink-2); cursor: default; }
+/* the outbox (Matt 2026-10-30: "user needs immediate feedback"): one plain line only once retries have run out */
+.sync-note { display: flex; align-items: center; gap: var(--s-3); margin: 0; padding: var(--s-3) var(--s-4); border: 1px solid var(--warning-line); border-left: 4px solid var(--warning-edge); border-radius: var(--r-2); background: var(--warning-bg); color: var(--warning-ink); font-size: 14px; line-height: 1.5; }
+.sync-note button { flex: none; margin-left: auto; min-height: 36px; padding: 0 var(--s-4); border: 1px solid var(--warning-edge); border-radius: var(--r-2); background: #fff; color: var(--warning-ink); font: 600 14px/1 var(--font); cursor: pointer; }
+.call-line.flash, .line.flash, #lane-picker.flash { animation: ap-flash 1.8s ease-out; }
+@keyframes ap-flash { 0% { box-shadow: inset 4px 0 0 var(--primary); background: var(--tint); } 100% { box-shadow: none; background: transparent; } }
 .banner.warn { background: var(--warning-bg); color: var(--warning-ink); border-color: var(--warning-line); border-left-color: var(--warning-edge); }
 .test-banner { margin: 0; padding: 20px 22px; border: 3px solid #e0a100; border-radius: 12px; background: #ffe14d; color: #1f1a00; font: 700 20px/1.4 var(--font); text-align: center; }
 .test-banner a { color: #1f1a00; text-decoration: underline; overflow-wrap: anywhere; }
@@ -456,7 +493,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 .file-call {font-size:14px;line-height:1.5;margin:8px 0;overflow-wrap:anywhere;}
 .change-call {border:0;background:transparent;color:#265b83;text-decoration:underline;padding:6px;cursor:pointer;font:inherit;}
 #start-calls {margin:0;padding:0;border:0;}
-#save-calls {margin:12px 0;width:100%;}
+#save-calls.st {margin:12px 0;width:100%;}
 .fixed-calls .line {margin-top:6px;margin-bottom:6px;}
 details.optional-calls {margin:0 0 var(--gap);}
 details.optional-calls > summary {display:flex;align-items:center;gap:var(--s-3);min-height:56px;padding:var(--s-3) var(--s-4);border:2px solid var(--primary);border-radius:var(--r-2);background:var(--tint);color:var(--primary);font:700 17px/1.4 var(--font);cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent;}
@@ -634,6 +671,17 @@ details.optional-calls:not([open]) > .note {display:none;}
   <section class="card report" id="report" aria-label="Your report" hidden></section>
 
   <section class="card statusbox" id="action" aria-label="Status">
+    <!-- Matt 2026-10-30 ("needs better styling and more obviousness"): on a self-service form, what is still required before Start
+         as a live list (a tap jumps to an open item), the optional callout, the two fixed facts as icon rows, then one Start. -->
+    <div id="ready" hidden>
+      <h2>Ready to start<span class="ready-count" id="ready-count"></span></h2>
+      <ul class="ready-list" id="ready-list" aria-label="Before Start"></ul>
+      <p class="ready-optional"><span class="badge">Optional</span><span><b>Everything else is optional.</b> Leave it blank and we’ll propose every call for you to approve.</span></p>
+      <ul class="ready-facts">
+        <li class="final"><span><b>Send your work file only when it’s final:</b> inspection, sketch and photos complete. We build from what you send; changes after that are revisions.</span></li>
+        <li class="time"><span><b>About 2–3 hours to build,</b> plus your review and any fixes. Best way: line up several orders, tap Start on each, and step away.</span></li>
+      </ul>
+    </div>
     <p class="status-help" id="help"></p>
     <p class="note" id="final-file" hidden><b>Send your work file only when it’s final:</b> inspection, sketch and photos complete. We build from exactly what you send; changes after that are revisions.</p>
     <p class="note" id="selfservice-timing" hidden>A report takes about 2–3 hours to build, plus your review and any fixes. Best way: line up several orders, tap Start on each, and step away.</p>
@@ -652,10 +700,11 @@ details.optional-calls:not([open]) > .note {display:none;}
       <p class="note" id="post-error" role="status" hidden></p>
     </div>
     <fieldset id="start-calls" hidden></fieldset>
-    <button type="button" class="st" id="save-calls" hidden>Save</button>
     <div class="status" data-status></div>
     <button type="button" class="pdf-btn" id="start-production" hidden>Start production</button>
     <p class="terms-line" data-terms></p>
+    <button type="button" class="link-btn" id="save-calls" hidden>Save and finish later</button>
+    <p class="sync-note" id="sync-note" role="status" hidden></p>
     <div id="banner" aria-live="polite"></div>
   </section>
   <details class="card history" id="history" hidden><summary>History</summary><ul id="history-list"></ul></details>
@@ -983,7 +1032,10 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   }
   function checkedAt() { return fileChecks()[0] || ""; }
   function filesChecked() { return customerReady() && !!checkedAt(); }
-  function inProduction() { return filesChecked() && !!state.go && fileChecks().indexOf(state.go.files_checked_at) >= 0 && sameQuote(state.go, currentQuote()); }
+  function realProduction() { return filesChecked() && !!state.go && fileChecks().indexOf(state.go.files_checked_at) >= 0 && sameQuote(state.go, currentQuote()); }
+  // Matt 2026-10-30: a tapped Start or Approve shows at once; the server's record replaces the stand-in, a refusal rolls it back.
+  var pendingStart = null, pendingApprove = false;
+  function inProduction() { return !!pendingStart || realProduction(); }
   function answered() { return customerReady() && asked(); }
   function optionSent() { return customerReady(); }
   function readyNote() { if(minimalCalls())return inProduction()?"Start received.":"Saved. Start when your file and calls are complete."; return permissionHeld() ? "On hold. Client permission needs review." : quoteChanged() ? "Review the updated order, then tap Ready. Nothing starts yet." : inProduction() ? "Start production received." : filesChecked() ? "Files checked. Tap Start production to authorize the run." : "Your files and answers are in. We're checking your files. Nothing starts yet."; }
@@ -1013,13 +1065,14 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   }
   function reviewReady() { return reviewMatches(D, state); }
   function signedOff() {
+    if (pendingApprove) return true;
     var h = acceptance(), a = h && h.accepted;
     return signoff() && reviewReady() && state.approved_review && state.approved_review.id === D.review.id && state.status === "DONE" && savedStatus === "DONE" && !!a &&
       a.customer_agreement === true && a.terms === D.terms;
   }
   function approvalNote() {
     var h = state.history.filter(function (e) { return e.status === "DONE"; });
-    return "Approved " + when(h.length ? h[h.length - 1].at : savedAt) + (approveShips() ? ". It goes to your TOTAL folder next." : ". Your report is in your TOTAL folder.");
+    return (pendingApprove ? "Approved ✓ " : "Approved ") + when(pendingApprove ? new Date().toISOString() : h.length ? h[h.length - 1].at : savedAt) + (approveShips() ? ". It goes to your TOTAL folder next." : ". Your report is in your TOTAL folder.");
   }
 
   // ---------- small DOM helpers ----------
@@ -1976,7 +2029,8 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   // Price only on self-service: no turn times here.
   var TRACK = ["started", "files", "building", "checking", "review", "delivered"];
   function trackerStatus() {
-    if (!state || !state.go || !(selfLane() || /^self-service/.test(state.go.lane || "")) || !(inProduction() || stage === "returned")) return null;
+    var go = state && (state.go || pendingStart);
+    if (!state || !go || !(selfLane() || /^self-service/.test(go.lane || "")) || !(inProduction() || stage === "returned")) return null;
     var t = function (s) { var n = s ? Date.parse(s) : NaN; return isNaN(n) ? 0 : n; };
     var P = D.progress || {}, at = P.at || {}, review = D.review && D.review.at, done = D.delivered_at;
     var current = TRACK.indexOf(P.step) > 1 ? P.step : "files", last = Math.max(t(review), t(done)), fix = null, waiting = null;
@@ -1989,7 +2043,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       .some(function (c) { return c && t(c.at) > t(P.waiting.at); });
     if (asked && !answered && TRACK.indexOf(current) < 4) waiting = { what: asked, target: "#feedback" };
     if (current === "review" && signoff() && !signedOff()) waiting = { what: "review", target: "#report" };
-    var times = { started: state.go.at, files: at.files || (t((D.house_prompts || {}).files_checked_at) >= t(state.go.at) ? D.house_prompts.files_checked_at : null), building: at.building, checking: fix ? fix.at : at.checking, review: review, delivered: done };
+    var times = { started: go.at, files: at.files || (t((D.house_prompts || {}).files_checked_at) >= t(go.at) ? D.house_prompts.files_checked_at : null), building: at.building, checking: fix ? fix.at : at.checking, review: review, delivered: done };
     return { current: current, waiting: waiting, build: P.build ? { current: current === "building" ? P.sub || null : null, at: P.build } : null,
       steps: TRACK.map(function (k) { return { key: k, at: times[k] || null }; }) };
   }
@@ -1997,6 +2051,56 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     var status = trackerStatus(), box = $("production-tracker");
     box.hidden = !status;
     if (status) APStatusTracker.render(box, status);
+  }
+  function filesNeed(hp) {
+    if (hp.files_complete === true && hp.files_checked_at) return "";
+    var still = String((hp.files_missing || []).join("; ") || D.public_note || "").replace(/^(?:Missing:\s*)?(?:Still needed:\s*)?/i, "").replace(/[.;\s]+$/, "");
+    return "Still needed: " + (still || "your complete file") + ".";
+  }
+  // ---------- Ready to start (Matt 2026-10-30: "needs better styling and more obviousness") ----------
+  // The musts before Start as a live list: his option when there are two, the To start lines that apply, and our file check.
+  // A tap on an open one jumps to it. The card replaces the help, fact and lock lines on a self-service form.
+  var READY_LABEL = { q_service_option: "Your option", inspection_ok: "Inspection", inspection_except: "Exceptions", premise: "Premise", repairs: "Work and costs", helper: "Who helped", il_amc_fee: "Illinois AMC fee", terms_ok: "Client terms" };
+  function cap(t) { t = String(t || ""); return t.charAt(0).toUpperCase() + t.slice(1); }
+  function readyRows() {
+    var rows = [], options = laneOptions(F), open = missing();
+    if (selfOnly() && options.length > 1) rows.push({ key: "q_service_option", label: READY_LABEL.q_service_option, done: !!D.selected_lane,
+      note: D.selected_lane ? [laneTitle(D.selected_lane), O.price].filter(Boolean).join(" · ") : "A or B", target: $("lane-picker") });
+    var lines = ((Array.isArray(D.call_sections) ? D.call_sections : (options[0] || {}).call_sections || [])[0] || {}).lines || [];
+    lines.forEach(function (line) {
+      if (!line.required) return;
+      var m = musts.filter(function (x) { return x.call && x.key === line.key; })[0];
+      if (m ? !(m.node.isConnected && (!m.when || m.when())) : !!line.when) return;   // a conditional line counts only while it applies
+      var done = !!m && open.indexOf(m) < 0, v = done ? ans(line.key) : "";
+      rows.push({ key: line.key, label: READY_LABEL[line.key] || cap(line.need || line.label), done: done,
+        note: done ? (line.kind === "check" || v === true ? "Confirmed" : String(v).trim().slice(0, 60)) : "", target: m ? m.node : null });
+    });
+    var hp = Object.assign({}, F.house_prompts || {}, D.house_prompts || {}), checked = hp.files_complete === true && !!hp.files_checked_at;
+    rows.push({ key: "files", label: "Your file", done: checked, note: checked ? "Checked by us" : filesNeed(hp), target: null });
+    return rows;
+  }
+  function paintReady() {
+    var show = selfLane() && stage === "open" && !inProduction() && !readOnly && !approved;
+    document.body.classList.toggle("self-start", show);
+    $("ready").hidden = !show;
+    if (!show) return;
+    ["help", "final-file", "selfservice-timing", "optional-line", "start-missing"].forEach(function (id) { $(id).hidden = true; });   // the card says all of it
+    var rows = readyRows(), left = rows.filter(function (r) { return !r.done; }).length, list = $("ready-list");
+    $("ready-count").textContent = left ? left + " to go" : "All set";
+    list.textContent = "";
+    rows.forEach(function (r) {
+      var b = el("button", { type: "button", cls: "ready-tap" }, [el("span", { cls: "ready-dot", "aria-hidden": "true" }),
+        el("span", { cls: "ready-label" }, [r.done ? el("b", { text: r.label }) : r.label, r.note ? el("small", { text: r.note }) : null]),
+        !r.done && r.target ? el("span", { cls: "ready-go", text: r.key === "q_service_option" ? "Pick" : "Answer", "aria-hidden": "true" }) : null]);
+      b.setAttribute("aria-label", r.label + (r.note ? ", " + r.note : "") + (r.done ? ", done" : r.target ? ", open, tap to answer" : ", open"));
+      if (r.done || !r.target) b.setAttribute("aria-disabled", "true"); else b.addEventListener("click", function () { jumpTo(r.target); });
+      list.appendChild(el("li", { cls: "ready-item", "data-state": r.done ? "done" : "open" }, [b]));
+    });
+  }
+  function jumpTo(node) {
+    node.scrollIntoView({ block: "center", behavior: "smooth" });
+    var first = node.querySelector("input, textarea, button"); if (first) first.focus({ preventScroll: true });
+    node.classList.remove("flash"); void node.offsetWidth; node.classList.add("flash");
   }
   function paintStatus() {
     paintFeedback();
@@ -2097,12 +2201,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     $("post-sent").textContent = lastRequest ? "Change request sent " + when(lastRequest.at) + ". We'll update your report and let you know." : "";
     $("start-missing").hidden = true;
     $("optional-line").hidden = true;
-    // Matt 2026-10-30: one plain line says why Start is locked, from the first view on.
-    function filesNeed(hp) {
-      if (hp.files_complete === true && hp.files_checked_at) return "";
-      var still = String((hp.files_missing || []).join("; ") || D.public_note || "").replace(/^(?:Missing:\s*)?(?:Still needed:\s*)?/i, "").replace(/[.;\s]+$/, "");
-      return "Still needed: " + (still || "your complete file") + ".";
-    }
+    // Matt 2026-10-30: one plain line says why Start is locked, from the first view on (filesNeed above paintStatus).
     if (selfOnly() && !D.selected_lane && stage === "open") {
       var first = filesNeed(Object.assign({}, F.house_prompts || {}, laneOptions(F)[0].house_prompts || {}));
       $("start-missing").textContent = ["Start unlocks once you pick an option and answer the short To start items.", first].filter(Boolean).join(" ");
@@ -2132,6 +2231,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     proposalPainters.forEach(function(f){f();});
     paintNow();
     paintTracker();
+    paintReady();
     // Matt 2026-10-13: a READY the desk sent back says so at the very top, with why, while the form is DRAFT again:
     // a red pop-out when it arrives ("make it red and a popout and very obvious"), then the red banner pinned there.
     var nr = $("notready"), back = D.note_kind === "not_ready" && !!D.public_note && state.status === "DRAFT";
@@ -2179,7 +2279,65 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function banner(msg, kind) {
     var b = $("banner"); b.hidden = !msg; b.textContent = msg || ""; b.className = msg ? "banner " + (kind || "ok") : "";
   }
-  function conn(msg) { $("conn").textContent = msg; }
+  // ---------- outbox (Matt 2026-10-30: "it should immediately accept event action feedback… user needs immediate feedback") ----------
+  // Every action shows as accepted at once. Its post waits here, kept in this browser until a read shows it landed, retried
+  // with backoff and in order; the header reads Syncing… meanwhile, and one plain line appears only once retries have run out.
+  // The server keeps every rule: a refusal it can signal rolls the page back. A retry repeats the same document and request id.
+  var OUTBOX_KEY = "aap-outbox-" + T, outbox = [], lastConn = "", replayFailed = "";
+  var BACKOFF = [1500, 3000, 6000, 12000, 24000, 30000], STUCK_AFTER = 4;
+  var VERB = { save: "Save", start: "Start", go: "Start", feedback: "message", request: "change request", approve: "Approve" };
+  function outboxLoad() { try { var v = JSON.parse(localStorage.getItem(OUTBOX_KEY) || "[]"); outbox = Array.isArray(v) ? v : []; } catch (e) { outbox = []; } }
+  function outboxSave() { try { if (outbox.length) localStorage.setItem(OUTBOX_KEY, JSON.stringify(outbox)); else localStorage.removeItem(OUTBOX_KEY); } catch (e) {} }
+  function newId() { return "rq_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10); }
+  function outboxAdd(kind, doc, id) { var item = { id: id || newId(), kind: kind, doc: doc, at: new Date().toISOString(), tries: 0 }; outbox.push(item); outboxSave(); paintSync(); return item; }
+  function outboxDrop(item) { outbox = outbox.filter(function (x) { return x.id !== item.id; }); outboxSave(); paintSync(); }
+  // Runs once() until it confirms. A definite refusal (an error with a code) ends it; silence retries with backoff, forever
+  // unless max is set (a Start the server will not record, whose refusal this page cannot read, counts as refused after max).
+  function settle(item, once, max) {
+    return once().then(function (r) { outboxDrop(item); return r; }, function (e) {
+      if (e && e.code) { outboxDrop(item); throw e; }
+      item.tries++; outboxSave(); paintSync();
+      if (max && item.tries >= max) { outboxDrop(item); throw { code: "unconfirmed" }; }
+      var ms = BACKOFF[Math.min(item.tries - 1, BACKOFF.length - 1)];
+      return new Promise(function (resolve) { item.wake = resolve; setTimeout(resolve, ms); }).then(function () { delete item.wake; return settle(item, once, max); });
+    });
+  }
+  function retryNow() { outbox.forEach(function (i) { if (i.wake) i.wake(); }); }
+  function paintSync() {
+    var stuck = outbox.some(function (i) { return i.tries >= STUCK_AFTER; }), note = $("sync-note");
+    $("conn").textContent = outbox.length ? "Syncing…" : lastConn;
+    note.hidden = !stuck;
+    if (stuck && !note.firstChild) {
+      note.appendChild(el("span", { text: "Not sent yet, we’ll keep trying." }));
+      var b = el("button", { type: "button", text: "Retry" }); b.addEventListener("click", retryNow); note.appendChild(b);
+    }
+    if (outbox.some(function (i) { return i.kind === "feedback" && i.tries >= STUCK_AFTER; })) $("feedback-note").textContent = "Not sent yet, we’ll keep trying.";
+  }
+  function conn(msg) { lastConn = msg; paintSync(); }
+  function landed(kind, doc, saved) {
+    var a = saved.answers || {};
+    if (kind === "feedback") return Object.keys(doc.answers || {}).every(function (k) { return a[k] === doc.answers[k]; });
+    if (kind === "request") return (saved.post_changes || []).some(function (p) { return p.id === doc.post_change.id; });
+    if (kind === "go") return !!saved.go && saved.go.files_checked_at === doc.files_checked_at;
+    if (kind === "approve") return saved.status === "DONE";
+    if (kind === "start") return saved.status === "READY" || !!saved.go;
+    return Object.keys(doc.answers || {}).every(function (k) { return /^q_(service_option|rush)$/.test(k) || a[k] === doc.answers[k]; });
+  }
+  // On open, whatever this browser never saw confirmed goes out first, in order; a save the server has since outgrown is superseded.
+  function replay() {
+    outboxLoad();
+    return outbox.slice().reduce(function (p, item) { return p.then(function () {
+      var doc; try { doc = JSON.parse(item.doc); } catch (e) { outboxDrop(item); return; }
+      function once() {
+        return read().then(function (r) {
+          var saved = r.saved || {};
+          if (landed(item.kind, doc, saved) || item.kind === "save" && Date.parse(saved.updatedAt) > Date.parse(item.at) + 60000) return;
+          return post(item.doc).catch(function () {}).then(read).then(function (r2) { if (!landed(item.kind, doc, r2.saved || {})) throw {}; });
+        });
+      }
+      return settle(item, once, 3).catch(function (e) { if (e && e.code === "unknown") throw e; replayFailed = replayFailed || VERB[item.kind] || "action"; });
+    }); }, Promise.resolve());
+  }
 
   var feedbackBusy = false, feedbackDraft = null;
   function paintFeedback() {
@@ -2201,29 +2359,17 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     if (feedbackBusy || readOnly || !online) return;
     var text = $("feedback-text").value.trim();
     if (!text) { $("feedback-text").focus(); return; }
-    if (!feedbackDraft || feedbackDraft.text !== text) feedbackDraft = {
-      key: "q_fb_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,12),
-      at: new Date().toISOString(), text: text
-    };
-    var entry = feedbackDraft, value = JSON.stringify({at:entry.at,text:entry.text});
-    feedbackBusy = true; $("feedback-note").textContent = ""; paintFeedback();
-    // Read latest first; the feedback append preserves every appraisal field server-side.
-    function once(){return read().then(function(r){
-      var payload = body(false);
-      payload.status = (r.saved || {}).status || "DRAFT";
-      payload.answers = Object.assign({}, (r.saved || {}).answers || {});
-      payload.changes = (r.saved || {}).changes || [];
-      payload.answers[entry.key] = value; payload.feedback = true;
-      return post(JSON.stringify(payload)).catch(function(){}).then(read);
-    }).then(function(r){
-      if (!r.saved || (r.saved.answers || {})[entry.key] !== value) throw {};
-      state.answers[entry.key] = value; own[entry.key] = true;
-    });}
+    var entry = { key: "q_fb_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,12), at: new Date().toISOString(), text: text };
+    var value = JSON.stringify({at:entry.at,text:entry.text}), answers = {}; answers[entry.key] = value;
+    // At once (Matt 2026-10-30): the message shows as sent; the post lands in the background. Code.gs's feedback path merges
+    // only this key into his saved answers, so the document is fixed here and a retry repeats it.
+    state.answers[entry.key] = value; own[entry.key] = true; $("feedback-text").value = ""; grow($("feedback-text"));
+    $("feedback-note").textContent = "Sent ✓ We’ll reply by email."; paintFeedback();
+    var rid = newId(), doc = JSON.stringify({ t: T, r: R, actor: ACTOR, status: "DRAFT", answers: answers, changes: [], send: false, feedback: true, request_id: rid });
+    var item = outboxAdd("feedback", doc, rid);
+    function once(){ return post(doc).catch(function(){}).then(read).then(function(r){ if (!r.saved || (r.saved.answers || {})[entry.key] !== value) throw {}; }); }
     // Share the save chain so an in-flight autosave cannot erase the new entry.
-    writing = writing.catch(function(){}).then(once).catch(function(){return wait(1500).then(once);}).then(function(){
-      feedbackBusy = false; feedbackDraft = null; $("feedback-text").value = "";
-      $("feedback-note").textContent = "Sent. We'll reply by email."; paintFeedback();
-    },function(){feedbackBusy = false; $("feedback-note").textContent = "Not sent. Try again."; paintFeedback();});
+    writing = writing.catch(function(){}).then(function(){ return settle(item, once); }).then(function(){ paintFeedback(); }, function(e){ if (e && e.code === "unknown") closed(); });
   });
 
   // ---------- saving ----------
@@ -2287,12 +2433,15 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     if ((!customerReturned() && !approved) || postBusy || readOnly || !online) return;
     var text = $("post-text").value.trim();
     if (!text) { $("post-error").textContent = "Tell us what should change."; $("post-error").hidden = false; $("post-text").focus(); return; }
-    if (!postDraft || postDraft.text !== text) postDraft = { id: "pc_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2) + "_" + Math.random().toString(36).slice(2), text: text };
-    var request = postDraft, payload = { t: T, post_change: request };
+    var request = { id: "pc_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2) + "_" + Math.random().toString(36).slice(2), text: text }, payload = { t: T, post_change: request };
     if (D.recipient_attribution) { payload.r = R; payload.actor = ACTOR; }
     if (D.acceptance_actions) payload.quote = body(false).quote;
-    var doc = JSON.stringify(payload);
-    postBusy = true; $("post-error").hidden = true; $("post-send").textContent = "Sending…"; paintStatus();
+    var doc = JSON.stringify(payload), stand = { id: request.id, text: request.text, at: new Date().toISOString() };
+    // At once (Matt 2026-10-30): the request shows as sent and the tracker moves; the post lands in the background. Its own id
+    // is the request id: Code.gs returns the same request for a repeat and refuses a different text under it.
+    state.post_changes = (state.post_changes || []).concat(stand);
+    $("post-text").value = ""; $("post-error").hidden = true; $("post-box").hidden = !customerReturned(); $("post-open").hidden = customerReturned(); paintStatus();
+    var item = outboxAdd("request", doc, request.id);
     function once() {
       return post(doc).catch(function () {}).then(read).then(function (r) {
         if (payload.quote && r.form && r.form.terms !== payload.quote.terms) {
@@ -2300,26 +2449,26 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
         }
         if (r.form && newer(r.form)) refresh(r.form);
         if (r.saved) apply(r.saved);
-        if (r.saved && (r.saved.post_changes || []).some(function (p) { return p.id === request.id && p.text === request.text; })) return r;
+        if ((state.post_changes || []).some(function (p) { return p.id === request.id && p.text === request.text; })) return r;
+        state.post_changes = (state.post_changes || []).concat(stand); paintStatus();   // not there yet: the stand-in stays while we retry
         if (stage !== "returned") throw { code: "stage" };
         throw {};
       });
     }
-    once().catch(function (e) { if (e && e.code) throw e; return wait(1500).then(once); }).then(function () {
-      postBusy = false; postDraft = null; $("post-text").value = ""; $("post-box").hidden = !customerReturned(); $("post-open").hidden = customerReturned();
-      $("post-send").textContent = "Send"; paintStatus();
-    }, function (e) {
-      postBusy = false; $("post-send").textContent = "Send"; paintStatus();
+    writing = writing.catch(function () {}).then(function () { return settle(item, once); }).then(function () { paintStatus(); }, function (e) {
+      // The server refused it: back out the stand-in, return his text to the box, and say why.
+      state.post_changes = (state.post_changes || []).filter(function (p) { return p.id !== request.id; });
+      $("post-text").value = request.text; grow($("post-text")); $("post-box").hidden = false; $("post-open").hidden = true; paintStatus();
       if (e && e.code === "unknown") { closed(); return; }
-      $("post-error").textContent = e && e.code === "quote_changed" ? "The terms changed. Review them, then send again." : "Not sent. Try again in a minute."; $("post-error").hidden = false;
+      $("post-error").textContent = e && e.code === "quote_changed" ? "The terms changed. Review them, then send again." : e && e.code === "stage" ? STAGES[stage].refused : "Not sent. Try again in a minute."; $("post-error").hidden = false;
     });
   });
   var goBusy = false;
   function startProduction() {
     if (minimalCalls() && missing().length) return;
-    if (!filesChecked() || inProduction() || readOnly || !online || pendingTaps > 0 || goBusy) return;
-    var payload = body(true); payload.go = true; payload.files_checked_at = checkedAt();
-    var checkStamp = payload.files_checked_at, doc = JSON.stringify(payload);
+    if (!filesChecked() || realProduction() || readOnly || !online || pendingTaps > 0 || goBusy) return;
+    var payload = body(true); payload.go = true; payload.files_checked_at = checkedAt(); payload.request_id = newId();
+    var checkStamp = payload.files_checked_at, doc = JSON.stringify(payload), item = outboxAdd("go", doc, payload.request_id);
     goBusy = true; paintStatus();
     function once() {
       return post(doc).catch(function () {}).then(read).then(function (r) {
@@ -2330,24 +2479,32 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
         throw {};
       });
     }
-    writing = writing.catch(function () {}).then(once).catch(function (e) {
-      if (e.code) throw e;
-      return wait(1500).then(once);
-    }).then(function () {
-      goBusy = false; paintStatus(); banner("Start production received.", "ok");
-    }, function () {
-      goBusy = false; paintStatus(); banner("Start not confirmed. Check the form and try again.", "warn");
+    // A Start the server will not record (its refusal is unreadable here) reads as refused after a few tries.
+    writing = writing.catch(function () {}).then(function () { return settle(item, once, 4); }).then(function () {
+      goBusy = false; pendingStart = null; paintStatus(); banner(minimalCalls() ? "Started ✓ We’re building your report." : "Start production received.", "ok");
+    }, function (e) {
+      if (pendingStart) startFailed(e && e.code); else { goBusy = false; paintStatus(); banner("Start not confirmed. Check the form and try again.", "warn"); }
     });
+  }
+  function startFailed(code) {   // the server did not record the Start: back to the form with one plain line, his answers kept
+    pendingStart = null; goBusy = false; paintStatus();
+    banner(code === "quote_changed" ? "The price changed. Review it, then tap Start again." : code === "stage" ? STAGES[stage].refused :
+      "Start not accepted yet: your file isn’t checked on our side. Your answers are saved; tap Start again once it is.", "warn");
   }
   $("start-production").addEventListener("click", startProduction);
   $("save-calls").addEventListener("click", function(){
     if(readOnly || !online || pendingTaps || inProduction()) return;
     clearTimeout(timer); timer=null;
-    write(false).then(function(){conn("Saved");banner("Saved. You can come back any time.","ok");},function(){});
+    // Matt 2026-10-30: the page says Saved at once; the post lands in the background (the header reads Syncing… until it does).
+    $("saved").hidden = false; banner("Saved ✓ Come back any time.","ok");
+    if (edits === savedEdits) return;   // nothing new since the last confirmed save
+    write(false).then(function(){conn("Saved " + when(new Date().toISOString()));},function(){});
   });
   // Saved means a read shows it: the stored updatedAt moved and, for a status tap, the stored status is the tap's.
-  function write(send) {
-    var at = edits, s = state.status, doc = JSON.stringify(body(send)), before, checkedForm;
+  function write(send, keepalive) {
+    var at = edits, s = state.status, payload = body(send), before, checkedForm;
+    payload.request_id = newId();   // one id per action; a retry repeats the same document
+    var doc = JSON.stringify(payload), item = outboxAdd(send ? (s === "DONE" ? "approve" : "start") : "save", doc, payload.request_id);
     if (send) pendingTaps++;
     function confirm(tries) {
       return read().then(function (r) {
@@ -2383,15 +2540,12 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
         throw {};
       });
     }
-    function once() { return post(doc).then(function () { return confirm(2); }); }
+    function once() { return post(doc, keepalive).then(function () { return confirm(2); }); }
     writing = writing.catch(function () {}).then(function () {
-      if (approved) throw { code: "approved" };   // a queued autosave cannot follow approval
+      if (approved) { outboxDrop(item); throw { code: "approved" }; }   // a queued autosave cannot follow approval
       before = savedAt;
-      if (doc.length > MAX_BODY) throw { code: "too_large" };
-      return once().catch(function (e) {
-        if (e && e.code) throw e;
-        return wait(600 + Math.random() * 900).then(once);
-      });
+      if (doc.length > MAX_BODY) { outboxDrop(item); throw { code: "too_large" }; }
+      return settle(item, once);   // keeps trying with backoff until a read shows it; a refusal (a code) stops it
     }).then(function (v) {
       if (send) pendingTaps--;
       savedEdits = Math.max(savedEdits, at); savedAt = v.updatedAt; savedStatus = v.status;
@@ -2469,20 +2623,27 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     }
     if (agreeQ && (s === "DONE" || s === "NEEDS_CHANGE")) state.answers["q_" + agreeQ.id] = s === "DONE" ? "agreed " + agreeQ.value : "";   // Agree is his DONE
     clearTimeout(timer); timer = null;
+    var was = state.status;
     state.status = s;
+    // Matt 2026-10-30: Start and Approve show as accepted at once; the server's record replaces the stand-in, a refusal rolls it back.
+    if (s === "READY" && minimalCalls()) pendingStart = Object.assign({ at: new Date().toISOString(), files_checked_at: checkedAt() }, currentQuote());
+    if (s === "DONE" && signoff()) pendingApprove = true;
     paintStatus();
-    if (s === "READY") { fastUntil = Date.now() + 60000; pollSoon(); banner(minimalCalls() ? "Starting your report…" : "Sending your files and answers for checking. Nothing starts yet.", "ok"); }
+    if (s === "READY") { fastUntil = Date.now() + 60000; pollSoon(); banner(minimalCalls() ? "Started ✓ We’re building your report." : "Sending your files and answers for checking. Nothing starts yet.", "ok"); }
+    if (pendingApprove) banner(approvalNote(), "ok");
     if (connecting) { tapped = s; if (s !== "READY") banner("Sending…", "ok"); return; }
-    if (!online) { banner("Not connected, not sent. Your answers are still here.", "warn"); return; }
+    if (!online) { pendingStart = null; pendingApprove = false; state.status = was; paintStatus(); banner("Not connected, not sent. Your answers are still here.", "warn"); return; }
     conn("Sending…");
     write(true).then(function (r) {
       conn(approved ? "Approved" : "Saved " + when(new Date().toISOString()));
-      if (s === "READY" && minimalCalls() && filesChecked()) { startProduction(); return; }
+      pendingApprove = false;
+      if (s === "READY" && minimalCalls()) { if (filesChecked()) startProduction(); else startFailed("changed"); return; }
       if (s === "READY" && state.status === "DRAFT" && D.note_kind === "not_ready") {
         banner("Back to Draft: something is still needed.", "warn"); return;
       }
+      paintStatus();
       banner(approved || signedOff() ? approvalNote() : s === "DRAFT" ? "Draft saved." : s === "READY" ? readyNote() : SENT, "ok");
-    }, function () {});
+    }, function (e) { if (pendingStart) startFailed(e && e.code); if (pendingApprove) { pendingApprove = false; paintStatus(); } });
   }
 
   // ---------- talk ----------
@@ -2661,7 +2822,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function flush() {
     if (!online || readOnly || approved || (state.status !== "DRAFT" && !customerReturned()) || edits === savedEdits || !timer) return;
     clearTimeout(timer); timer = null;
-    try { post(JSON.stringify(body(false)), true).catch(function () {}); } catch (e) {}
+    try { write(false, true).catch(function () {}); } catch (e) {}   // kept in the outbox: the next open replays it unless a read shows it landed
   }
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flush(); else poll(); });
   window.addEventListener("pagehide", flush);
@@ -2674,7 +2835,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   var pollT = null, fastUntil = 0, polling = false, pendingTaps = 0;
   function pollSoon() { clearTimeout(pollT); pollT = setTimeout(function () { poll(); pollSoon(); }, Date.now() < fastUntil ? 2000 : 30000); }
   function poll() {
-    if ((!INLINE && document.visibilityState === "hidden") || polling || readOnly || postBusy || !online || connecting || tapped || pendingTaps || edits !== savedEdits || timer) return;
+    if ((!INLINE && document.visibilityState === "hidden") || polling || readOnly || postBusy || !online || connecting || tapped || pendingTaps || edits !== savedEdits || timer || outbox.length) return;
     polling = true;
     var readAt = savedAt;
     read().then(function (r) {
@@ -2718,7 +2879,10 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   }
   if (!T) { gate("Open this form from your link."); return; }
   if (!API) { gate("Not connected yet."); return; }
-  read().then(function (r) { online = true; conn("Connected"); boot(r.form, r.saved); }, function (e) {
+  replay().then(read).then(function (r) {
+    online = true; conn("Connected"); boot(r.form, r.saved);
+    if (replayFailed) banner("Your earlier " + replayFailed + " didn’t reach us. Please tap it again.", "warn");   // never silent
+  }, function (e) {
     gate(e && e.code === "unknown" ? CLOSED
                                    : "Couldn't open your form. Check your connection and try again.");
   });
