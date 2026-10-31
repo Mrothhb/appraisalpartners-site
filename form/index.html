@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-30.12">
+<html lang="en" data-build="v2026-10-31.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -275,6 +275,7 @@ textarea[rows="1"] { min-height: 44px; }
 #start-missing.start-lock { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink-2); text-align: center; overflow-wrap: anywhere; }
 .link-inline { display: inline; margin: 0; padding: 0; border: 0; background: none; color: var(--primary); font: 600 15px/1.5 var(--font); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: rgba(11,111,193,.4); cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
 .link-inline:hover { color: var(--primary-hover); text-decoration-color: currentColor; }
+#left-list { margin: 0 0 var(--s-2); font-size: 15px; line-height: 1.6; color: var(--ink); overflow-wrap: anywhere; }   /* what the button still waits on, by name */
 /* the two musts (Matt 2026-10-30: "GLARINGLY clear and easy to see and read"): one callout, body-size dark text, a larger bold lead, big icons, a strong edge.
    Icons (Matt 2026-10-30 "fix icons"): one family, a 24-box stroke set at one weight and one height, centred on the lead's first line; the tip is a bulb, never a "?" */
 #ready { display: block; }
@@ -305,7 +306,7 @@ details.fold > .fold-body { padding: 0 var(--card-px) var(--s-5); }
 /* the outbox (Matt 2026-10-30: "user needs immediate feedback"): one plain line only once retries have run out */
 .sync-note { display: flex; align-items: center; gap: var(--s-3); margin: 0; padding: var(--s-3) var(--s-4); border: 1px solid var(--warning-line); border-left: 4px solid var(--warning-edge); border-radius: var(--r-2); background: var(--warning-bg); color: var(--warning-ink); font-size: 14px; line-height: 1.5; }
 .sync-note button { flex: none; margin-left: auto; min-height: 36px; padding: 0 var(--s-4); border: 1px solid var(--warning-edge); border-radius: var(--r-2); background: #fff; color: var(--warning-ink); font: 600 14px/1 var(--font); cursor: pointer; }
-.call-line.flash, .line.flash, #lane-picker.flash { animation: ap-flash 1.8s ease-out; }
+.call-line.flash, .line.flash, #lane-picker.flash, .proposal-section.flash { animation: ap-flash 1.8s ease-out; }
 @keyframes ap-flash { 0% { box-shadow: inset 4px 0 0 var(--primary); background: var(--tint); } 100% { box-shadow: none; background: transparent; } }
 .banner.warn { background: var(--warning-bg); color: var(--warning-ink); border-color: var(--warning-line); border-left-color: var(--warning-edge); }
 .test-banner { margin: 0; padding: 20px 22px; border: 3px solid #e0a100; border-radius: 12px; background: #ffe14d; color: #1f1a00; font: 700 20px/1.4 var(--font); text-align: center; }
@@ -751,6 +752,7 @@ details.optional-calls > .card:last-child {margin-bottom:var(--s-4);}
       <p class="note" id="post-error" role="status" hidden></p>
     </div>
     <fieldset id="start-calls" hidden></fieldset>
+    <p id="left-list" role="status" hidden></p>
     <div class="status" data-status></div>
     <button type="button" class="pdf-btn" id="start-production" hidden>Start production</button>
     <p class="terms-line" data-terms></p>
@@ -1844,13 +1846,13 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function renderProposals(host) {
     proposalPainters=[];
     var catalog=D.proposed_calls;
-    host.appendChild(el("section",{cls:"card"},[el("h2",{text:"Your calls"}),el("p",{text:"Proposed — your call. Check the evidence, then confirm or change each section. Nothing is delivered until you decide."})]));
+    host.appendChild(el("section",{cls:"card"},[el("h2",{text:"Your calls"}),el("p",{text:"We filled in every box below. Each is our proposal and your call. Nothing is delivered until you confirm every section."})]));
     if(!catalog || !Array.isArray(catalog.sections) || catalog.report_sha256 !== (D.review||{}).report_sha256) {
       var wait=host.appendChild(el("section",{cls:"card",text:"Your calls are being prepared."}));
       musts.push({key:"proposal_catalog",node:wait,valid:function(){return false;}});return;
     }
     catalog.sections.forEach(function(section){
-      var card=host.appendChild(el("section",{cls:"card proposal-section","data-proposal":section.id},[el("h2",{text:section.title}),el("p",{cls:"note",text:"Proposed — your call"})]));
+      var card=host.appendChild(el("section",{cls:"card proposal-section","data-proposal":section.id},[el("h2",{text:section.title}),el("p",{cls:"note",text:"We filled these in for you. Keep or change each one, then tap Confirm this section."})]));
       section.calls.forEach(function(c){
         var key="q_pc_"+section.id+"_"+c.id;
         if(!(key in state.answers))state.answers[key]=String(c.value);
@@ -2202,7 +2204,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     lock.hidden = !open.length;
   }
   function jumpTo(node) {
-    node.scrollIntoView({ block: "center", behavior: "smooth" });
+    node.scrollIntoView({ block: node.offsetHeight > innerHeight * 0.8 ? "start" : "center", behavior: "smooth" });   // a tall card opens at its title
     var first = node.querySelector("input, textarea, button"); if (first) first.focus({ preventScroll: true });
     node.classList.remove("flash"); void node.offsetWidth; node.classList.add("flash");
   }
@@ -2361,21 +2363,41 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // The status, read only, sits just above its buttons; Ready carries how many required answers are left (Matt
   // 2026-10-13: a READY tapped at the top sent nine post-run questions blank).
   function paintNow() {
-    var s = state.status, left = stage === "open" || signoff() ? missing() : [];
+    var s = state.status, left = stage === "open" || signoff() ? missing() : [], lead = "";
     $("now").textContent = permissionHeld() ? "On hold · client permission" : approved ? "Approved" : inProduction() ? "Start production received" : filesChecked() ? "Files checked" : answered() ? "Answers sent" : quoteChanged() ? WORD.DRAFT : WORD[s];
     if (s !== "DRAFT") $("saved").hidden = true;
     statusBtns.forEach(function (b) {
       if (signoff() && b.getAttribute("data-s") === "DONE") {
-        b.textContent = left.length ? approveLabel() + " · " + left.length + " left" : approveLabel();
+        b.textContent = approveLabel(); if (!b.hidden) lead = proposalReview() ? "Confirm these first:" : "Answer these first:";
         b.classList.toggle("wait", left.length > 0); if(proposalReview()) b.disabled=readOnly || !online || pendingTaps>0 || postBusy || left.length>0 || !reviewReady(); return;
       }
       if (b.getAttribute("data-s") !== "READY") return;
       var go = minimalStart() ? "Start" : asked() && !startOptions() ? "Send answers" : WORD.READY;
-      b.textContent = inProduction() ? "Start production received" : answered() ? "Answers sent" : left.length && !simpleStart() ? go + " · " + left.length + " left" : go;
+      b.textContent = inProduction() ? "Start production received" : answered() ? "Answers sent" : go;
+      if (!b.hidden && !inProduction() && !answered() && !simpleStart() && !minimalCalls()) lead = "Still to answer:";
       b.classList.toggle("wait", left.length > 0);
     });
     if (minimalCalls()) statusBtns.forEach(function(b){if(b.dataset.s === "READY") {b.textContent = inProduction() ? "Start received" : "Start"; b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || inProduction() || !minimalChecked() || checkingFiles() || !minimalFactsReady() || left.length > 0;}});
     musts.forEach(function (m) { if (left.indexOf(m) < 0) m.node.classList.remove("need"); });
+    var shown = !approved && !readOnly && !(customerReturned() && (!signoff() || !reviewReady() || signedOff()));   // the status bar's own rule (paintStatus)
+    paintLeft(lead && shown && !left.some(function (m) { return m.key === "proposal_catalog"; }) ? left : [], lead);   // never while his calls are still being prepared
+  }
+  // Matt 2026-10-31: above the button, what is left by name, each a tap away (a bare "· 7 left" said nothing).
+  function leftName(m) {
+    var h = m.node.tagName === "SECTION" ? m.node.querySelector("h2") : m.node.querySelector(".lbl, label, legend");
+    var t = String((h || m.node).textContent || "").replace(/\s+/g, " ").trim();
+    return t.length > 48 ? t.slice(0, 46).replace(/\s+\S*$/, "") + "…" : t;
+  }
+  function paintLeft(left, lead) {
+    var p = $("left-list"); p.textContent = ""; p.hidden = !left.length;
+    if (!left.length) return;
+    p.appendChild(document.createTextNode(lead + " "));
+    left.forEach(function (m, i) {
+      if (i) p.appendChild(document.createTextNode(" · "));
+      var b = el("button", { type: "button", cls: "link-inline", text: leftName(m) || "Item " + (i + 1) });
+      b.addEventListener("click", function () { jumpTo(m.node); });
+      p.appendChild(b);
+    });
   }
   function when(iso) {
     var d = new Date(iso); if (isNaN(d)) return "";
