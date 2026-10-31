@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-31.3">
+<html lang="en" data-build="v2026-10-31.4">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -336,8 +336,9 @@ details.fold > .fold-body { padding: 0 var(--card-px) var(--s-5); }
 .pop-ok.all-yes:hover { background: var(--success-ink); border-color: var(--success-ink); }
 .pop-ok.all-no { margin-top: 0; background: #fff; color: var(--primary); border-color: var(--primary); }
 #approve-all { margin-top: var(--s-3); }
-#approve-all .st { width: 100%; background: #fff; color: var(--success-ink); border-color: var(--success); }
-#approve-all .st:hover { background: var(--tint); }
+#approve-all .st { width: 100%; background: var(--success); color: #fff; border-color: var(--success); }   /* Matt 2026-10-31: "approve all button should be solid" */
+#approve-all .st:hover { background: var(--success-ink); border-color: var(--success-ink); }
+#approve-all .st:disabled, #approve-all .st:disabled:hover { background: var(--field-off); color: var(--ink-2); border-color: var(--edge); }
 #approve-all .note { margin: var(--s-2) 0 0; text-align: center; }
 
 /* ---------- the checklist's lines ---------- */
