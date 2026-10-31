@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-31.5a">
+<html lang="en" data-build="v2026-10-31.5b">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -808,6 +808,7 @@ body.changes-closed #post-request, body.changes-closed .pc-row, body.changes-clo
   <details class="card history" id="history" hidden><summary>History</summary><ul id="history-list"></ul></details>
   <!-- Matt 2026-10-30 (round 5): the self-service notice once more at the bottom, after Start and the terms line; the same heading and
        five lines as #selfservice above, word for word, shown together with it. -->
+  <div class="banner closed" id="changes-closed-bottom" role="alert" hidden></div>
   <div class="banner warn" id="selfservice-bottom" role="note" hidden><div><p><b>Self-service: Matt and his team do not review this report.</b></p><ul><li>No one will discuss values or the report.</li><li>Questions, issues and changes go in writing, on this form or by email.</li><li>Appraisal help from Matt or his team is a separate service, billed for his time, and only where state rules allow it.</li><li>You are using A&amp;AP’s AI-assisted report-preparation software directly. We strongly encourage you to review this report and ensure the system makes all changes to your liking.</li><li>Bugs, errors and software issues should be escalated to Matt and his team immediately. Appraisal discussion and questions remain in this form or by email.</li></ul></div></div>
   </div>
 
@@ -2011,9 +2012,12 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var due = String(O.payment_due || "").trim();
     $("payment").hidden = !due;
     $("selfservice").hidden = $("selfservice-bottom").hidden = (D.house_prompts || {}).lane !== "self-service";   // Matt 2026-10-19: VERY clear on every self-service form; 2026-10-30: again at the bottom
-    var closedBox = $("changes-closed"), closed = D.changes_closed === true && D.stage === "returned" && !D.delivered_at;   // Matt 2026-10-31 ~10:50: both change rounds used, so the form closes and only Deliver remains
-    document.body.classList.toggle("changes-closed", closed); closedBox.hidden = !closed; closedBox.textContent = "";
-    if (closed) closedBox.appendChild(el("div", null, [el("p", null, [el("b", { text: "Maximum change requests used (2 of 2)." })]), el("p", { text: D.changes_closed_text || "To buy more change requests, email desk@aandap.com. Or tap Approve all and deliver below to get your report." })]));
+    var closed = D.changes_closed === true && D.stage === "returned" && !D.delivered_at;   // Matt 2026-10-31 ~10:50: both change rounds used, so the form closes and only Deliver remains
+    document.body.classList.toggle("changes-closed", closed);
+    ["changes-closed", "changes-closed-bottom"].forEach(function (id, i) {   // Matt 2026-10-31: "put it at the bottom as well"
+      var closedBox = $(id); closedBox.hidden = !closed; closedBox.textContent = "";
+      if (closed) closedBox.appendChild(el("div", null, [el("p", null, [el("b", { text: "Maximum change requests used (2 of 2)." })]), el("p", { text: (D.changes_closed_text || "To buy more change requests, email desk@aandap.com. Or tap Approve all and deliver below to get your report.").replace(/\bbelow\b/, i ? "above" : "below") })]));   // the bottom copy sits under the button
+    });
     $("final-file").hidden = ["review", "regression"].indexOf((D.house_prompts || {}).lane) >= 0 || (D.stage || "open") !== "open";   // Matt 2026-10-30: firm that the work file is final before we build, every order lane
     $("selfservice-timing").hidden = !selfLane() || (D.stage || "open") !== "open";   // Matt 2026-10-30: say the build time and how best to run them, near Start
     var tb = $("testbanner"), bt = String(D.banner || "").trim().replace(/\s*·\s*\$[\d,.]+(?=\s*(?:·|$))/g, "");
