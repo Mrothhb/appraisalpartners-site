@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-31.4">
+<html lang="en" data-build="v2026-10-31.5">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -532,6 +532,13 @@ details.pc-fold > summary .pc-count {display:block;font:600 16px/1.5 var(--font)
 details.pc-fold > summary .pc-open {position:absolute;right:var(--card-px);top:var(--s-4);}
 details.pc-fold > summary .pc-open::after {content:"Open";font:600 15px/1.5 var(--font);color:var(--primary);text-decoration:underline;text-underline-offset:3px;}
 details.pc-fold[open] > summary .pc-open::after {content:"Close";}
+/* a re-review: what changed first, the full report folded beneath (Matt 2026-10-31, Chad's idea) */
+#report .changes, #report details.report-full { flex: 1 1 100%; min-width: 0; }
+#report .changes-what { padding: 0 16px 12px; font-weight: 600; color: var(--ink); }
+#report details.report-full { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+#report details.report-full > summary { flex: 1 1 100%; min-height: 48px; margin-inline: 16px; padding: var(--s-3) var(--s-4); border: 1px solid var(--primary); border-radius: var(--r-2); color: var(--primary); font: 600 16px/1.5 var(--font); cursor: pointer; list-style: none; text-align: center; }
+#report details.report-full > summary::-webkit-details-marker { display: none; }
+#report details.report-full[open] > summary { background: var(--tint); }
 details.pc-fold > .pc-intro {margin:0 var(--card-px) var(--s-3);}
 details.pc-fold > .card {margin:0 var(--s-3) var(--s-3);box-shadow:none;}
 details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
@@ -1884,7 +1891,15 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function proposalReceipt(section) { return JSON.stringify({review_id:(D.review||{}).id, fingerprint:section.fingerprint, values:proposalValues(section)}); }
   function proposalEdited(section) { var values=proposalValues(section);return section.calls.some(function(c){return values[c.key]!==String(c.value);}); }
   function proposalOpen() { var c=D.proposed_calls;return proposalReview()&&c&&Array.isArray(c.sections)&&c.report_sha256===(D.review||{}).report_sha256?c.sections.filter(function(s){return !proposalConfirmed(s);}):[]; }
-  function proposalConfirmed(section) { return state.answers["q_pc_confirm_"+section.id] === proposalReceipt(section) && section.calls.every(function(c){return proposalValues(section)[c.key].trim() && proposalValues(section)[c.key]===String(c.value);}); }
+  // A section he confirmed on an earlier review of this order, byte-identical now (its id and fingerprint are its content),
+  // keeps that confirmation; proposed_calls.missing_confirmations accepts the same receipts from the form log.
+  function proposalCarried(section) {
+    var earlier = (D.log || []).filter(function (e) { return e && e.what === "pdf" && e.review && e.review.id && e.review.id !== (D.review || {}).id; }).map(function (e) { return e.review.id; });
+    try { var r = JSON.parse(state.answers["q_pc_confirm_" + section.id]), v = proposalValues(section);
+      return earlier.indexOf(r.review_id) >= 0 && r.fingerprint === section.fingerprint && Object.keys(r.values || {}).length === Object.keys(v).length && Object.keys(v).every(function (k) { return r.values[k] === v[k]; });
+    } catch (e) { return false; }
+  }
+  function proposalConfirmed(section) { return (state.answers["q_pc_confirm_"+section.id] === proposalReceipt(section) || proposalCarried(section)) && section.calls.every(function(c){return proposalValues(section)[c.key].trim() && proposalValues(section)[c.key]===String(c.value);}); }
   // Matt 2026-10-31 ("everything from the report view all the way down to approve ... collapsed ... its busy"): Your calls is one
   // closed row under the report; open, each section is a few plain lines with Confirm, and its boxes, mics and evidence show
   // only on Change or See why. The boxes are always built (hidden), so answers, confirmations and the Approve gate are unchanged.
@@ -1927,7 +1942,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       function edited(){return proposalEdited(section);}
       if(edited() && !(section.id in pcView.mode)) { pcView.mode[section.id]="edit"; pcView.open=fold.open=true; }   // his unsent changes open where he left them
       paintMode();
-      function paint(){var done=proposalConfirmed(section),values=proposalValues(section);shown.forEach(function(f){f(values);});button.textContent=edited()?"Send these changes":done?"Confirmed":"Confirm this section";button.disabled=readOnly||!online||postBusy||pendingTaps>0||!reviewReady()||done||section.calls.some(function(c){return !proposalValues(section)[c.key].trim();});note.textContent=edited()?"We’ll update the report, then show it here again before delivery.":done?"Confirmed for this report.":"";}
+      function paint(){var done=proposalConfirmed(section),values=proposalValues(section);shown.forEach(function(f){f(values);});button.textContent=edited()?"Send these changes":done?"Confirmed":"Confirm this section";button.disabled=readOnly||!online||postBusy||pendingTaps>0||!reviewReady()||done||section.calls.some(function(c){return !proposalValues(section)[c.key].trim();});note.textContent=edited()?"We’ll update the report, then show it here again before delivery.":done?(proposalCarried(section)?"Confirmed in your last review; unchanged.":"Confirmed for this report."):"";}
       button.addEventListener("click",function(){
         if(button.disabled)return;
         if(edited()) {
@@ -2066,14 +2081,32 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function renderReport() {
     var box = $("report"), m = /^https:\/\/drive\.google\.com\/(?:file\/d\/([A-Za-z0-9_-]+)|(?:open|uc)\?(?:[^#]*&)?id=([A-Za-z0-9_-]+))/.exec(D.report_pdf || "");
     var due = !!String(O.payment_due || "").trim();
-    var images = (Array.isArray(D.report_images) ? D.report_images : []).filter(function (p) { return p && p.pdf === D.report_pdf && /^[A-Za-z0-9_-]+$/.test(p.id || "") && p.label; });
-    var shown = stage === "returned" && m ? [m[1] || m[2], due, D.review && D.review.pdf === D.report_pdf ? D.review.id : "", JSON.stringify(images)].join(" ") : "";
+    var bound = function (list) { return (Array.isArray(list) ? list : []).filter(function (p) { return p && p.pdf === D.report_pdf && /^[A-Za-z0-9_-]+$/.test(p.id || "") && p.label; }); };
+    var images = bound(D.report_images);
+    // Matt 2026-10-31 (Chad's idea): a review after his change request leads with the changed TOTAL views and PDF pages;
+    // the full report stays one tap away. review_round publishes review_changes for this exact review, or a fallback.
+    var ch = D.review_changes && D.review && D.review_changes.review_id === D.review.id ? D.review_changes : null;
+    var changed = ch && !ch.fallback ? bound(ch.total).concat(bound(ch.pages)) : [];
+    if (ch && changed.length !== (ch.total || []).length + (ch.pages || []).length) changed = [];   // any image not bound to this PDF: the full view
+    var shown = stage === "returned" && m ? [m[1] || m[2], due, D.review && D.review.pdf === D.report_pdf ? D.review.id : "", JSON.stringify(images), JSON.stringify(ch)].join(" ") : "";
     if (shown && box.getAttribute("data-shown") === shown) return;
     box.textContent = ""; box.hidden = !shown; box.setAttribute("data-shown", shown);
     box.classList.toggle("has-total", !!images.length);
     if (box.hidden) return;
     var id = m[1] || m[2], target = !!INLINE && location.protocol === "file:" ? "_self" : "_blank";
     box.appendChild(el("h2", { text: "Your report" }));
+    function figure(p) {
+      var img = el("img", { src: "https://lh3.googleusercontent.com/d/" + p.id + "=s0", alt: p.label, loading: "lazy", decoding: "async" });
+      if (p.width && p.height) { img.width = p.width; img.height = p.height; img.style.maxWidth = (p.width / (window.devicePixelRatio || 1)) + "px"; }
+      img.addEventListener("load", sizeTotalImages);
+      return el("figure", { cls: p.display === "phone" ? "total-phone" : p.display === "desktop" ? "total-desktop" : "" }, [el("figcaption", { text: p.label }), el("a", { href: "https://lh3.googleusercontent.com/d/" + p.id + "=s0", target: target, rel: "noopener", "aria-label": p.label + " — open full size" }, [img])]);
+    }
+    var full = box;
+    if (changed.length) {
+      var lead = box.appendChild(el("div", { cls: "total-pages changes" }, [el("p", { cls: "changes-what", text: "What changed: " + ch.what })]));
+      changed.forEach(function (p) { lead.appendChild(figure(p)); });
+      full = box.appendChild(el("details", { cls: "report-full" }, [el("summary", { text: "See the full report" })]));
+    } else if (ch) box.appendChild(el("p", { cls: "note", text: "Updated with your changes. Check the full report." }));
     var pdf = el("div", { cls: "report-pdf" });
     pdf.appendChild(el("a", { cls: "pdf-btn", href: "https://drive.google.com/file/d/" + id + "/view", target: target, rel: "noopener", text: due ? "Open full screen (view only)" : "Open full screen" }));
     if (!due) pdf.appendChild(el("a", { cls: "pdf-btn dl", href: "https://drive.google.com/uc?export=download&id=" + id, target: target, rel: "noopener", text: "Download PDF" }));
@@ -2083,20 +2116,15 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (images.length) {
       var pages = el("div", { cls: "total-pages" }), tabs = el("div", { cls: "report-switch", role: "group", "aria-label": "Report view" });
       pages.appendChild(el("p", { cls: "note", text: "Tap any section to open full size." }));
-      images.forEach(function (p) {
-        var img = el("img", { src: "https://lh3.googleusercontent.com/d/" + p.id + "=s0", alt: p.label, loading: "lazy", decoding: "async" });
-        if (p.width && p.height) { img.width = p.width; img.height = p.height; img.style.maxWidth = (p.width / (window.devicePixelRatio || 1)) + "px"; }
-        img.addEventListener("load", sizeTotalImages);
-        pages.appendChild(el("figure", { cls: p.display === "phone" ? "total-phone" : p.display === "desktop" ? "total-desktop" : "" }, [el("figcaption", { text: p.label }), el("a", { href: "https://lh3.googleusercontent.com/d/" + p.id + "=s0", target: target, rel: "noopener", "aria-label": p.label + " — open full size" }, [img])]));
-      });
+      images.forEach(function (p) { pages.appendChild(figure(p)); });
       ["TOTAL view", "PDF"].forEach(function (label, i) {
         var btn = el("button", { type: "button", text: label, "aria-pressed": String(!i) });
         btn.addEventListener("click", function () { pages.hidden = !!i; pdf.hidden = !i; Array.from(tabs.children).forEach(function (b) { b.setAttribute("aria-pressed", String(b === btn)); }); });
         tabs.appendChild(btn);
       });
-      box.appendChild(tabs); box.appendChild(pages); pdf.hidden = true;
+      full.appendChild(tabs); full.appendChild(pages); pdf.hidden = true;
     }
-    box.appendChild(pdf);
+    full.appendChild(pdf);
     if (D.review && D.review.pdf === D.report_pdf) box.appendChild(el("p", { cls: "note", "data-review-version": D.review.id,
       text: "Review version " + D.review.id.slice(0, 8) }));
   }
@@ -2980,7 +3008,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
+  function newer(f) { return canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || canon(f.review_changes || null) !== canon(F.review_changes || null) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
   function canon(v) { return JSON.stringify(v, function (k, x) { return x && typeof x === "object" && !Array.isArray(x) ? Object.keys(x).sort().reduce(function (o, j) { o[j] = x[j]; return o; }, {}) : x; }); }   // key order is never a change
   // A re-render keeps the reader's place (Chase 2026-10-20): the scroll, then the box or button in focus and its
   // selection; with nothing in focus it takes none.
