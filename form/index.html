@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-31.5c">
+<html lang="en" data-build="v2026-10-31.5d">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1906,7 +1906,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       return earlier.indexOf(r.review_id) >= 0 && r.fingerprint === section.fingerprint && Object.keys(r.values || {}).length === Object.keys(v).length && Object.keys(v).every(function (k) { return r.values[k] === v[k]; });
     } catch (e) { return false; }
   }
-  function proposalConfirmed(section) { return (state.answers["q_pc_confirm_"+section.id] === proposalReceipt(section) || proposalCarried(section)) && section.calls.every(function(c){return proposalValues(section)[c.key].trim() && proposalValues(section)[c.key]===String(c.value);}); }
+  function proposalConfirmed(section) { return (state.answers["q_pc_confirm_"+section.id] === proposalReceipt(section) || proposalCarried(section)) && section.calls.every(function(c){return proposalValues(section)[c.key]===String(c.value);}); }   // Matt 2026-10-31: a blank call never holds delivery
   // Matt 2026-10-31 ("everything from the report view all the way down to approve ... collapsed ... its busy"): Your calls is one
   // closed row under the report; open, each section is a few plain lines with Confirm, and its boxes, mics and evidence show
   // only on Change or See why. The boxes are always built (hidden), so answers, confirmations and the Approve gate are unchanged.
@@ -2485,7 +2485,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   }
   $("approve-all-btn").addEventListener("click", function () {
     if (this.disabled) return;
-    var open = proposalOpen(), edited = open.filter(proposalEdited), blank = open.filter(function (s) { return s.calls.some(function (c) { return !proposalValues(s)[c.key].trim(); }); });
+    var open = proposalOpen(), edited = open.filter(proposalEdited), blank = [];   // Matt 2026-10-31: "we shouldnt block delivery like that. only start on files missing."
     if (edited.length || blank.length) {
       var first = proposalNode(edited[0] || blank[0]), ask = !edited.length && first && first.querySelector(".pc-blank button");
       if (ask) { reveal(first); ask.click(); document.activeElement.scrollIntoView({ block: "center" }); } else if (first) jumpTo(first);   // a blank call opens at its box
