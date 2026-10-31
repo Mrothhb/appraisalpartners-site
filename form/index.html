@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-31.5b">
+<html lang="en" data-build="v2026-10-31.5c">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -700,8 +700,8 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 /* Matt 2026-10-31 ~10:50: after the second change round the form closes; one unmissable box at the top, only Deliver left (prefill.changes_closed) */
 .banner.closed { background: #fff0e0; color: #6b2400; border: 2px solid #e8590c; border-left: 8px solid #e8590c; font-size: 16px; margin: 0 0 var(--gap); }
 .banner.closed::before { content: "\26A0"; background: none; width: auto; height: auto; margin-top: 0; font-size: 28px; line-height: 1; color: #e8590c; }
-.banner.closed p { margin: 0; } .banner.closed p + p { margin-top: var(--s-2); } .banner.closed b { font-size: 18px; }
-body.changes-closed #post-request, body.changes-closed .pc-row, body.changes-closed .pc-edit, body.changes-closed .pc-v .link-inline, body.changes-closed button.change-call { display: none !important; }
+.banner.closed a { color: inherit; font-weight: 600; } .banner.closed p { margin: 0; } .banner.closed p + p { margin-top: var(--s-2); } .banner.closed b { font-size: 18px; }
+body.changes-closed #your-calls, body.changes-closed .card:has(> #your-calls), body.changes-closed #left-list, body.changes-closed .st[data-s], body.changes-closed #post-request, body.changes-closed .pc-row, body.changes-closed .pc-edit, body.changes-closed .pc-v .link-inline, body.changes-closed button.change-call { display: none !important; }
 </style>
 </head>
 <body>
@@ -2016,7 +2016,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     document.body.classList.toggle("changes-closed", closed);
     ["changes-closed", "changes-closed-bottom"].forEach(function (id, i) {   // Matt 2026-10-31: "put it at the bottom as well"
       var closedBox = $(id); closedBox.hidden = !closed; closedBox.textContent = "";
-      if (closed) closedBox.appendChild(el("div", null, [el("p", null, [el("b", { text: "Maximum change requests used (2 of 2)." })]), el("p", { text: (D.changes_closed_text || "To buy more change requests, email desk@aandap.com. Or tap Approve all and deliver below to get your report.").replace(/\bbelow\b/, i ? "above" : "below") })]));   // the bottom copy sits under the button
+      if (closed) closedBox.appendChild(el("div", null, [el("p", null, [el("b", { text: "Maximum change requests used (2 of 2)." })]), el("p", { text: (D.changes_closed_text || "To buy more change requests, email desk@aandap.com. Or tap Approve all and deliver below to get your report.").replace(/\bbelow\b/, i ? "above" : "below") }),
+        el("p", null, [el("a", { href: "https://appraisalpartners.net/change-rounds.html", target: "_blank", rel: "noopener", text: "Why am I seeing this?" })])]));   // Matt 2026-10-31: why it is limited, on the site   // the bottom copy sits under the button
     });
     $("final-file").hidden = ["review", "regression"].indexOf((D.house_prompts || {}).lane) >= 0 || (D.stage || "open") !== "open";   // Matt 2026-10-30: firm that the work file is final before we build, every order lane
     $("selfservice-timing").hidden = !selfLane() || (D.stage || "open") !== "open";   // Matt 2026-10-30: say the build time and how best to run them, near Start
