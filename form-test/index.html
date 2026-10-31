@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-31.1">
+<html lang="en" data-build="v2026-10-31.2">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -514,6 +514,28 @@ details.optional-calls > summary .optional-note {display:block;margin-top:2px;fo
 details.optional-calls > .card {margin:0 var(--s-3) var(--s-4);}
 details.optional-calls > .card:last-child {margin-bottom:var(--s-4);}
 .proposal-evidence {border-left:3px solid #c78f32;padding-left:12px;white-space:pre-wrap;}
+/* Your calls folded (Matt 2026-10-31, "its busy"): one row under the report; open, plain lines per section; boxes on Change, evidence on See why */
+details.pc-fold {margin:0 0 var(--gap);background:var(--card);border:1px solid var(--line);border-radius:var(--r-2);box-shadow:var(--shadow-1);}
+details.pc-fold > summary {position:relative;display:block;min-height:56px;padding:var(--s-4) calc(var(--card-px) + 64px) var(--s-4) var(--card-px);cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent;}
+details.pc-fold > summary::-webkit-details-marker {display:none;}
+details.pc-fold > summary .t {display:block;font:700 20px/1.35 var(--display);color:var(--bar);}
+details.pc-fold > summary .pc-count {display:block;font:600 16px/1.5 var(--font);color:var(--ink-2);}
+details.pc-fold > summary .pc-open {position:absolute;right:var(--card-px);top:var(--s-4);}
+details.pc-fold > summary .pc-open::after {content:"Open";font:600 15px/1.5 var(--font);color:var(--primary);text-decoration:underline;text-underline-offset:3px;}
+details.pc-fold[open] > summary .pc-open::after {content:"Close";}
+details.pc-fold > .pc-intro {margin:0 var(--card-px) var(--s-3);}
+details.pc-fold > .card {margin:0 var(--s-3) var(--s-3);box-shadow:none;}
+details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
+.pc-lines {list-style:none;margin:0 0 var(--s-3);padding:0;font-size:16px;line-height:1.5;overflow-wrap:anywhere;}
+.pc-lines li {padding:6px 0;border-bottom:1px solid #edf0f2;}
+.pc-lines li:last-child {border-bottom:0;}
+.pc-k {color:var(--ink-2);}
+.pc-v {color:var(--ink);font-weight:600;}
+.pc-lines .pc-why {display:none;margin:6px 0 0;font-size:14px;}
+.proposal-section[data-mode="why"] .pc-lines .pc-why {display:block;}
+.proposal-section[data-mode="edit"] .pc-lines, .proposal-section:not([data-mode="edit"]) .pc-edit {display:none;}
+.pc-row {display:flex;align-items:center;flex-wrap:wrap;gap:var(--s-2) var(--s-5);}
+.pc-row .link-inline {padding:10px 0;}
 /* Report status tracker after Start (Matt 2026-10-30): Astra's component, scoped to .ap-tracker. */
 /* Scoped component. Uses the form's tokens; fallbacks also allow standalone use. */
 .ap-tracker {
@@ -1843,26 +1865,49 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   function proposalValues(section) { var values={};section.calls.forEach(function(c){var k="q_pc_"+section.id+"_"+c.id;values[c.key]=String(state.answers[k] == null ? c.value : state.answers[k]);});return values; }
   function proposalReceipt(section) { return JSON.stringify({review_id:(D.review||{}).id, fingerprint:section.fingerprint, values:proposalValues(section)}); }
   function proposalConfirmed(section) { return state.answers["q_pc_confirm_"+section.id] === proposalReceipt(section) && section.calls.every(function(c){return proposalValues(section)[c.key].trim() && proposalValues(section)[c.key]===String(c.value);}); }
+  // Matt 2026-10-31 ("everything from the report view all the way down to approve ... collapsed ... its busy"): Your calls is one
+  // closed row under the report; open, each section is a few plain lines with Confirm, and its boxes, mics and evidence show
+  // only on Change or See why. The boxes are always built (hidden), so answers, confirmations and the Approve gate are unchanged.
+  var pcView={open:false,mode:{}};   // survives a refresh: the block's open state, and each section's "edit" or "why"
   function renderProposals(host) {
     proposalPainters=[];
     var catalog=D.proposed_calls;
-    host.appendChild(el("section",{cls:"card"},[el("h2",{text:"Your calls"}),el("p",{text:"We filled in every box below. Each is our proposal and your call. Nothing is delivered until you confirm every section."})]));
+    var fold=host.appendChild(el("details",{cls:"pc-fold",id:"your-calls"})), count=el("span",{cls:"pc-count"});
+    fold.appendChild(el("summary",null,[el("span",{cls:"t",text:"Your calls"}),count,el("span",{cls:"pc-open","aria-hidden":"true"})]));
+    fold.appendChild(el("p",{cls:"note pc-intro",text:"We filled in every call below. Each is our proposal and your call. Nothing is delivered until you confirm every section."}));
+    fold.open=pcView.open;
+    fold.addEventListener("toggle",function(){pcView.open=fold.open;if(fold.open)fold.querySelectorAll("textarea").forEach(grow);});
     if(!catalog || !Array.isArray(catalog.sections) || catalog.report_sha256 !== (D.review||{}).report_sha256) {
-      var wait=host.appendChild(el("section",{cls:"card",text:"Your calls are being prepared."}));
+      count.textContent="Being prepared";
+      var wait=fold.appendChild(el("section",{cls:"card",text:"Your calls are being prepared."}));
       musts.push({key:"proposal_catalog",node:wait,valid:function(){return false;}});return;
     }
+    proposalPainters.push(function(){var n=catalog.sections.filter(function(s){return !proposalConfirmed(s);}).length;count.textContent=n?n+(n===1?" section":" sections")+" to confirm":"All confirmed";});
     catalog.sections.forEach(function(section){
-      var card=host.appendChild(el("section",{cls:"card proposal-section","data-proposal":section.id},[el("h2",{text:section.title}),el("p",{cls:"note",text:"We filled these in for you. Keep or change each one, then tap Confirm this section."})]));
+      var card=fold.appendChild(el("section",{cls:"card proposal-section","data-proposal":section.id},[el("h2",{text:section.title}),el("p",{cls:"note",text:"We filled these in for you. Keep or change each one, then tap Confirm this section."})]));
+      var lines=card.appendChild(el("ul",{cls:"pc-lines"})), body=card.appendChild(el("div",{cls:"pc-edit"})), shown=[];
       section.calls.forEach(function(c){
-        var key="q_pc_"+section.id+"_"+c.id;
+        var key="q_pc_"+section.id+"_"+c.id, v=el("span",{cls:"pc-v"});
         if(!(key in state.answers))state.answers[key]=String(c.value);
-        card.appendChild(Array.isArray(c.options) ? choice(key,c.label,c.options) : text(key,c.label,{multi:true}));
-        card.appendChild(el("p",{cls:"note proposal-evidence",text:c.evidence}));
+        lines.appendChild(el("li",null,[el("span",{cls:"pc-k",text:c.label+": "}),v,el("p",{cls:"note proposal-evidence pc-why",text:c.evidence})]));
+        shown.push(function(values){var t=values[c.key].trim();v.textContent="";v.classList.toggle("pc-blank",!t);
+          if(t)v.textContent=t;else v.appendChild(el("button",{type:"button",cls:"link-inline",text:"Needs your answer"})).addEventListener("click",function(){mode("edit");var box=body.querySelector("[data-call='"+key+"']");if(box)box.focus();});});
+        body.appendChild(Array.isArray(c.options) ? choice(key,c.label,c.options) : text(key,c.label,{multi:true}));
+        body.appendChild(el("p",{cls:"note proposal-evidence",text:c.evidence}));
       });
-      var button=card.appendChild(el("button",{type:"button",cls:"st",text:"Confirm this section"}));
+      var row=card.appendChild(el("div",{cls:"pc-row"}));
+      var button=row.appendChild(el("button",{type:"button",cls:"st",text:"Confirm this section"}));
+      var change=row.appendChild(el("button",{type:"button",cls:"link-inline"})), why=row.appendChild(el("button",{type:"button",cls:"link-inline"}));
       var note=card.appendChild(el("p",{cls:"note"}));
+      function mode(m){pcView.mode[section.id]=pcView.mode[section.id]===m?"closed":m;paintMode();if(m==="edit")body.querySelectorAll("textarea").forEach(grow);}
+      function paintMode(){var m=pcView.mode[section.id]||"";card.setAttribute("data-mode",m);change.textContent=m==="edit"?"Close":"Change";why.textContent=m==="why"?"Hide why":"See why";why.hidden=m==="edit";
+        change.setAttribute("aria-expanded",String(m==="edit"));why.setAttribute("aria-expanded",String(m==="why"));change.setAttribute("aria-label",(m==="edit"?"Close ":"Change ")+section.title);why.setAttribute("aria-label",(m==="why"?"Hide why: ":"See why: ")+section.title);}
+      change.addEventListener("click",function(){mode("edit");});
+      why.addEventListener("click",function(){mode("why");});
       function edited(){var values=proposalValues(section);return section.calls.some(function(c){return values[c.key]!==String(c.value);});}
-      function paint(){var done=proposalConfirmed(section);button.textContent=edited()?"Send these changes":done?"Confirmed":"Confirm this section";button.disabled=readOnly||!online||postBusy||pendingTaps>0||!reviewReady()||done||section.calls.some(function(c){return !proposalValues(section)[c.key].trim();});note.textContent=edited()?"We’ll update the report, then show it here again before delivery.":done?"Confirmed for this report.":"";}
+      if(edited() && !(section.id in pcView.mode)) { pcView.mode[section.id]="edit"; pcView.open=fold.open=true; }   // his unsent changes open where he left them
+      paintMode();
+      function paint(){var done=proposalConfirmed(section),values=proposalValues(section);shown.forEach(function(f){f(values);});button.textContent=edited()?"Send these changes":done?"Confirmed":"Confirm this section";button.disabled=readOnly||!online||postBusy||pendingTaps>0||!reviewReady()||done||section.calls.some(function(c){return !proposalValues(section)[c.key].trim();});note.textContent=edited()?"We’ll update the report, then show it here again before delivery.":done?"Confirmed for this report.":"";}
       button.addEventListener("click",function(){
         if(button.disabled)return;
         if(edited()) {
@@ -2203,9 +2248,12 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     if (file) say((lock.textContent ? " " : "") + "Your file: " + file.note.charAt(0).toLowerCase() + file.note.slice(1));
     lock.hidden = !open.length;
   }
+  function reveal(node) { var fold = node.closest("details"); if (fold && !fold.open) fold.open = true; }   // a folded item opens first (Your calls)
+  function firstControl(node) { return Array.from(node.querySelectorAll("input, textarea, button")).filter(function (c) { return c.offsetParent; })[0]; }
   function jumpTo(node) {
+    reveal(node);
     node.scrollIntoView({ block: node.offsetHeight > innerHeight * 0.8 ? "start" : "center", behavior: "smooth" });   // a tall card opens at its title
-    var first = node.querySelector("input, textarea, button"); if (first) first.focus({ preventScroll: true });
+    var first = firstControl(node); if (first) first.focus({ preventScroll: true });
     node.classList.remove("flash"); void node.offsetWidth; node.classList.add("flash");
   }
   function paintStatus() {
@@ -2268,9 +2316,10 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     var legacyApproval = state.history.filter(function (e) { return e.status === "DONE"; });
     $("legacy-approved").hidden = signoff() || state.status !== "DONE" || !customerReturned();
     $("legacy-approved").textContent = legacyApproval.length ? "Approved " + when(legacyApproval[legacyApproval.length - 1].at) : "Approved";
-    $("post-title").hidden = !customerReturned();
-    $("post-open").hidden = customerReturned();
-    if (customerReturned()) $("post-box").hidden = false;
+    var postFold = postFolded();   // Matt 2026-10-31: on a review before Approve the box is one "Request a change" tap
+    $("post-title").hidden = !customerReturned() || postFold;
+    $("post-open").hidden = customerReturned() && !postFold;
+    if (customerReturned()) $("post-box").hidden = postFold;
     statusBtns.forEach(function (b) {
       b.setAttribute("aria-pressed", String(b.getAttribute("data-s") === state.status));
       b.hidden = simpleStart() && filesChecked() || approved || (customerReturned() ? !signoff() || !reviewReady() || signedOff() || b.getAttribute("data-s") !== "DONE" : STAGES[stage].statuses.indexOf(b.getAttribute("data-s")) < 0 || b.getAttribute("data-s") === "DRAFT");   // answers autosave
@@ -2551,9 +2600,11 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       } catch (e) {}
     }, 0);
   }
+  var postOpened = false;   // he opened Request a change on a review form; it stays open until he sends
+  function postFolded() { return signoff() && !signedOff() && !postOpened && !$("post-text").value.trim() && $("post-error").hidden; }
   $("post-open").addEventListener("click", function () {
     if ((!customerReturned() && !approved) || postBusy || readOnly) return;
-    $("post-box").hidden = false; $("post-open").hidden = true;
+    postOpened = true; $("post-title").hidden = !customerReturned(); $("post-box").hidden = false; $("post-open").hidden = true;
     grow($("post-text")); $("post-text").focus();
   });
   $("post-text").addEventListener("input", function () { grow(this); $("post-error").hidden = true; });
@@ -2569,7 +2620,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     // At once (Matt 2026-10-30): the request shows as sent and the tracker moves; the post lands in the background. Its own id
     // is the request id: Code.gs returns the same request for a repeat and refuses a different text under it.
     state.post_changes = (state.post_changes || []).concat(stand);
-    $("post-text").value = ""; $("post-error").hidden = true; $("post-box").hidden = !customerReturned(); $("post-open").hidden = customerReturned(); paintStatus();
+    $("post-text").value = ""; $("post-error").hidden = true; postOpened = false; $("post-box").hidden = !customerReturned(); $("post-open").hidden = customerReturned(); paintStatus();
     var item = outboxAdd("request", doc, request.id);
     function once() {
       return post(doc).catch(function () {}).then(read).then(function (r) {
@@ -2741,8 +2792,8 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     var blocking = s === "DONE" || s === "READY" && (callsFirst() || minimalCalls()) ? gaps : gaps.filter(function (m) { return m.key === "q_client_permits"; });
     if (blocking.length) {
       blocking.forEach(function (m) { m.node.classList.add("need"); });
-      blocking[0].node.scrollIntoView({ block: "center" });
-      var first = blocking[0].node.querySelector("input, textarea, button"); if (first) first.focus({ preventScroll: true });
+      reveal(blocking[0].node); blocking[0].node.scrollIntoView({ block: "center" });
+      var first = firstControl(blocking[0].node); if (first) first.focus({ preventScroll: true });
       banner(blocking.length === 1 ? "Answer the marked question." : "Answer the marked questions.", "warn");
       if (s === "READY" && state.status === "READY") setStatus("DRAFT");
       return;
