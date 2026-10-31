@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-30.10">
+<html lang="en" data-build="v2026-10-30.12">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -633,6 +633,31 @@ details.optional-calls > .card:last-child {margin-bottom:var(--s-4);}
   .ap-tracker__build [data-state="current"] .ap-tracker__mini-dot { outline-color: Highlight; }
 }
 #calls-saved { margin: 0 0 var(--s-3); }
+
+/* ---------- the full-screen state (Matt 2026-10-30: "an entire screen taken by a notice that the system is checking files, or
+   pending or in progress"). One card the height of the screen under the bar: an icon, a headline, one line; for missing files
+   the short list; after Start the tracker. The normal page stays under it and "Order details" scrolls there. ---------- */
+#stage { display: grid; grid-template-rows: 1fr auto 1fr; justify-items: center; min-height: calc(100svh - var(--bar-h) - var(--gap) - var(--s-6)); padding: var(--s-8) var(--card-px) var(--s-4); text-align: center; }
+#stage[hidden] { display: none; }
+.stage-body { grid-row: 2; display: grid; justify-items: center; gap: var(--s-5); width: 100%; max-width: 560px; }
+.stage-ico { width: 104px; height: 104px; }
+.stage-ico svg { display: none; width: 100%; height: 100%; }
+#stage[data-kind="checking"] .ico-checking, #stage[data-kind="still"] .ico-still, #stage[data-kind="missing"] .ico-missing { display: block; }
+#stage[data-kind="progress"] .stage-ico { display: none; }
+.ico-checking .arc { transform-origin: 50% 50%; animation: stage-spin 1.6s linear infinite; }
+@keyframes stage-spin { to { transform: rotate(360deg); } }
+#stage-title { margin: 0; font: 700 clamp(28px, 2vw + 20px, 36px)/1.15 var(--display); letter-spacing: -.02em; color: var(--bar); text-wrap: balance; }
+#stage-line { margin: 0; max-width: 28em; font-size: 18px; line-height: 1.5; color: var(--ink-2); text-wrap: balance; }
+#stage-list { list-style: none; margin: 0; padding: var(--s-4) var(--s-5); width: min(100%, 360px); box-sizing: border-box; text-align: left; border: 1px solid var(--warning-line); border-left: 6px solid var(--warning-edge); border-radius: var(--r-2); background: var(--warning-bg); color: var(--warning-ink); font-size: 17px; font-weight: 600; line-height: 1.5; }
+#stage-list li { display: flex; align-items: baseline; gap: 10px; overflow-wrap: anywhere; }
+#stage-list li + li { margin-top: var(--s-2); }
+#stage-list li::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--warning-edge); }
+#stage-slot { width: 100%; } #stage-slot #production-tracker { margin: 0; }
+.stage-more { grid-row: 3; align-self: end; display: inline-flex; align-items: center; gap: 6px; margin: var(--s-6) 0 0; padding: 10px 12px; border: 0; background: none; color: var(--primary); font: 600 15px/1.4 var(--font); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: rgba(11,111,193,.4); cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
+.stage-more:hover { color: var(--primary-hover); text-decoration-color: currentColor; }
+.stage-more svg { width: 16px; height: 16px; }
+@media (prefers-reduced-motion: reduce) { .ico-checking .arc { animation: none; } }
+@media (forced-colors: active) { #stage-list { border-color: ButtonText; } #stage-list li::before { background: ButtonText; } }
 </style>
 </head>
 <body>
@@ -659,6 +684,22 @@ details.optional-calls > .card:last-child {margin-bottom:var(--s-4);}
   <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
 
   <div id="main" hidden>
+  <!-- Matt 2026-10-30: one full screen while we check his files, when files are missing, and after Start (the tracker moves in here).
+       Checked and ready: hidden, the normal Start page shows. The normal page is always under it. -->
+  <section class="card" id="stage" role="status" aria-live="polite" hidden>
+    <div class="stage-body">
+      <div class="stage-ico" aria-hidden="true">
+        <svg class="ico-checking" viewBox="0 0 104 104" fill="none"><circle cx="52" cy="52" r="42" stroke="#d5e6f5" stroke-width="6"/><path class="arc" d="M52 10a42 42 0 0 1 42 42" stroke="#0b6fc1" stroke-width="6" stroke-linecap="round"/><path d="M38 34h20l10 10v26H38z" fill="#fff" stroke="#0b6fc1" stroke-width="2.5" stroke-linejoin="round"/><path d="M58 34v10h10" stroke="#0b6fc1" stroke-width="2.5" stroke-linejoin="round"/><path d="M44 52h16M44 59h16" stroke="#0b6fc1" stroke-width="2.5" stroke-linecap="round"/></svg>
+        <svg class="ico-still" viewBox="0 0 104 104" fill="none"><circle cx="52" cy="52" r="42" fill="#eaf3fb" stroke="#0b6fc1" stroke-width="6"/><path d="M52 30v24l15 9" stroke="#0b6fc1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg class="ico-missing" viewBox="0 0 104 104" fill="none"><circle cx="52" cy="52" r="42" fill="#fdf3e1" stroke="#e5a53a" stroke-width="6"/><path d="M38 30h20l10 10v34H38z" fill="#fff" stroke="#7a4300" stroke-width="2.5" stroke-linejoin="round"/><path d="M58 30v10h10" stroke="#7a4300" stroke-width="2.5" stroke-linejoin="round"/><path d="M52 47v12" stroke="#7a4300" stroke-width="4" stroke-linecap="round"/><circle cx="52" cy="66" r="2.5" fill="#7a4300"/></svg>
+      </div>
+      <h1 id="stage-title"></h1>
+      <p id="stage-line"></p>
+      <ul id="stage-list" aria-label="Still needed" hidden></ul>
+      <div id="stage-slot"></div>
+    </div>
+    <button type="button" class="stage-more" id="stage-more">Order details <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </section>
   <section class="card" id="chosen" aria-label="Your chosen service" hidden>
     <strong id="chosen-lane"></strong>
     <p id="chosen-quote"></p>
@@ -668,7 +709,7 @@ details.optional-calls > .card:last-child {margin-bottom:var(--s-4);}
   <section class="card order" id="order" aria-label="The order">
     <div class="now-row"><p class="status-now" id="now"></p> <span class="saved" id="saved" hidden>Saved</span></div>
   </section>
-  <section id="production-tracker" aria-label="Report status" hidden></section>
+  <div id="tracker-home"><section id="production-tracker" aria-label="Report status" hidden></section></div>
   <section class="card" id="lane-picker" aria-label="Pick your lane" hidden></section>
   <div class="banner" id="payment" role="status" hidden></div>
   <div class="banner warn" id="selfservice" role="note" hidden><div><p><b>Self-service: Matt and his team do not review this report.</b></p><ul><li>No one will discuss values or the report.</li><li>Questions, issues and changes go in writing, on this form or by email.</li><li>Appraisal help from Matt or his team is a separate service, billed for his time, and only where state rules allow it.</li><li>You are using A&amp;AP’s AI-assisted report-preparation software directly. We strongly encourage you to review this report and ensure the system makes all changes to your liking.</li><li>Bugs, errors and software issues should be escalated to Matt and his team immediately. Appraisal discussion and questions remain in this form or by email.</li></ul></div></div>
@@ -2069,7 +2110,44 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     box.hidden = !status;
     if (status) APStatusTracker.render(box, status);
   }
+  // ---------- the full-screen state (Matt 2026-10-30: "an entire screen taken by a notice that the system is checking files, or
+  // pending or in progress") ----------
+  // Before Start on a self-service form: Checking your files while the desk checks his drop (house_prompts.files_checking_at, set by
+  // the folder watcher and removed by the check's result), Still checking once that stamp is older than STILL_MS (the watcher pings the
+  // desk at the same age), Files missing when the check published gaps, nothing once his files are checked (the normal Start page).
+  // After Start it carries the tracker. The page polls every 30 seconds either way.
+  var STILL_MS = 25 * 60 * 1000;
+  function checkingFiles() { return !!Object.assign({}, F.house_prompts || {}, D.house_prompts || {}).files_checking_at; }
+  function stageState() {
+    if (!selfLane() || stage !== "open" || readOnly || approved) return null;
+    if (inProduction()) return { kind: "progress" };
+    var hp = Object.assign({}, F.house_prompts || {}, D.house_prompts || {}), at = Date.parse(hp.files_checking_at || "");
+    if (hp.files_checking_at) return { kind: isNaN(at) || Date.now() - at > STILL_MS ? "still" : "checking" };
+    if (hp.files_complete === true && hp.files_checked_at) return null;
+    var missing = (hp.files_missing || []).map(function (m) { return String(m || "").trim(); }).filter(Boolean);
+    if (!missing.length) missing = String(D.public_note || "").replace(/^(?:Missing:\s*)?(?:Still needed:\s*)?/i, "").split(/;\s*/).map(function (m) { return m.replace(/[.\s]+$/, "").trim(); }).filter(function (m) { return m && !/^your complete file$/i.test(m); });
+    return { kind: "missing", missing: missing };
+  }
+  var STAGE_WORDS = { checking: ["Checking your files", "This page updates by itself. Usually a few minutes."],
+                      still: ["Still checking", "We’ll email you when it’s done."],
+                      missing: ["A few files are missing", "Add them to your folder. We’ll check again automatically."],
+                      file: ["We need your work file", "Add it to your folder. We check automatically."],
+                      progress: ["Your report is in progress", ""] };
+  function paintStage() {
+    var s = stageState(), box = $("stage"), tracker = $("production-tracker"), home = s && s.kind === "progress" ? $("stage-slot") : $("tracker-home");
+    if (tracker.parentNode !== home) home.appendChild(tracker);
+    box.hidden = !s;
+    if (!s) return;
+    var words = STAGE_WORDS[s.kind === "missing" && !s.missing.length ? "file" : s.kind];
+    box.dataset.kind = s.kind;
+    $("stage-title").textContent = words[0];
+    $("stage-line").textContent = words[1]; $("stage-line").hidden = !words[1];
+    var list = $("stage-list"); list.hidden = s.kind !== "missing" || !s.missing.length; list.textContent = "";
+    (s.missing || []).forEach(function (m) { list.appendChild(el("li", { text: cap(m) })); });
+  }
+  $("stage-more").addEventListener("click", function () { $("order").scrollIntoView({ behavior: "smooth", block: "start" }); });
   function filesNeed(hp) {
+    if (hp.files_checking_at) return "We’re checking your files.";   // Matt 2026-10-30: the desk saw his drop; the result replaces this
     if (hp.files_complete === true && hp.files_checked_at) return "";
     var still = String((hp.files_missing || []).join("; ") || D.public_note || "").replace(/^(?:Missing:\s*)?(?:Still needed:\s*)?/i, "").replace(/[.;\s]+$/, "");
     return "Still needed: " + (still || "your complete file") + ".";
@@ -2092,7 +2170,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       rows.push({ key: line.key, label: READY_LABEL[line.key] || cap(line.need || line.label), done: done,
         note: done ? (line.kind === "check" || v === true ? "Confirmed" : String(v).trim().slice(0, 60)) : "", target: m ? m.node : null });
     });
-    var hp = Object.assign({}, F.house_prompts || {}, D.house_prompts || {}), checked = hp.files_complete === true && !!hp.files_checked_at;
+    var hp = Object.assign({}, F.house_prompts || {}, D.house_prompts || {}), checked = hp.files_complete === true && !!hp.files_checked_at && !hp.files_checking_at;
     rows.push({ key: "files", label: "Your file", done: checked, note: checked ? "Checked by us" : filesNeed(hp), target: null });
     return rows;
   }
@@ -2248,7 +2326,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       $("start-production").hidden = true;
       $("quote").hidden = false;
       $("quote").textContent = [laneTitle(D.selected_lane || "self-service"), O.price].filter(Boolean).join(" · ");
-      statusBtns.forEach(function(b) { if(b.dataset.s === "READY") { b.hidden = inProduction(); b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || !minimalChecked() || !minimalFactsReady() || missing().length > 0; } });
+      statusBtns.forEach(function(b) { if(b.dataset.s === "READY") { b.hidden = inProduction(); b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || !minimalChecked() || checkingFiles() || !minimalFactsReady() || missing().length > 0; } });
     }
     $("save-calls").hidden = !minimalCalls() || inProduction();
     $("save-calls").disabled = locked || !online;
@@ -2258,6 +2336,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     paintNow();
     paintTracker();
     paintReady();
+    paintStage();
     // Matt 2026-10-13: a READY the desk sent back says so at the very top, with why, while the form is DRAFT again:
     // a red pop-out when it arrives ("make it red and a popout and very obvious"), then the red banner pinned there.
     var nr = $("notready"), back = D.note_kind === "not_ready" && !!D.public_note && state.status === "DRAFT";
@@ -2295,7 +2374,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       b.textContent = inProduction() ? "Start production received" : answered() ? "Answers sent" : left.length && !simpleStart() ? go + " · " + left.length + " left" : go;
       b.classList.toggle("wait", left.length > 0);
     });
-    if (minimalCalls()) statusBtns.forEach(function(b){if(b.dataset.s === "READY") {b.textContent = inProduction() ? "Start received" : "Start"; b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || inProduction() || !minimalChecked() || !minimalFactsReady() || left.length > 0;}});
+    if (minimalCalls()) statusBtns.forEach(function(b){if(b.dataset.s === "READY") {b.textContent = inProduction() ? "Start received" : "Start"; b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || inProduction() || !minimalChecked() || checkingFiles() || !minimalFactsReady() || left.length > 0;}});
     musts.forEach(function (m) { if (left.indexOf(m) < 0) m.node.classList.remove("need"); });
   }
   function when(iso) {
@@ -2863,6 +2942,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   var pollT = null, fastUntil = 0, polling = false, pendingTaps = 0;
   function pollSoon() { clearTimeout(pollT); pollT = setTimeout(function () { poll(); pollSoon(); }, Date.now() < fastUntil ? 2000 : 30000); }
   function poll() {
+    paintStage();   // Checking becomes Still checking by age alone, with no new data
     if ((!INLINE && document.visibilityState === "hidden") || polling || readOnly || postBusy || !online || connecting || tapped || pendingTaps || edits !== savedEdits || timer || outbox.length) return;
     polling = true;
     var readAt = savedAt;
