@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-31.5">
+<html lang="en" data-build="v2026-10-31.5a">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -697,6 +697,11 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 .stage-more svg { width: 16px; height: 16px; }
 @media (prefers-reduced-motion: reduce) { .ico-checking .arc { animation: none; } }
 @media (forced-colors: active) { #stage-list { border-color: ButtonText; } #stage-list li::before { background: ButtonText; } }
+/* Matt 2026-10-31 ~10:50: after the second change round the form closes; one unmissable box at the top, only Deliver left (prefill.changes_closed) */
+.banner.closed { background: #fff0e0; color: #6b2400; border: 2px solid #e8590c; border-left: 8px solid #e8590c; font-size: 16px; margin: 0 0 var(--gap); }
+.banner.closed::before { content: "\26A0"; background: none; width: auto; height: auto; margin-top: 0; font-size: 28px; line-height: 1; color: #e8590c; }
+.banner.closed p { margin: 0; } .banner.closed p + p { margin-top: var(--s-2); } .banner.closed b { font-size: 18px; }
+body.changes-closed #post-request, body.changes-closed .pc-row, body.changes-closed .pc-edit, body.changes-closed .pc-v .link-inline, body.changes-closed button.change-call { display: none !important; }
 </style>
 </head>
 <body>
@@ -723,6 +728,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
   <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
 
   <div id="main" hidden>
+  <div class="banner closed" id="changes-closed" role="alert" hidden></div>
   <!-- Matt 2026-10-30: one full screen while we check his files, when files are missing, and after Start (the tracker moves in here).
        Checked and ready: hidden, the normal Start page shows. The normal page is always under it. -->
   <section class="card" id="stage" role="status" aria-live="polite" hidden>
@@ -2005,6 +2011,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var due = String(O.payment_due || "").trim();
     $("payment").hidden = !due;
     $("selfservice").hidden = $("selfservice-bottom").hidden = (D.house_prompts || {}).lane !== "self-service";   // Matt 2026-10-19: VERY clear on every self-service form; 2026-10-30: again at the bottom
+    var closedBox = $("changes-closed"), closed = D.changes_closed === true && D.stage === "returned" && !D.delivered_at;   // Matt 2026-10-31 ~10:50: both change rounds used, so the form closes and only Deliver remains
+    document.body.classList.toggle("changes-closed", closed); closedBox.hidden = !closed; closedBox.textContent = "";
+    if (closed) closedBox.appendChild(el("div", null, [el("p", null, [el("b", { text: "Maximum change requests used (2 of 2)." })]), el("p", { text: D.changes_closed_text || "To buy more change requests, email desk@aandap.com. Or tap Approve all and deliver below to get your report." })]));
     $("final-file").hidden = ["review", "regression"].indexOf((D.house_prompts || {}).lane) >= 0 || (D.stage || "open") !== "open";   // Matt 2026-10-30: firm that the work file is final before we build, every order lane
     $("selfservice-timing").hidden = !selfLane() || (D.stage || "open") !== "open";   // Matt 2026-10-30: say the build time and how best to run them, near Start
     var tb = $("testbanner"), bt = String(D.banner || "").trim().replace(/\s*·\s*\$[\d,.]+(?=\s*(?:·|$))/g, "");
