@@ -24,7 +24,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-31.2">
+<html lang="en" data-build="v2026-10-31.3">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -331,6 +331,14 @@ details.fold > .fold-body { padding: 0 var(--card-px) var(--s-5); }
 .pop-ok:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
 .pop-ok:active { background: var(--primary-active); border-color: var(--primary-active); }
 .pop-ok:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.pop-title.ok { background: var(--success); }
+.pop-ok.all-yes { background: var(--success); border-color: var(--success); }
+.pop-ok.all-yes:hover { background: var(--success-ink); border-color: var(--success-ink); }
+.pop-ok.all-no { margin-top: 0; background: #fff; color: var(--primary); border-color: var(--primary); }
+#approve-all { margin-top: var(--s-3); }
+#approve-all .st { width: 100%; background: #fff; color: var(--success-ink); border-color: var(--success); }
+#approve-all .st:hover { background: var(--tint); }
+#approve-all .note { margin: var(--s-2) 0 0; text-align: center; }
 
 /* ---------- the checklist's lines ---------- */
 .line { display: flex; align-items: center; gap: var(--s-3); min-height: 48px; padding: var(--s-2) 0; border-bottom: 1px solid var(--line); }
@@ -776,6 +784,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
     <fieldset id="start-calls" hidden></fieldset>
     <p id="left-list" role="status" hidden></p>
     <div class="status" data-status></div>
+    <div id="approve-all" hidden><button type="button" class="st" id="approve-all-btn">Approve all and deliver</button><p class="note" id="approve-all-note"></p></div>
     <button type="button" class="pdf-btn" id="start-production" hidden>Start production</button>
     <p class="terms-line" data-terms></p>
     <button type="button" class="link-btn" id="save-calls" hidden>Save and finish later</button>
@@ -804,6 +813,14 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
   <div class="pop-box">
     <p class="pop-title" id="pick-title"></p>
     <div class="taps" id="pick-taps"></div>
+  </div>
+</div>
+<div class="pop" id="all-pop" role="alertdialog" aria-modal="true" aria-labelledby="all-title" aria-describedby="all-why" hidden>
+  <div class="pop-box">
+    <p class="pop-title ok" id="all-title"></p>
+    <div class="pop-why" id="all-why"></div>
+    <button type="button" class="pop-ok all-yes" id="all-yes"></button>
+    <button type="button" class="pop-ok all-no" id="all-no">Not yet</button>
   </div>
 </div>
 <div class="pop" id="pop" role="alertdialog" aria-modal="true" aria-labelledby="pop-title" aria-describedby="pop-why" hidden>
@@ -1864,6 +1881,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function proposalReview() { return (D.house_prompts||{}).lane === "self-service" && D.stage === "returned" && (D.house_prompts||{}).proposal_review === true; }
   function proposalValues(section) { var values={};section.calls.forEach(function(c){var k="q_pc_"+section.id+"_"+c.id;values[c.key]=String(state.answers[k] == null ? c.value : state.answers[k]);});return values; }
   function proposalReceipt(section) { return JSON.stringify({review_id:(D.review||{}).id, fingerprint:section.fingerprint, values:proposalValues(section)}); }
+  function proposalEdited(section) { var values=proposalValues(section);return section.calls.some(function(c){return values[c.key]!==String(c.value);}); }
+  function proposalOpen() { var c=D.proposed_calls;return proposalReview()&&c&&Array.isArray(c.sections)&&c.report_sha256===(D.review||{}).report_sha256?c.sections.filter(function(s){return !proposalConfirmed(s);}):[]; }
   function proposalConfirmed(section) { return state.answers["q_pc_confirm_"+section.id] === proposalReceipt(section) && section.calls.every(function(c){return proposalValues(section)[c.key].trim() && proposalValues(section)[c.key]===String(c.value);}); }
   // Matt 2026-10-31 ("everything from the report view all the way down to approve ... collapsed ... its busy"): Your calls is one
   // closed row under the report; open, each section is a few plain lines with Confirm, and its boxes, mics and evidence show
@@ -1904,7 +1923,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
         change.setAttribute("aria-expanded",String(m==="edit"));why.setAttribute("aria-expanded",String(m==="why"));change.setAttribute("aria-label",(m==="edit"?"Close ":"Change ")+section.title);why.setAttribute("aria-label",(m==="why"?"Hide why: ":"See why: ")+section.title);}
       change.addEventListener("click",function(){mode("edit");});
       why.addEventListener("click",function(){mode("why");});
-      function edited(){var values=proposalValues(section);return section.calls.some(function(c){return values[c.key]!==String(c.value);});}
+      function edited(){return proposalEdited(section);}
       if(edited() && !(section.id in pcView.mode)) { pcView.mode[section.id]="edit"; pcView.open=fold.open=true; }   // his unsent changes open where he left them
       paintMode();
       function paint(){var done=proposalConfirmed(section),values=proposalValues(section);shown.forEach(function(f){f(values);});button.textContent=edited()?"Send these changes":done?"Confirmed":"Confirm this section";button.disabled=readOnly||!online||postBusy||pendingTaps>0||!reviewReady()||done||section.calls.some(function(c){return !proposalValues(section)[c.key].trim();});note.textContent=edited()?"We’ll update the report, then show it here again before delivery.":done?"Confirmed for this report.":"";}
@@ -2331,9 +2350,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       var recorded = entries.filter(function (e) { return e.event === "post_change"; }).map(function (e) { return e.id; });
       (state.post_changes || []).forEach(function (p) { if (recorded.indexOf(p.id) < 0) entries.push({ event: "post_change", id: p.id, at: p.at }); });
       (D.deliveries || []).forEach(function (d) { entries.push({ event: d.kind === "updated" ? "updated" : "delivered", at: d.at }); });
+      try { var all = JSON.parse(state.answers.q_pc_all); entries.push({ event: "approve_all", at: all.at, review_id: all.review_id, n: Object.keys(all.sections).length }); } catch (e) {}
       entries.sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); });
     }
-    var h = entries.reverse().filter(function (e) { return e.accepted || (e.event === "client_permits" && !permitsOff()) || e.event === "go" || e.event === "post_change" || e.event === "delivered" || e.event === "updated" || e.status === "DONE"; }).map(function (e) {
+    var h = entries.reverse().filter(function (e) { return e.accepted || (e.event === "client_permits" && !permitsOff()) || e.event === "go" || e.event === "post_change" || e.event === "delivered" || e.event === "updated" || e.event === "approve_all" || e.status === "DONE"; }).map(function (e) {
+      if (e.event === "approve_all") return "Approve all · confirmed " + e.n + (e.n === 1 ? " section" : " sections") + " as shown · review " + String(e.review_id).slice(0, 8) + " · " + when(e.at);
       if (e.event === "client_permits") return "Client permission · " + e.answer + " · " + when(e.at);
       var ready = function (q) { return /^self-service/.test(q.lane || "") ? "" : "ready " + day(q.ready_by) + " · "; };
       if (e.event === "go") return "Start production · " + e.quote.lane + " · " + ready(e.quote) + when(e.at);
@@ -2407,8 +2428,45 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     $("pop-why").textContent = ""; $("pop-why").appendChild(rich(text)); popKind = kind; p.hidden = false; wrap.inert = true; $("pop-ok").focus();
   }
   $("pop-ok").addEventListener("click", function () { pop(false); });
+  // Matt 2026-10-31 ("just put an approve all in one button as well so its not confusing"): on a Your calls review, one button
+  // confirms every open section exactly as shown, then approves. It writes the same receipts the section buttons write, in the
+  // same post as the approval, plus one q_pc_all record (one time, this review, the values); unsent edits go through Send first.
+  function proposalNode(section) { return document.querySelector('[data-proposal="'+CSS.escape(section.id)+'"]'); }
+  function names(list) { return list.map(function(s){return s.title;}).join(" · "); }
+  function allAsk(open) {
+    if (!open) { if ($("all-pop").hidden) return; $("all-pop").hidden = true; document.querySelector(".wrap").inert = false; return; }
+    $("all-title").textContent = approveLabel().replace("Approve", "Approve all") + "?";
+    $("all-why").textContent = "This confirms " + (open.length === 1 ? "this section" : "these " + open.length + " sections") + " as shown: " + names(open) + ". Then " + (approveShips() ? "your report goes to your TOTAL folder." : "it is approved.");
+    $("all-yes").textContent = approveLabel().replace("Approve", "Approve all");
+    $("all-pop").hidden = false; document.querySelector(".wrap").inert = true; $("all-no").focus();
+  }
+  $("approve-all-btn").addEventListener("click", function () {
+    if (this.disabled) return;
+    var open = proposalOpen(), edited = open.filter(proposalEdited), blank = open.filter(function (s) { return s.calls.some(function (c) { return !proposalValues(s)[c.key].trim(); }); });
+    if (edited.length || blank.length) {
+      var first = proposalNode(edited[0] || blank[0]), ask = !edited.length && first && first.querySelector(".pc-blank button");
+      if (ask) { reveal(first); ask.click(); document.activeElement.scrollIntoView({ block: "center" }); } else if (first) jumpTo(first);   // a blank call opens at its box
+      pop(edited.length ? "Send your changes first: " + names(edited) + ". Tap Send these changes there." : "These need your answer: " + names(blank) + ". Then tap Send these changes there.", "all");
+      return;
+    }
+    if (open.length) allAsk(open); else setStatus("DONE");
+  });
+  $("all-no").addEventListener("click", function () { allAsk(false); });
+  $("all-pop").addEventListener("click", function (e) { if (e.target === this) allAsk(false); });
+  $("all-yes").addEventListener("click", function () {
+    allAsk(false);
+    var open = proposalOpen();
+    if (!open.length || open.some(proposalEdited) || $("approve-all-btn").disabled || signedOff()) return;
+    var other = missing().filter(function (m) { return !open.some(function (s) { return m.key === "q_pc_confirm_" + s.id; }); });
+    if (other.length) { jumpTo(other[0].node); pop("Answer these first: " + other.map(leftName).join(" · ") + ".", "all"); return; }   // nothing written
+    var record = { review_id: D.review.id, at: new Date().toISOString(), sections: {} };
+    open.forEach(function (s) { record.sections[s.id] = { title: s.title, values: proposalValues(s) }; put("q_pc_confirm_" + s.id, proposalReceipt(s)); });
+    put("q_pc_all", JSON.stringify(record));
+    changed();   // kept through a reconnect, like a section tap
+    setStatus("DONE");
+  });
   $("pick").addEventListener("click", function (e) { if (e.target === this) closePick(); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { pop(false); closePick(); } });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { pop(false); closePick(); allAsk(false); } });
   // The status, read only, sits just above its buttons; Ready carries how many required answers are left (Matt
   // 2026-10-13: a READY tapped at the top sent nine post-run questions blank).
   function paintNow() {
@@ -2429,6 +2487,11 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (minimalCalls()) statusBtns.forEach(function(b){if(b.dataset.s === "READY") {b.textContent = inProduction() ? "Start received" : "Start"; b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || inProduction() || !minimalChecked() || checkingFiles() || !minimalFactsReady() || left.length > 0;}});
     musts.forEach(function (m) { if (left.indexOf(m) < 0) m.node.classList.remove("need"); });
     var shown = !approved && !readOnly && !(customerReturned() && (!signoff() || !reviewReady() || signedOff()));   // the status bar's own rule (paintStatus)
+    var allBtn = $("approve-all-btn"), done = statusBtns.filter(function (b) { return b.getAttribute("data-s") === "DONE"; })[0];
+    $("approve-all").hidden = !proposalReview() || !done || done.hidden || !proposalOpen().length;
+    allBtn.textContent = approveLabel().replace("Approve", "Approve all");
+    $("approve-all-note").textContent = "Confirms every section as shown, then " + (approveShips() ? "delivers." : "approves.");
+    allBtn.disabled = readOnly || !online || pendingTaps > 0 || postBusy || !reviewReady();
     paintLeft(lead && shown && !left.some(function (m) { return m.key === "proposal_catalog"; }) ? left : [], lead);   // never while his calls are still being prepared
   }
   // Matt 2026-10-31: above the button, what is left by name, each a tap away (a bare "· 7 left" said nothing).
@@ -2962,6 +3025,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     mine=boundAnswers(mine);
     if(proposalReview() && D.proposed_calls) {
       var active=new Set();D.proposed_calls.sections.forEach(function(section){active.add("q_pc_confirm_"+section.id);section.calls.forEach(function(c){active.add("q_pc_"+section.id+"_"+c.id);});});
+      try { if(JSON.parse((mine||{}).q_pc_all).review_id===(D.review||{}).id) active.add("q_pc_all"); } catch(e) {}
       mine=Object.fromEntries(Object.entries(mine||{}).filter(function(entry){return !entry[0].startsWith("q_pc_") || active.has(entry[0]);}));
     }
     var self = (D.house_prompts || {}).lane === "self-service", low = Object.assign({}, D.prefill || {}, self && !minimalCalls() && D.our_calls || {});
