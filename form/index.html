@@ -18,13 +18,14 @@
      READY with a question blank warns once, then sends on the next tap. The one thing above the lines is a READY the
      legacy desk reset: note_kind "not_ready" (new --send-back notes use "advisory" and retain READY) shows public_note as "Not ready yet" while DRAFT,
      first as a red pop-out (a DOM overlay), then as a red banner pinned at the top until the status changes. A line or
-     post-run question marked "required" (true, or a list of lanes) blocks READY, and a partner reviewer's DONE (never
-     NEEDS CHANGE): Ready reads "Ready · 2 left" until they are in, and a tap marks the blank ones in red.
+     post-run question marked "required" (true, or a list of lanes) blocks READY: Ready reads "Ready · 2 left" until they
+     are in, and a tap marks the blank ones in red. Approve never waits on anything (Matt 2026-10-31: "if they want it
+     delivered we ship it. for starting we need the files"). Once delivered, only the report, History and feedback show.
      Each customer stage names its accepting action: Ready, sending answers, approving or requesting a change. house_prompts.lane "review" is a partner reviewer's form (review help, no value line or terms). The client-permission question is off on every order; house_prompts.client_permits true turns it on for one order (Matt, 2026-10-20). house_prompts.lane "desk" (partial and full desk) is the minimal form: client permission and READY; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. No initials on any lane (Matt 2026-10-13). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-31.7">
+<html lang="en" data-build="v2026-10-31.8">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -319,7 +320,9 @@ details.fold > .fold-body { padding: 0 var(--card-px) var(--s-5); }
 .banner.closed::before, .banner.rounds::before { content: "\26A0"; background: none; width: auto; height: auto; margin-top: 0; font-size: 28px; line-height: 1; color: #e8590c; }
 .banner.closed a, .banner.rounds a { color: inherit; font-weight: 600; } .banner.closed p, .banner.rounds p { margin: 0; } .banner.closed p + p, .banner.rounds p + p { margin-top: var(--s-2); } .banner.closed b, .banner.rounds b { font-size: 18px; }
 #post-request .banner.rounds { margin: 0 0 var(--s-3); }
-body.changes-closed #your-calls, body.changes-closed .card:has(> #your-calls), body.changes-closed #left-list, body.changes-closed .st[data-s], body.changes-closed #post-request, body.changes-closed button.change-call { display: none !important; }
+body.changes-closed #your-calls, body.changes-closed .card:has(> #your-calls), body.changes-closed #left-list, body.changes-closed.calls-review .st[data-s], body.changes-closed #post-request, body.changes-closed button.change-call { display: none !important; }
+/* Matt 2026-10-31 ~11:30 on Orlando's delivered form: "needs to go post delivery along with post 2 rounds. just feedback box open." / "same for partial and full." */
+body.delivered #your-calls, body.delivered .card:has(> #your-calls), body.delivered #left-list, body.delivered [data-status], body.delivered #approve-all, body.delivered #post-request, body.delivered #calls, body.delivered:not(.asked-after) #form { display: none !important; }
 #payment, #notready { background: var(--danger); color: #fff; border-color: var(--danger); border-left-color: rgba(0,0,0,.28); font-size: 16px; font-weight: 600; }
 #payment { flex-direction: column; margin: 0 0 var(--gap); }
 #payment::before { display: none; }
@@ -1903,25 +1906,34 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // Approve all and deliver is all that is left. Every self-service order, any terms (10:46: "also apply the same for Chase anybody
   // using self-service"); the $15 for a third round shows only on Software Terms 2026-10-31b or later. The desk sets the count
   // (formlink --change-rounds), so our-mistake and no-change rounds stay uncounted; prefill.changes_closed closes it by hand.
-  function roundsPriced() { var t = String((D.accepted_quote || {}).terms || D.terms || ""); return /^software-/.test(t) && t >= "software-2026-10-31b"; }
-  function changesClosed() { return D.stage === "returned" && !D.delivered_at && (D.changes_closed === true || (D.house_prompts || {}).lane === "self-service" && (+D.change_rounds || 0) >= 2); }
+  // Partial and full (Matt 11:30: "same for partial and full"): the same two rounds on Service Terms 2026-10-31b or later; orders
+  // accepted on older Service Terms stay open as before unless the desk closes one by hand.
+  function roundTerms() { return String((D.accepted_quote || {}).terms || D.terms || ""); }
+  function roundsPriced() { var t = roundTerms(); return /^software-/.test(t) ? t >= "software-2026-10-31b" : /^service-/.test(t) && t >= "service-2026-10-31b"; }
+  function roundsApply() { var lane = (D.house_prompts || {}).lane; return lane === "self-service" || lane !== "review" && /^service-/.test(roundTerms()) && roundsPriced(); }
+  function changesClosed() { return D.stage === "returned" && !D.delivered_at && (D.changes_closed === true || roundsApply() && (+D.change_rounds || 0) >= 2); }
+  function delivered() { return customerReturned() && !!D.delivered_at && !signoff(); }   // the delivered report is the current one
   function roundsText(where) {   // [headline, line]; where = "below" or "above", from the box to the button
     var price = roundsPriced() ? " ($15 a round)" : "";
-    if (changesClosed()) return ["Maximum change requests used (2 of 2).", (D.changes_closed_text || "Tap Approve all and deliver below to get your report. To buy more change requests, email desk@aandap.com" + price + ". Or edit your TOTAL report yourself.").replace(/\bbelow\b/, where)];
+    if (changesClosed()) return ["Maximum change requests used (2 of 2).", (D.changes_closed_text || "Tap " + (proposalReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " below to get your report. To buy more change requests, email desk@aandap.com" + price + ". Or edit your TOTAL report yourself.").replace(/\bbelow\b/, where)];
     var n = +D.change_rounds || 0;
     return ["2 change rounds per order.", "Round 1: review everything and send all your changes at once. Round 2 is a grace round. Then the form locks and only Deliver remains." +
       (n === 1 ? " You have used 1 of 2: your next round is the last." : "")];
   }
   function paintRounds() {
-    var closed = changesClosed(), show = (closed || selfLane() && !D.delivered_at) && !signedOff();   // approved: nothing left to warn about
+    var closed = changesClosed(), show = (closed || (selfLane() || roundsApply()) && !D.delivered_at) && !signedOff();   // approved: nothing left to warn about
     document.body.classList.toggle("changes-closed", closed);
+    document.body.classList.toggle("calls-review", proposalReview());
+    document.body.classList.toggle("delivered", delivered());
+    document.body.classList.toggle("asked-after", Date.parse(askedAt(D)) > Date.parse(D.delivered_at));   // a question asked after delivery stays
     $("rounds-price").hidden = !roundsPriced();
     ["changes-closed", "rounds-line", "changes-closed-bottom"].forEach(function (id) {   // Matt 2026-10-31: "put it at the bottom as well"
       var box = $(id), t = roundsText(id === "changes-closed-bottom" ? "above" : "below");   // the bottom copy sits under the button
       box.hidden = !show || closed && id === "rounds-line"; box.className = "banner " + (closed ? "closed" : "rounds"); box.textContent = "";
       if (box.hidden) return;
       var links = el("p", null, [el("a", { href: "https://appraisalpartners.net/change-rounds.html", target: "_blank", rel: "noopener", text: "Why am I seeing this?" })]);
-      if (!closed) links.appendChild(document.createTextNode(" · ")), links.appendChild(el("a", { href: "https://appraisalpartners.net/terms-software.html", target: "_blank", rel: "noopener", text: "Software Terms" }));
+      var software = selfLane() || /^software-/.test(roundTerms());
+      if (!closed) links.appendChild(document.createTextNode(" · ")), links.appendChild(el("a", { href: "https://appraisalpartners.net/terms" + (software ? "-software" : "") + ".html", target: "_blank", rel: "noopener", text: software ? "Software Terms" : "Service Terms" }));
       box.appendChild(el("div", null, [el("p", null, [el("b", { text: t[0] })]), el("p", { text: t[1] }), links]));
     });
   }
@@ -1948,7 +1960,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var catalog=D.proposed_calls;
     var fold=host.appendChild(el("details",{cls:"pc-fold",id:"your-calls"})), count=el("span",{cls:"pc-count"});
     fold.appendChild(el("summary",null,[el("span",{cls:"t",text:"Your calls"}),count,el("span",{cls:"pc-open","aria-hidden":"true"})]));
-    fold.appendChild(el("p",{cls:"note pc-intro",text:"We filled in every call below. Each is our proposal and your call. Nothing is delivered until you confirm every section."}));
+    fold.appendChild(el("p",{cls:"note pc-intro",text:"We filled in every call below. Each is our proposal and your call. Approve confirms any section still open, as shown."}));
     fold.open=pcView.open;
     fold.addEventListener("toggle",function(){pcView.open=fold.open;if(fold.open)fold.querySelectorAll("textarea").forEach(grow);});
     if(!catalog || !Array.isArray(catalog.sections) || catalog.report_sha256 !== (D.review||{}).report_sha256) {
@@ -2147,7 +2159,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       var lead = box.appendChild(el("div", { cls: "total-pages changes" }, [el("p", { cls: "changes-what", text: "What changed: " + ch.what })]));
       changed.forEach(function (p) { lead.appendChild(figure(p)); });
       full = box.appendChild(el("details", { cls: "report-full" }, [el("summary", { text: "See the full report" })]));
-    } else if (ch) box.appendChild(el("p", { cls: "note", text: "Updated with your changes. Check the full report." }));
+    } else if (ch && !ch.fallback && ch.what && !(ch.total || []).length && !(ch.pages || []).length) box.appendChild(el("p", { cls: "changes-what", text: "What changed: " + ch.what }));   // a PDF-only review
+    else if (ch) box.appendChild(el("p", { cls: "note", text: "Updated with your changes. Check the full report." }));
     var pdf = el("div", { cls: "report-pdf" });
     pdf.appendChild(el("a", { cls: "pdf-btn", href: "https://drive.google.com/file/d/" + id + "/view", target: target, rel: "noopener", text: due ? "Open full screen (view only)" : "Open full screen" }));
     if (!due) pdf.appendChild(el("a", { cls: "pdf-btn dl", href: "https://drive.google.com/uc?export=download&id=" + id, target: target, rel: "noopener", text: "Download PDF" }));
@@ -2184,7 +2197,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     document.querySelectorAll("[data-status]").forEach(function (bar) {
       STATUSES.forEach(function (s) {
         var b = el("button", { type: "button", cls: "st", "data-s": s, "aria-pressed": "false", text: LABEL[s] });
-        b.addEventListener("click", function () { setStatus(s); });
+        b.addEventListener("click", function () { if (s === "DONE" && signoff() && proposalReview() && proposalOpen().length) approveAll(); else setStatus(s); });
         bar.appendChild(b); statusBtns.push(b);
       });
     });
@@ -2399,8 +2412,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var paymentDue = !!String(O.payment_due || "").trim();
     $("returned-intro").hidden = !customerReturned();
     $("returned-headline").textContent = signoff() ? signedOff() ? approvalNote() : !reviewReady() ? (state.post_changes || []).length ? "Your changes are with us. We'll post your review PDF below." : "Your review PDF will appear below." : (approveShips() ? "Your report is ready for your review. Tap Approve and deliver to send it to your TOTAL folder, or request a change below." : "Your report is in your TOTAL folder. Review it below, then approve or request a change.") : paymentDue ? "Your report is ready. It goes to your folder once payment is received." : "Your report is in your TOTAL folder. Review and edit it there.";
-    if(proposalReview() && !signedOff()) $("returned-headline").textContent="Review your report and confirm each section under Your calls.";
-    if(changesClosed() && !signedOff()) $("returned-headline").textContent="Your review is done. Tap " + approveLabel().replace("Approve", "Approve all") + " to get your report.";
+    if(proposalReview() && !signedOff() && !delivered()) $("returned-headline").textContent="Review your report and your calls, then approve or request a change.";
+    if(changesClosed() && !signedOff()) $("returned-headline").textContent="Your review is done. Tap " + (proposalReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " to get your report.";
     $("delivered-at").hidden = paymentDue || !D.delivered_at;
     $("delivered-at").textContent = D.delivered_at ? "Delivered " + when(D.delivered_at) : "";
     var legacyApproval = state.history.filter(function (e) { return e.status === "DONE"; });
@@ -2512,25 +2525,27 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     $("all-yes").textContent = approveLabel().replace("Approve", "Approve all");
     $("all-pop").hidden = false; document.querySelector(".wrap").inert = true; $("all-no").focus();
   }
-  $("approve-all-btn").addEventListener("click", function () {
-    if (this.disabled) return;
-    var open = proposalOpen(), edited = open.filter(proposalEdited), blank = [];   // Matt 2026-10-31: "we shouldnt block delivery like that. only start on files missing."
-    if (edited.length || blank.length) {
-      var first = proposalNode(edited[0] || blank[0]), ask = !edited.length && first && first.querySelector(".pc-blank button");
-      if (ask) { reveal(first); ask.click(); document.activeElement.scrollIntoView({ block: "center" }); } else if (first) jumpTo(first);   // a blank call opens at its box
-      pop(edited.length ? "Send your changes first: " + names(edited) + ". Tap Send these changes there." : "These need your answer: " + names(blank) + ". Then tap Send these changes there.", "all");
+  // Matt 2026-10-31 ~11:25: "for all forms if they want it delivered we ship it. for starting we need the files." The plain Approve
+  // on a Your calls review takes this same path: every open section is confirmed as shown. An edit he has not sent asks for Send
+  // while changes are open; once they are closed his unsent edits fall back to what the report shows.
+  function approveAll() {
+    if (readOnly || !online || pendingTaps > 0 || postBusy || !reviewReady() || signedOff()) return;
+    var open = proposalOpen(), edited = open.filter(proposalEdited);
+    if (edited.length && changesClosed()) { edited.forEach(function (s) { s.calls.forEach(function (c) { put("q_pc_" + s.id + "_" + c.id, String(c.value)); }); }); proposalPainters.forEach(function (f) { f(); }); open = proposalOpen(); edited = []; }
+    if (edited.length) {
+      var first = proposalNode(edited[0]); if (first) jumpTo(first);
+      pop("Send your changes first: " + names(edited) + ". Tap Send these changes there.", "all");
       return;
     }
     if (open.length) allAsk(open); else setStatus("DONE");
-  });
+  }
+  $("approve-all-btn").addEventListener("click", function () { if (!this.disabled) approveAll(); });
   $("all-no").addEventListener("click", function () { allAsk(false); });
   $("all-pop").addEventListener("click", function (e) { if (e.target === this) allAsk(false); });
   $("all-yes").addEventListener("click", function () {
     allAsk(false);
     var open = proposalOpen();
-    if (!open.length || open.some(proposalEdited) || $("approve-all-btn").disabled || signedOff()) return;
-    var other = missing().filter(function (m) { return !open.some(function (s) { return m.key === "q_pc_confirm_" + s.id; }); });
-    if (other.length) { jumpTo(other[0].node); pop("Answer these first: " + other.map(leftName).join(" · ") + ".", "all"); return; }   // nothing written
+    if (!open.length || open.some(proposalEdited) || signedOff()) return;
     var record = { review_id: D.review.id, at: new Date().toISOString(), sections: {} };
     open.forEach(function (s) { record.sections[s.id] = { title: s.title, values: proposalValues(s) }; put("q_pc_confirm_" + s.id, proposalReceipt(s)); });
     put("q_pc_all", JSON.stringify(record));
@@ -2547,8 +2562,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (s !== "DRAFT") $("saved").hidden = true;
     statusBtns.forEach(function (b) {
       if (signoff() && b.getAttribute("data-s") === "DONE") {
-        b.textContent = approveLabel(); if (!b.hidden) lead = proposalReview() ? "Confirm these first:" : "Answer these first:";
-        b.classList.toggle("wait", left.length > 0); if(proposalReview()) b.disabled=readOnly || !online || pendingTaps>0 || postBusy || left.length>0 || !reviewReady(); return;
+        b.textContent = approveLabel(); if (!b.hidden) lead = proposalReview() ? "Not confirmed yet (Approve confirms them as shown):" : "Not answered yet (optional):";
+        b.classList.remove("wait"); if(proposalReview()) b.disabled=readOnly || !online || pendingTaps>0 || postBusy || !reviewReady(); return;
       }
       if (b.getAttribute("data-s") !== "READY") return;
       var go = minimalStart() ? "Start" : asked() && !startOptions() ? "Send answers" : WORD.READY;
@@ -2924,7 +2939,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (readOnly || approved || pendingTaps || (customerReturned() && (!signoff() || !reviewReady() || signedOff() || s !== "DONE"))) return;
     if (s === "READY" && minimalCalls() && (!minimalChecked() || !minimalFactsReady())) return;
     var gaps = s === "READY" || s === "DONE" ? missing() : [];
-    var blocking = s === "DONE" || s === "READY" && (callsFirst() || minimalCalls()) ? gaps : gaps.filter(function (m) { return m.key === "q_client_permits"; });
+    var blocking = s === "READY" && (callsFirst() || minimalCalls()) ? gaps : gaps.filter(function (m) { return m.key === "q_client_permits"; });
     if (blocking.length) {
       blocking.forEach(function (m) { m.node.classList.add("need"); });
       reveal(blocking[0].node); blocking[0].node.scrollIntoView({ block: "center" });
@@ -2933,7 +2948,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       if (s === "READY" && state.status === "READY") setStatus("DRAFT");
       return;
     }
-    if (s === "READY" && gaps.length) {
+    if (gaps.length && s === "READY") {
       gaps.forEach(function (m) { m.node.classList.add("need"); });
     }
     if (agreeQ && (s === "DONE" || s === "NEEDS_CHANGE")) state.answers["q_" + agreeQ.id] = s === "DONE" ? "agreed " + agreeQ.value : "";   // Agree is his DONE
