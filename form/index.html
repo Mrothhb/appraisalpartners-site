@@ -271,7 +271,6 @@ textarea[rows="1"] { min-height: 44px; }
 .to-start .call-line.long .lbl { font-weight: 400; }
 .to-start .call-line[data-done="true"] > .line > .lbl::after { content: "\2713"; margin-left: 6px; color: var(--success); font-weight: 700; }
 .to-start .talk-row, #feedback .talk-row { margin-top: var(--s-1); }
-.to-start .mic, #feedback .mic { width: 36px; height: 36px; } .to-start .mic svg, #feedback .mic svg { width: 14px; height: 19px; }
 .self-start #action { gap: var(--s-5); }
 #start-missing.start-lock { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink-2); text-align: center; overflow-wrap: anywhere; }
 .link-inline { display: inline; margin: 0; padding: 0; border: 0; background: none; color: var(--primary); font: 600 15px/1.5 var(--font); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: rgba(11,111,193,.4); cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
@@ -450,15 +449,22 @@ table.grid { width: 100%; border-collapse: separate; border-spacing: 0; font-siz
 .more::after { content: " \2192"; margin-left: var(--s-1); }
 .more:hover { color: var(--primary-hover); text-decoration: underline; text-underline-offset: 3px; }
 
-/* talk: the mic and its hint */
+/* talk (Matt 2026-11-01: "Ugly microphone"): a small grey mic inside the box's bottom-right corner; red with a small pulse while
+   listening, the box edge red and one line under it saying so */
+.talk-box { position: relative; }
+.line .talk-box > textarea, .line .talk-box > input[type="text"] { padding-right: 46px; }
 .talk-row { display: flex; gap: var(--s-3); align-items: center; }
 .talk-hint { font-size: 13px; color: var(--ink-2); line-height: 1.5; }
-.mic { flex: none; width: 44px; height: 44px; border-radius: var(--r-full); border: 1px solid var(--primary); background: var(--primary); color: #fff; display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease); }
-.mic:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
-.mic:active { background: var(--primary-active); border-color: var(--primary-active); }
-.mic.on { background: var(--danger); border-color: var(--danger); animation: pulse 1.4s infinite; }
-@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(167,42,42,.45); } 50% { box-shadow: 0 0 0 10px rgba(167,42,42,0); } }
-.mic svg { width: 18px; height: 24px; }
+.talk-row.on .talk-hint { color: var(--danger); }
+.mic { position: absolute; right: 3px; bottom: 3px; width: 38px; height: 38px; padding: 0; border: 0; border-radius: var(--r-full); background: transparent; color: var(--ink-2); display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background var(--dur) var(--ease), color var(--dur) var(--ease); }
+.mic::before { content: ""; position: absolute; inset: -3px; }   /* a 44px tap target */
+.mic:hover { color: var(--primary); background: var(--tint); }
+.mic:active { color: var(--primary-active); background: var(--tint-line); }
+.mic.on { color: var(--danger); background: rgba(167,42,42,.08); animation: pulse 1.4s infinite; }
+.talk-box.on > textarea, .talk-box.on > input[type="text"] { border-color: var(--danger); }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(167,42,42,.3); } 50% { box-shadow: 0 0 0 5px rgba(167,42,42,0); } }
+.mic svg { width: 13px; height: 18px; }
+.changes .id .talk-box { flex: 1; min-width: 0; }
 .changes .talk-row { margin: var(--s-1) 0 0 32px; }
 
 /* ---------- History: the site's collapsed question, "+" at the right, blue when open ---------- */
@@ -502,7 +508,7 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 /* ---------- motion off when asked ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
-  .mic.on { box-shadow: 0 0 0 3px rgba(167,42,42,.45); }
+  .mic.on { box-shadow: 0 0 0 2px rgba(167,42,42,.3); }
 }
 .minimal-calls .wrap { max-width:1200px; }
 .minimal-grid .grid th.row { min-width: 140px; width: 140px; }
@@ -1267,8 +1273,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     input.addEventListener("input", function () { put(name, input.value); grow(input); changed(); });
     controls[name] = { set: function (v) { v = v == null ? "" : String(v); if (input.value !== v) input.value = v; grow(input); } };
     // every free-text box gets the mic (Matt 2026-10-20); "talk" lines also show the full how-to
+    var talk = !opts.short && talkRow(input, !opts.talk);
     return el("div", { cls: "line" + (opts.multi || opts.wide || !opts.short ? " wide" : "") },
-      [el("label", { cls: "lbl", "for": id, text: label }), input, !opts.short && talkRow(input, !opts.talk)]);
+      [el("label", { cls: "lbl", "for": id, text: label }), input.parentNode || input, talk]);
   }
   function taps(name, label, options) {
     var box = el("div", { cls: "taps", role: "group", "aria-label": label, "data-call": name }), btns = [];
@@ -1851,7 +1858,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       var input = el("textarea", { rows: "1", "aria-label": "Change or question " + (n + 1) });
       input.addEventListener("input", function () { state.changes[n] = input.value; grow(input); changed(); });
       controls["change" + (n + 1)] = { set: function () { var v = state.changes[n] || ""; if (input.value !== v) { input.value = v; grow(input); } fit(); } };
-      rows.push(el("div", { cls: "line wide" }, [el("div", { cls: "id" }, [el("span", { cls: "n", text: String(n + 1) + "." }), input]), talkRow(input, true)]));
+      var talk = talkRow(input, true);
+      rows.push(el("div", { cls: "line wide" }, [el("div", { cls: "id" }, [el("span", { cls: "n", text: String(n + 1) + "." }), input.parentNode || input]), talk]));
     })(n);
     more.addEventListener("click", function () { shown = Math.min(count, shown + 1); fit(); var b = rows[shown - 1].querySelector("textarea"); b.focus(); grow(b); });
     fit();
@@ -2683,7 +2691,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function unfoldFeedback() { if (location.hash === "#feedback") $("feedback").open = true; }   // the tracker's "waiting on you" link points here
   window.addEventListener("hashchange", unfoldFeedback); unfoldFeedback();
   var feedbackTalk = talkRow($("feedback-text"), true);
-  if (feedbackTalk) $("feedback-text").parentNode.appendChild(feedbackTalk);
+  if (feedbackTalk) $("feedback-text").closest(".line").appendChild(feedbackTalk);
   $("feedback-send").addEventListener("click", function(){
     if (feedbackBusy || readOnly || !online) return;
     var text = $("feedback-text").value.trim();
@@ -2759,7 +2767,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     grow($("post-text")); $("post-text").focus();
   });
   $("post-text").addEventListener("input", function () { grow(this); $("post-error").hidden = true; });
-  $("post-text").parentNode.appendChild(talkRow($("post-text")));
+  var postTalk = talkRow($("post-text"));
+  $("post-text").closest(".line").appendChild(postTalk);
   $("post-send").addEventListener("click", function () {
     if ((!customerReturned() && !approved) || postBusy || readOnly || !online) return;
     var text = $("post-text").value.trim();
@@ -2979,7 +2988,9 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
 
   // ---------- talk ----------
   var talking = null;     // the one mic listening now: its stop
-  function talkRow(ta, quiet) {   // quiet: the mic and "Tap to talk"; with no speech in the browser, nothing (the keyboard's mic still works)
+  // The mic goes inside the box (wrapped in .talk-box, in place when the box is already on the page; callers place
+  // ta.parentNode); the returned line under it carries the how-to or, when quiet, only "Listening…" and errors.
+  function talkRow(ta, quiet) {   // quiet: just the mic; with no speech in the browser, nothing (the keyboard's mic still works)
     var ua = navigator.userAgent, phone = /iPhone|iPad|iPod|Android/i.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
     var keyboard = phone ? "Tap the box, then the mic on your keyboard, and talk."
       : /Windows/i.test(ua) ? "Click the box, press Windows key + H, and talk."
@@ -2989,13 +3000,19 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     var hint = el("span", { cls: "talk-hint", text: keyboard });
     var row = el("div", { cls: "talk-row" }, [hint]);
     if (!SR) return quiet ? null : row;
-    var mic = el("button", { type: "button", cls: "mic", "aria-label": "Start listening", "aria-pressed": "false" });
+    var mic = el("button", { type: "button", cls: "mic", "aria-label": "Talk instead of typing", "aria-pressed": "false" });
     mic.innerHTML = '<svg viewBox="0 0 15 20" aria-hidden="true"><rect x="4" y="0.5" width="7" height="12" rx="3.5" fill="currentColor"/><path d="M1.5 9.5 a6 6 0 0 0 12 0" stroke="currentColor" stroke-width="1.6" fill="none"/><line x1="7.5" y1="15.5" x2="7.5" y2="19" stroke="currentColor" stroke-width="1.6"/></svg>';
-    row.insertBefore(mic, hint);
-    hint.textContent = quiet ? "Tap to talk" : "Tap the mic and talk, or: " + keyboard.charAt(0).toLowerCase() + keyboard.slice(1);
+    var box = el("div", { cls: "talk-box" });
+    if (ta.parentNode) ta.parentNode.replaceChild(box, ta);
+    box.appendChild(ta); box.appendChild(mic);
+    hint.setAttribute("aria-live", "polite");
+    var idle = quiet ? "" : "Tap the mic and talk, or: " + keyboard.charAt(0).toLowerCase() + keyboard.slice(1);
+    function say(t) { hint.textContent = t; row.hidden = !t; }
+    function on(yes) { mic.classList.toggle("on", yes); box.classList.toggle("on", yes); row.classList.toggle("on", yes); mic.setAttribute("aria-pressed", String(yes)); mic.setAttribute("aria-label", yes ? "Stop listening" : "Talk instead of typing"); }
+    say(idle);
     var rec = null, wanted = false, pending = "", android = /Android/i.test(ua);
     function stop() { wanted = false; try { rec && rec.stop(); } catch (e) {} }
-    function off(why) { wanted = false; if (talking === stop) talking = null; mic.classList.remove("on"); mic.setAttribute("aria-pressed", "false"); if (why) hint.textContent = why; }
+    function off(why) { wanted = false; if (talking === stop) talking = null; on(false); if (why != null) say(why); }
     function append(w) {
       if (readOnly || ta.matches(":disabled")) return;
       w = (w || "").trim(); if (!w) return;
@@ -3006,7 +3023,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     }
     function start() {
       rec = new SR(); rec.lang = "en-US"; rec.interimResults = true; rec.continuous = !android;
-      rec.onstart = function () { hint.textContent = "Listening… tap the mic to stop"; mic.classList.add("on"); mic.setAttribute("aria-pressed", "true"); };
+      rec.onstart = function () { say("Listening… tap the mic to stop"); on(true); };
       rec.onresult = function (ev) {
         var t = "";
         for (var i = ev.resultIndex; i < ev.results.length; i++) { var r = ev.results[i]; if (r.isFinal) append(r[0].transcript); else t += r[0].transcript; }
@@ -3020,7 +3037,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       rec.onend = function () {
         if (pending) { append(pending); pending = ""; }
         if (wanted && !ta.matches(":disabled")) { try { start(); return; } catch (e) { wanted = false; } }
-        if (mic.classList.contains("on")) off("Stopped. Tap the mic to talk more.");
+        if (mic.classList.contains("on")) off(quiet ? "" : "Stopped. Tap the mic to talk more.");
       };
       rec.start();
     }
