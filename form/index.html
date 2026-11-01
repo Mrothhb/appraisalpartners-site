@@ -1927,7 +1927,8 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     document.body.classList.toggle("delivered", delivered());
     document.body.classList.toggle("asked-after", Date.parse(askedAt(D)) > Date.parse(D.delivered_at));   // a question asked after delivery stays
     $("rounds-price").hidden = !roundsPriced();
-    ["changes-closed", "rounds-line", "changes-closed-bottom"].forEach(function (id) {   // Matt 2026-10-31: "put it at the bottom as well"
+    $("changes-closed").hidden = true;   // Matt 2026-11-01: "remove the top one Noitce only leave the botom one. for all forms going forward."
+    ["rounds-line", "changes-closed-bottom"].forEach(function (id) {   // Matt 2026-10-31: "put it at the bottom as well"
       var box = $(id), t = roundsText(id === "changes-closed-bottom" ? "above" : "below");   // the bottom copy sits under the button
       box.hidden = !show || closed && id === "rounds-line"; box.className = "banner " + (closed ? "closed" : "rounds"); box.textContent = "";
       if (box.hidden) return;
