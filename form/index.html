@@ -25,12 +25,13 @@
      first as a red pop-out (a DOM overlay), then as a red banner pinned at the top until the status changes. A line or
      post-run question marked "required" (true, or a list of lanes) blocks READY: Ready reads "Ready · 2 left" until they
      are in, and a tap marks the blank ones in red. Approve never waits on anything (Matt 2026-10-31: "if they want it
-     delivered we ship it. for starting we need the files"). Once delivered, only the report, History and feedback show.
+     delivered we ship it. for starting we need the files"). Once delivered, only the report, History and feedback show; the same
+     after the second counted change round, while the desk delivers the final review with no tap (Matt, 2026-11-02).
      Each customer stage names its accepting action: Ready, sending answers, approving or requesting a change. house_prompts.lane "review" is a partner reviewer's form (review help, no value line or terms). The client-permission question is off on every order; house_prompts.client_permits true turns it on for one order (Matt, 2026-10-20). house_prompts.lane "desk" (partial and full desk) is the minimal form: client permission and READY; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. No initials on any lane (Matt 2026-10-13). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-02.7">
+<html lang="en" data-build="v2026-11-02.8">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -333,6 +334,8 @@ details.fold > .fold-body { padding: 0 var(--card-px) var(--s-5); }
 body.changes-closed #your-calls, body.changes-closed .card:has(> #your-calls), body.changes-closed #left-list, body.changes-closed.calls-review .st[data-s], body.changes-closed #post-request > :not(#rounds-line):not(#errors-line), body.changes-closed button.change-call { display: none !important; }
 /* Matt 2026-10-31 ~11:30 on Orlando's delivered form: "needs to go post delivery along with post 2 rounds. just feedback box open." / "same for partial and full." */
 body.delivered #your-calls, body.delivered .card:has(> #your-calls), body.delivered #left-list, body.delivered [data-status], body.delivered #approve-all, body.delivered #post-request, body.delivered #calls, body.delivered:not(.asked-after) #form { display: none !important; }
+/* Matt 2026-11-02 ~16:45: "lock the form and auto delivery and lock the buttons after 2 change rounds": locked like a delivered form, while the desk delivers */
+body.rounds-locked #your-calls, body.rounds-locked .card:has(> #your-calls), body.rounds-locked #left-list, body.rounds-locked [data-status], body.rounds-locked #approve-all, body.rounds-locked #post-request, body.rounds-locked #calls, body.rounds-locked #form { display: none !important; }
 #payment, #notready { background: var(--danger); color: #fff; border-color: var(--danger); border-left-color: rgba(0,0,0,.28); font-size: 16px; font-weight: 600; }
 #payment { flex-direction: column; margin: 0 0 var(--gap); }
 #payment::before { display: none; }
@@ -1957,17 +1960,23 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   function newTerms(t) { t = String(t || ""); return /^software-/.test(t) ? t >= "software-2026-11-02" : /^service-/.test(t) && t >= "service-2026-11-02"; }
   function roundsApply() { var lane = (D.house_prompts || {}).lane; return lane === "self-service" || lane !== "review" && /^service-/.test(roundTerms()) && roundsPriced(); }
   function changesClosed() { return D.stage === "returned" && !D.delivered_at && (D.changes_closed === true || roundsApply() && (+D.change_rounds || 0) >= 2); }
+  // Matt 2026-11-02 ~16:45 ("lock the form and auto delivery and lock the buttons after 2 change rounds and deliver the ship report
+  // with email"): after the second counted round the form locks, no Approve and no Request a change, report, History and feedback
+  // only, and the desk delivers the final review with no tap (send_notice.rounds_locked/rounds_final). The desk's hand close
+  // (changes_closed) keeps Approve.
+  function roundsLocked() { return D.stage === "returned" && !D.delivered_at && roundsApply() && (+D.change_rounds || 0) >= 2; }
   function delivered() { return customerReturned() && !!D.delivered_at && !signoff(); }   // the delivered report is the current one
   function roundsText(where) {   // [headline, line]; where = "below" or "above", from the box to the button
     var price = roundsPriced() ? " ($15 a round)" : "";
     if (changesClosed()) return ["Maximum change requests used (2 of 2).", (D.changes_closed_text || "Tap " + (proposalReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " below to get your report. To buy more change requests, email desk@aandap.com" + price + ". Or edit your TOTAL report yourself.").replace(/\bbelow\b/, where)];
     var n = +D.change_rounds || 0;
-    return ["2 change rounds per order.", "Round 1: review everything and send all your changes at once. Round 2 is a grace round. Then the form locks and only Deliver remains." +
+    return ["2 change rounds per order.", "Round 1: review everything and send all your changes at once. Round 2 is a grace round. Then the form locks and we deliver your report." +
       (n === 1 ? " You have used 1 of 2: your next round is the last." : "")];
   }
   function paintRounds() {
-    var closed = changesClosed(), show = (closed || (selfLane() || roundsApply()) && !D.delivered_at) && !signedOff();   // approved: nothing left to warn about
+    var closed = changesClosed(), show = (closed || (selfLane() || roundsApply()) && !D.delivered_at) && !signedOff() && !roundsLocked();   // approved or locked: nothing left to warn about
     document.body.classList.toggle("changes-closed", closed);
+    document.body.classList.toggle("rounds-locked", roundsLocked() && !signedOff());
     document.body.classList.toggle("calls-review", proposalReview());
     document.body.classList.toggle("delivered", delivered());
     document.body.classList.toggle("asked-after", Date.parse(askedAt(D)) > Date.parse(D.delivered_at));   // a question asked after delivery stays
@@ -1983,7 +1992,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     // Software Terms count every change, a changed call included, as a round. Once changes close, our mistakes stay free by email.
     // Never building, delivered or partner review.
     var cover = $("errors-line"), software = selfLane() || /^software-/.test(roundTerms());
-    cover.hidden = !(customerReturned() && signoff() && !D.delivered_at && !signedOff()); cover.textContent = "";
+    cover.hidden = !(customerReturned() && signoff() && !D.delivered_at && !signedOff() && !roundsLocked()); cover.textContent = "";
     var covers = newTerms(roundTerms()) ? ["Our mistakes: fixed free, and they don't use a round.",   // Matt 2026-11-02 ~08:05: "yeah short one"
                              "A change round: your corrections and adjustments to the report as built.",
                              "Not part of a round: swapping comps you picked, or heavy rework because what you sent was missing or wrong. We quote it first and start only if you agree, or you can approve delivery and adjust it in TOTAL."]
@@ -2320,7 +2329,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       .filter(function (k) { return /^q_fb_/.test(k); }).map(function (k) { try { return JSON.parse(state.answers[k]); } catch (e) { return null; } }))
       .some(function (c) { return c && t(c.at) > t(P.waiting.at); });
     if (asked && !answered && TRACK.indexOf(current) < 4) waiting = { what: asked, target: "#feedback" };
-    if (current === "review" && signoff() && !signedOff() && reviewReady()) waiting = { what: "review", target: "#report" };   // only while Approve is there
+    if (current === "review" && signoff() && !signedOff() && reviewReady() && !roundsLocked()) waiting = { what: "review", target: "#report" };   // only while Approve is there
     var times = { started: go.at, files: at.files || (t((D.house_prompts || {}).files_checked_at) >= t(go.at) ? D.house_prompts.files_checked_at : null), building: at.building, checking: ch ? ch.request.at : at.checking, review: review, delivered: done };
     var words = ch && changeWords(ch);
     return { current: current, waiting: waiting, build: P.build ? { current: current === "building" ? P.sub || null : null, at: P.build } : null,
@@ -2357,6 +2366,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     if (ch.kind === "delivered") return [report + " is in your TOTAL folder" + stamp(ch.at) + ".", ch.reason];
     var n = roundsApply() || selfLane() ? Math.min(+D.change_rounds || 0, 2) : 0, used = n ? "Change rounds used: " + n + " of 2." : "";
     if (signedOff()) return ["You approved " + report.toLowerCase() + ".", used];
+    if (roundsLocked()) return [report + " is final" + stamp(ch.at) + ".", [ch.reason, "We’re delivering it to your TOTAL folder.", used].filter(Boolean).join(" ")];
     return [report + " is ready to review" + stamp(ch.at) + ".", [ch.reason, changesClosed() ? "Approve it to get your report." : "Approve it, or ask for more changes.", used].filter(Boolean).join(" ")];
   }
   function paintTracker() {
@@ -2521,6 +2531,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     $("returned-headline").textContent = signoff() ? signedOff() ? approvalNote() : !reviewReady() ? request && request.kind === "answered" ? changeWords(request).join(" ") : (state.post_changes || []).length ? "Your changes are with us. We'll post your review PDF below." : "Your review PDF will appear below." : (approveShips() ? yours + " is ready for your review. Tap Approve and deliver to send it to your TOTAL folder, or request a change below." : yours + " is in your TOTAL folder. Review it below, then approve or request a change.") : paymentDue ? "Your report is ready. It goes to your folder once payment is received." : "Your report is in your TOTAL folder. Review and edit it there.";
     if(proposalReview() && !signedOff() && !delivered() && !pending) $("returned-headline").textContent="Review " + yours.toLowerCase() + " and your calls, then approve or request a change.";
     if(changesClosed() && !signedOff()) $("returned-headline").textContent="Your review is done. Tap " + (proposalReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " to get your report.";
+    if(roundsLocked() && !signedOff()) $("returned-headline").textContent="Two change rounds used. Your final report is being delivered to your TOTAL folder.";
     $("delivered-at").hidden = paymentDue || !D.delivered_at;
     $("delivered-at").textContent = D.delivered_at ? "Delivered " + when(D.delivered_at) : "";
     var legacyApproval = state.history.filter(function (e) { return e.status === "DONE"; });
@@ -2634,7 +2645,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // on a Your calls review takes this same path: every open section is confirmed as shown. An edit he has not sent asks for Send
   // while changes are open; once they are closed his unsent edits fall back to what the report shows.
   function approveAll() {
-    if (readOnly || !online || pendingTaps > 0 || postBusy || !reviewReady() || signedOff()) return;
+    if (readOnly || !online || pendingTaps > 0 || postBusy || !reviewReady() || signedOff() || roundsLocked()) return;
     var open = proposalOpen(), edited = open.filter(proposalEdited);
     if (edited.length && changesClosed()) { edited.forEach(function (s) { s.calls.forEach(function (c) { put("q_pc_" + s.id + "_" + c.id, String(c.value)); }); }); proposalPainters.forEach(function (f) { f(); }); open = proposalOpen(); edited = []; }
     if (edited.length) {
@@ -2858,7 +2869,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   var postOpened = false;   // he opened Request a change on a review form; it stays open until he sends
   function postFolded() { return signoff() && !signedOff() && !postOpened && !$("post-text").value.trim() && $("post-error").hidden; }
   $("post-open").addEventListener("click", function () {
-    if ((!customerReturned() && !approved) || postBusy || readOnly) return;
+    if ((!customerReturned() && !approved) || postBusy || readOnly || roundsLocked()) return;
     postOpened = true; $("post-title").hidden = !customerReturned(); $("post-box").hidden = false; $("post-open").hidden = true;
     grow($("post-text")); $("post-text").focus();
   });
@@ -2869,7 +2880,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
   // his Approve. The same phrases as send_notice.py's NO_CHANGES.
   var NO_CHANGES = /^(?:(?:nothing|none|nope|no|not|n a|no changes?|all good|all set|looks (?:good|great|fine)|ok|okay)(?: (?:no changes?|nothing|needed|requested|to (?:change|add)|(?:for|right) now|at (?:this time|the moment)|yet|here|thanks?|thank you|to me|from me|so far|at all))*)$/;
   $("post-send").addEventListener("click", function () {
-    if ((!customerReturned() && !approved) || postBusy || readOnly || !online) return;
+    if ((!customerReturned() && !approved) || postBusy || readOnly || !online || roundsLocked()) return;
     var text = $("post-text").value.trim(), none = NO_CHANGES.test((text.toLowerCase().match(/\w+/g) || []).join(" "));
     $("post-error").classList.toggle("calm", none);
     if (!text || none) { $("post-error").textContent = !none ? "Tell us what should change." : signedOff() ? "No changes needed. Your approval stands." : "No changes? Just tap " + approveLabel() + "."; $("post-error").hidden = false; $("post-text").focus(); return; }
@@ -3046,7 +3057,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     return (D.questions || []).filter(function (q) { var v = state.answers["q_" + q.id]; return q.kind !== "confirm" && (v == null || !String(v).trim()); }).length;
   }
   function setStatus(s) {
-    if (readOnly || approved || pendingTaps || (customerReturned() && (!signoff() || !reviewReady() || signedOff() || s !== "DONE"))) return;
+    if (readOnly || approved || pendingTaps || (customerReturned() && (!signoff() || !reviewReady() || signedOff() || s !== "DONE" || roundsLocked()))) return;
     if (s === "READY" && minimalCalls() && (!minimalChecked() || !minimalFactsReady())) return;
     var gaps = s === "READY" || s === "DONE" ? missing() : [];
     var blocking = s === "READY" && (callsFirst() || minimalCalls()) ? gaps : gaps.filter(function (m) { return m.key === "q_client_permits"; });
