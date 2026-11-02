@@ -8,6 +8,8 @@
      q_<id>. The order's internal note never reaches the page; public_note shows when there is one.
      Once the report is back (stage returned) the pre-report sections hide (Matt, 2026-10-11): only the order, the
      desk's calls, the PDF and material questions show; customers can request changes; signoff: true adds approval before delivery.
+     Its note keeps the opening lines and "Needs you:" open and folds every other group under "See what we fixed (N)", and
+     the change-rounds notice shows once, above Request a change, with our free-errors line under it (Matt, 2026-11-02).
      Once it is delivered (delivered_at; Matt, 2026-10-15) a question he answered before the delivery leaves the form
      and his answer shows under History; one still blank, or asked after it, stays. "Change request sent" shows only
      while his latest request is open: not yet in resolved_post_changes (formlink.py --delivered).
@@ -25,7 +27,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-10-31.8">
+<html lang="en" data-build="v2026-11-02.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -313,13 +315,13 @@ details.fold > .fold-body { padding: 0 var(--card-px) var(--s-5); }
 .test-banner { margin: 0; padding: 20px 22px; border: 3px solid #e0a100; border-radius: 12px; background: #ffe14d; color: #1f1a00; font: 700 20px/1.4 var(--font); text-align: center; }
 .test-banner a { color: #1f1a00; text-decoration: underline; overflow-wrap: anywhere; }
 .banner.warn::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='9' fill='%23e5a53a' opacity='.18'/%3E%3Cpath d='M10 5.5v5' stroke='%237a4300' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='10' cy='14' r='1.2' fill='%237a4300'/%3E%3C/svg%3E"); }
-/* Matt 2026-10-31: every self-service form says "2 change rounds" in one orange box (top, above the change box, bottom); after
-   round 2 the same boxes say changes are closed and only Approve all and deliver is left */
+/* Matt 2026-10-31: every self-service form says "2 change rounds" in one orange box, shown once above Request a change (Matt
+   2026-11-02); after round 2 it says changes are closed, Request a change goes and only Approve all and deliver is left */
 .banner.closed, .banner.rounds { background: #fff0e0; color: #6b2400; border: 2px solid #e8590c; border-left: 8px solid #e8590c; font-size: 16px; margin: 0 0 var(--gap); }
 .banner.closed::before, .banner.rounds::before { content: "\26A0"; background: none; width: auto; height: auto; margin-top: 0; font-size: 28px; line-height: 1; color: #e8590c; }
 .banner.closed a, .banner.rounds a { color: inherit; font-weight: 600; } .banner.closed p, .banner.rounds p { margin: 0; } .banner.closed p + p, .banner.rounds p + p { margin-top: var(--s-2); } .banner.closed b, .banner.rounds b { font-size: 18px; }
 #post-request .banner.rounds { margin: 0 0 var(--s-3); }
-body.changes-closed #your-calls, body.changes-closed .card:has(> #your-calls), body.changes-closed #left-list, body.changes-closed.calls-review .st[data-s], body.changes-closed #post-request, body.changes-closed button.change-call { display: none !important; }
+body.changes-closed #your-calls, body.changes-closed .card:has(> #your-calls), body.changes-closed #left-list, body.changes-closed.calls-review .st[data-s], body.changes-closed #post-request > :not(#rounds-line):not(#errors-line), body.changes-closed button.change-call { display: none !important; }
 /* Matt 2026-10-31 ~11:30 on Orlando's delivered form: "needs to go post delivery along with post 2 rounds. just feedback box open." / "same for partial and full." */
 body.delivered #your-calls, body.delivered .card:has(> #your-calls), body.delivered #left-list, body.delivered [data-status], body.delivered #approve-all, body.delivered #post-request, body.delivered #calls, body.delivered:not(.asked-after) #form { display: none !important; }
 #payment, #notready { background: var(--danger); color: #fff; border-color: var(--danger); border-left-color: rgba(0,0,0,.28); font-size: 16px; font-weight: 600; }
@@ -802,6 +804,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
       <h2 id="post-title" hidden>Request a change</h2>
       <p class="note" id="post-sent" hidden></p>
       <div class="banner rounds" id="rounds-line" role="note" hidden></div>
+      <p class="note" id="errors-line" hidden></p>
       <button type="button" class="st" id="post-open">Request a change</button>
       <div id="post-box" hidden>
         <div class="line"><label class="lbl" for="post-text">What should change?</label>
@@ -1935,16 +1938,21 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     document.body.classList.toggle("delivered", delivered());
     document.body.classList.toggle("asked-after", Date.parse(askedAt(D)) > Date.parse(D.delivered_at));   // a question asked after delivery stays
     $("rounds-price").hidden = !roundsPriced();
-    $("changes-closed").hidden = true;   // Matt 2026-11-01: "remove the top one Noitce only leave the botom one. for all forms going forward."
-    ["rounds-line", "changes-closed-bottom"].forEach(function (id) {   // Matt 2026-10-31: "put it at the bottom as well"
-      var box = $(id), t = roundsText(id === "changes-closed-bottom" ? "above" : "below");   // the bottom copy sits under the button
-      box.hidden = !show || closed && id === "rounds-line"; box.className = "banner " + (closed ? "closed" : "rounds"); box.textContent = "";
-      if (box.hidden) return;
-      var links = el("p", null, [el("a", { href: "https://appraisalpartners.net/change-rounds.html", target: "_blank", rel: "noopener", text: "Why am I seeing this?" })]);
-      var software = selfLane() || /^software-/.test(roundTerms());
-      if (!closed) links.appendChild(document.createTextNode(" · ")), links.appendChild(el("a", { href: "https://appraisalpartners.net/terms" + (software ? "-software" : "") + ".html", target: "_blank", rel: "noopener", text: software ? "Software Terms" : "Service Terms" }));
-      box.appendChild(el("div", null, [el("p", null, [el("b", { text: t[0] })]), el("p", { text: t[1] }), links]));
-    });
+    // One notice, in the approve card above Request a change; closed, above Approve (Matt 2026-11-01: "remove the top one Noitce only
+    // leave the botom one. for all forms going forward."; 2026-11-02: "we dont need this twice this close together. once is enough
+    // for change roundsa notice.").
+    $("changes-closed").hidden = $("changes-closed-bottom").hidden = true;
+    // Under it, right above Request a change, on a customer's review before delivery (Matt 2026-11-02 ~06:25: "Yes: put the interim
+    // line on review forms now"); once changes close, our errors stay free by email. Never building, delivered or partner review.
+    $("errors-line").hidden = !(customerReturned() && signoff() && !D.delivered_at && !signedOff());
+    $("errors-line").textContent = closed ? "Our errors are fixed free; email desk@aandap.com." : "Our errors are fixed free and don't use a change round. Other changes follow your order's included rounds and terms. You can also approve delivery and edit in TOTAL.";
+    var box = $("rounds-line"), t = roundsText("below");
+    box.hidden = !show; box.className = "banner " + (closed ? "closed" : "rounds"); box.textContent = "";
+    if (box.hidden) return;
+    var links = el("p", null, [el("a", { href: "https://appraisalpartners.net/change-rounds.html", target: "_blank", rel: "noopener", text: "Why am I seeing this?" })]);
+    var software = selfLane() || /^software-/.test(roundTerms());
+    if (!closed) links.appendChild(document.createTextNode(" · ")), links.appendChild(el("a", { href: "https://appraisalpartners.net/terms" + (software ? "-software" : "") + ".html", target: "_blank", rel: "noopener", text: software ? "Software Terms" : "Service Terms" }));
+    box.appendChild(el("div", null, [el("p", null, [el("b", { text: t[0] })]), el("p", { text: t[1] }), links]));
   }
   function proposalReview() { return (D.house_prompts||{}).lane === "self-service" && D.stage === "returned" && (D.house_prompts||{}).proposal_review === true; }
   function proposalValues(section) { var values={};section.calls.forEach(function(c){var k="q_pc_"+section.id+"_"+c.id;values[c.key]=String(state.answers[k] == null ? c.value : state.answers[k]);});return values; }
@@ -2111,18 +2119,22 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     box.appendChild(el("p", { id: "acceptance", cls: "note", hidden: true }));
     if (!returned && !minimalCalls() && D.public_note && D.note_kind !== "not_ready") box.appendChild(rich(D.public_note, "note"));
   }
+  // Matt 2026-11-02, on a review note of 31 fixes: "this is not human readable. a giant wall of text. we need a better method."
+  // A sign-off note's opening lines and its "Needs you:" group stay open; every other section label, with what follows it,
+  // folds into one closed "See what we fixed (N)", N the lines inside (_archer/corrections.md; fill-report-core.md § Carried report).
   function rich(text, cls, documentNote) {       // sign-off prose joins until a blank line, bullet or section label
     var box = el("div", { cls: "rich" + (cls ? " " + cls : "") }), list = null, first = true, paragraph = null;
+    var at = box, fixes = el("div", { cls: "fold-body" }), fixed = 0;
     String(text || "").split(/\r?\n/).forEach(function (line) {
       line = line.trim();
       if (!line) { list = null; paragraph = null; return; }
       var bullet = /^[-•]\s+/.test(line);
-      if (bullet) { paragraph = null; if (!list) list = box.appendChild(el("ul")); list.appendChild(el("li", { text: line.replace(/^[-•]\s+/, "") })); }
+      if (bullet) { paragraph = null; if (!list) list = at.appendChild(el("ul")); list.appendChild(el("li", { text: line.replace(/^[-•]\s+/, "") })); if (at === fixes) fixed++; }
       else if (documentNote) {
         list = null;
-        if (line.length <= 40 && /:$/.test(line)) { box.appendChild(el("p", { cls: "lead", text: line })); paragraph = null; }
+        if (line.length <= 40 && /:$/.test(line)) { at = /^needs you:$/i.test(line) ? box : fixes; at.appendChild(el("p", { cls: "lead", text: line })); paragraph = null; }
         else if (paragraph) paragraph.textContent += " " + line;
-        else paragraph = box.appendChild(el("p", { text: line }));
+        else { paragraph = at.appendChild(el("p", { text: line })); if (at === fixes) fixed++; }
       }
       else {
         var kv = first && line.match(/^([^:]{1,30}:)\s+(.{1,60})$/);   // "Value: $300,000": the label in bold
@@ -2131,6 +2143,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       }
       first = false;
     });
+    if (fixes.children.length) box.appendChild(el("details", { cls: "card fold" }, [el("summary", { text: "See what we fixed (" + fixed + ")" }), fixes]));
     return box;
   }
   // A private Drive preview stays viewable during payment holds; viewer permissions prevent download, print and copy.
