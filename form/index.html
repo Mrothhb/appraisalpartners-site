@@ -2077,9 +2077,10 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
     });
     $("payment").textContent = "";
     if (due) $("payment").textContent = "Payment due. Your file follows payment.";
-    var pay = String(O.pay_link || "").trim();      // the desk's card link (formlink.py); only a plain https address becomes a button
-    if (due && /^https:\/\/[^\s"'<>]+$/.test(pay))
-      $("payment").appendChild(el("a", { cls: "pay-btn", href: pay, target: !!INLINE && location.protocol === "file:" ? "_self" : "_blank", rel: "noopener", text: "Pay by card" }));
+    (due && Array.isArray(O.pay_links) ? O.pay_links : []).forEach(function (p) {   // Matt 2026-11-01: Pay by bank and Pay by card, each pre-filled (formlink.py); only a Stripe address becomes a button
+      if (p && /^https:\/\/buy\.stripe\.com\/[^\s"'<>]+$/.test(String(p.url || "")))
+        $("payment").appendChild(el("a", { cls: "pay-btn", href: p.url, target: !!INLINE && location.protocol === "file:" ? "_self" : "_blank", rel: "noopener", text: String(p.label || "") + " " + String(p.amount || "") }));
+    });
     var box = $("order"), callsBox = $("calls"), nowRow = $("now").closest(".now-row");
     box.textContent = "";
     var head = box.appendChild(el("div", { cls: "order-head" }));
