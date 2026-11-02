@@ -26,12 +26,13 @@
      post-run question marked "required" (true, or a list of lanes) blocks READY: Ready reads "Ready · 2 left" until they
      are in, and a tap marks the blank ones in red. Approve never waits on anything (Matt 2026-10-31: "if they want it
      delivered we ship it. for starting we need the files"). Once delivered, only the report, History and feedback show; the same
-     after the second counted change round, while the desk delivers the final review with no tap (Matt, 2026-11-02).
+     after the second counted change round on Terms 2026-11-02b or later, while the desk delivers the final review with no tap;
+     older orders keep Approve all and deliver (Matt, 2026-11-02).
      Each customer stage names its accepting action: Ready, sending answers, approving or requesting a change. house_prompts.lane "review" is a partner reviewer's form (review help, no value line or terms). The client-permission question is off on every order; house_prompts.client_permits true turns it on for one order (Matt, 2026-10-20). house_prompts.lane "desk" (partial and full desk) is the minimal form: client permission and READY; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. No initials on any lane (Matt 2026-10-13). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-02.8">
+<html lang="en" data-build="v2026-11-02.9">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1963,14 +1964,16 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   // Matt 2026-11-02 ~16:45 ("lock the form and auto delivery and lock the buttons after 2 change rounds and deliver the ship report
   // with email"): after the second counted round the form locks, no Approve and no Request a change, report, History and feedback
   // only, and the desk delivers the final review with no tap (send_notice.rounds_locked/rounds_final). The desk's hand close
-  // (changes_closed) keeps Approve.
-  function roundsLocked() { return D.stage === "returned" && !D.delivered_at && roundsApply() && (+D.change_rounds || 0) >= 2; }
+  // (changes_closed) keeps Approve. Matt ~17:40: "Auto-deliver after round 2 only on orders on the 2026-11-02b terms; older orders
+  // keep the Approve tap." (send_notice.rounds_locked, the same gate)
+  function autoDelivers() { var t = roundTerms(); return /^software-/.test(t) ? t >= "software-2026-11-02b" : /^service-/.test(t) && t >= "service-2026-11-02b"; }
+  function roundsLocked() { return D.stage === "returned" && !D.delivered_at && roundsApply() && autoDelivers() && (+D.change_rounds || 0) >= 2; }
   function delivered() { return customerReturned() && !!D.delivered_at && !signoff(); }   // the delivered report is the current one
   function roundsText(where) {   // [headline, line]; where = "below" or "above", from the box to the button
     var price = roundsPriced() ? " ($15 a round)" : "";
     if (changesClosed()) return ["Maximum change requests used (2 of 2).", (D.changes_closed_text || "Tap " + (proposalReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " below to get your report. To buy more change requests, email desk@aandap.com" + price + ". Or edit your TOTAL report yourself.").replace(/\bbelow\b/, where)];
     var n = +D.change_rounds || 0;
-    return ["2 change rounds per order.", "Round 1: review everything and send all your changes at once. Round 2 is a grace round. Then the form locks and we deliver your report." +
+    return ["2 change rounds per order.", "Round 1: review everything and send all your changes at once. Round 2 is a grace round. Then the form locks and " + (autoDelivers() ? "we deliver your report." : "only Deliver remains.") +
       (n === 1 ? " You have used 1 of 2: your next round is the last." : "")];
   }
   function paintRounds() {
