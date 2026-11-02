@@ -9,7 +9,8 @@
      Once the report is back (stage returned) the pre-report sections hide (Matt, 2026-10-11): only the order, the
      desk's calls, the PDF and material questions show; customers can request changes; signoff: true adds approval before delivery.
      Its note keeps the opening lines and "Needs you:" open and folds every other group under "See what we fixed (N)", and
-     the change-rounds notice shows once, above Request a change, with what a change round covers under it (Matt, 2026-11-02).
+     the change-rounds notice shows once, above Request a change, with what a change round covers under it (Matt, 2026-11-02);
+     on Terms 2026-11-02 or later both name separately quoted rework, and Start shows that rule beside the price.
      Once it is delivered (delivered_at; Matt, 2026-10-15) a question he answered before the delivery leaves the form
      and his answer shows under History; one still blank, or asked after it, stays. "Change request sent" shows only
      while his latest request is open: not yet in resolved_post_changes (formlink.py --delivered).
@@ -27,7 +28,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-02.3">
+<html lang="en" data-build="v2026-11-02.4">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -795,7 +796,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
         <li class="final"><span><b>Please note: Your report doesn’t begin until your work file is complete and ready.</b> Inspection, sketch and photos all in. Changes after that are revisions.</span></li>
         <li class="time"><span><b>About 2–3 hours to build,</b> plus your review and any fixes.</span></li>
         <!-- Matt 2026-10-31: two change rounds, the first his full review, the second a grace round (Software Terms 2026-10-31b § 3). -->
-        <li class="rounds"><span><b>Two change rounds.</b> Send every change in the first; the second is a grace round.<span id="rounds-price"> A third is $15.</span></span></li>
+        <li class="rounds"><span><b id="rounds-head">Two change rounds.</b> Send every change in the first; the second is a grace round.<span id="rounds-price"> A third is $15.</span></span></li>
         <li class="tip"><span><b>Best way:</b> line up several orders, tap Start on each, and step away.</span></li>
       </ul>
     </div>
@@ -1818,6 +1819,8 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
       });
       box.appendChild(table);
     }
+    if (options.some(function (o) { return newTerms(o.terms); }))   // Matt 2026-11-02: the rework rule beside the price, before he accepts
+      box.appendChild(el("p", { cls: "note", text: "Our mistakes are fixed free. Replacing comps you selected and supplied, or heavy rework from missing or wrong required information, is quoted separately and starts or is charged only after your written approval." }));
     if (!D.selected_lane) musts.push({ key: "q_service_option", node: box });
   }
   function startOptions() { return laneOptions(F).length > 1 || stage === "open" && (D.house_prompts || {}).start_options === true; }
@@ -1926,6 +1929,9 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   // accepted on older Service Terms stay open as before unless the desk closes one by hand.
   function roundTerms() { return String((D.accepted_quote || {}).terms || D.terms || ""); }
   function roundsPriced() { var t = roundTerms(); return /^software-/.test(t) ? t >= "software-2026-10-31b" : /^service-/.test(t) && t >= "service-2026-10-31b"; }
+  // Matt 2026-11-02 ~07:40 ("yeah that sounds fine. have Astra review first."): on Terms 2026-11-02 or later, replacing comps he
+  // supplied or heavy rework from his missing or wrong information is quoted separately, outside the rounds; older orders keep their wording.
+  function newTerms(t) { t = String(t || ""); return /^software-/.test(t) ? t >= "software-2026-11-02" : /^service-/.test(t) && t >= "service-2026-11-02"; }
   function roundsApply() { var lane = (D.house_prompts || {}).lane; return lane === "self-service" || lane !== "review" && /^service-/.test(roundTerms()) && roundsPriced(); }
   function changesClosed() { return D.stage === "returned" && !D.delivered_at && (D.changes_closed === true || roundsApply() && (+D.change_rounds || 0) >= 2); }
   function delivered() { return customerReturned() && !!D.delivered_at && !signoff(); }   // the delivered report is the current one
@@ -1933,7 +1939,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     var price = roundsPriced() ? " ($15 a round)" : "";
     if (changesClosed()) return ["Maximum change requests used (2 of 2).", (D.changes_closed_text || "Tap " + (proposalReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " below to get your report. To buy more change requests, email desk@aandap.com" + price + ". Or edit your TOTAL report yourself.").replace(/\bbelow\b/, where)];
     var n = +D.change_rounds || 0;
-    return ["2 change rounds per order.", "Round 1: review everything and send all your changes at once. Round 2 is a grace round. Then the form locks and only Deliver remains." +
+    return [newTerms(roundTerms()) ? "Two change rounds included. Separately quoted rework is excluded." : "2 change rounds per order.", "Round 1: review everything and send all your changes at once. Round 2 is a grace round. Then the form locks and only Deliver remains." +
       (n === 1 ? " You have used 1 of 2: your next round is the last." : "")];
   }
   function paintRounds() {
@@ -1943,6 +1949,7 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     document.body.classList.toggle("delivered", delivered());
     document.body.classList.toggle("asked-after", Date.parse(askedAt(D)) > Date.parse(D.delivered_at));   // a question asked after delivery stays
     $("rounds-price").hidden = !roundsPriced();
+    $("rounds-head").textContent = newTerms(roundTerms() || laneOptions(F).map(function (o) { return o.terms; }).sort().pop()) ? "Two change rounds included. Separately quoted rework is excluded." : "Two change rounds.";
     // One notice, in the approve card above Request a change; closed, above Approve (Matt 2026-11-01: "remove the top one Noitce only
     // leave the botom one. for all forms going forward."; 2026-11-02: "we dont need this twice this close together. once is enough
     // for change roundsa notice.").
@@ -1955,19 +1962,23 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
     // Never building, delivered or partner review.
     var cover = $("errors-line"), software = selfLane() || /^software-/.test(roundTerms());
     cover.hidden = !(customerReturned() && signoff() && !D.delivered_at && !signedOff()); cover.textContent = "";
-    var covers = software ? ["Our mistakes: fixed free, and they don't use a round.",
+    var covers = newTerms(roundTerms()) ? ["Our mistakes are fixed free and use no round. Unclear or mixed responsibility is ours.",
+                             "A change round covers your ordinary corrections, adjustments and changed calls.",
+                             "Replacing comps you selected and supplied for the build, or heavy rework from missing or wrong required information, is quoted separately. We explain the work and total fee and start or charge only after your written approval. This work uses no round and adds no $15 round fee. Optional calls left for our proposals are allowed. Corrections to our agreed work and your client’s revisions within the same assignment stay free. You may decline the quote and approve delivery to edit in TOTAL."]
+               : software ? ["Our mistakes: fixed free, and they don't use a round.",
                              "A change round: one request with all your corrections, adjustments and changed calls.",
                              "Bigger changes, like replacing comps or reworking the report because something you sent was missing or wrong, also use a round: send them in round 1, or approve delivery and adjust them in TOTAL."]
                           : ["Our mistakes: fixed free, and they don't use a round.",
                              "A change round: your corrections and adjustments to the report as built.",
-                             "Not part of a round: replacing comps you picked, or heavy rework because something you sent was missing or wrong. We quote it first and start only if you agree, or you can approve delivery and adjust it in TOTAL."];
+                             "Other changes follow your order’s accepted scope, included revisions and terms."];
     cover.appendChild(el("div", null, closed ? [el("p", null, [el("b", { text: "Our mistakes are still fixed free." })]), el("p", { text: "Email desk@aandap.com." })]
                                              : [el("p", null, [el("b", { text: "What a change round covers" })]), el("ul", null, covers.map(function (l) { return el("li", { text: l }); }))]));
     var box = $("rounds-line"), t = roundsText("below");
     box.hidden = !show; box.className = "banner " + (closed ? "closed" : "rounds"); box.textContent = "";
     if (box.hidden) return;
     var links = el("p", null, [el("a", { href: "https://appraisalpartners.net/change-rounds.html", target: "_blank", rel: "noopener", text: "Why am I seeing this?" })]);
-    if (!closed) links.appendChild(document.createTextNode(" · ")), links.appendChild(el("a", { href: "https://appraisalpartners.net/terms" + (software ? "-software" : "") + ".html", target: "_blank", rel: "noopener", text: software ? "Software Terms" : "Service Terms" }));
+    var dated = roundTerms().match(/^(service|software)-(\d{4}-\d{2}-\d{2}[a-z]?)$/);   // the order's own dated terms, never a later version
+    if (!closed) links.appendChild(document.createTextNode(" · ")), links.appendChild(el("a", { href: "https://appraisalpartners.net/terms" + (dated ? (dated[1] === "software" ? "-software-" : "-") + dated[2] : software ? "-software" : "") + ".html", target: "_blank", rel: "noopener", text: software ? "Software Terms" : "Service Terms" }));
     box.appendChild(el("div", null, [el("p", null, [el("b", { text: t[0] })]), el("p", { text: t[1] }), links]));
   }
   function proposalReview() { return (D.house_prompts||{}).lane === "self-service" && D.stage === "returned" && (D.house_prompts||{}).proposal_review === true; }
