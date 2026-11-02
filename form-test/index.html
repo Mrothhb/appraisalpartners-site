@@ -28,7 +28,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-02.5">
+<html lang="en" data-build="v2026-11-02.6">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -248,6 +248,7 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 #post-request .talk-row, #feedback .talk-row { margin-top: var(--s-2); }
 #post-sent, #post-error { margin: 0 0 var(--s-3); }
 #post-error { color: var(--danger); }
+#post-error.calm { color: var(--ink-2); }   /* the no-change line is a hint, not an error */
 .build { margin: var(--s-3) 0 0; text-align: center; font-size: 11px; color: var(--ink-2); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
 
 /* ---------- fields: the site's intake boxes ---------- */
@@ -2809,10 +2810,14 @@ var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDt
   $("post-text").addEventListener("input", function () { grow(this); $("post-error").hidden = true; });
   var postTalk = talkRow($("post-text"));
   $("post-text").closest(".line").appendChild(postTalk);
+  // Matt 2026-11-02 ~12:40, "fix": a request that only says there are none ("nothing for now") is never sent; it would reopen
+  // his Approve. The same phrases as send_notice.py's NO_CHANGES.
+  var NO_CHANGES = /^(?:(?:nothing|none|nope|no|not|n a|no changes?|all good|all set|looks (?:good|great|fine)|ok|okay)(?: (?:no changes?|nothing|needed|requested|to (?:change|add)|(?:for|right) now|at (?:this time|the moment)|yet|here|thanks?|thank you|to me|from me|so far|at all))*)$/;
   $("post-send").addEventListener("click", function () {
     if ((!customerReturned() && !approved) || postBusy || readOnly || !online) return;
-    var text = $("post-text").value.trim();
-    if (!text) { $("post-error").textContent = "Tell us what should change."; $("post-error").hidden = false; $("post-text").focus(); return; }
+    var text = $("post-text").value.trim(), none = NO_CHANGES.test((text.toLowerCase().match(/\w+/g) || []).join(" "));
+    $("post-error").classList.toggle("calm", none);
+    if (!text || none) { $("post-error").textContent = !none ? "Tell us what should change." : signedOff() ? "No changes needed. Your approval stands." : "No changes? Just tap " + approveLabel() + "."; $("post-error").hidden = false; $("post-text").focus(); return; }
     var request = { id: "pc_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2) + "_" + Math.random().toString(36).slice(2), text: text }, payload = { t: T, post_change: request };
     if (D.recipient_attribution) { payload.r = R; payload.actor = ACTOR; }
     if (D.acceptance_actions) payload.quote = body(false).quote;
