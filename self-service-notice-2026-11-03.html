@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex">
+<!-- Dated copy (Matt 2026-11-03: "put the self service Matt and his team disclaimer as a link ... put it on our website").
+     The five points are word for word the form's notice. Published dated pages never change: a change is a new date.
+     No scripts, no analytics, no outside fonts. -->
+<meta name="description" content="A&amp;AP self-service notice: Matt and his team do not review this report. You review and sign it.">
+<link rel="icon" type="image/png" href="/assets/aap-favicon.png">
+<link rel="apple-touch-icon" href="/assets/aap-apple-touch-icon.png">
+<title>A&amp;AP Self-service notice</title>
+<style>
+  :root {
+    --paper: #FAFAF7; --ink: #1C2420; --muted: #5C6660;
+    --rule: #D9DED9; --rule-strong: #889089; --accent: #2E5D46; --accent-deep: #24493A;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #141917; --ink: #E8EAE6; --muted: #97A19A;
+    --rule: #2A322D; --rule-strong: #606B62; --accent: #6FA98C; --accent-deep: #8FBFA6;
+  }
+  * { box-sizing: border-box; }
+  main:focus { outline: none; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
+    font-size: 16.5px; line-height: 1.65; margin: 0; padding: 0 24px;
+  }
+  .sheet { max-width: 680px; margin: 0 auto; padding: 44px 0 64px; }
+  .letterhead {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 16px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 14px;
+  }
+  .letterhead .name {
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, "Courier New", monospace;
+    font-weight: 500; font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink); text-decoration: none;
+  }
+  .letterhead .cred, .nav {
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, "Courier New", monospace;
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+  }
+  .nav { width: 100%; display: flex; flex-wrap: wrap; gap: 9px 20px; padding-top: 2px; }
+  .nav a { color: var(--muted); }
+  .nav a, footer a { text-decoration-thickness: 0.5px; text-underline-offset: 2px; }
+  h1 { font-size: clamp(28px, 5vw, 38px); font-weight: 700; line-height: 1.25; margin: 40px 0 8px; }
+  .vers { font-family: "IBM Plex Mono", ui-monospace, Menlo, "Courier New", monospace; color: var(--muted); font-size: 12px; }
+  p { margin: 0 0 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover, a:focus-visible { text-decoration-color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .stamp { border: 1.5px solid var(--accent); padding: 14px 18px; margin: 26px 0; }
+  .stamp p { margin: 0; }
+  .points { margin: 24px 0 28px; padding-left: 24px; }
+  .points li { margin: 0 0 12px; padding-left: 4px; }
+  .stamp strong { color: var(--accent); }
+  footer {
+    border-top: 2px solid var(--ink); margin-top: 44px; padding-top: 14px;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, "Courier New", monospace;
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+  footer .postal-address { flex-basis: 100%; font-style: normal; }
+  .skip {
+    position: absolute; left: -9999px; top: 0;
+    background: var(--accent); color: var(--paper); padding: 10px 16px;
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, "Courier New", monospace; font-size: 13px; z-index: 10;
+  }
+  .skip:focus { left: 8px; top: 8px; }
+  @media (max-width: 600px) { .sheet { padding-top: 28px; } .nav { gap: 5px 14px; } }
+
+  /* A&AP mark: AP monogram, A&AP left-aligned under it (as on the self-service form header). */
+  header.letterhead { align-items: flex-end; }
+  .letterhead .name.brandmark {
+    display: inline-flex; flex-direction: column; align-items: flex-start; gap: 5px;
+    color: #0C2A46; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 17px; font-weight: 700; letter-spacing: 0.02em; line-height: 1;
+    text-decoration: none; text-transform: none;
+  }
+  .letterhead .brandmark .mark { display: block; width: 60px; height: auto; }
+  .letterhead .brandmark .mark-light { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .letterhead .name.brandmark { color: var(--ink); }
+    :root:not([data-theme="light"]) .letterhead .brandmark .mark { display: none; }
+    :root:not([data-theme="light"]) .letterhead .brandmark .mark-light { display: block; }
+  }
+  :root[data-theme="dark"] .letterhead .name.brandmark { color: var(--ink); }
+  :root[data-theme="dark"] .letterhead .brandmark .mark { display: none; }
+  :root[data-theme="dark"] .letterhead .brandmark .mark-light { display: block; }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+<div class="sheet">
+  <header class="letterhead">
+    <a class="name brandmark" href="index.html" aria-label="A&amp;AP home"><img class="mark" src="assets/aap-mark.svg" alt="" width="60" height="35"><img class="mark mark-light" src="assets/aap-mark-light.svg" alt="" width="60" height="35"><span class="wordmark">A&amp;AP</span></a>
+    <span class="cred">Self-service notice</span>
+    <nav class="nav" aria-label="Primary">
+      <a href="uad36.html">UAD 3.6</a>
+      <a href="convert.html">Convert</a>
+      <a href="how-it-works.html">How it works</a>
+      <a href="how-it-works.html#pricing">Pricing</a>
+      <a href="technology.html">Behind the desk</a>
+      <a href="portrait.html">The portrait</a>
+      <a href="story.html">Four appraisers</a>
+      <a href="about.html">About us</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html">Contact</a>
+      <a href="start.html">Start with one report</a>
+    </nav>
+
+  </header>
+
+  <main id="main" tabindex="-1">
+
+  <h1>Self-service: Matt and his team do not review this report.</h1>
+
+  <p class="vers"><strong>Version dated November 3, 2026.</strong> Shown on every self-service order's form.</p>
+
+  <ul class="points">
+    <li>No one will discuss values or the report.</li>
+    <li>Questions, issues and changes go in writing, on this form or by email.</li>
+    <li>Appraisal help from Matt or his team is a separate service, billed for his time, and only where state rules allow it.</li>
+    <li>You are using A&amp;AP’s AI-assisted report-preparation software directly. We strongly encourage you to review this report and ensure the system makes all changes to your liking.</li>
+    <li>Bugs, errors and software issues should be escalated to Matt and his team immediately. Appraisal discussion and questions remain in this form or by email.</li>
+  </ul>
+
+  <p>Start on a self-service form accepts this notice and our <a href="terms-software.html">A&amp;AP Software Terms</a>.</p>
+
+  </main>
+
+  <footer>
+    <span>M ROTH SOFTWARE CONSULTING LLC</span>
+    <span><a href="index.html">A&amp;AP</a> / Self-service</span>
+    <span><a href="start.html">Start with one report</a></span>
+    <span>mrr@appraisalpartners.net</span>
+    <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
+  </footer>
+</div>
+</body>
+</html>
