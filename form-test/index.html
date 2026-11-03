@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-03.9">
+<html lang="en" data-build="v2026-11-03.10">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -837,9 +837,11 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
     </div>
     <button type="button" class="stage-more" id="stage-more">Order details <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </section>
-  <!-- Matt 2026-11-03: "Anything thats completxity HIGH or above STOPS and doesnt launch or allow click ready without me."
-       The desk's matt_hold (formlink.py): one plain line, and no Ready or Start until Matt clears it. -->
-  <section class="card hold-card" id="hold-card" role="alert" hidden><p>This order needs Matt’s review before it can start. We’ll email you.</p></section>
+  <!-- Matt 2026-11-03: "Anything thats completxity HIGH or above STOPS and doesnt launch or allow click ready without me.";
+       ~12:45: "also for now only halt a high complexity order on full desk NOT self service or partial". The desk's
+       matt_hold (formlink.py): on full desk only (with a lane choice, once he picks Full), one plain line, and no Ready or
+       Start until Matt clears it; partial and self-service go on. -->
+  <section class="card hold-card" id="hold-card" role="alert" hidden><p id="hold-line">This order needs Matt’s review before it can start. We’ll email you.</p></section>
   <!-- Matt 2026-11-03: "we should be VERY CLEAR with the bold exclamation point front and cetner that these items are lacking
        in comps please revisist this and add more, or continue and be aware and accepr this". The audit's bracketing check of
        his closed comps (tools/comp_bracket.py, prefill comp_check), at the top of Start on every lane: one line per gap, then
@@ -2575,10 +2577,12 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (b && usageLock()) { e.preventDefault(); e.stopImmediatePropagation(); paintUsage(); jumpTo($("usage-lock")); }
   }, true);
   // ---------- Matt's hold and what's missing (Matt 2026-11-03) ----------
-  function mattHold() { return !!F.matt_hold && stage === "open" && !inProduction() && !readOnly; }
+  function mattHold() { return !!F.matt_hold && (!laneOptions(F).length && !selfLane() || /^full/.test(D.selected_lane || "")) && stage === "open" && !inProduction() && !readOnly; }
   function paintHold() {
     var held = mattHold();
     $("hold-card").hidden = !held;
+    $("hold-line").textContent = laneOptions(F).length > 1 ? "Full desk on this order needs Matt’s review before it can start. Pick another lane to start now, or we’ll email you."
+      : "This order needs Matt’s review before it can start. We’ll email you.";
     if (held) { statusBtns.forEach(function (b) { if (b.getAttribute("data-s") === "READY") b.disabled = true; }); $("start-production").disabled = true; }
     var need = (Array.isArray(F.start_missing) ? F.start_missing : []).map(function (m) { return String(m || "").trim(); }).filter(Boolean);
     var show = need.length > 0 && stage === "open" && !selfLane() && !inProduction() && !filesChecked() && !readOnly && (D.house_prompts || {}).lane !== "review";
