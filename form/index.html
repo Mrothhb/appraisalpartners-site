@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-02.9">
+<html lang="en" data-build="v2026-11-02.10">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -238,6 +238,8 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 .terms-line a { color: var(--ink-2); text-decoration-color: rgba(95,95,95,.5); } .terms-line a:hover { color: var(--ink); }
 /* links in small print: a 44 px tall hit area without moving the text (padding on an inline box leaves the line as is) */
 .terms-line a, .line .lbl a { padding: 12px 4px; margin: 0 -4px; }
+/* the desk's reply time sits right under the terms line (Matt 2026-11-02) */
+.statusbox:not(.agree) > .terms-line:not([hidden]) + .reply-time { margin-top: calc(var(--s-1) - var(--s-4)); }
 #banner:empty { display: none; }
 .agree #help { display: none; }
 .agree-value { margin: 0 0 var(--s-4); color: var(--ink); }
@@ -834,6 +836,9 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
     <div id="approve-all" hidden><button type="button" class="st" id="approve-all-btn">Approve all and deliver</button><p class="note" id="approve-all-note"></p></div>
     <button type="button" class="pdf-btn" id="start-production" hidden>Start production</button>
     <p class="terms-line" data-terms></p>
+    <!-- Matt 2026-11-02 ~18:20: "the desk replies within 2 hours, 7 AM-9 PM Central, every day; overnight by 9 AM; an expected time,
+         no guarantee or credits. Put it in ... the forms". Every customer stage; a partner review form omits it, as it omits the terms line. -->
+    <p class="terms-line reply-time" data-reply-time hidden>The desk replies within 2 hours, 7 AM–9 PM Central, every day; overnight messages by 9 AM. This is an expected response time, not a guarantee.</p>
     <button type="button" class="link-btn" id="save-calls" hidden>Save and finish later</button>
     <p class="sync-note" id="sync-note" role="status" hidden></p>
     <div id="banner" aria-live="polite"></div>
@@ -2516,6 +2521,7 @@ var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPw
       p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: minimalCalls() || selfOnly() ? "Software Terms" : laneOptions(F).length ? ((D.house_prompts || {}).lane === "self-service" ? "Software Terms" : "Service Terms") : "terms" }));
       p.appendChild(document.createTextNode("."));
     });
+    document.querySelectorAll("[data-reply-time]").forEach(function (p) { p.hidden = (D.house_prompts || {}).lane === "review"; });
     var accepted = acceptance();
     $("acceptance").hidden = !!startRecord() || !accepted;
     $("acceptance").textContent = accepted ? "Accepted " + new Date(accepted.at).toLocaleDateString([], { month: "short", day: "numeric" }) + (accepted.accepted.ready_by && !/^self-service/.test(accepted.accepted.lane || "") ? " · ready " + day(accepted.accepted.ready_by) : "") : "";
