@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-03.7">
+<html lang="en" data-build="v2026-11-03.8">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -429,6 +429,14 @@ label.line { cursor: pointer; }
 #action .st.wait:disabled { background: var(--field-off); color: var(--ink-2); border-color: var(--edge); }
 #lane-picker .tap span { font-weight: 400; }
 #lane-picker .rush { margin-top: var(--s-4); border-bottom: 0; }
+#lane-picker h2 + .taps.turn, #lane-picker .taps + h2 { margin-top: var(--s-4); }
+.hold-card { border: 2px solid var(--danger); border-left: 8px solid var(--danger); background: #fdecec; color: #7a1010; padding: var(--s-5) var(--card-px); font: 700 18px/1.4 var(--display); }
+.hold-card p { margin: 0; }
+.need-card { border: 2px solid #e5a53a; border-left: 8px solid #e5a53a; background: #fdf3e1; color: #7a4300; padding: var(--s-5) var(--card-px); }
+.need-title { margin: 0 0 var(--s-3); font: 700 19px/1.3 var(--display); }
+.need-list { margin: 0 0 var(--s-3); padding: 0 0 0 var(--s-5); font-size: 15px; line-height: 1.5; color: var(--ink); }
+.need-list li + li { margin-top: var(--s-2); }
+.need-card .note { margin: 0; color: #7a4300; }
 .standard-fees { width: 100%; max-width: 440px; margin-top: var(--s-4); border-collapse: collapse; font-size: 13px; }
 .standard-fees caption { text-align: left; font-weight: 700; padding-bottom: var(--s-2); }
 .standard-fees th, .standard-fees td { padding: var(--s-1) 0; border-bottom: 1px solid var(--edge); }
@@ -829,6 +837,9 @@ body.comp-open .st[data-s="READY"]:disabled, body.comp-open #start-production:di
     </div>
     <button type="button" class="stage-more" id="stage-more">Order details <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </section>
+  <!-- Matt 2026-11-03: "Anything thats completxity HIGH or above STOPS and doesnt launch or allow click ready without me."
+       The desk's matt_hold (formlink.py): one plain line, and no Ready or Start until Matt clears it. -->
+  <section class="card hold-card" id="hold-card" role="alert" hidden><p>This order needs Matt’s review before it can start. We’ll email you.</p></section>
   <!-- Matt 2026-11-03: "we should be VERY CLEAR with the bold exclamation point front and cetner that these items are lacking
        in comps please revisist this and add more, or continue and be aware and accepr this". The audit's bracketing check of
        his closed comps (tools/comp_bracket.py, prefill comp_check), at the top of Start on every lane: one line per gap, then
@@ -844,10 +855,17 @@ body.comp-open .st[data-s="READY"]:disabled, body.comp-open #start-production:di
     </div>
     <p class="comp-said" id="comp-said" role="status" hidden></p>
   </section>
+  <!-- Matt 2026-11-03: "it should be clear whats missing to begin clear as day". The audit's lines (prefill start_missing),
+       on a desk lane before his file is checked; advisory, never a lock. -->
+  <section class="card need-card" id="need-card" role="status" aria-labelledby="need-title" hidden>
+    <p class="need-title" id="need-title">Before we can start, we need:</p>
+    <ul class="need-list" id="need-list"></ul>
+    <p class="note">Add them to your order folder, then tap Start.</p>
+  </section>
   <section class="card" id="chosen" aria-label="Your chosen service" hidden>
     <strong id="chosen-lane"></strong>
     <p id="chosen-quote"></p>
-    <p class="note" id="chosen-note">To change your lane or rush choice, reply to desk@aandap.com.</p>
+    <p class="note" id="chosen-note">To change your lane or turn time, reply to desk@aandap.com.</p>
   </section>
   <div class="test-banner" id="testbanner" role="note" hidden></div>
   <section class="card order" id="order" aria-label="The order">
@@ -1653,9 +1671,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function laneForm(f, answers) {
     var options = laneOptions(f), pick = options.length === 1 ? options[0] : options.filter(function (o) { return o.id === answers.q_service_option; })[0];
     if (!options.length) return f;
+    var quoted = pick && answers.q_rush === true && pick.next_day && typeof pick.next_day === "object" ? pick.next_day : pick;   // Code.gs laneForm_'s rush
     var hp = Object.assign({}, f.house_prompts || {}, pick && pick.house_prompts || {}, { lane: pick && /^self-service(?:-conversion)?$/.test(pick.id) ? "self-service" : "desk" });
     delete hp.start_options;
-    return Object.assign({}, f, pick && /^self-service/.test(pick.id) ? Object.fromEntries(["call_sections","file_calls","prefill","adjustment_rows","grid_missing","roster_text","subject","comps"].filter(function(k){return k in pick;}).map(function(k){return [k,pick[k]];})) : {}, { order: Object.assign({}, f.order, { price: pick ? pick.price : "", ready_by: pick ? pick.ready_by : "" }),
+    return Object.assign({}, f, pick && /^self-service/.test(pick.id) ? Object.fromEntries(["call_sections","file_calls","prefill","adjustment_rows","grid_missing","roster_text","subject","comps"].filter(function(k){return k in pick;}).map(function(k){return [k,pick[k]];})) : {}, { order: Object.assign({}, f.order, { price: pick ? quoted.price : "", ready_by: pick ? quoted.ready_by : "" }),
       house_prompts: hp, selected_lane: pick ? pick.id : "", terms: pick ? pick.terms : "", terms_url: "",
       questions: pick ? pick.questions || [] : [], public_note: pick ? pick.public_note || "" : "" });
   }
@@ -1676,23 +1695,27 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var start = startRecord();
     $("chosen").hidden = !start || (D.house_prompts || {}).lane === "review";
     if ($("chosen").hidden) return;
-    var lane = start.quote.lane, self = lane.indexOf("self-service") === 0, due = new Date(start.at), days = self ? 1 : 3;
-    while (days && !isNaN(due.getTime())) {
-      due.setDate(due.getDate() + 1);
-      if (due.getDay() !== 0 && due.getDay() !== 6) days--;
-    }
+    // Matt 2026-11-03: due = his Start day + 2 working days, or + 1 on Next day. One rush route: his q_rush, or the desk's
+    // rush_due_date (a rush taken by reply), whose day then wins; a desk rush once read Fri beside a Wed rush day.
+    var lane = start.quote.lane, self = lane.indexOf("self-service") === 0;
+    var quoted = /^\d{4}-\d{2}-\d{2}$/.test(O.rush_due_date || "") ? new Date(O.rush_due_date + "T12:00:00") : null;   // a local calendar day
+    if (quoted && isNaN(quoted.getTime())) quoted = null;
+    var rush = !self && ((start.answers || {}).q_rush === true || !!quoted);
+    var option = (F.lane_options || []).filter(function (o) { return o.id === lane; })[0];
+    var priced = !!quoted || F.turn === "next-day" || !!(option && option.next_day);   // an old rush box with no day stays "from desk@"
+    var due = quoted && rush ? quoted : workdays(new Date((state.go || {}).at || start.at), self || rush ? 1 : STANDARD_DAYS);
     var date = function (d) { return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }); };
     $("chosen-quote").hidden = self;
-    $("chosen-note").textContent = self ? "To change your option, reply to desk@aandap.com." : "To change your lane or rush choice, reply to desk@aandap.com.";
+    $("chosen-note").textContent = self ? "To change your option, reply to desk@aandap.com." : "To change your lane or turn time, reply to desk@aandap.com.";
     if (self) { $("chosen-lane").textContent = "Chosen: " + [laneTitle(lane), start.quote.price].filter(Boolean).join(" · "); return; }
-    $("chosen-lane").textContent = "Chosen: " + laneNames[lane] + " · 2 to 3 working days";
-    if ((start.answers || {}).q_rush === true) {
-      // A quoted day is a local calendar date, never UTC midnight.
-      var quoted = /^\d{4}-\d{2}-\d{2}$/.test(O.rush_due_date || "") ? new Date(O.rush_due_date + "T12:00:00") : null;
-      $("chosen-quote").textContent = quoted && !isNaN(quoted.getTime()) ? "Rush · Due " + date(quoted) : "Rush: due date from desk@aandap.com";
-    } else {
-      $("chosen-quote").textContent = isNaN(due.getTime()) ? "Due date from desk@aandap.com" : "Due " + date(due);
-    }
+    $("chosen-lane").textContent = "Chosen: " + laneNames[lane] + " · " + (rush ? (priced ? "Next day" : "Rush") : STANDARD_DAYS + " working days");
+    $("chosen-quote").textContent = rush && !priced ? "Rush: due date from desk@aandap.com" : isNaN(due.getTime()) ? "Due date from desk@aandap.com" : "Due " + date(due);
+  }
+  var STANDARD_DAYS = 2;   // formlink.py STANDARD_DAYS
+  function workdays(from, n) {   // n working days after this day (Mon-Fri)
+    var d = new Date(from.getTime());
+    while (n > 0 && !isNaN(d.getTime())) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) n--; }
+    return d;
   }
   // File facts and customer rates, with the same answer keys used by the report backfill.
   function minimalCalls() { return valueLast() && Array.isArray(D.call_sections); }
@@ -1913,14 +1936,39 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       cards.appendChild(b);
     });
     if (options.length > 1 || (D.house_prompts || {}).lane === "self-service") box.appendChild(cards);
+    // Matt 2026-11-03: desk lanes pick a turn time, Standard (2 working days) at his price or Next day at the added fee
+    // (the lane's next_day). His pick is q_rush, recorded with his Start; the quote is that turn's price and day.
+    var picked = options.length === 1 ? options[0] : options.filter(function (o) { return o.id === state.answers.q_service_option; })[0];
+    if (picked && picked.next_day && !/^self-service/.test(picked.id)) {
+      box.appendChild(el("h2", { text: "Pick your turn time" }));
+      var turns = el("div", { cls: "taps turn" });
+      [[false, "Standard · " + STANDARD_DAYS + " working days", picked.price], [true, "Next day", picked.next_day.price + (picked.next_day.fee ? " (" + picked.next_day.fee + ")" : "")]].forEach(function (t) {
+        var b = el("button", { type: "button", cls: "tap", "aria-pressed": String((state.answers.q_rush === true) === t[0]) }, [el("strong", { text: t[1] }), el("span", { text: t[2] })]);
+        b.disabled = readOnly || pendingTaps > 0 || optionSent();
+        b.addEventListener("click", function () {
+          if (startRecord() || (state.answers.q_rush === true) === t[0]) return;
+          put("q_rush", t[0]);
+          D = laneForm(F, state.answers); refresh(F); changed();
+        });
+        turns.appendChild(b);
+      });
+      box.appendChild(turns);
+    }
     if (minimalStart()) {
-      var table = el("table", { cls: "standard-fees" }, [el("caption", { text: "Standard fees" })]);
-      var rows = options.map(function (o) { var self = /^self-service/.test(o.id); return { label: self ? laneTitle(o.id) : o.fee_label || o.label, price: o.price, ready_by: self ? "" : o.ready_by }; });
+      var table = el("table", { cls: "standard-fees" }, [el("caption", { text: options.some(function (o) { return o.next_day; }) ? "Fees" : "Standard fees" })]);
+      var today = new Date(), rows = [];
+      options.forEach(function (o) {
+        var self = /^self-service/.test(o.id), name = self ? laneTitle(o.id) : o.fee_label || o.label;
+        if (!o.next_day || self) { rows.push({ label: name, price: o.price, ready_by: self ? "" : o.ready_by }); return; }
+        rows.push({ label: name + " · " + STANDARD_DAYS + " working days", price: o.price, ready: workdays(today, STANDARD_DAYS) });
+        rows.push({ label: name + " · Next day", price: o.next_day.price + (o.next_day.fee ? " (" + o.next_day.fee + ")" : ""), ready: workdays(today, 1) });
+      });
       if (!selfOnly()) rows = rows.concat((F.standard_fees || []).filter(function (r) {   // a self-service form shows its own two prices only
         return !/^Self-service/.test(r.label);
       }));
       rows.forEach(function (r) {
-        if (r.price) table.appendChild(el("tr", null, [el("th", { scope: "row", text: r.label }), el("td", { text: r.price }), (D.house_prompts || {}).lane !== "self-service" && r.ready_by ? el("td", { text: "Ready " + day(r.ready_by) }) : null]));
+        var ready = r.ready ? r.ready.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : day(r.ready_by);   // a turn's day counts from today
+        if (r.price) table.appendChild(el("tr", null, [el("th", { scope: "row", text: r.label }), el("td", { text: r.price }), (D.house_prompts || {}).lane !== "self-service" && ready ? el("td", { text: "Ready " + ready }) : null]));
       });
       box.appendChild(table);
     }
@@ -2526,6 +2574,22 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var b = e.target && e.target.closest ? e.target.closest('#start-production, [data-status] [data-s="READY"]') : null;
     if (b && usageLock()) { e.preventDefault(); e.stopImmediatePropagation(); paintUsage(); jumpTo($("usage-lock")); }
   }, true);
+  // ---------- Matt's hold and what's missing (Matt 2026-11-03) ----------
+  function mattHold() { return !!F.matt_hold && stage === "open" && !inProduction() && !readOnly; }
+  function paintHold() {
+    var held = mattHold();
+    $("hold-card").hidden = !held;
+    if (held) { statusBtns.forEach(function (b) { if (b.getAttribute("data-s") === "READY") b.disabled = true; }); $("start-production").disabled = true; }
+    var need = (Array.isArray(F.start_missing) ? F.start_missing : []).map(function (m) { return String(m || "").trim(); }).filter(Boolean);
+    var show = need.length > 0 && stage === "open" && !selfLane() && !inProduction() && !filesChecked() && !readOnly && (D.house_prompts || {}).lane !== "review";
+    $("need-card").hidden = !show;
+    $("need-list").textContent = "";
+    if (show) need.forEach(function (m) { $("need-list").appendChild(el("li", { text: cap(m) })); });
+  }
+  document.addEventListener("click", function (e) {   // a Ready or Start tapped under the hold (an older paint) only shows why
+    var b = e.target && e.target.closest ? e.target.closest('#start-production, [data-status] [data-s="READY"]') : null;
+    if (b && mattHold()) { e.preventDefault(); e.stopImmediatePropagation(); paintHold(); jumpTo($("hold-card")); }
+  }, true);
   function filesNeed(hp) {
     if (hp.files_checking_at) return "We’re checking your files.";   // Matt 2026-10-30: the desk saw his drop; the result replaces this
     if (hp.files_complete === true && hp.files_checked_at) return "";
@@ -2804,6 +2868,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     paintReady();
     paintStage();
     paintUsage();
+    paintHold();
     // Matt 2026-10-13: a READY the desk sent back says so at the very top, with why, while the form is DRAFT again:
     // a red pop-out when it arrives ("make it red and a popout and very obvious"), then the red banner pinned there.
     var nr = $("notready"), back = D.note_kind === "not_ready" && !!D.public_note && state.status === "DRAFT";
@@ -3138,6 +3203,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function startFailed(code) {   // the server did not record the Start: back to the form with one plain line, his answers kept
     pendingStart = null; goBusy = false; paintStatus();
     if (code === "usage") { banner(usageLock() || "Start isn’t open right now. The AI usage line at the top says why.", "warn"); poll(); return; }
+    if (code === "matt_hold") { banner("This order needs Matt’s review before it can start. We’ll email you.", "warn"); poll(); return; }
     banner(code === "quote_changed" ? "The price changed. Review it, then tap Start again." : code === "stage" ? STAGES[stage].refused :
       code === "comps" ? "Your comps were checked again. Read the card at the top, then tap Start again." :
       "Start not accepted yet: your file isn’t checked on our side. Your answers are saved; tap Start again once it is.", "warn");
@@ -3388,7 +3454,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
         state.answers.q_rush = (start.answers || {}).q_rush === true;
       }
       if (controls.q_client_permits && saved.answers && saved.answers.q_client_permits) refresh(F);
-      if (laneOptions(F).length && laneForm(F, state.answers).selected_lane !== D.selected_lane) refresh(F);   // only a different saved lane re-renders
+      if (laneOptions(F).length && (laneForm(F, state.answers).selected_lane !== D.selected_lane || laneForm(F, state.answers).order.price !== O.price)) refresh(F);   // only a different saved lane or turn re-renders
       paintAll();
     }
     paintStatus();
@@ -3396,7 +3462,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return canon(f.comp_check || null) !== canon(F.comp_check || null) || canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.change_rounds || 0) !== (F.change_rounds || 0) || canon(f.change_answer || null) !== canon(F.change_answer || null) || f.changes_closed !== F.changes_closed || (f.changes_closed_text || "") !== (F.changes_closed_text || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || canon(f.review_changes || null) !== canon(F.review_changes || null) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
+  function newer(f) { return canon(f.matt_hold || null) !== canon(F.matt_hold || null) || canon(f.start_missing || []) !== canon(F.start_missing || []) || canon(f.comp_check || null) !== canon(F.comp_check || null) || canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.change_rounds || 0) !== (F.change_rounds || 0) || canon(f.change_answer || null) !== canon(F.change_answer || null) || f.changes_closed !== F.changes_closed || (f.changes_closed_text || "") !== (F.changes_closed_text || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || canon(f.review_changes || null) !== canon(F.review_changes || null) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
   function canon(v) { return JSON.stringify(v, function (k, x) { return x && typeof x === "object" && !Array.isArray(x) ? Object.keys(x).sort().reduce(function (o, j) { o[j] = x[j]; return o; }, {}) : x; }); }   // key order is never a change
   // A re-render keeps the reader's place (Chase 2026-10-20): the scroll, then the box or button in focus and its
   // selection; with nothing in focus it takes none.
