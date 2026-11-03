@@ -1,0 +1,231 @@
+<!doctype html>
+<!-- A&AP orders board: appraisalpartners.net/orders/?t=<code>. One customer's private board (Matt 2026-11-03: "a dashboard on our
+     site thats for orders and AI usage", one customer's orders only): his orders in progress, the AI usage bar, and per-order metrics
+     (score where one exists, change rounds, our mistakes fixed; blank where there is none). It reads one keyed record through the
+     form's own web app at API, exactly as the form reads an order; the desk's usage job writes that record's board, and nothing
+     else reaches this page. No order data lives in this file; never add analytics here (the link carries the code). -->
+<html lang="en" data-build="v2026-11-03.1">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>A&amp;AP Orders</title>
+<link rel="icon" href="../assets/aap-favicon.png">
+<style>
+/* The form's look (its tokens, from appraisalpartners.net/assets/site.css), the site's own font files. */
+@font-face { font-family: "Open Sans"; font-style: normal; font-weight: 300 800; font-display: swap; src: url("../assets/open-sans.woff2") format("woff2"); }
+@font-face { font-family: "Schibsted Grotesk"; font-style: normal; font-weight: 700; font-display: swap; src: url("../assets/schibsted-grotesk-700.ttf") format("truetype"); }
+:root {
+  --font: "Open Sans", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --display: "Schibsted Grotesk", var(--font);
+  --ink: #1c1c1c; --ink-2: #5f5f5f; --canvas: #f4f5f5; --card: #ffffff; --field-off: #f4f5f5;
+  --line: #e3e3e3; --line-2: #cccccc; --primary: #0b6fc1; --primary-hover: #00669b; --tint: #eaf3fb; --tint-line: #d5e6f5;
+  --success-ink: #236b1f; --success-bg: #ecf6e8; --success-line: #cfe6c7;
+  --warning-bg: #fdf3e1; --warning-edge: #e5a53a; --warning-ink: #7a4300; --warning-line: #f1dcb0;
+  --danger: #a72a2a; --bar: #0d2a46; --bar-h: 64px; --focus: #0b6fc1;
+  --r-1: 2px; --r-2: 4px; --r-full: 999px; --shadow-1: 0 0 10px -6px rgba(0,0,0,.10);
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-12: 48px;
+  --gutter: 24px; --gap: var(--gutter); --card-px: 20px; --card-py: 20px; --dur: 150ms; --ease: cubic-bezier(.2,0,.2,1);
+}
+@media (max-width: 600px) { :root { --gutter: 16px; --card-px: 16px; --card-py: 16px; } }
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+html, body { margin: 0; background: var(--canvas); color: var(--ink); font: 400 16px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+body { background: var(--canvas) linear-gradient(var(--bar), var(--bar)) top / 100% var(--bar-h) no-repeat; }
+p, h1, h2 { margin: 0; }
+a { color: var(--primary); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--r-1); }
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 var(--gutter) var(--s-12); }
+header { display: flex; align-items: center; gap: var(--s-3); height: var(--bar-h); margin: 0 0 var(--gap); color: #fff; }
+header svg { width: 52px; height: 30.5px; flex: none; }
+header svg path { fill: #e8eae6; } header svg path[fill^="url"] { fill: #96aac4; }
+header > div { display: flex; align-items: baseline; gap: var(--s-4); min-width: 0; }
+.brand { font: 700 20px/1.2 var(--font); color: #fff; white-space: nowrap; }
+.sub { color: rgba(255,255,255,.86); font-size: 15px; font-weight: 600; white-space: nowrap; }
+.conn { margin-left: auto; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.86); text-align: right; font-variant-numeric: tabular-nums; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-2); box-shadow: var(--shadow-1); padding: var(--card-py) var(--card-px); margin: 0 0 var(--s-4); min-width: 0; }
+#gate p { color: var(--ink-2); }
+h1 { font: 700 clamp(24px, 1vw + 18px, 28px)/1.2 var(--display); letter-spacing: -.015em; color: var(--bar); }
+.updated { margin: var(--s-1) 0 var(--s-5); font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.kicker { margin: var(--s-6) 0 var(--s-3); color: var(--primary); font: 600 13px/1.4 var(--font); letter-spacing: .12em; text-transform: uppercase; }
+/* the usage bar, as on his forms */
+.usage { padding: var(--s-3) var(--card-px); }
+.usage-track { height: 8px; border-radius: var(--r-full); background: var(--field-off); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+.usage-track i { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--primary); }
+.usage-line { margin: var(--s-2) 0 0; font-size: 14px; line-height: 1.45; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.usage-note { margin: var(--s-1) 0 0; font-size: 14px; line-height: 1.45; font-weight: 600; overflow-wrap: anywhere; }
+.usage[data-state="amber"] { border-left: 4px solid var(--warning-edge); }
+.usage[data-state="amber"] .usage-track i { background: var(--warning-edge); }
+.usage[data-state="amber"] .usage-note { color: var(--warning-ink); }
+.usage[data-state="red"] { border-left: 4px solid var(--danger); background: #fdf3f3; }
+.usage[data-state="red"] .usage-track i { background: var(--danger); }
+.usage[data-state="red"] .usage-note { color: var(--danger); }
+.usage[data-stale="1"] .usage-track { background: repeating-linear-gradient(45deg, var(--field-off) 0 6px, var(--line) 6px 12px); }
+.usage[data-stale="1"] .usage-track i { display: none; }
+/* three counts in one row */
+.counts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); }
+.count { padding: var(--s-3); border: 1px solid var(--line); border-radius: var(--r-2); background: var(--card); text-align: center; }
+.count b { display: block; font: 700 22px/1.2 var(--display); color: var(--bar); font-variant-numeric: tabular-nums; }
+.count span { display: block; margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--ink-2); }
+.count.full b { color: var(--danger); }
+.next-start { margin: var(--s-3) 0 0; font-size: 15px; font-weight: 600; color: var(--danger); text-align: center; overflow-wrap: anywhere; }
+/* one card per order */
+.order-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.street { font: 700 19px/1.25 var(--display); color: var(--bar); overflow-wrap: anywhere; }
+.code { margin-top: 2px; font-size: 13px; color: var(--ink-2); }
+.pill { flex: none; padding: 2px 10px; border-radius: var(--r-full); background: var(--tint); color: var(--primary); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.pill[data-tone="you"] { background: var(--warning-bg); color: var(--warning-ink); }
+.pill[data-tone="done"] { background: var(--success-bg); color: var(--success-ink); }
+.next { margin: var(--s-3) 0 0; font-size: 15px; line-height: 1.45; overflow-wrap: anywhere; }
+.metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); margin: var(--s-4) 0 0; padding: var(--s-3) 0 0; border-top: 1px solid var(--line); }
+.metrics div { min-width: 0; }
+.metrics dt { font-size: 12px; line-height: 1.35; color: var(--ink-2); }
+.metrics dd { margin: 2px 0 0; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.open-form { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; margin: var(--s-4) 0 0; padding: 0 var(--s-5); border: 1px solid var(--primary); border-radius: var(--r-2); color: var(--primary); font-weight: 600; text-decoration: none; }
+.open-form:hover { background: var(--tint); }
+.empty { color: var(--ink-2); font-size: 15px; }
+.foot { margin: var(--s-6) 0 0; font-size: 13px; color: var(--ink-2); text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 354 208" width="64" height="37.6" id="logo" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="apSteel" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#5b7893"/>
+          <stop offset="1" stop-color="#486480"/>
+        </linearGradient>
+      </defs>
+      <path fill="#0d2a46" d="M133.28 9.00 L148.00 9.00 Q158.32 9.00 165.50 21.00 L272.54 200.00 L211.88 200.00 L176.00 140.00 L176.00 104.50 L135.50 64.00 L135.50 95.00 L82.00 140.00 L82.00 178.00 L67.58 200.00 L8.06 200.00 Z"/>
+      <path fill="#0d2a46" d="M174.12 12.00 L279.00 12.00 A66.50 66.50 0 0 1 279.00 145.00 L253.65 145.00 L229.43 104.50 L276.00 105.00 A26.50 26.50 0 0 0 276.00 52.00 L198.04 52.00 Z"/>
+      <path fill="url(#apSteel)" d="M92.00 200.00 L92.00 145.30 L112.00 128.48 L112.00 200.00 Z M118.50 200.00 L118.50 123.01 L138.50 106.19 L138.50 200.00 Z M145.00 200.00 L145.00 88.35 L165.00 108.35 L165.00 200.00 Z"/>
+    </svg>
+    <div><div class="brand">A&amp;AP</div><div class="sub">Orders</div></div>
+    <div class="conn" id="conn" aria-live="polite"></div>
+  </header>
+  <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
+  <main id="board" hidden>
+    <h1 id="title">Your orders</h1>
+    <p class="updated" id="updated"></p>
+    <section class="card usage" id="usage" aria-label="AI usage this week">
+      <div class="usage-track" id="usage-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-labelledby="usage-line"><i id="usage-fill"></i></div>
+      <p class="usage-line" id="usage-line"></p>
+      <p class="usage-note" id="usage-note" hidden></p>
+    </section>
+    <div class="counts" aria-label="This week">
+      <div class="count" id="count-progress"><b></b><span>In progress</span></div>
+      <div class="count" id="count-week"><b></b><span>Orders this week</span></div>
+      <div class="count" id="count-delivered"><b></b><span>Delivered this week</span></div>
+    </div>
+    <p class="next-start" id="next-start" hidden></p>
+    <h2 class="kicker">Open orders</h2>
+    <div id="orders"></div>
+    <h2 class="kicker">Delivered this week</h2>
+    <div id="delivered"></div>
+    <p class="foot">Private to your office. This page updates by itself.</p>
+  </main>
+</div>
+<script>
+(function () {
+  "use strict";
+  var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPwO_MB0iqsrAarETBMjLEdV5GfyFd_tgh_PiEA4z_w/exec";   // the form's web app /exec URL; the board reads the same way the form does
+  var T = new URLSearchParams(location.search).get("t") || "", viaScript = false, timer = null;
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function gate(msg) { $("gate-msg").textContent = msg; $("gate").hidden = false; $("board").hidden = true; }
+  function jsonp() {
+    return new Promise(function (resolve, reject) {
+      var cb = "aap" + Date.now() + "_" + Math.floor(Math.random() * 1e6), s = document.createElement("script");
+      var t = setTimeout(function () { end(null); }, 20000);
+      function end(r) {
+        clearTimeout(t); s.remove();
+        if (r) delete window[cb]; else window[cb] = function () { delete window[cb]; };
+        if (r && r.ok) resolve(r); else reject({ code: r && r.error });
+      }
+      window[cb] = end;
+      s.onerror = function () { end(null); };
+      s.src = API + "?t=" + encodeURIComponent(T) + "&callback=" + cb;
+      document.head.appendChild(s);
+    });
+  }
+  function read() {
+    if (viaScript) return jsonp();
+    return fetch(API + "?t=" + encodeURIComponent(T), { credentials: "omit", cache: "no-store" })
+      .then(function (r) { return r.json(); })
+      .then(function (r) { if (r && r.ok) return r; throw { code: (r && r.error) || "bad_reply" }; },
+            function () { viaScript = true; return jsonp(); });
+  }
+  function when(iso, withDay) {
+    var d = new Date(iso); if (isNaN(d)) return "";
+    var o = { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" };
+    if (withDay) { o.weekday = "short"; o.month = "short"; o.day = "numeric"; }
+    try { return d.toLocaleString("en-US", o); } catch (e) { return d.toLocaleString(); }
+  }
+  var TONE = { "Your review": "you", "Files missing": "you", "Ready to start": "you", "Delivered": "done", "Delivering": "done" };
+  function metric(dl, label, value) {
+    var d = el("div"); d.appendChild(el("dt", null, label)); d.appendChild(el("dd", null, value === "" || value == null ? "—" : String(value))); dl.appendChild(d);
+  }
+  function orderCard(o, delivered) {
+    var card = el("article", "card"), head = el("div", "order-head"), left = el("div");
+    left.appendChild(el("div", "street", o.street || o.order));
+    left.appendChild(el("div", "code", o.order));
+    head.appendChild(left);
+    var pill = el("span", "pill", delivered ? "Delivered" : o.stage); pill.dataset.tone = delivered ? "done" : TONE[o.stage] || ""; head.appendChild(pill);
+    card.appendChild(head);
+    card.appendChild(el("p", "next", delivered ? "Delivered " + when(o.delivered_at, true) + "." : o.next));
+    var dl = el("dl", "metrics");
+    metric(dl, "Score", o.score);
+    metric(dl, "Change rounds", o.change_rounds + " of " + (o.rounds || 2));
+    metric(dl, "Our mistakes fixed", o.our_mistakes);
+    card.appendChild(dl);
+    if (/^https:\/\/appraisalpartners\.net\/form\/\?t=[A-Za-z0-9_-]{32,64}$/.test(o.form || "")) {
+      var a = el("a", "open-form", "Open form"); a.href = o.form; a.target = "_blank"; a.rel = "noopener noreferrer"; card.appendChild(a);
+    }
+    return card;
+  }
+  function list(host, rows, delivered, empty) {
+    host.textContent = "";
+    if (!rows.length) { host.appendChild(el("p", "empty card", empty)); return; }
+    rows.forEach(function (o) { host.appendChild(orderCard(o, delivered)); });
+  }
+  function paint(b) {
+    var u = b.usage_bar || {}, pct = Math.max(0, Math.round(Number(u.pct) || 0)), ip = b.in_progress || {};
+    $("title").textContent = b.title || "Your orders";
+    $("updated").textContent = b.as_of ? "Updated " + when(b.as_of) + " Central" : "";
+    $("usage").dataset.state = u.state === "red" || u.state === "amber" ? u.state : "ok"; $("usage").dataset.stale = u.stale ? "1" : "";
+    $("usage-fill").style.width = Math.min(100, pct) + "%";
+    $("usage-track").setAttribute("aria-valuenow", String(Math.min(100, pct)));
+    $("usage-line").textContent = u.line || "AI usage this week: " + pct + "%";
+    $("usage-note").textContent = u.note || ""; $("usage-note").hidden = !u.note;
+    function count(id, value, full) { var c = $(id); c.querySelector("b").textContent = value; c.classList.toggle("full", !!full); }
+    count("count-progress", (ip.count || 0) + " of " + (ip.limit || 2), (ip.count || 0) >= (ip.limit || 2));
+    count("count-week", (u.orders || 0) + " of " + (u.cap || 7), (u.orders || 0) >= (u.cap || 7));
+    count("count-delivered", String((b.delivered || []).length), false);
+    $("next-start").textContent = b.next_start || ""; $("next-start").hidden = !b.next_start;
+    list($("orders"), b.orders || [], false, "No open orders.");
+    list($("delivered"), b.delivered || [], true, "Nothing delivered yet this week.");
+    $("gate").hidden = true; $("board").hidden = false;
+  }
+  function load() {
+    return read().then(function (r) {
+      var b = r.form && r.form.board;
+      if (!b || typeof b !== "object") { gate(r.form && r.form.kind === "customer-board" ? "Your board is being set up. Check back in a few minutes." : "This link isn't an orders board."); return; }
+      $("conn").textContent = ""; paint(b);
+    }, function (e) {
+      if (e && e.code === "unknown") gate("This link has closed. Email desk@aandap.com for a new one.");
+      else if ($("board").hidden) gate("Couldn't load your orders. Check your connection and try again.");
+      else $("conn").textContent = "Not connected";
+    });
+  }
+  function soon() { clearTimeout(timer); timer = setTimeout(function () { if (document.visibilityState !== "hidden") load(); soon(); }, 60000); }
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") load(); });
+  if (!T) { gate("Open this page from your link."); return; }
+  if (!API) { gate("Not connected yet."); return; }
+  load().then(soon);
+})();
+</script>
+</body>
+</html>

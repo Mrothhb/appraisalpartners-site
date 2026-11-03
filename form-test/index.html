@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-03.6">
+<html lang="en" data-build="v2026-11-03.7">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -339,6 +339,23 @@ details.fold > .fold-body { padding: 0 var(--card-px) var(--s-5); }
 #post-request .banner.cover { margin: 0 0 var(--s-3); font-size: 15px; }
 .banner.cover::before { width: 22px; height: 22px; margin-top: 1px; background-size: 22px 22px; }
 .banner.cover p { margin: 0; } .banner.cover b { font-weight: 700; } .banner.cover ul { margin: var(--s-1) 0 0; padding-left: 1.1em; } .banner.cover li + li { margin-top: var(--s-1); }
+/* The AI usage bar (Matt 2026-11-02 18:08: "as clear as day"): first on every stage of a form whose prefill has usage_bar; one thin
+   bar and one line, then the amber or red line; Start's lock line sits above Start. Every other form never shows it. */
+.usage { margin: 0 0 var(--gap); padding: var(--s-3) var(--card-px); background: var(--card); border: 1px solid var(--line); border-radius: var(--r-2); box-shadow: var(--shadow-1); }
+.usage-track { height: 8px; border-radius: var(--r-full); background: var(--field-off); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+.usage-track i { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--primary); transition: width var(--dur) var(--ease); }
+.usage-line { margin: var(--s-2) 0 0; font-size: 14px; line-height: 1.45; color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.usage-note { margin: var(--s-1) 0 0; font-size: 14px; line-height: 1.45; font-weight: 600; overflow-wrap: anywhere; }
+.usage[data-state="amber"] { border-left: 4px solid var(--warning-edge); }
+.usage[data-state="amber"] .usage-track i { background: var(--warning-edge); }
+.usage[data-state="amber"] .usage-note { color: var(--warning-ink); }
+.usage[data-state="red"] { border-left: 4px solid var(--danger); background: #fdf3f3; }
+.usage[data-state="red"] .usage-track i { background: var(--danger); }
+.usage[data-state="red"] .usage-note { color: var(--danger); }
+.usage[data-stale="1"] .usage-track { background: repeating-linear-gradient(45deg, var(--field-off) 0 6px, var(--line) 6px 12px); }   /* not current: no fill */
+.usage[data-stale="1"] .usage-track i { display: none; }
+body.usage-limit .ready-facts .tip { display: none; }   /* "line up several orders" does not hold two at a time */
+#usage-lock { margin: 0 0 var(--s-3); font-size: 15px; line-height: 1.5; font-weight: 600; color: var(--danger); text-align: center; overflow-wrap: anywhere; }
 body.changes-closed #your-calls, body.changes-closed .card:has(> #your-calls), body.changes-closed #left-list, body.changes-closed.calls-review .st[data-s], body.changes-closed #post-request > :not(#rounds-line):not(#errors-line), body.changes-closed button.change-call { display: none !important; }
 /* Matt 2026-10-31 ~11:30 on Orlando's delivered form: "needs to go post delivery along with post 2 rounds. just feedback box open." / "same for partial and full." */
 body.delivered #your-calls, body.delivered .card:has(> #your-calls), body.delivered #left-list, body.delivered [data-status], body.delivered #approve-all, body.delivered #post-request, body.delivered #calls, body.delivered:not(.asked-after) #form { display: none !important; }
@@ -790,6 +807,11 @@ body.comp-open .st[data-s="READY"]:disabled, body.comp-open #start-production:di
   <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
 
   <div id="main" hidden>
+  <section class="usage" id="usage" aria-label="AI usage this week" hidden>
+    <div class="usage-track" id="usage-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-labelledby="usage-line"><i id="usage-fill"></i></div>
+    <p class="usage-line" id="usage-line"></p>
+    <p class="usage-note" id="usage-note" hidden></p>
+  </section>
   <div class="banner rounds" id="changes-closed" role="alert" hidden></div>
   <!-- Matt 2026-10-30: one full screen while we check his files, when files are missing, and after Start (the tracker moves in here).
        Checked and ready: hidden, the normal Start page shows. The normal page is always under it. -->
@@ -862,6 +884,7 @@ body.comp-open .st[data-s="READY"]:disabled, body.comp-open #start-production:di
     <p class="status-help" id="help"></p>
     <p class="note" id="final-file" hidden><b>Your report doesn’t begin until your work file is complete and ready.</b> Inspection, sketch and photos all in. Changes after that are revisions.</p>
     <p class="note" id="selfservice-timing" hidden>A report takes about 2–3 hours to build, plus your review and any fixes. Best way: line up several orders, tap Start on each, and step away.</p>
+    <p id="usage-lock" role="status" hidden></p>
     <p class="start-lock" id="start-missing" role="status" hidden></p>
     <p class="optional-line" id="optional-line" hidden>Everything else is optional. Leave it blank and we’ll propose every call for you to approve.</p>
     <p class="agree-value" id="agree-value" hidden></p>
@@ -2478,6 +2501,31 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     (s.missing || []).forEach(function (m) { list.appendChild(el("li", { text: cap(m) })); });
   }
   $("stage-more").addEventListener("click", function () { $("order").scrollIntoView({ behavior: "smooth", block: "start" }); });
+  // ---------- AI usage bar (Matt 2026-11-02 18:08: "a transparent AI usage status bar that we can display on his form for each order
+  // that will say how much of the week he's used"; 11-03: two orders in progress at most, one customer's lane only) ----------
+  // The desk's usage job (every 10 minutes) writes prefill.usage_bar with its numbers and words; the page only
+  // shows them: the bar and its line first on every stage, the amber or red line under it, and while start_lock is set (two orders in
+  // progress, the week's usage used up, or 7 of 7) Start stays locked with that line. Nothing changes on a form without usage_bar.
+  function usageBar() { var u = F.usage_bar; return u && typeof u === "object" && isFinite(u.pct) ? u : null; }
+  function usageLock() { var u = usageBar(); return u && u.start_lock && stage === "open" && !inProduction() && !readOnly ? String(u.start_lock) : ""; }
+  function paintUsage() {
+    var u = usageBar(), lock = usageLock();
+    $("usage").hidden = !u; document.body.classList.toggle("usage-limit", !!u);
+    $("usage-lock").hidden = !lock; $("usage-lock").textContent = lock;
+    if (lock) { statusBtns.forEach(function (b) { if (b.getAttribute("data-s") === "READY") b.disabled = true; }); $("start-production").disabled = true; }
+    if (!u) return;
+    var pct = Math.max(0, Math.round(Number(u.pct)));
+    var refused = u.start_lock && inProduction() ? String(u.start_lock) : "";   // a Start saved just before the lock landed: the reason, not the tracker
+    $("usage").dataset.state = refused ? "red" : u.state === "red" || u.state === "amber" ? u.state : "ok"; $("usage").dataset.stale = u.stale ? "1" : "";
+    $("usage-fill").style.width = Math.min(100, pct) + "%";
+    $("usage-track").setAttribute("aria-valuenow", String(Math.min(100, pct)));
+    $("usage-line").textContent = String(u.line || "AI usage this week: " + pct + "%");
+    $("usage-note").textContent = refused || String(u.note || ""); $("usage-note").hidden = !(refused || u.note);
+  }
+  document.addEventListener("click", function (e) {   // a Start tapped under the lock (an older paint) only shows why
+    var b = e.target && e.target.closest ? e.target.closest('#start-production, [data-status] [data-s="READY"]') : null;
+    if (b && usageLock()) { e.preventDefault(); e.stopImmediatePropagation(); paintUsage(); jumpTo($("usage-lock")); }
+  }, true);
   function filesNeed(hp) {
     if (hp.files_checking_at) return "We’re checking your files.";   // Matt 2026-10-30: the desk saw his drop; the result replaces this
     if (hp.files_complete === true && hp.files_checked_at) return "";
@@ -2755,6 +2803,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     paintTracker();
     paintReady();
     paintStage();
+    paintUsage();
     // Matt 2026-10-13: a READY the desk sent back says so at the very top, with why, while the form is DRAFT again:
     // a red pop-out when it arrives ("make it red and a popout and very obvious"), then the red banner pinned there.
     var nr = $("notready"), back = D.note_kind === "not_ready" && !!D.public_note && state.status === "DRAFT";
@@ -3088,6 +3137,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function startFailed(code) {   // the server did not record the Start: back to the form with one plain line, his answers kept
     pendingStart = null; goBusy = false; paintStatus();
+    if (code === "usage") { banner(usageLock() || "Start isn’t open right now. The AI usage line at the top says why.", "warn"); poll(); return; }
     banner(code === "quote_changed" ? "The price changed. Review it, then tap Start again." : code === "stage" ? STAGES[stage].refused :
       code === "comps" ? "Your comps were checked again. Read the card at the top, then tap Start again." :
       "Start not accepted yet: your file isn’t checked on our side. Your answers are saved; tap Start again once it is.", "warn");
@@ -3456,6 +3506,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       var was = state.status;
       if (r.form && newer(r.form)) { refresh(r.form); if (r.saved) apply(r.saved); else if (!savedAt) apply({}); }   // his cleared boxes too; never saved: our latest calls
       if (r.form && (r.form.stage || "open") !== stage) { D.stage = r.form.stage; setStage(r.form.stage); }
+      if (r.form && canon(r.form.usage_bar || null) !== canon(F.usage_bar || null)) { F.usage_bar = r.form.usage_bar; paintStatus(); }   // the usage bar, every 10 minutes
       if (r.saved && (r.saved.updatedAt !== savedAt || r.saved.status !== state.status || JSON.stringify(r.saved.post_changes || []) !== JSON.stringify(state.post_changes || []))) apply(r.saved);
       if (was === "READY" && state.status === "DRAFT") banner("Back to Draft: something is still needed.", "warn");
     }, function (e) { polling = false; if (e && e.code === "unknown") closed(); });
