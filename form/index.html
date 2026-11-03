@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-03.8">
+<html lang="en" data-build="v2026-11-03.9">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -752,7 +752,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 .comp-list li b { color: #6b2400; }
 .comp-list li.comp-note { color: var(--ink-2); font-size: 14px; }
 .comp-more { display: inline-block; margin: calc(var(--s-2) * -1) 0 var(--s-4) var(--s-5); padding: var(--s-1) 0; border: 0; background: none; color: #6b2400; font: 600 14px/1.4 var(--font); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.comp-taps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
+.comp-taps { display: grid; gap: var(--s-3); }
 .comp-tap { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-1); min-height: 64px; padding: var(--s-3) var(--s-4); border: 1px solid #e8590c; border-radius: var(--r-2); background: #fff; color: #6b2400; text-align: left; cursor: pointer; }
 .comp-tap b { font: 700 16px/1.25 var(--font); }
 .comp-tap span { font-size: 13px; line-height: 1.35; color: var(--ink-2); }
@@ -761,12 +761,12 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 .comp-tap[aria-pressed="true"] span { color: rgba(255,255,255,.92); }
 .comp-tap:disabled { cursor: default; opacity: .6; }
 .comp-said { margin: var(--s-3) 0 0; font-size: 14px; font-weight: 600; }
+.comp-start { margin: var(--s-4) 0 0; font-size: 16px; line-height: 1.4; }
 .comp-card[data-done="true"] { border-color: var(--success-edge); border-left-color: var(--success-edge); background: var(--success-bg); color: var(--success-ink); }
 .comp-card[data-done="true"] .comp-bang { background: var(--success-edge); }
 .comp-card[data-done="true"] .comp-title, .comp-card[data-done="true"] .comp-list li b { color: var(--success-ink); }
 .comp-card[data-done="true"] .comp-tap { border-color: var(--success-edge); color: var(--success-ink); }
 .comp-card[data-done="true"] .comp-tap[aria-pressed="true"] { background: var(--success); border-color: var(--success); color: #fff; }
-body.comp-open .st[data-s="READY"]:disabled, body.comp-open #start-production:disabled { background: var(--field-off); color: var(--ink-2); border-color: var(--edge); }
 @media (max-width: 480px) { .comp-taps { grid-template-columns: minmax(0, 1fr); } .comp-title { font-size: 17px; } }
 #stage { display: grid; grid-template-rows: 1fr auto 1fr; justify-items: center; min-height: calc(100svh - var(--bar-h) - var(--gap) - var(--s-6)); padding: var(--s-8) var(--card-px) var(--s-4); text-align: center; }
 #stage[hidden] { display: none; }
@@ -843,17 +843,17 @@ body.comp-open .st[data-s="READY"]:disabled, body.comp-open #start-production:di
   <!-- Matt 2026-11-03: "we should be VERY CLEAR with the bold exclamation point front and cetner that these items are lacking
        in comps please revisist this and add more, or continue and be aware and accepr this". The audit's bracketing check of
        his closed comps (tools/comp_bracket.py, prefill comp_check), at the top of Start on every lane: one line per gap, then
-       I'll add comps or Continue as is. His answer is q_comp_check {id, choice, at}, bound to that check: a new set of gaps
-       needs a new tap. Start stays locked until the card clears or he continues. No gaps, no card. -->
+       I'll add comps, and the last line: tapping Start accepts these gaps (Matt 2026-11-03, "for all."). His answer is
+       q_comp_check {id, choice, at}, bound to that check; Start records "accept" on the check he sees. No gaps, no card. -->
   <section class="card comp-card" id="comp-card" role="alert" aria-labelledby="comp-title" hidden>
     <div class="comp-head"><span class="comp-bang" aria-hidden="true">!</span><p class="comp-title" id="comp-title">Your comps leave gaps a lender or reviewer will flag</p></div>
     <ul class="comp-list" id="comp-list"></ul>
     <button type="button" class="comp-more" id="comp-more" aria-expanded="false" aria-controls="comp-list" hidden></button>
     <div class="comp-taps">
       <button type="button" class="comp-tap" id="comp-add" aria-pressed="false"><b>I’ll add comps</b><span id="comp-add-why">Add them to your folder. We check again on your next save.</span></button>
-      <button type="button" class="comp-tap" id="comp-accept" aria-pressed="false"><b>Continue as is</b><span>I understand these gaps and accept them.</span></button>
     </div>
     <p class="comp-said" id="comp-said" role="status" hidden></p>
+    <p class="comp-start" id="comp-start"><b>Tapping Start accepts these gaps.</b></p>
   </section>
   <!-- Matt 2026-11-03: "it should be clear whats missing to begin clear as day". The audit's lines (prefill start_missing),
        on a desk lane before his file is checked; advisory, never a lock. -->
@@ -2598,7 +2598,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   // ---------- comp gaps at Start (Matt 2026-11-03) ----------
   // The audit's bracketing check of his closed comps (prefill comp_check: id, gaps, words), every lane but a partner review
-  // or regression. His answer q_comp_check is {id, choice: "add" | "accept", at}; only an acceptance of this id unlocks Start.
+  // or regression. His answer q_comp_check is {id, choice: "add" | "accept", at}; his Start records "accept" on this id.
   function compCheck() {
     var c = D.comp_check, lane = (D.house_prompts || {}).lane;
     return c && c.id && Array.isArray(c.gaps) && c.gaps.length && stage === "open" && lane !== "review" && lane !== "regression" ? c : null;
@@ -2609,8 +2609,13 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     return c && s && s.id === c.id ? s : null;
   }
   function compNeeds() { var s = compSaid(); return !!compCheck() && !(s && s.choice === "accept"); }   // this check, not yet accepted
-  function compOpen() { return compNeeds() && !inProduction(); }
-  function compBlocks(f, answers) {   // a queued Start against a check he has not accepted on that form (the server takes Start without it)
+  function compAccept() {   // Matt 2026-11-03 ("for all."): tapping Start accepts the gaps on the card he sees
+    var c = compCheck();
+    if (!c || !compNeeds()) return false;
+    state.answers.q_comp_check = JSON.stringify({ id: c.id, choice: "accept", at: new Date().toISOString() }); own.q_comp_check = true;
+    return true;
+  }
+  function compBlocks(f, answers) {   // a queued Start against a newer check than the one he saw (the server takes Start without it)
     var c = f && f.comp_check, lane = (f && f.house_prompts || {}).lane, s = null;
     if (!c || !c.id || !Array.isArray(c.gaps) || !c.gaps.length || (f.stage || "open") !== "open" || lane === "review" || lane === "regression") return false;
     try { s = JSON.parse((answers || {}).q_comp_check || "null"); } catch (e) { s = null; }
@@ -2619,7 +2624,6 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   var compAll = false, COMP_SHOWN = 3;   // a long list shows its first three lines and "+N more"
   function paintComp() {
     var c = compCheck(), box = $("comp-card"), s = compSaid();
-    document.body.classList.toggle("comp-open", compOpen());
     box.hidden = !c || inProduction();
     if (box.hidden) return;
     var list = $("comp-list"), rows = c.gaps.map(function (g) { return [String(g), ""]; })
@@ -2637,13 +2641,12 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var again = selfLane() ? "We check again on your next save." : "We’ll check again and update this card.";   // desk lanes: the desk reruns the check after intake
     $("comp-add-why").textContent = "Add them to your folder. " + again;
     $("comp-add").setAttribute("aria-pressed", String(!!s && s.choice === "add"));
-    $("comp-accept").setAttribute("aria-pressed", String(!!s && s.choice === "accept"));
-    $("comp-add").disabled = $("comp-accept").disabled = readOnly || approved || !online || pendingTaps > 0;   // a save keeps a READY
+    $("comp-add").disabled = readOnly || approved || !online || pendingTaps > 0;   // a save keeps a READY
     box.dataset.done = String(!!s && s.choice === "accept");
     $("comp-said").hidden = !s;
-    $("comp-said").textContent = !s ? "" : s.choice === "accept" ? "Accepted " + when(s.at) + ". Start is unlocked." : "Add them to your folder. " + (selfLane() ? "This card updates after your next save." : again);
+    $("comp-said").textContent = !s ? "" : s.choice === "accept" ? "Accepted " + when(s.at) + "." : "Add them to your folder. " + (selfLane() ? "This card updates after your next save." : again);
   }
-  function compAnswer(choice) {   // one tap, saved at once with its time; Start still records the whole answer with the server's
+  function compAnswer(choice) {   // one tap, saved at once with its time; Start records his acceptance with the server's
     var c = compCheck();
     if (!c || readOnly || approved || !online || pendingTaps || inProduction()) return;
     state.answers.q_comp_check = JSON.stringify({ id: c.id, choice: choice, at: new Date().toISOString() }); own.q_comp_check = true;
@@ -2653,7 +2656,6 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   $("comp-more").addEventListener("click", function () { compAll = !compAll; paintComp(); });
   $("comp-add").addEventListener("click", function () { compAnswer("add"); });
-  $("comp-accept").addEventListener("click", function () { compAnswer("accept"); });
   // ---------- Ready to start (Matt 2026-10-30: "needs better styling and more obviousness") ----------
   // The musts before Start as a live list: his option when there are two, the To start lines that apply, and our file check.
   // A tap on an open one jumps to it. The card replaces the help, fact and lock lines on a self-service form.
@@ -2674,7 +2676,6 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     });
     var hp = Object.assign({}, F.house_prompts || {}, D.house_prompts || {}), checked = hp.files_complete === true && !!hp.files_checked_at && !hp.files_checking_at;
     rows.push({ key: "files", label: "Your file", done: checked, note: checked ? "Checked by us" : filesNeed(hp), target: null });
-    if (compCheck()) rows.push({ key: "comps", label: "Your comps", done: !compOpen(), note: "", target: $("comp-card") });
     return rows;
   }
   function paintReady() {
@@ -2684,7 +2685,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (!show) return;
     ["help", "final-file", "selfservice-timing", "optional-line"].forEach(function (id) { $(id).hidden = true; });   // the To start card and the lock line say all of it
     var rows = readyRows(), open = rows.filter(function (r) { return !r.done; });
-    var asks = rows.filter(function (r) { return r.key !== "q_service_option" && r.key !== "files" && r.key !== "comps"; });
+    var asks = rows.filter(function (r) { return r.key !== "q_service_option" && r.key !== "files"; });
     var count = document.querySelector("#sections .to-start [data-start-count]");
     if (count) count.textContent = asks.filter(function (r) { return r.done; }).length + " of " + asks.length;
     asks.forEach(function (r) { if (r.target && r.target.dataset) r.target.dataset.done = String(r.done); });
@@ -2692,7 +2693,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var lock = $("start-missing"); lock.textContent = ""; lock.className = "start-lock";
     function go(label, target) { var b = el("button", { type: "button", cls: "link-inline", text: label }); b.addEventListener("click", function () { jumpTo(target); }); return b; }
     function say(t) { lock.appendChild(document.createTextNode(t)); }
-    var pick = open.filter(function (r) { return r.key === "q_service_option"; })[0], todo = open.filter(function (r) { return r.key !== "q_service_option" && r.key !== "files" && r.key !== "comps"; }), file = open.filter(function (r) { return r.key === "files"; })[0], comps = open.filter(function (r) { return r.key === "comps"; })[0];
+    var pick = open.filter(function (r) { return r.key === "q_service_option"; })[0], todo = open.filter(function (r) { return r.key !== "q_service_option" && r.key !== "files"; }), file = open.filter(function (r) { return r.key === "files"; })[0];
     if (pick && !document.querySelector("#sections .to-start")) { lock.appendChild(go("Pick A or B", pick.target)); say(" above to begin."); }   // the four answers appear with his option
     else if (todo.length === asks.length && asks.length) {
       if (pick) { lock.appendChild(go("Pick A or B", pick.target)); say(" and answer the " + asks.length + " items above."); }
@@ -2702,7 +2703,6 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (todo.length) { say("Still to answer: "); todo.forEach(function (r, i) { if (i) say(" · "); lock.appendChild(r.target ? go(r.label, r.target) : document.createTextNode(r.label)); }); say("."); }
     }
     if (file) say((lock.textContent ? " " : "") + "Your file: " + file.note.charAt(0).toLowerCase() + file.note.slice(1));
-    if (comps) { say(lock.textContent ? " " : ""); lock.appendChild(go("Your comps", comps.target)); say(": add comps or accept the gaps above."); }
     lock.hidden = !open.length;
   }
   function reveal(node) { var fold = node.closest("details"); if (fold && !fold.open) fold.open = true; }   // a folded item opens first (Your calls)
@@ -2851,11 +2851,6 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       $("quote").textContent = [laneTitle(D.selected_lane || "self-service"), O.price].filter(Boolean).join(" · ");
       statusBtns.forEach(function(b) { if(b.dataset.s === "READY") { b.hidden = inProduction(); b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || !minimalChecked() || checkingFiles() || !minimalFactsReady() || missing().length > 0; } });
     }
-    if (compOpen()) {   // Matt 2026-11-03: Start waits for his added comps or his acceptance of the gaps, every lane
-      if (minimalStart()) statusBtns.forEach(function (b) { if (b.getAttribute("data-s") === "READY") b.disabled = true; });   // READY is his Start here
-      $("start-production").disabled = true;
-      if (!selfLane()) { $("start-missing").textContent = "Start unlocks once you add comps or accept the gaps above."; $("start-missing").hidden = false; }
-    }
     paintComp();
     $("ss-reminder").hidden = !selfLane() || stage !== "open" || inProduction() || readOnly;   // Matt 2026-11-03: one line above Start
     $("save-calls").hidden = !minimalCalls() || inProduction();
@@ -2946,7 +2941,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (!b.hidden && !inProduction() && !answered() && !simpleStart() && !minimalCalls()) lead = "Still to answer:";
       b.classList.toggle("wait", left.length > 0);
     });
-    if (minimalCalls()) statusBtns.forEach(function(b){if(b.dataset.s === "READY") {b.textContent = inProduction() ? "Start received" : "Start"; b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || inProduction() || !minimalChecked() || checkingFiles() || !minimalFactsReady() || left.length > 0 || compOpen();}});
+    if (minimalCalls()) statusBtns.forEach(function(b){if(b.dataset.s === "READY") {b.textContent = inProduction() ? "Start received" : "Start"; b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || inProduction() || !minimalChecked() || checkingFiles() || !minimalFactsReady() || left.length > 0;}});
     musts.forEach(function (m) { if (left.indexOf(m) < 0) m.node.classList.remove("need"); });
     var shown = !approved && !readOnly && !(customerReturned() && (!signoff() || !reviewReady() || signedOff()));   // the status bar's own rule (paintStatus)
     var allBtn = $("approve-all-btn"), done = statusBtns.filter(function (b) { return b.getAttribute("data-s") === "DONE"; })[0];
@@ -3034,7 +3029,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
           var saved = r.saved || {};
           if (landed(item.kind, doc, saved) || item.kind === "save" && Date.parse(saved.updatedAt) > Date.parse(item.at) + 60000) return;
           var starts = item.kind === "go" || item.kind === "start" && doc.status === "READY" && r.form && (r.form.minimal_start === true || (r.form.house_prompts || {}).lane === "self-service");
-          if (starts && compBlocks(r.form, doc.answers)) throw { code: "comps" };   // Matt 2026-11-03: a replayed Start needs this check accepted too
+          if (starts && compBlocks(r.form, doc.answers)) throw { code: "comps" };   // Matt 2026-11-03: a replayed Start accepts only the check he saw
           return post(item.doc).catch(function () {}).then(read).then(function (r2) { if (!landed(item.kind, doc, r2.saved || {})) throw {}; });
         });
       }
@@ -3179,9 +3174,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function startProduction() {
     if (minimalCalls() && missing().length) return;
     if (!filesChecked() || realProduction() || readOnly || !online || pendingTaps > 0 || goBusy) return;
-    if (compNeeds()) { if (pendingStart) startFailed("comps"); else jumpTo($("comp-card")); return; }   // a check that arrived mid-Start needs its own tap
+    if (compNeeds() && pendingStart) { startFailed("comps"); return; }   // a check that arrived mid-Start: he reads it, then taps Start again
+    var compWas = state.answers.q_comp_check, accepted = compAccept() ? (edits++, write(false)) : null;   // a GO saves no answers (Code.gs): his acceptance saves first, and the GO waits on it
     var payload = body(true); payload.go = true; payload.files_checked_at = checkedAt(); payload.request_id = newId();
-    var checkStamp = payload.files_checked_at, doc = JSON.stringify(payload), item = outboxAdd("go", doc, payload.request_id);
+    var checkStamp = payload.files_checked_at, doc = JSON.stringify(payload), item = null;
     goBusy = true; paintStatus();
     function once() {   // each attempt reads first: a check that arrived since needs his own tap (Matt 2026-11-03)
       return read().then(function (r0) { if (r0.form && compBlocks(r0.form, payload.answers)) throw { code: "comps" }; })
@@ -3194,9 +3190,12 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       });
     }
     // A Start the server will not record (its refusal is unreadable here) reads as refused after a few tries.
-    writing = writing.catch(function () {}).then(function () { return settle(item, once, 4); }).then(function () {
+    writing = writing.catch(function () {}).then(function () { return accepted; }).then(function () {
+      item = outboxAdd("go", doc, payload.request_id); return settle(item, once, 4);
+    }).then(function () {
       goBusy = false; pendingStart = null; paintStatus(); banner(minimalCalls() ? "Started ✓ We’re building your report." : "Start production received.", "ok");
     }, function (e) {
+      if (!item && accepted) state.answers.q_comp_check = compWas;   // his acceptance never saved: the next Start saves it again
       if (pendingStart) startFailed(e && e.code); else { goBusy = false; paintStatus(); banner("Start not confirmed. Check the form and try again.", "warn"); }
     });
   }
@@ -3324,7 +3323,6 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function setStatus(s) {
     if (readOnly || approved || pendingTaps || (customerReturned() && (!signoff() || !reviewReady() || signedOff() || s !== "DONE" || roundsLocked()))) return;
-    if (s === "READY" && minimalStart() && compOpen()) { jumpTo($("comp-card")); banner("Add comps, or tap Continue as is.", "warn"); return; }
     if (s === "READY" && minimalCalls() && (!minimalChecked() || !minimalFactsReady())) return;
     var gaps = s === "READY" || s === "DONE" ? missing() : [];
     var blocking = s === "READY" && (callsFirst() || minimalCalls()) ? gaps : gaps.filter(function (m) { return m.key === "q_client_permits"; });
@@ -3341,7 +3339,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     }
     if (agreeQ && (s === "DONE" || s === "NEEDS_CHANGE")) state.answers["q_" + agreeQ.id] = s === "DONE" ? "agreed " + agreeQ.value : "";   // Agree is his DONE
     clearTimeout(timer); timer = null;
-    var was = state.status;
+    var was = state.status, compWas = state.answers.q_comp_check;
+    if (s === "READY" && minimalStart()) compAccept();   // his Start accepts the gaps on the card (Matt 2026-11-03)
     state.status = s;
     // Matt 2026-10-30: Start and Approve show as accepted at once; the server's record replaces the stand-in, a refusal rolls it back.
     if (s === "READY" && minimalCalls()) pendingStart = Object.assign({ at: new Date().toISOString(), files_checked_at: checkedAt() }, currentQuote());
@@ -3350,7 +3349,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (s === "READY") { fastUntil = Date.now() + 60000; pollSoon(); banner(minimalCalls() ? "Started ✓ We’re building your report." : "Sending your files and answers for checking. Nothing starts yet.", "ok"); }
     if (pendingApprove) banner(approvalNote(), "ok");
     if (connecting) { tapped = s; if (s !== "READY") banner("Sending…", "ok"); return; }
-    if (!online) { pendingStart = null; pendingApprove = false; state.status = was; paintStatus(); banner("Not connected, not sent. Your answers are still here.", "warn"); return; }
+    if (!online) { pendingStart = null; pendingApprove = false; state.status = was; state.answers.q_comp_check = compWas; paintStatus(); banner("Not connected, not sent. Your answers are still here.", "warn"); return; }
     conn("Sending…");
     write(true).then(function (r) {
       conn(approved ? "Approved" : "Saved " + when(new Date().toISOString()));
