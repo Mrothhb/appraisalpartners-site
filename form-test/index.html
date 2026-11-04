@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-03.11">
+<html lang="en" data-build="v2026-11-04.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -743,6 +743,12 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
    pending or in progress"). One card the height of the screen under the bar: an icon, a headline, one line; for missing files
    the short list; after Start the tracker. The normal page stays under it and "Order details" scrolls there. ---------- */
 /* Matt 2026-11-03: the comp gaps card, the change-rounds box's strong orange, a big "!" up front, two plain choices */
+/* Matt 2026-11-04: the review's double-check items, bold in their own strong box at the very top */
+.dc-card { border: 2px solid #c92a2a; border-left: 8px solid #c92a2a; background: #fff0f0; color: #6b0f0f; padding: var(--s-5) var(--card-px); }
+.dc-title { margin: 0 0 var(--s-3); font: 800 20px/1.3 var(--display); color: #8f1414; }
+.dc-list { margin: 0; padding: 0 0 0 var(--s-5); font-size: 16px; font-weight: 600; line-height: 1.5; color: var(--ink); overflow-wrap: anywhere; }
+.dc-list li + li { margin-top: var(--s-2); }
+@media (forced-colors: active) { .dc-card { border-color: CanvasText; } }
 .comp-card { border: 2px solid #e8590c; border-left: 8px solid #e8590c; background: #fff0e0; color: #6b2400; padding: var(--s-5) var(--card-px); }
 .comp-head { display: flex; align-items: center; gap: var(--s-3); margin: 0 0 var(--s-3); }
 .comp-bang { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-full); background: #e8590c; color: #fff; font: 800 26px/1 var(--display); }
@@ -816,6 +822,13 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
   <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
 
   <div id="main" hidden>
+  <!-- Matt 2026-11-04: "any items of high interest make it clear on the form colors, bold in its own box at the top 'double check these'".
+       prefill double_check (review_round.py from the review note's double-check and highest-risk bullets; formlink.py --double-check):
+       one line each, page numbers in the line, on a returned review. No items, no box. -->
+  <section class="card dc-card" id="dc-card" role="note" aria-labelledby="dc-title" hidden>
+    <p class="dc-title" id="dc-title" role="heading" aria-level="2">Double check these</p>
+    <ul class="dc-list" id="dc-list"></ul>
+  </section>
   <section class="usage" id="usage" aria-label="AI usage this week" hidden>
     <div class="usage-track" id="usage-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-labelledby="usage-line"><i id="usage-fill"></i></div>
     <p class="usage-line" id="usage-line"></p>
@@ -2271,6 +2284,11 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
         : k === "repairs" ? function () { return /^Subject to (repair|completion)$/.test(premise()); } : null });
     });
   }
+  function paintChecks() {   // the review's "Double check these" box (prefill double_check), one line each; none, no box
+    var checks = D.stage === "returned" && Array.isArray(D.double_check) ? D.double_check.map(function (l) { return String(l || "").trim(); }).filter(Boolean) : [];
+    $("dc-list").textContent = ""; $("dc-card").hidden = !checks.length;
+    checks.forEach(function (l) { $("dc-list").appendChild(el("li", { text: l })); });
+  }
   function renderOrder() {
     document.body.classList.toggle("minimal-calls", minimalCalls());
     var due = String(O.payment_due || "").trim();
@@ -3485,7 +3503,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return canon(f.matt_hold || null) !== canon(F.matt_hold || null) || canon(f.start_missing || []) !== canon(F.start_missing || []) || canon(f.comp_check || null) !== canon(F.comp_check || null) || canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.change_rounds || 0) !== (F.change_rounds || 0) || canon(f.change_answer || null) !== canon(F.change_answer || null) || f.changes_closed !== F.changes_closed || (f.changes_closed_text || "") !== (F.changes_closed_text || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || canon(f.review_changes || null) !== canon(F.review_changes || null) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
+  function newer(f) { return canon(f.matt_hold || null) !== canon(F.matt_hold || null) || canon(f.start_missing || []) !== canon(F.start_missing || []) || canon(f.comp_check || null) !== canon(F.comp_check || null) || canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.change_rounds || 0) !== (F.change_rounds || 0) || canon(f.change_answer || null) !== canon(F.change_answer || null) || f.changes_closed !== F.changes_closed || (f.changes_closed_text || "") !== (F.changes_closed_text || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || canon(f.review_changes || null) !== canon(F.review_changes || null) || canon(f.double_check || []) !== canon(F.double_check || []) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
   function canon(v) { return JSON.stringify(v, function (k, x) { return x && typeof x === "object" && !Array.isArray(x) ? Object.keys(x).sort().reduce(function (o, j) { o[j] = x[j]; return o; }, {}) : x; }); }   // key order is never a change
   // A re-render keeps the reader's place (Chase 2026-10-20): the scroll, then the box or button in focus and its
   // selection; with nothing in focus it takes none.
@@ -3545,7 +3563,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function refresh(f) {
     var at = keepPlace();
     F = f; D = laneForm(F, state.answers); O = D.order || {}; state.answers=answersFrom(Object.fromEntries(Object.entries(state.answers).filter(function(x){return own[x[0]];}))); controls = {}; $("sections").innerHTML = "";
-    renderOrder(); renderSections(); renderLanes(); paintAll(); setStage(D.stage); regrow();
+    renderOrder(); paintChecks(); renderSections(); renderLanes(); paintAll(); setStage(D.stage); regrow();
     if (state.status === "READY" && stage === "open") banner(readyNote(), "ok");
     restorePlace(at);
   }
@@ -3557,7 +3575,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     while (state.changes.length < NCHANGES) state.changes.push("");
     F = form || {}; D = laneForm(F, state.answers); O = D.order || {};
     state.answers = answersFrom(mine); Object.keys(mine || {}).forEach(function (k) { own[k] = true; });
-    renderOrder();
+    renderOrder(); paintChecks();
     renderSections();
     renderLanes();
     renderStatus();
