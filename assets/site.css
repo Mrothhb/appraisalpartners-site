@@ -610,3 +610,12 @@ h2, h3 { text-wrap: balance; }
 
 .title.section-heading { margin: 0; }
 .faq-link { margin-top: var(--s-5); }
+
+/* Text-only Tim cards retain their previous footprint at desktop and phone widths. */
+.pair .person--text { grid-template-columns: minmax(0, 1fr); min-height: 284.078125px; align-content: center; }
+.bio-content--text { grid-template-columns: minmax(0, 1fr); min-height: 352px; align-items: center; }
+.bio-content--text .prose { max-width: 70ch; }
+@media (max-width: 480px) {
+  .pair .person--text { min-height: 287.296875px; }
+  .bio-content--text { min-height: 594.5px; }
+}
