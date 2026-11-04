@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-03.10">
+<html lang="en" data-build="v2026-11-03.11">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -762,6 +762,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 .comp-tap:disabled { cursor: default; opacity: .6; }
 .comp-said { margin: var(--s-3) 0 0; font-size: 14px; font-weight: 600; }
 .comp-start { margin: var(--s-4) 0 0; font-size: 16px; line-height: 1.4; }
+.comp-cost { margin: 0 0 var(--s-4); font-size: 15px; line-height: 1.4; }
 .comp-card[data-done="true"] { border-color: var(--success-edge); border-left-color: var(--success-edge); background: var(--success-bg); color: var(--success-ink); }
 .comp-card[data-done="true"] .comp-bang { background: var(--success-edge); }
 .comp-card[data-done="true"] .comp-title, .comp-card[data-done="true"] .comp-list li b { color: var(--success-ink); }
@@ -844,13 +845,15 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
   <section class="card hold-card" id="hold-card" role="alert" hidden><p id="hold-line">This order needs Matt’s review before it can start. We’ll email you.</p></section>
   <!-- Matt 2026-11-03: "we should be VERY CLEAR with the bold exclamation point front and cetner that these items are lacking
        in comps please revisist this and add more, or continue and be aware and accepr this". The audit's bracketing check of
-       his closed comps (tools/comp_bracket.py, prefill comp_check), at the top of Start on every lane: one line per gap, then
-       I'll add comps, and the last line: tapping Start accepts these gaps (Matt 2026-11-03, "for all."). His answer is
+       his closed comps and, on self-service, his report against his own evidence (tools/comp_bracket.py, prefill comp_check),
+       at the top of Start on every lane: one line per gap, what leaving them costs, then I'll add comps, and the last line:
+       tapping Start accepts these gaps (Matt 2026-11-03, "for all."). His answer is
        q_comp_check {id, choice, at}, bound to that check; Start records "accept" on the check he sees. No gaps, no card. -->
   <section class="card comp-card" id="comp-card" role="alert" aria-labelledby="comp-title" hidden>
-    <div class="comp-head"><span class="comp-bang" aria-hidden="true">!</span><p class="comp-title" id="comp-title">Your comps leave gaps a lender or reviewer will flag</p></div>
+    <div class="comp-head"><span class="comp-bang" aria-hidden="true">!</span><p class="comp-title" id="comp-title">Gaps a lender or reviewer will flag</p></div>
     <ul class="comp-list" id="comp-list"></ul>
     <button type="button" class="comp-more" id="comp-more" aria-expanded="false" aria-controls="comp-list" hidden></button>
+    <p class="comp-cost" id="comp-cost"></p>
     <div class="comp-taps">
       <button type="button" class="comp-tap" id="comp-add" aria-pressed="false"><b>I’ll add comps</b><span id="comp-add-why">Add them to your folder. We check again on your next save.</span></button>
     </div>
@@ -2644,6 +2647,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     $("comp-more").setAttribute("aria-expanded", String(compAll));
     var again = selfLane() ? "We check again on your next save." : "We’ll check again and update this card.";   // desk lanes: the desk reruns the check after intake
     $("comp-add-why").textContent = "Add them to your folder. " + again;
+    // Matt 2026-11-03: "gaps are a big red flag that he will use his own AI usage to have to likely fix them downstream"
+    $("comp-cost").textContent = "Leaving them usually means a fix after the run, which uses a change round" + (usageBar() ? " and your AI usage." : ".");
     $("comp-add").setAttribute("aria-pressed", String(!!s && s.choice === "add"));
     $("comp-add").disabled = readOnly || approved || !online || pendingTaps > 0;   // a save keeps a READY
     box.dataset.done = String(!!s && s.choice === "accept");
@@ -2707,7 +2712,22 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (todo.length) { say("Still to answer: "); todo.forEach(function (r, i) { if (i) say(" · "); lock.appendChild(r.target ? go(r.label, r.target) : document.createTextNode(r.label)); }); say("."); }
     }
     if (file) say((lock.textContent ? " " : "") + "Your file: " + file.note.charAt(0).toLowerCase() + file.note.slice(1));
-    lock.hidden = !open.length;
+    var why = pick || todo.length || file ? "" : startWhy();   // Matt 2026-11-03: Start is never off without saying why
+    if (why) say((lock.textContent ? " " : "") + why);
+    lock.hidden = !lock.textContent;
+  }
+  // Start's other locks (paintStatus: offline, a save in flight, his comps not on the form, an answer outside the To start
+  // rows), in his words; the usage lock and Matt's hold have their own cards, his file its own row. His comps are the desk's
+  // to put on his form (the file check; the watcher tells the desk), so that line says we're on it.
+  function startWhy() {
+    if (!online) return "You’re offline. Start opens when you’re back online.";
+    if (pendingTaps > 0 || goBusy) return "Saving your last change…";
+    if (!minimalFactsReady()) {
+      var mls = (D.comps || []).map(function (c) { return c.mls; });
+      return mls.length && mls.every(Boolean) ? "Two of your comps share one MLS number. Fix your grid and save." : "Your comps: we’re putting them on your form. We’re on it.";
+    }
+    var left = missing().map(function (m) { return cap(m.label || (m.node.querySelector("label") || {}).textContent || "an answer"); });
+    return left.length ? "Still to answer: " + left.filter(function (t, i) { return left.indexOf(t) === i; }).join(" · ") + "." : "";
   }
   function reveal(node) { var fold = node.closest("details"); if (fold && !fold.open) fold.open = true; }   // a folded item opens first (Your calls)
   function firstControl(node) { return Array.from(node.querySelectorAll("input, textarea, button")).filter(function (c) { return c.offsetParent; })[0]; }
