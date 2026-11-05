@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-05.1">
+<html lang="en" data-build="v2026-11-05.2">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1313,7 +1313,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function customerStart() { return stage === "open" && (minimalStart() || !asked()) && ["review", "regression"].indexOf((D.house_prompts || {}).lane) < 0; }
   var GO_NOTE = "You're set. We'll start as soon as everything's in.";
   function fullGo() { return String((pendingStart || state.go || {}).lane || "").indexOf("full") === 0; }
-  function goNote() { return fullGo() ? "You're set. We'll start on Matt's word." : GO_NOTE; }
+  function goNote() { return pendingStart ? "Sending your Start…" : fullGo() ? "You're set. We'll start on Matt's word." : GO_NOTE; }
   // Matt 2026-10-30: a tapped Start or Approve shows at once; the server's record replaces the stand-in, a refusal rolls it back.
   var pendingStart = null, pendingApprove = false;
   function inProduction() { return !!pendingStart || realProduction(); }
@@ -1333,6 +1333,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   var online = false, readOnly = false, edits = 0, savedEdits = 0, timer = null, writing = Promise.resolve();
   var connecting = false, tapped = null;   // a status tapped while the first read is under way goes out once it connects
   var savedAt = null, savedStatus = null;  // only a confirmed READY locks the submitted answers; an old receipt cannot confirm a retry
+  var answerRevision = null, answerBase = { answers: {}, changes: [] };
   var approved = false;        // only the internal reviewer lane keeps its historical DONE lock
   var postBusy = false, postDraft = null;
   function customerReturned() { return stage === "returned" && (D.house_prompts || {}).lane !== "review"; }
@@ -1352,6 +1353,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       a.customer_agreement === true && a.terms === D.terms;
   }
   function approvalNote() {
+    if (pendingApprove) return "Sending your approval…";
     var h = state.history.filter(function (e) { return e.status === "DONE"; });
     return (pendingApprove ? "Approved ✓ " : "Approved ") + when(pendingApprove ? new Date().toISOString() : h.length ? h[h.length - 1].at : savedAt) + (approveShips() ? ". It goes to your TOTAL folder next." : ". Your report is in your TOTAL folder.");
   }
@@ -2529,6 +2531,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     return made ? { kind: "open", request: req, at: req.at, reason: "", made: true } : { kind: "answered", request: req, at: a.at, reason: reason, made: false };
   }
   function changeWords(ch) {   // [title, line]
+    if (ch.request.pending) return ["Sending your change request…", "Keep this page open until it is saved."];
     var stamp = function (iso) {   // "Mon 2:37 PM" as on the tracker; older than a few days, the date
       var d = new Date(iso), recent = Math.abs(Date.now() - d) < 5 * 864e5;
       return isNaN(d) ? "" : " (" + (recent ? d.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" }) : when(iso)) + ")";
@@ -2980,7 +2983,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // 2026-10-13: a READY tapped at the top sent nine post-run questions blank).
   function paintNow() {
     var s = state.status, left = stage === "open" || signoff() ? missing() : [], lead = "";
-    $("now").textContent = permissionHeld() ? "On hold · client permission" : approved ? "Approved" : inProduction() ? "Start production received" : filesChecked() ? "Files checked" : answered() ? "Answers sent" : quoteChanged() ? WORD.DRAFT : WORD[s];
+    $("now").textContent = pendingStart || pendingApprove ? "Sending…" : permissionHeld() ? "On hold · client permission" : approved || signedOff() ? "Approved" : inProduction() ? "Start production received" : filesChecked() ? "Files checked" : answered() ? "Answers sent" : signoff() ? "Review your report" : quoteChanged() ? WORD.DRAFT : WORD[s];
     if (s !== "DRAFT") $("saved").hidden = true;
     statusBtns.forEach(function (b) {
       if (signoff() && b.getAttribute("data-s") === "DONE") {
@@ -2989,11 +2992,11 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       }
       if (b.getAttribute("data-s") !== "READY") return;
       var go = customerStart() || minimalStart() ? "Start" : asked() && !startOptions() ? "Send answers" : WORD.READY;
-      b.textContent = inProduction() ? "Start received" : customerStart() ? "Start" : answered() ? "Answers sent" : go;
+      b.textContent = pendingStart ? "Sending…" : inProduction() ? "Start received" : customerStart() ? "Start" : answered() ? "Answers sent" : go;
       if (!b.hidden && !inProduction() && !answered() && !simpleStart() && !minimalCalls()) lead = "Still to answer:";
       b.classList.toggle("wait", left.length > 0);
     });
-    if (minimalCalls()) statusBtns.forEach(function(b){if(b.dataset.s === "READY") {b.textContent = inProduction() ? "Start received" : "Start"; b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || inProduction() || left.length > 0;}});
+    if (minimalCalls()) statusBtns.forEach(function(b){if(b.dataset.s === "READY") {b.textContent = pendingStart ? "Sending…" : inProduction() ? "Start received" : "Start"; b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || inProduction() || left.length > 0;}});
     musts.forEach(function (m) { if (left.indexOf(m) < 0) m.node.classList.remove("need"); });
     var shown = !approved && !readOnly && !(customerReturned() && (!signoff() || !reviewReady() || signedOff()));   // the status bar's own rule (paintStatus)
     var allBtn = $("approve-all-btn"), done = statusBtns.filter(function (b) { return b.getAttribute("data-s") === "DONE"; })[0];
@@ -3028,65 +3031,165 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var b = $("banner"); b.hidden = !msg; b.textContent = msg || ""; b.className = msg ? "banner " + (kind || "ok") : "";
   }
   // ---------- outbox (Matt 2026-10-30: "it should immediately accept event action feedback… user needs immediate feedback") ----------
-  // Every action shows as accepted at once. Its post waits here, kept in this browser until a read shows it landed, retried
-  // with backoff and in order; the header reads Syncing… meanwhile, and one plain line appears only once retries have run out.
-  // The server keeps every rule: a refusal it can signal rolls the page back. A retry repeats the same document and request id.
+  // Keep each action separately: two tabs cannot replace each other's queue. Only its exact saved receipt confirms it.
   var OUTBOX_KEY = "aap-outbox-" + T, outbox = [], lastConn = "", replayFailed = "";
+  var storageFailed = false, storageDamaged = false, confirmedActions = {}, PAGE_ID = newId();
   var BACKOFF = [1500, 3000, 6000, 12000, 24000, 30000], STUCK_AFTER = 4;
   var VERB = { save: "Save", start: "Start", go: "Start", feedback: "message", request: "change request", approve: "Approve" };
-  function outboxLoad() { try { var v = JSON.parse(localStorage.getItem(OUTBOX_KEY) || "[]"); outbox = Array.isArray(v) ? v : []; } catch (e) { outbox = []; } }
-  function outboxSave() { try { if (outbox.length) localStorage.setItem(OUTBOX_KEY, JSON.stringify(outbox)); else localStorage.removeItem(OUTBOX_KEY); } catch (e) {} }
+  function outboxLoad() {
+    try {
+      var legacy = [], found = {};
+      try { legacy = JSON.parse(localStorage.getItem(OUTBOX_KEY) || "[]"); } catch (e) { storageDamaged = true; }
+      (Array.isArray(legacy) ? legacy : []).forEach(function (i) { if (i && i.id) found[i.id] = i; else storageDamaged = true; });
+      for (var n = 0; n < localStorage.length; n++) {
+        var key = localStorage.key(n);
+        if (key.indexOf(OUTBOX_KEY + "-") === 0) {
+          try { var i = JSON.parse(localStorage.getItem(key)); if (i && i.id) found[i.id] = i; else storageDamaged = true; }
+          catch (e) { storageDamaged = true; }
+        }
+      }
+      var pending = Object.keys(found).map(function (id) { var i = found[id]; if (!i.at) { storageDamaged = true; i.error = "damaged"; } return i; })
+        .sort(function (a, b) { return String(a.at || "").localeCompare(String(b.at || "")); }), ordered = [];
+      while (pending.length) {
+        var next = pending.findIndex(function (i) { return !i.after || !pending.some(function (p) { return p.id === i.after; }); });
+        if (next < 0) { pending.forEach(function (i) { i.error = "damaged"; }); storageDamaged = true; ordered = ordered.concat(pending); break; }
+        ordered.push(pending.splice(next, 1)[0]);
+      }
+      outbox = ordered;
+      if (outboxSave() && !storageDamaged) localStorage.removeItem(OUTBOX_KEY);
+    } catch (e) { storageFailed = true; } // damaged or unavailable storage is never a successful save
+  }
+  function outboxSave() {
+    try { outbox.forEach(function (i) { localStorage.setItem(OUTBOX_KEY + "-" + i.id, JSON.stringify(i)); }); storageFailed = false; return true; }
+    catch (e) { storageFailed = true; return false; }
+  }
   function newId() { return "rq_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10); }
-  function outboxAdd(kind, doc, id) { var item = { id: id || newId(), kind: kind, doc: doc, at: new Date().toISOString(), tries: 0 }; outbox.push(item); outboxSave(); paintSync(); return item; }
-  function outboxDrop(item) { outbox = outbox.filter(function (x) { return x.id !== item.id; }); outboxSave(); paintSync(); }
+  function answerAction(kind) { return ["save", "start", "approve", "go"].indexOf(kind) >= 0; }
+  function outboxAdd(kind, doc, id) {
+    var prior = outbox.filter(function (i) { return !i.error; }).slice(-1)[0];
+    var item = { id: id || newId(), page: PAGE_ID, kind: kind, doc: doc, at: new Date().toISOString(), tries: 0,
+      base: JSON.parse(JSON.stringify(answerBase)), after: prior && prior.id,
+      replaces: outbox.filter(function (i) { return i.error && (i.error === "review" || i.page === PAGE_ID) && (answerAction(kind) ? i.kind === kind || i.kind === "save" : i.error === "review" && i.kind === kind); }).map(function (i) { return i.id; }) };
+    outbox.push(item); outboxSave(); paintSync(); return item;
+  }
+  function outboxDrop(item) {
+    var ids = [item.id].concat(item.replaces || []);
+    outbox = outbox.filter(function (x) { return ids.indexOf(x.id) < 0; });
+    try { ids.forEach(function (id) { localStorage.removeItem(OUTBOX_KEY + "-" + id); }); if (!outbox.length) storageFailed = false; } catch (e) { storageFailed = true; }
+    paintSync();
+  }
+  function prepareAction(item, saved) {
+    if (!item.prepared) {
+      var doc = JSON.parse(item.doc), prior = confirmedActions[item.after] || ((saved || {}).action_receipts || {})[item.after];
+      if (prior && answerAction(item.kind)) { doc.expected_revision = prior.revision; if (prior.base) item.base = prior.base; }
+      item.doc = JSON.stringify(doc); item.prepared = true; outboxSave();
+    }
+    if (item.hash) return Promise.resolve();
+    var intent = JSON.parse(item.doc); delete intent.t;
+    if (typeof crypto === "undefined" || !crypto.subtle || typeof TextEncoder === "undefined") return Promise.reject({ code: "reload_required" });
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(canon(intent))).then(function (bytes) {
+      item.hash = Array.prototype.map.call(new Uint8Array(bytes), function (b) { return b.toString(16).padStart(2, "0"); }).join(""); outboxSave();
+    });
+  }
+  function landed(kind, doc, saved, hash) {
+    var receipt = (saved.action_receipts || {})[doc.request_id];
+    return !!receipt && !!hash && receipt.digest === hash;
+  }
+  function verifyAction(item, r) {
+    var doc = JSON.parse(item.doc), saved = r.saved || {}, receipt = (saved.action_receipts || {})[doc.request_id];
+    if (landed(item.kind, doc, saved, item.hash)) {
+      confirmedActions[item.id] = Object.assign({}, receipt, answerAction(item.kind) ? { base: { answers: doc.answers || {}, changes: doc.changes || [] } } : {});
+      if (!answerAction(item.kind) && receipt.prior_revision === answerRevision) {
+        answerRevision = receipt.revision;
+        if (item.kind === "feedback") Object.assign(answerBase.answers, doc.answers || {});
+      }
+      return saved;
+    }
+    if (receipt) throw { code: "request_reused", form: r.form, saved: saved };
+    if (!saved._revision || !doc.request_id) throw { code: "reload_required" };
+    if (answerAction(item.kind) && saved._revision !== doc.expected_revision) throw { code: "conflict", form: r.form, saved: saved };
+    throw {};
+  }
   // Runs once() until it confirms. A definite refusal (an error with a code) ends it; silence retries with backoff, forever
   // unless max is set (a Start the server will not record, whose refusal this page cannot read, counts as refused after max).
   function settle(item, once, max) {
-    return once().then(function (r) { outboxDrop(item); return r; }, function (e) {
-      if (e && e.code) { outboxDrop(item); throw e; }
+    return Promise.resolve().then(function () { return prepareAction(item); }).then(once).then(function (r) { outboxDrop(item); return r; }, function (e) {
+      if (e && e.code) { item.error = e.code; outboxSave(); paintSync(); throw e; }
       item.tries++; outboxSave(); paintSync();
-      if (max && item.tries >= max) { outboxDrop(item); throw { code: "unconfirmed" }; }
+      if (max && item.tries >= max) { item.error = "unconfirmed"; outboxSave(); paintSync(); throw { code: "unconfirmed" }; }
       var ms = BACKOFF[Math.min(item.tries - 1, BACKOFF.length - 1)];
       return new Promise(function (resolve) { item.wake = resolve; setTimeout(resolve, ms); }).then(function () { delete item.wake; return settle(item, once, max); });
     });
   }
-  function retryNow() { outbox.forEach(function (i) { if (i.wake) i.wake(); }); }
+  function retryNow() {
+    if (outbox.some(function (i) { return i.error; }) && outbox.every(function (i) { return i.error; })) { recoverDraft(); return; }
+    outbox.forEach(function (i) { if (i.wake) i.wake(); });
+  }
   function paintSync() {
-    var stuck = outbox.some(function (i) { return i.tries >= STUCK_AFTER; }), note = $("sync-note");
-    $("conn").textContent = outbox.length ? "Syncing…" : lastConn;
+    var held = outbox.some(function (i) { return i.error; }), stuck = storageFailed && outbox.length || storageDamaged || held || outbox.some(function (i) { return i.tries >= STUCK_AFTER; }), note = $("sync-note");
+    $("conn").textContent = held ? "Not saved" : outbox.length ? "Syncing…" : lastConn;
     note.hidden = !stuck;
-    if (stuck && !note.firstChild) {
-      note.appendChild(el("span", { text: "Not sent yet, we’ll keep trying." }));
+    if (stuck) {
+      note.textContent = "";
+      note.appendChild(el("span", { text: storageFailed && outbox.length ? "This browser can’t keep your draft. Keep this page open until it saves." : storageDamaged ? "An earlier draft could not be opened. It has been kept on this device." : held ? "Not confirmed. Your draft is kept here. Tap Retry to review it." : "Not sent yet, we’ll keep trying." }));
       var b = el("button", { type: "button", text: "Retry" }); b.addEventListener("click", retryNow); note.appendChild(b);
     }
     if (outbox.some(function (i) { return i.kind === "feedback" && i.tries >= STUCK_AFTER; })) { $("feedback-note").textContent = "Not sent yet, we’ll keep trying."; $("feedback").open = true; }
   }
   function conn(msg) { lastConn = msg; paintSync(); }
-  function landed(kind, doc, saved) {
-    var a = saved.answers || {};
-    if (kind === "feedback") return Object.keys(doc.answers || {}).every(function (k) { return a[k] === doc.answers[k]; });
-    if (kind === "request") return (saved.post_changes || []).some(function (p) { return p.id === doc.post_change.id; });
-    if (kind === "go") return !!saved.go && sameQuote(saved.go, doc.quote) && (doc.comp_gaps || []).every(function (g) { return (saved.go.comp_gaps || []).indexOf(g) >= 0; });
-    if (kind === "approve") return saved.status === "DONE";
-    if (kind === "start") return saved.status === "READY" || !!saved.go;
-    return Object.keys(doc.answers || {}).every(function (k) { return /^q_(service_option|rush)$/.test(k) || a[k] === doc.answers[k]; });
-  }
-  // On open, whatever this browser never saw confirmed goes out first, in order; a save the server has since outgrown is superseded.
+  // A stale draft is retained for explicit review, never silently discarded or rebased over another tab's save.
   function replay() {
     outboxLoad();
     return outbox.slice().reduce(function (p, item) { return p.then(function () {
-      var doc; try { doc = JSON.parse(item.doc); } catch (e) { outboxDrop(item); return; }
+      var doc; try { doc = JSON.parse(item.doc); } catch (e) { item.error = "damaged"; outboxSave(); return; }
+      if (item.error) { replayFailed = VERB[item.kind] || "action"; return; }
+      if (!doc.request_id || answerAction(item.kind) && !doc.expected_revision) { item.error = "reload_required"; outboxSave(); replayFailed = VERB[item.kind] || "action"; return; }
       function once() {
         return read().then(function (r) {
           var saved = r.saved || {};
-          if (landed(item.kind, doc, saved) || item.kind === "save" && Date.parse(saved.updatedAt) > Date.parse(item.at) + 60000) return;
+          if (landed(item.kind, JSON.parse(item.doc), saved, item.hash)) { verifyAction(item, r); return; }
+          if (answerAction(item.kind) && saved._revision !== JSON.parse(item.doc).expected_revision) throw { code: "conflict" };
           var starts = item.kind === "go" || item.kind === "start" && doc.status === "READY" && r.form && (r.form.minimal_start === true || (r.form.house_prompts || {}).lane === "self-service");
           if (starts && compBlocks(r.form, doc.answers)) throw { code: "comps" };   // Matt 2026-11-03: a replayed Start accepts only the check he saw
-          return post(item.doc).catch(function () {}).then(read).then(function (r2) { if (!landed(item.kind, doc, r2.saved || {})) throw {}; });
+          return post(item.doc).catch(function () {}).then(read).then(function (r2) { verifyAction(item, r2); });
         });
       }
-      return settle(item, once, 3).catch(function (e) { if (e && e.code === "unknown") throw e; replayFailed = replayFailed || VERB[item.kind] || "action"; });
+      return read().then(function (r) { return prepareAction(item, r.saved); }).then(function () { return settle(item, once, 3); }).catch(function (e) { item.error = e && e.code || "unconfirmed"; outboxSave(); paintSync(); if (e && e.code === "unknown") throw e; replayFailed = replayFailed || VERB[item.kind] || "action"; });
     }); }, Promise.resolve());
+  }
+
+  function recoverDraft() {
+    clearTimeout(timer); timer = null;
+    var held = outbox.filter(function (i) { return i.error; });
+    var typing = edits !== savedEdits ? { kind: "save", doc: JSON.stringify(body(false)), base: JSON.parse(JSON.stringify(answerBase)) } : null;
+    var messages = { request: [], feedback: [] };
+    function keepMessage(kind, text) { if (text && messages[kind].indexOf(text) < 0) messages[kind].push(text); }
+    var unsentRequest = $("post-text").value, unsentFeedback = $("feedback-text").value;
+    return read().then(function (r) {
+      held = held.filter(function (i) { var d; try { d = JSON.parse(i.doc); } catch (e) { return true; }
+        if (landed(i.kind, d, r.saved || {}, i.hash)) { verifyAction(i, r); outboxDrop(i); return false; } return true; });
+      if (r.form) refresh(r.form);
+      savedEdits = edits; apply(r.saved || {});
+      held.concat(typing ? [typing] : []).forEach(function (i) {
+        var d; try { d = JSON.parse(i.doc); } catch (e) { return; }
+        if (answerAction(i.kind)) {
+          var base = i.base || { answers: {}, changes: [] }, mine = d.answers || {};
+          Object.keys(Object.assign({}, base.answers, mine)).forEach(function (key) {
+            if (canon(mine[key]) === canon((base.answers || {})[key])) return;
+            if (key in mine) state.answers[key] = mine[key]; else delete state.answers[key];
+            own[key] = true;
+          });
+          (d.changes || []).forEach(function (value, n) { if (value !== (base.changes || [])[n]) state.changes[n] = value; });
+        } else if (i.kind === "request" && d.post_change) keepMessage("request", d.post_change.text);
+        else if (i.kind === "feedback") Object.keys(d.answers || {}).forEach(function (k) { try { keepMessage("feedback", JSON.parse(d.answers[k]).text); } catch (e) {} });
+        i.error = "review";
+      });
+      keepMessage("request", unsentRequest); keepMessage("feedback", unsentFeedback);
+      if (messages.request.length) { $("post-text").value = messages.request.join("\n\n"); $("post-box").hidden = false; }
+      if (messages.feedback.length) { $("feedback-text").value = messages.feedback.join("\n\n"); $("feedback").open = true; }
+      if (held.length || typing) { edits++; paintAll(); paintStatus(); outboxSave(); paintSync(); banner("Your draft is back. Review it, then save or send again.", "warn"); }
+      else banner("Your earlier action was saved.", "ok");
+    }, function () { banner("Can’t check the latest answers yet. Your draft is still here.", "warn"); });
   }
 
   var feedbackBusy = false, feedbackDraft = null;
@@ -3111,24 +3214,24 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (feedbackBusy || readOnly || !online) return;
     var text = $("feedback-text").value.trim();
     if (!text) { $("feedback-text").focus(); return; }
+    if (text.length > 3000) { $("feedback-note").textContent = "Please shorten this message. Your text is still here."; return; }
     var entry = { key: "q_fb_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,12), at: new Date().toISOString(), text: text };
     var value = JSON.stringify({at:entry.at,text:entry.text}), answers = {}; answers[entry.key] = value;
-    // At once (Matt 2026-10-30): the message shows as sent; the post lands in the background. Code.gs's feedback path merges
-    // only this key into his saved answers, so the document is fixed here and a retry repeats it.
+    // Show the pending message immediately; its exact receipt changes Sending to Sent.
     state.answers[entry.key] = value; own[entry.key] = true; $("feedback-text").value = ""; grow($("feedback-text"));
-    $("feedback-note").textContent = "Sent ✓ We’ll reply by email."; paintFeedback();
+    $("feedback-note").textContent = "Sending…"; paintFeedback();
     var rid = newId(), doc = JSON.stringify({ t: T, r: R, actor: ACTOR, status: "DRAFT", answers: answers, changes: [], send: false, feedback: true, request_id: rid });
     var item = outboxAdd("feedback", doc, rid);
-    function once(){ return post(doc).catch(function(){}).then(read).then(function(r){ if (!r.saved || (r.saved.answers || {})[entry.key] !== value) throw {}; }); }
+    function once(){ return post(item.doc).catch(function(){}).then(read).then(function(r){ return verifyAction(item, r); }); }
     // Share the save chain so an in-flight autosave cannot erase the new entry.
-    writing = writing.catch(function(){}).then(function(){ return settle(item, once); }).then(function(){ paintFeedback(); }, function(e){ if (e && e.code === "unknown") closed(); });
+    writing = writing.catch(function(){}).then(function(){ return settle(item, once); }).then(function(){ $("feedback-note").textContent = "Sent ✓ We’ll reply by email."; paintFeedback(); }, function(e){ if (e && e.code === "unknown") closed(); });
   });
 
   // ---------- saving ----------
   // TOTAL's preview pane preflights every cross-origin fetch, and Google never answers a preflight. So the page reads
   // through a <script> tag (JSONP) and writes with no-cors posts it cannot read; a read then shows whether it saved.
   function body(send) {
-    return { t: T, r: R, actor: ACTOR, review_id: (D.review || {}).id || "", quote: { price: O.price || "", ready_by: O.ready_by || "", lane: D.selected_lane || (D.house_prompts || {}).lane || "desk", terms: D.terms }, status: state.status, answers: state.answers, changes: state.changes, send: !!send };
+    return { t: T, r: R, actor: ACTOR, expected_revision: answerRevision, review_id: (D.review || {}).id || "", quote: { price: O.price || "", ready_by: O.ready_by || "", lane: D.selected_lane || (D.house_prompts || {}).lane || "desk", terms: D.terms }, status: state.status, answers: state.answers, changes: state.changes, send: !!send };
   }
   // A browser signed in to several Google accounts gets its JSONP request redirected to /u/N/ and failing, because a
   // <script> load carries Google's cookies. So a browser reads with a cookie-free fetch first; only where that fails
@@ -3136,7 +3239,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   var viaScript = false;
   function read() {
     if (viaScript) return jsonp();
-    return fetch(API + "?t=" + encodeURIComponent(T), { credentials: "omit", cache: "no-store" })
+    return fetch(API + "?t=" + encodeURIComponent(T) + "&client=2", { credentials: "omit", cache: "no-store" })
       .then(function (r) { return r.json(); })
       .then(function (r) { if (r && r.ok) return r; throw { code: (r && r.error) || "bad_reply" }; },
             function () { viaScript = true; return jsonp(); });
@@ -3152,7 +3255,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       }
       window[cb] = end;
       s.onerror = function () { end(null); };
-      s.src = API + "?t=" + encodeURIComponent(T) + "&callback=" + cb;
+      s.src = API + "?t=" + encodeURIComponent(T) + "&client=2&callback=" + cb;
       document.head.appendChild(s);
     });
   }
@@ -3190,25 +3293,25 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   $("post-send").addEventListener("click", function () {
     if ((!customerReturned() && !approved) || postBusy || readOnly || !online || roundsLocked()) return;
     var text = $("post-text").value.trim(), none = NO_CHANGES.test((text.toLowerCase().match(/\w+/g) || []).join(" "));
+    if (text.length > 4000) { $("post-error").textContent = "Please shorten this request. Your text is still here."; $("post-error").hidden = false; return; }
     $("post-error").classList.toggle("calm", none);
     if (!text || none) { $("post-error").textContent = !none ? "Tell us what should change." : signedOff() ? "No changes needed. Your approval stands." : "No changes? Just tap " + approveLabel() + "."; $("post-error").hidden = false; $("post-text").focus(); return; }
     var request = { id: "pc_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2) + "_" + Math.random().toString(36).slice(2), text: text }, payload = { t: T, post_change: request };
     if (D.recipient_attribution) { payload.r = R; payload.actor = ACTOR; }
     if (D.acceptance_actions) payload.quote = body(false).quote;
-    var doc = JSON.stringify(payload), stand = { id: request.id, text: request.text, at: new Date().toISOString() };
-    // At once (Matt 2026-10-30): the request shows as sent and the tracker moves; the post lands in the background. Its own id
-    // is the request id: Code.gs returns the same request for a repeat and refuses a different text under it.
+    payload.request_id = request.id;
+    var doc = JSON.stringify(payload), stand = { id: request.id, text: request.text, at: new Date().toISOString(), pending: true };
+    // The pending request keeps its text and stable ID; only its receipt confirms delivery.
     state.post_changes = (state.post_changes || []).concat(stand);
     $("post-text").value = ""; $("post-error").hidden = true; postOpened = false; $("post-box").hidden = !customerReturned(); $("post-open").hidden = customerReturned(); paintStatus();
     var item = outboxAdd("request", doc, request.id);
     function once() {
-      return post(doc).catch(function () {}).then(read).then(function (r) {
+      return post(item.doc).catch(function () {}).then(read).then(function (r) {
         if (payload.quote && r.form && r.form.terms !== payload.quote.terms) {
           refresh(r.form); throw { code: "quote_changed" };
         }
         if (r.form && newer(r.form)) refresh(r.form);
-        if (r.saved) apply(r.saved);
-        if ((state.post_changes || []).some(function (p) { return p.id === request.id && p.text === request.text; })) return r;
+        if (landed(item.kind, JSON.parse(item.doc), r.saved || {}, item.hash)) { verifyAction(item, r); if (r.saved) apply(r.saved); return r; }
         state.post_changes = (state.post_changes || []).concat(stand); paintStatus();   // not there yet: the stand-in stays while we retry
         if (stage !== "returned") throw { code: "stage" };
         throw {};
@@ -3233,16 +3336,16 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     goBusy = true; paintStatus();
     function once() {   // each attempt reads first: a check that arrived since needs his own tap (Matt 2026-11-03)
       return read().then(function (r0) { if (r0.form && compBlocks(r0.form, payload.answers)) throw { code: "comps" }; })
-        .then(function () { return post(doc).catch(function () {}); }).then(read).then(function (r) {
+        .then(function () { return post(item.doc).catch(function () {}); }).then(read).then(function (r) {
         if (r.form) refresh(r.form);
         if (r.saved) apply(r.saved);
         if (!r.form || !r.saved || !sameQuote(currentQuote(), payload.quote)) throw { code: "changed" };
-        if (r.saved.go && !newGaps() && sameQuote(r.saved.go, payload.quote)) return;
-        throw {};
+        verifyAction(item, r);
       });
     }
     // A Start the server will not record (its refusal is unreadable here) reads as refused after a few tries.
-    writing = writing.catch(function () {}).then(function () { return accepted; }).then(function () {
+    writing = writing.catch(function () {}).then(function () { return accepted; }).then(function (result) {
+      if (result && result.revision) { payload.expected_revision = result.revision; doc = JSON.stringify(payload); }
       item = outboxAdd("go", doc, payload.request_id); return settle(item, once, 4);
     }).then(function () {
       goBusy = false; pendingStart = null; paintStatus(); banner(goNote(), "ok");
@@ -3257,18 +3360,18 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (code === "matt_hold") { banner("This order needs Matt’s review before it can start. We’ll email you.", "warn"); poll(); return; }
     banner(code === "quote_changed" ? "The price changed. Review it, then tap Start again." : code === "stage" ? STAGES[stage].refused :
       code === "comps" ? "Your latest file adds a new comp gap. Read the card above, then tap Start again." :
-      "Start not confirmed. Your answers are saved; please try again.", "warn");
+      "Start not confirmed. Your draft is still here. Tap Retry to review it.", "warn");
   }
   $("start-production").addEventListener("click", startProduction);
   $("save-calls").addEventListener("click", function(){
     if(readOnly || !online || pendingTaps || inProduction()) return;
     clearTimeout(timer); timer=null;
-    // Matt 2026-10-30: the page says Saved at once; the post lands in the background (the header reads Syncing… until it does).
-    $("saved").hidden = false; banner("Saved ✓ Come back any time.","ok");
-    if (edits === savedEdits) return;   // nothing new since the last confirmed save
-    write(false).then(function(){conn("Saved " + when(new Date().toISOString()));},function(){});
+    // A local queue entry is not a saved-answer receipt.
+    if (edits === savedEdits && !outbox.length) { $("saved").hidden = false; banner("Saved ✓ Come back any time.","ok"); return; }
+    $("saved").hidden = true; banner("Saving…", "ok");
+    write(false).then(function(){conn("Saved " + when(new Date().toISOString())); $("saved").hidden = false; banner("Saved ✓ Come back any time.","ok");},function(){});
   });
-  // Saved means a read shows it: the stored updatedAt moved and, for a status tap, the stored status is the tap's.
+  // Saved means this exact request and payload have a committed receipt.
   function write(send, keepalive) {
     var at = edits, s = state.status, payload = body(send), before, checkedForm;
     payload.request_id = newId();   // one id per action; a retry repeats the same document
@@ -3277,6 +3380,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     function confirm(tries) {
       return read().then(function (r) {
         var v = r.saved;
+        doc = item.doc;
+        if (landed(item.kind, JSON.parse(doc), v || {}, item.hash)) { verifyAction(item, r); checkedForm = r.form; return v; }
         var seen = JSON.parse(doc).quote;
         var current = r.form && laneForm(r.form, JSON.parse(doc).answers);
         if (send && s === "DONE" && r.form && (r.form.review || r.form.signoff && !r.form.delivered_at) &&
@@ -3288,18 +3393,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
              seen.lane !== (current.selected_lane || (current.house_prompts || {}).lane || "desk") || (current.terms && seen.terms !== current.terms)))
           throw { code: "quote_changed", form: r.form, saved: v };
         if (r.form && r.form.stage === "returned" && (r.form.house_prompts || {}).lane === "review" && v && v.status === "DONE") {
-          if (send && s === "DONE") { checkedForm = r.form; return v; }
           throw { code: "approved", form: r.form, saved: v };
         }
-        if (v && v.updatedAt !== before && (!send || v.status === s) &&
-            (!send || s !== "DONE" || !(r.form.review || r.form.signoff && !r.form.delivered_at) || (r.form.house_prompts || {}).lane === "review" ||
-             v.approved_review && v.approved_review.id === JSON.parse(doc).review_id)) { checkedForm = r.form; return v; }
-        // A send-back keeps the READY save's updatedAt. This also proves a deduplicated re-tap saved, without
-        // appending another acceptance; repeating the POST would turn the desk's DRAFT back into READY.
-        var h = v && v.history || [], last = h[h.length - 1];
-        if (send && s === "READY" && v && v.status === "DRAFT" && r.form && r.form.note_kind === "not_ready" &&
-            last && last.by === "desk" && last.status === "DRAFT" && v.updatedAt !== before &&
-            last.at >= v.updatedAt) { checkedForm = r.form; return v; }
+        try { verifyAction(item, r); } catch (e) { if (e && e.code) throw e; }
         if (send && r.form && (STAGES[r.form.stage] || STAGES.open).statuses.indexOf(s) < 0) {   // Code.gs refused the tap
           setStage(r.form.stage);
           throw { code: "stage", status: v ? v.status : "DRAFT" };
@@ -3308,19 +3404,21 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
         throw {};
       });
     }
-    function once() { return post(doc, keepalive).then(function () { return confirm(2); }); }
+    function once() { return post(item.doc, keepalive).catch(function () {}).then(function () { return confirm(2); }); }
     writing = writing.catch(function () {}).then(function () {
-      if (approved) { outboxDrop(item); throw { code: "approved" }; }   // a queued autosave cannot follow approval
+      if (approved) { item.error = "approved"; outboxSave(); throw { code: "approved" }; }   // keep queued text for review
       before = savedAt;
-      if (doc.length > MAX_BODY) { outboxDrop(item); throw { code: "too_large" }; }
+      if (doc.length > MAX_BODY) { item.error = "too_large"; outboxSave(); throw { code: "too_large" }; }
       return settle(item, once);   // keeps trying with backoff until a read shows it; a refusal (a code) stops it
     }).then(function (v) {
       if (send) pendingTaps--;
       savedEdits = Math.max(savedEdits, at); savedAt = v.updatedAt; savedStatus = v.status;
+      answerRevision = confirmedActions[item.id].revision;
+      answerBase = JSON.parse(JSON.stringify(confirmedActions[item.id].base));
       if (checkedForm) { if (newer(checkedForm)) refresh(checkedForm); apply(v); }   // a save never changes the form: only the desk's change re-renders (Chase 2026-10-20: every autosave jumped the page to the top)
       if (Array.isArray(v.history)) { state.history = v.history; paintStatus(); }
       var n = v.notificationAt && v.notificationAt[s];   // set when this save reserved the email notice
-      return { notification: n && (!before || n > before) ? "sent" : "suppressed" };
+      return { notification: n && (!before || n > before) ? "sent" : "suppressed", revision: confirmedActions[item.id].revision };
     }, function (e) { if (send) pendingTaps--; failed(e); throw e; });
     paintStatus();
     return writing;
@@ -3347,6 +3445,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (e.saved) apply(e.saved);
       state.status = "DRAFT"; paintStatus();
       banner("The order changed. Review it and tap Ready again.", "warn");
+    } else if (code === "conflict" || code === "reload_required" || code === "request_reused") {
+      banner("The saved answers changed. Your draft is kept here. Tap Retry to review it.", "warn");
     } else if (code === "too_large") {
       banner("Too long to save. Shorten it a little.", "warn");
     } else {
@@ -3393,7 +3493,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var was = state.status, compWas = state.answers.q_comp_check;
     if (s === "READY" && minimalStart()) compAccept();   // his Start accepts the gaps on the card (Matt 2026-11-03)
     state.status = s;
-    // Matt 2026-10-30: Start and Approve show as accepted at once; the server's record replaces the stand-in, a refusal rolls it back.
+    // Show Sending immediately; the server's exact receipt confirms the tap.
     if (s === "READY" && customerStart()) pendingStart = Object.assign({ at: new Date().toISOString(), files_checked_at: checkedAt() }, currentQuote());
     if (s === "DONE" && signoff()) pendingApprove = true;
     paintStatus();
@@ -3411,7 +3511,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       }
       paintStatus();
       banner(approved || signedOff() ? approvalNote() : s === "DRAFT" ? "Draft saved." : s === "READY" ? readyNote() : SENT, "ok");
-    }, function (e) { if (pendingStart) startFailed(e && e.code); if (pendingApprove) { pendingApprove = false; paintStatus(); } });
+    }, function (e) { state.status = e && e.saved && e.saved.status || was; if (pendingStart) startFailed(e && e.code); pendingApprove = false; paintStatus(); });
   }
 
   // ---------- talk ----------
@@ -3493,8 +3593,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     state.invalidated_check = saved.invalidated_check || null;
     approved = stage === "returned" && (D.house_prompts || {}).lane === "review" && state.status === "DONE";
     conn(approved ? "Approved" : "Connected");
-    if (approved) { clearTimeout(timer); timer = null; tapped = null; savedEdits = edits; pop(false); }
+    if (approved) { clearTimeout(timer); timer = null; tapped = null; pop(false); }
     if (edits === savedEdits) {      // saved answers win over the prefill; never over unsent typing
+      answerRevision = saved._revision || null;
       var mine = saved.answers && typeof saved.answers === "object" ? saved.answers : savedAt ? null : {};   // nothing saved yet: the desk's latest defaults
       if (mine) { state.answers = answersFrom(mine); Object.keys(mine).forEach(function (k) { own[k] = true; }); }
       if (Array.isArray(saved.changes)) { state.changes = saved.changes.slice(0, NCHANGES); while (state.changes.length < NCHANGES) state.changes.push(""); }
@@ -3506,6 +3607,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (controls.q_client_permits && saved.answers && saved.answers.q_client_permits) refresh(F);
       if (laneOptions(F).length && (laneForm(F, state.answers).selected_lane !== D.selected_lane || laneForm(F, state.answers).order.price !== O.price)) refresh(F);   // only a different saved lane or turn re-renders
       paintAll();
+      answerBase = JSON.parse(JSON.stringify({ answers: state.answers, changes: state.changes }));
     }
     paintStatus();
     banner(approved ? approvalNote() : customerReturned() || state.status === "DRAFT" ? "" : state.status === "READY" && stage === "open" ? readyNote() : SENT, "ok");
@@ -3662,7 +3764,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   if (!API) { gate("Not connected yet."); return; }
   replay().then(read).then(function (r) {
     online = true; conn("Connected"); boot(r.form, r.saved);
-    if (replayFailed) banner("Your earlier " + replayFailed + " didn’t reach us. Please tap it again.", "warn");   // never silent
+    if (replayFailed) banner("Your earlier " + replayFailed + " isn’t confirmed. Tap Retry to review your draft.", "warn");
   }, function (e) {
     gate(e && e.code === "unknown" ? CLOSED
                                    : "Couldn't open your form. Check your connection and try again.");
