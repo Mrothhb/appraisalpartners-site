@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-04.1">
+<html lang="en" data-build="v2026-11-04.3">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -389,6 +389,10 @@ body.rounds-locked #your-calls, body.rounds-locked .card:has(> #your-calls), bod
 #approve-all .st:hover { background: var(--success-ink); border-color: var(--success-ink); }
 #approve-all .st:disabled, #approve-all .st:disabled:hover { background: var(--field-off); color: var(--ink-2); border-color: var(--edge); }
 #approve-all .note { margin: var(--s-2) 0 0; text-align: center; }
+
+/* Questions-only rounds keep the answer action, without the Start-flow footer. */
+body.questions-only #help, body.questions-only #final-file, body.questions-only #start-production { display: none !important; }
+body.questions-only #sections .line { padding-top: var(--s-6); padding-bottom: var(--s-6); }
 
 /* ---------- the checklist's lines ---------- */
 .line { display: flex; align-items: center; gap: var(--s-3); min-height: 48px; padding: var(--s-2) 0; border-bottom: 1px solid var(--line); }
@@ -1315,7 +1319,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function inProduction() { return !!pendingStart || realProduction(); }
   function answered() { return customerReady() && asked(); }
   function optionSent() { return customerReady(); }
-  function readyNote() { if(minimalCalls())return inProduction()?"Start received.":"Saved. Start when your file and calls are complete."; return permissionHeld() ? "On hold. Client permission needs review." : quoteChanged() ? "Review the updated order, then tap Ready. Nothing starts yet." : inProduction() ? "Start production received." : filesChecked() ? "Files checked. Tap Start production to authorize the run." : "Your files and answers are in. We're checking your files. Nothing starts yet."; }
+  function readyNote() { if(D.questions_only === true && stage === "open" && asked())return answered()?"Answers sent.":""; if(minimalCalls())return inProduction()?"Start received.":"Saved. Start when your file and calls are complete."; return permissionHeld() ? "On hold. Client permission needs review." : quoteChanged() ? "Review the updated order, then tap Ready. Nothing starts yet." : inProduction() ? "Start production received." : filesChecked() ? "Files checked. Tap Start production to authorize the run." : "Your files and answers are in. We're checking your files. Nothing starts yet."; }
   var NCHANGES = 5;
   var MAX_BODY = 100000;       // Code.gs's limit on one save
   var CHECKLIST = JSON.parse($("checklist").textContent);
@@ -1696,7 +1700,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       house_prompts: hp, selected_lane: pick ? pick.id : "", terms: pick ? pick.terms : "", terms_url: "",
       questions: pick ? pick.questions || [] : [], public_note: pick ? pick.public_note || "" : "" });
   }
-  var laneNames = { partial: "Partial", "partial-conversion": "Partial with 2.6 to 3.6 conversion", full: "Full",
+  var laneNames = { partial: "Partial", "partial-we-set": "Partial · we set order and weights", "partial-conversion": "Partial with 2.6 to 3.6 conversion", full: "Full",
     "self-service": "Self-service", "self-service-conversion": "Self-service with 2.6 to 3.6 conversion" };
   // Matt 2026-10-30: self-service options read as the emails do, A then B, with a price and never a day.
   var laneLetters = { "self-service-conversion": "A", "self-service": "B" };
@@ -2291,6 +2295,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function renderOrder() {
     document.body.classList.toggle("minimal-calls", minimalCalls());
+    document.body.classList.toggle("questions-only", D.questions_only === true && (D.stage || "open") === "open" && asked());
     var due = String(O.payment_due || "").trim();
     $("payment").hidden = !due;
     $("selfservice").hidden = (D.house_prompts || {}).lane !== "self-service";   // Matt 2026-10-19: VERY clear on every self-service form; 2026-11-03: one line and a link to its page (SELF_NOTICE)
@@ -2835,7 +2840,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (stage === "returned") {
       var recorded = entries.filter(function (e) { return e.event === "post_change"; }).map(function (e) { return e.id; });
       (state.post_changes || []).forEach(function (p) { if (recorded.indexOf(p.id) < 0) entries.push({ event: "post_change", id: p.id, at: p.at }); });
-      (D.deliveries || []).forEach(function (d) { entries.push({ event: d.kind === "updated" ? "updated" : "delivered", at: d.at }); });
+      (D.deliveries || []).forEach(function (d) { entries.push({ event: d.kind === "updated" ? "updated" : "delivered", at: d.at, original: d.original }); });
       try { var all = JSON.parse(state.answers.q_pc_all); entries.push({ event: "approve_all", at: all.at, review_id: all.review_id, n: Object.keys(all.sections).length }); } catch (e) {}
       entries.sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); });
     }
@@ -2853,7 +2858,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       var ready = function (q) { return /^self-service/.test(q.lane || "") ? "" : "ready " + day(q.ready_by) + " · "; };
       if (e.event === "go") return "Start production · " + e.quote.lane + " · " + ready(e.quote) + when(e.at);
       if (e.accepted) return (e.by === "desk" ? "Desk go-ahead · " : e.by === "no tag" ? "Accepted (no tag) · " : "Accepted · ") + ready(e.accepted) + e.accepted.lane + " · " + e.accepted.terms + " · " + when(e.at);
-      return (e.event === "post_change" ? "Change requested" : e.event === "delivered" ? "Delivered" : e.event === "updated" ? "Updated" : "Approved") + " " + when(e.at);
+      return (e.event === "post_change" ? "Change requested" : e.event === "delivered" ? "Delivered" : e.event === "updated" ? "Updated" : "Approved") + " " + when(e.at) + (e.original ? " · " + e.original : "");
     });
     $("history-list").textContent = "";
     h.forEach(function (line) { $("history-list").appendChild(el("li", { text: line })); });
@@ -3503,7 +3508,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return canon(f.matt_hold || null) !== canon(F.matt_hold || null) || canon(f.start_missing || []) !== canon(F.start_missing || []) || canon(f.comp_check || null) !== canon(F.comp_check || null) || canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.change_rounds || 0) !== (F.change_rounds || 0) || canon(f.change_answer || null) !== canon(F.change_answer || null) || f.changes_closed !== F.changes_closed || (f.changes_closed_text || "") !== (F.changes_closed_text || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || canon(f.review_changes || null) !== canon(F.review_changes || null) || canon(f.double_check || []) !== canon(F.double_check || []) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
+  function newer(f) { return f.questions_only !== F.questions_only || canon(f.matt_hold || null) !== canon(F.matt_hold || null) || canon(f.start_missing || []) !== canon(F.start_missing || []) || canon(f.comp_check || null) !== canon(F.comp_check || null) || canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.change_rounds || 0) !== (F.change_rounds || 0) || canon(f.change_answer || null) !== canon(F.change_answer || null) || f.changes_closed !== F.changes_closed || (f.changes_closed_text || "") !== (F.changes_closed_text || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || canon(f.review_changes || null) !== canon(F.review_changes || null) || canon(f.double_check || []) !== canon(F.double_check || []) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
   function canon(v) { return JSON.stringify(v, function (k, x) { return x && typeof x === "object" && !Array.isArray(x) ? Object.keys(x).sort().reduce(function (o, j) { o[j] = x[j]; return o; }, {}) : x; }); }   // key order is never a change
   // A re-render keeps the reader's place (Chase 2026-10-20): the scroll, then the box or button in focus and its
   // selection; with nothing in focus it takes none.
