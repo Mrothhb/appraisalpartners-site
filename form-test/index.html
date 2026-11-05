@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-04.3">
+<html lang="en" data-build="v2026-11-05.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -433,7 +433,7 @@ label.line { cursor: pointer; }
 #action .st.wait:disabled { background: var(--field-off); color: var(--ink-2); border-color: var(--edge); }
 #lane-picker .tap span { font-weight: 400; }
 #lane-picker .rush { margin-top: var(--s-4); border-bottom: 0; }
-#lane-picker h2 + .taps.turn, #lane-picker .taps + h2 { margin-top: var(--s-4); }
+#lane-picker h2 + .taps.turn, #lane-picker .taps + h2, #lane-picker [data-comp-order] + h2 { margin-top: var(--s-4); }
 .hold-card { border: 2px solid var(--danger); border-left: 8px solid var(--danger); background: #fdecec; color: #7a1010; padding: var(--s-5) var(--card-px); font: 700 18px/1.4 var(--display); }
 .hold-card p { margin: 0; }
 .need-card { border: 2px solid #e5a53a; border-left: 8px solid #e5a53a; background: #fdf3e1; color: #7a4300; padding: var(--s-5) var(--card-px); }
@@ -781,13 +781,10 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 @media (max-width: 480px) { .comp-taps { grid-template-columns: minmax(0, 1fr); } .comp-title { font-size: 17px; } }
 #stage { display: grid; grid-template-rows: 1fr auto 1fr; justify-items: center; min-height: calc(100svh - var(--bar-h) - var(--gap) - var(--s-6)); padding: var(--s-8) var(--card-px) var(--s-4); text-align: center; }
 #stage[hidden] { display: none; }
+#stage[data-kind="waiting"] { min-height: 0; display: block; padding: var(--s-6) var(--card-px); }
+#stage[data-kind="waiting"] .stage-body { gap: var(--s-4); margin-inline: auto; }
+#stage[data-kind="waiting"] #stage-more { margin-top: var(--s-5); }
 .stage-body { grid-row: 2; display: grid; justify-items: center; gap: var(--s-5); width: 100%; max-width: 560px; }
-.stage-ico { width: 104px; height: 104px; }
-.stage-ico svg { display: none; width: 100%; height: 100%; }
-#stage[data-kind="checking"] .ico-checking, #stage[data-kind="still"] .ico-still, #stage[data-kind="missing"] .ico-missing { display: block; }
-#stage[data-kind="progress"] .stage-ico { display: none; }
-.ico-checking .arc { transform-origin: 50% 50%; animation: stage-spin 1.6s linear infinite; }
-@keyframes stage-spin { to { transform: rotate(360deg); } }
 #stage-title { margin: 0; font: 700 clamp(28px, 2vw + 20px, 36px)/1.15 var(--display); letter-spacing: -.02em; color: var(--bar); text-wrap: balance; }
 #stage-line { margin: 0; max-width: 28em; font-size: 18px; line-height: 1.5; color: var(--ink-2); text-wrap: balance; }
 #stage-list { list-style: none; margin: 0; padding: var(--s-4) var(--s-5); width: min(100%, 360px); box-sizing: border-box; text-align: left; border: 1px solid var(--warning-line); border-left: 6px solid var(--warning-edge); border-radius: var(--r-2); background: var(--warning-bg); color: var(--warning-ink); font-size: 17px; font-weight: 600; line-height: 1.5; }
@@ -798,7 +795,6 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 .stage-more { grid-row: 3; align-self: end; display: inline-flex; align-items: center; gap: 6px; margin: var(--s-6) 0 0; padding: 10px 12px; border: 0; background: none; color: var(--primary); font: 600 15px/1.4 var(--font); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: rgba(11,111,193,.4); cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
 .stage-more:hover { color: var(--primary-hover); text-decoration-color: currentColor; }
 .stage-more svg { width: 16px; height: 16px; }
-@media (prefers-reduced-motion: reduce) { .ico-checking .arc { animation: none; } }
 @media (forced-colors: active) { #stage-list { border-color: ButtonText; } #stage-list li::before { background: ButtonText; } }
 </style>
 </head>
@@ -839,15 +835,9 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
     <p class="usage-note" id="usage-note" hidden></p>
   </section>
   <div class="banner rounds" id="changes-closed" role="alert" hidden></div>
-  <!-- Matt 2026-10-30: one full screen while we check his files, when files are missing, and after Start (the tracker moves in here).
-       Checked and ready: hidden, the normal Start page shows. The normal page is always under it. -->
+  <!-- Standing GO: confirmation and missing items; the tracker follows once production begins. -->
   <section class="card" id="stage" role="status" aria-live="polite" hidden>
     <div class="stage-body">
-      <div class="stage-ico" aria-hidden="true">
-        <svg class="ico-checking" viewBox="0 0 104 104" fill="none"><circle cx="52" cy="52" r="42" stroke="#d5e6f5" stroke-width="6"/><path class="arc" d="M52 10a42 42 0 0 1 42 42" stroke="#0b6fc1" stroke-width="6" stroke-linecap="round"/><path d="M38 34h20l10 10v26H38z" fill="#fff" stroke="#0b6fc1" stroke-width="2.5" stroke-linejoin="round"/><path d="M58 34v10h10" stroke="#0b6fc1" stroke-width="2.5" stroke-linejoin="round"/><path d="M44 52h16M44 59h16" stroke="#0b6fc1" stroke-width="2.5" stroke-linecap="round"/></svg>
-        <svg class="ico-still" viewBox="0 0 104 104" fill="none"><circle cx="52" cy="52" r="42" fill="#eaf3fb" stroke="#0b6fc1" stroke-width="6"/><path d="M52 30v24l15 9" stroke="#0b6fc1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <svg class="ico-missing" viewBox="0 0 104 104" fill="none"><circle cx="52" cy="52" r="42" fill="#fdf3e1" stroke="#e5a53a" stroke-width="6"/><path d="M38 30h20l10 10v34H38z" fill="#fff" stroke="#7a4300" stroke-width="2.5" stroke-linejoin="round"/><path d="M58 30v10h10" stroke="#7a4300" stroke-width="2.5" stroke-linejoin="round"/><path d="M52 47v12" stroke="#7a4300" stroke-width="4" stroke-linecap="round"/><circle cx="52" cy="66" r="2.5" fill="#7a4300"/></svg>
-      </div>
       <h1 id="stage-title"></h1>
       <p id="stage-line"></p>
       <ul id="stage-list" aria-label="Still needed" hidden></ul>
@@ -882,7 +872,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
   <section class="card need-card" id="need-card" role="status" aria-labelledby="need-title" hidden>
     <p class="need-title" id="need-title">Before we can start, we need:</p>
     <ul class="need-list" id="need-list"></ul>
-    <p class="note">Add them to your order folder, then tap Start.</p>
+    <p class="note">Tap Start once now, then add what’s missing to your order folder.</p>
   </section>
   <section class="card" id="chosen" aria-label="Your chosen service" hidden>
     <strong id="chosen-lane"></strong>
@@ -1298,6 +1288,11 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function permissionPending() { return permissionHeld() || typeof CHECKLIST !== "undefined" && CHECKLIST.client_permits && (D.house_prompts || {}).lane !== "review" && !permitsOff() && !state.history.some(function (h) { return h.event === "client_permits"; }); }
   function sameQuote(a, b) { return !!a && !!b && ["lane", "price", "ready_by", "terms"].every(function (k) { return a[k] === b[k]; }); }
   function currentQuote() { return { price: O.price || "", ready_by: O.ready_by || "", lane: D.selected_lane || (D.house_prompts || {}).lane || "desk", terms: D.terms }; }
+  // 2026-11-05 (review of b3be3472): a Start the desk re-priced or re-dated after his tap is held (dispatch.quote_moved); the
+  // form says why, shows the new price and day, and asks for Start again, so the re-tap accepts a price he can read.
+  var MOVED = "The price or day changed. Review it, then tap Start again.";
+  function quoteMoved() { return !!state && stage === "open" && !!state.go && state.go.by !== "desk" && !pendingStart && !sameQuote(state.go, currentQuote()); }
+  function movedQuote() { var lane = currentQuote().lane; return "Now: " + [laneNames[lane] ? laneTitle(lane) : "", O.price, O.ready_by && !selfLane() ? "ready " + day(O.ready_by) : ""].filter(Boolean).join(" · "); }
   function customerReady() {
     var submission = state.customer_submission;
     return !permissionPending() && stage === "open" && state.status === "READY" && savedStatus === "READY" &&
@@ -1313,13 +1308,18 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function checkedAt() { return fileChecks()[0] || ""; }
   function filesChecked() { return customerReady() && !!checkedAt(); }
-  function realProduction() { return filesChecked() && !!state.go && fileChecks().indexOf(state.go.files_checked_at) >= 0 && sameQuote(state.go, currentQuote()); }
+  function newGaps() { var c = D.comp_check || {}; if (state.go && D.start_reconfirm && D.start_reconfirm !== state.go.comp_check_id) return true; return !!state.go && (c.gaps || []).some(function (g) { return Array.isArray(state.go.comp_gaps) ? state.go.comp_gaps.indexOf(g) < 0 : c.id !== (state.go.comp_check_id || (compSaid() || {}).id); }); }
+  function realProduction() { return stage === "open" && !!state.go && !newGaps() && sameQuote(state.go, currentQuote()); }
+  function customerStart() { return stage === "open" && (minimalStart() || !asked()) && ["review", "regression"].indexOf((D.house_prompts || {}).lane) < 0; }
+  var GO_NOTE = "You're set. We'll start as soon as everything's in.";
+  function fullGo() { return String((pendingStart || state.go || {}).lane || "").indexOf("full") === 0; }
+  function goNote() { return fullGo() ? "You're set. We'll start on Matt's word." : GO_NOTE; }
   // Matt 2026-10-30: a tapped Start or Approve shows at once; the server's record replaces the stand-in, a refusal rolls it back.
   var pendingStart = null, pendingApprove = false;
   function inProduction() { return !!pendingStart || realProduction(); }
   function answered() { return customerReady() && asked(); }
   function optionSent() { return customerReady(); }
-  function readyNote() { if(D.questions_only === true && stage === "open" && asked())return answered()?"Answers sent.":""; if(minimalCalls())return inProduction()?"Start received.":"Saved. Start when your file and calls are complete."; return permissionHeld() ? "On hold. Client permission needs review." : quoteChanged() ? "Review the updated order, then tap Ready. Nothing starts yet." : inProduction() ? "Start production received." : filesChecked() ? "Files checked. Tap Start production to authorize the run." : "Your files and answers are in. We're checking your files. Nothing starts yet."; }
+  function readyNote() { if(D.questions_only === true && stage === "open" && asked())return answered()?"Answers sent.":""; if (quoteMoved()) return MOVED; return inProduction() ? goNote() : "Tap Start once. We'll begin when everything's in and your file has sat quiet for 15 minutes."; }
   var NCHANGES = 5;
   var MAX_BODY = 100000;       // Code.gs's limit on one save
   var CHECKLIST = JSON.parse($("checklist").textContent);
@@ -1367,7 +1367,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     (kids || []).forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
     return n;
   }
-  function changed() { edits++; $("saved").hidden = true; paintGrid(); if(minimalCalls() || proposalReview()) { paintCallLines(); paintStatus(); } else paintNow(); afterEdit(); }
+  function changed() { edits++; $("saved").hidden = true; paintGrid(); if(minimalCalls() || proposalReview() || compOrderLane()) { paintCallLines(); paintStatus(); } else paintNow(); afterEdit(); }
   // One answer per call (Astra 2026-10-20): on an open self-service form a START line and its END twin (q_<key>) move
   // together, wherever either shows; every other lane keeps each answer as saved.
   function twin(k) { return k.indexOf("q_") === 0 ? k.slice(2) : "q_" + k; }
@@ -1715,7 +1715,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function paintChosen() {
     var start = startRecord();
-    $("chosen").hidden = !start || (D.house_prompts || {}).lane === "review";
+    $("chosen").hidden = !start || (D.house_prompts || {}).lane === "review" || quoteMoved();   // the quote line shows the new price
     if ($("chosen").hidden) return;
     // Matt 2026-11-03: due = his Start day + 2 working days, or + 1 on Next day. One rush route: his q_rush, or the desk's
     // rush_due_date (a rush taken by reply), whose day then wins; a desk rush once read Fri beside a Wed rush day.
@@ -1934,6 +1934,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function minimalStart() { if(minimalCalls())return true; return F.minimal_start === true && (D.stage || "open") === "open" && !(D.questions || []).length; }
   function simpleStart() { return minimalStart() && (D.house_prompts || {}).lane !== "self-service"; }
   function choosingLane() { return laneOptions(F).length > 0 && (D.stage || "open") === "open" && (minimalStart() || !askedAt(F)) && !startRecord() && !acceptance() && !state.go; }
+  function compOrderLane() { return !selfLane() && (D.house_prompts || {}).comp_order_weights === true; }
   function renderLanes() {
     var box = $("lane-picker"), options = laneOptions(F);
     box.textContent = ""; box.hidden = !choosingLane();
@@ -1958,6 +1959,11 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       cards.appendChild(b);
     });
     if (options.length > 1 || (D.house_prompts || {}).lane === "self-service") box.appendChild(cards);
+    if (compOrderLane()) {
+      var calls = box.appendChild(el("div", { "data-comp-order": "" }));
+      callSection({ lines: [{ key: "q_comp_order_weights", label: "Your comp order and weights", kind: "multi", required: true }] }, box, calls);
+      calls.querySelector("textarea").placeholder = "List your comps in order and say which carry the most weight.";
+    }
     // Matt 2026-11-03: desk lanes pick a turn time, Standard (2 working days) at his price or Next day at the added fee
     // (the lane's next_day). His pick is q_rush, recorded with his Start; the quote is that turn's price and day.
     var picked = options.length === 1 ? options[0] : options.filter(function (o) { return o.id === state.answers.q_service_option; })[0];
@@ -2463,7 +2469,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       built0 ? (O.files_by === "email" ? "Answer each, then tap <b>Send answers</b>." : "Save the report in TOTAL so your files come through, then tap <b>Send answers</b>.") :
       stage === "open" && O.files_by === "email" ? "Tap <b>Ready</b> to have us check your files. Nothing starts yet." : STAGES[stage].help;   // files by email, no Workfile
     if (stage === "open" && !review && !selfLane() && $("help").innerHTML.indexOf("Nothing starts") < 0)
-      $("help").innerHTML += " Tap Start production after we check your files to authorize the run.";
+      $("help").innerHTML += " Tap Start once; we’ll begin when everything’s in and your file has sat quiet for 15 minutes.";
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = review || desk || stage === "returned"; });
     // After the run the questions are all that is left to answer: the START sections (already answered) step aside.
     var built = (D.questions || []).length > 0;
@@ -2543,37 +2549,24 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   // ---------- the full-screen state (Matt 2026-10-30: "an entire screen taken by a notice that the system is checking files, or
   // pending or in progress") ----------
-  // Before Start on a self-service form: Checking your files while the desk checks his drop (house_prompts.files_checking_at, set by
-  // the folder watcher and removed by the check's result), Still checking once that stamp is older than STILL_MS (the watcher pings the
-  // desk at the same age), Files missing when the check published gaps, nothing once his files are checked (the normal Start page).
-  // After Start it carries the tracker. The page polls every 30 seconds either way.
-  var STILL_MS = 25 * 60 * 1000;
   function checkingFiles() { return !!Object.assign({}, F.house_prompts || {}, D.house_prompts || {}).files_checking_at; }
   function stageState() {
-    if (!selfLane() || stage !== "open" || readOnly || approved) return null;
-    if (inProduction()) return { kind: "progress" };
-    var hp = Object.assign({}, F.house_prompts || {}, D.house_prompts || {}), at = Date.parse(hp.files_checking_at || "");
-    if (hp.files_checking_at) return { kind: isNaN(at) || Date.now() - at > STILL_MS ? "still" : "checking" };
-    if (hp.files_complete === true && hp.files_checked_at) return null;
-    var missing = (hp.files_missing || []).map(function (m) { return String(m || "").trim(); }).filter(Boolean);
-    if (!missing.length) missing = String(D.public_note || "").replace(/^(?:Missing:\s*)?(?:Still needed:\s*)?/i, "").split(/;\s*/).map(function (m) { return m.replace(/[.\s]+$/, "").trim(); }).filter(function (m) { return m && !/^your complete file$/i.test(m); });
-    return { kind: "missing", missing: missing };
+    if (stage !== "open" || readOnly || approved || !inProduction()) return null;
+    if (D.progress && (D.progress.started_at || D.progress.step)) return { kind: "progress" };
+    var hp = D.house_prompts || {}, missing = D.start_missing || hp.files_missing || [];
+    return { kind: "waiting", missing: missing };
   }
-  var STAGE_WORDS = { checking: ["Checking your files", "This page updates by itself. Usually a few minutes."],
-                      still: ["Still checking", "We’ll email you when it’s done."],
-                      missing: ["A few files are missing", "Add them to your folder. We’ll check again automatically."],
-                      file: ["We need your work file", "Add it to your folder. We check automatically."],
-                      progress: ["Your report is in progress", ""] };
+  var STAGE_WORDS = { waiting: [GO_NOTE, "Your file needs to sit quiet for 15 minutes after the last save."], progress: ["Your report is in progress", ""] };
   function paintStage() {
     var s = stageState(), box = $("stage"), tracker = $("production-tracker"), home = s && s.kind === "progress" ? $("stage-slot") : $("tracker-home");
     if (tracker.parentNode !== home) home.appendChild(tracker);
     box.hidden = !s;
     if (!s) return;
-    var words = STAGE_WORDS[s.kind === "missing" && !s.missing.length ? "file" : s.kind];
+    var words = s.kind === "waiting" ? [goNote(), fullGo() ? "" : STAGE_WORDS.waiting[1]] : STAGE_WORDS[s.kind];
     box.dataset.kind = s.kind;
     $("stage-title").textContent = words[0];
     $("stage-line").textContent = words[1]; $("stage-line").hidden = !words[1];
-    var list = $("stage-list"); list.hidden = s.kind !== "missing" || !s.missing.length; list.textContent = "";
+    var list = $("stage-list"); list.hidden = !(s.missing || []).length; list.textContent = "";
     (s.missing || []).forEach(function (m) { list.appendChild(el("li", { text: cap(m) })); });
   }
   $("stage-more").addEventListener("click", function () { $("order").scrollIntoView({ behavior: "smooth", block: "start" }); });
@@ -2611,7 +2604,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       : "This order needs Matt’s review before it can start. We’ll email you.";
     if (held) { statusBtns.forEach(function (b) { if (b.getAttribute("data-s") === "READY") b.disabled = true; }); $("start-production").disabled = true; }
     var need = (Array.isArray(F.start_missing) ? F.start_missing : []).map(function (m) { return String(m || "").trim(); }).filter(Boolean);
-    var show = need.length > 0 && stage === "open" && !selfLane() && !inProduction() && !filesChecked() && !readOnly && (D.house_prompts || {}).lane !== "review";
+    var show = need.length > 0 && stage === "open" && !selfLane() && !inProduction() && !readOnly && (D.house_prompts || {}).lane !== "review";
     $("need-card").hidden = !show;
     $("need-list").textContent = "";
     if (show) need.forEach(function (m) { $("need-list").appendChild(el("li", { text: cap(m) })); });
@@ -2745,10 +2738,6 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function startWhy() {
     if (!online) return "You’re offline. Start opens when you’re back online.";
     if (pendingTaps > 0 || goBusy) return "Saving your last change…";
-    if (!minimalFactsReady()) {
-      var mls = (D.comps || []).map(function (c) { return c.mls; });
-      return mls.length && mls.every(Boolean) ? "Two of your comps share one MLS number. Fix your grid and save." : "Your comps: we’re putting them on your form. We’re on it.";
-    }
     var left = missing().map(function (m) { return cap(m.label || (m.node.querySelector("label") || {}).textContent || "an answer"); });
     return left.length ? "Still to answer: " + left.filter(function (t, i) { return left.indexOf(t) === i; }).join(" · ") + "." : "";
   }
@@ -2764,7 +2753,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     paintFeedback();
     paintChosen();
     $("lane-picker").hidden = !choosingLane();
-    var locked = readOnly || approved || pendingTaps > 0 || inProduction() || answered() || optionSent() && !minimalCalls();
+    var locked = readOnly || approved || pendingTaps > 0 || inProduction() || !customerStart() && (answered() || optionSent() && !minimalCalls());
     $("form").disabled = locked;
     $("form").hidden = inProduction() && !selfLane();   // Matt 2026-10-30: his self-service calls stay in view, read-only, after Start
     $("calls-saved").hidden = !(inProduction() && selfLane());
@@ -2775,7 +2764,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     $("now").classList.toggle("approved", approved);
     $("action").classList.toggle("agree", approved && !!agreeQ);
     $("now").closest(".now-row").hidden = customerReturned() && !approved;
-    $("help").hidden = approved || customerReturned() || inProduction() || simpleStart() && !customerReady();
+    $("help").hidden = approved || customerReturned() || inProduction() || simpleStart() && !customerReady() && !quoteMoved();
     $("order").hidden = false;
     $("testbanner").hidden = simpleStart() || !String(D.banner || "").trim();
     $("payment").hidden = simpleStart() || !String(O.payment_due || "").trim();
@@ -2788,14 +2777,14 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       p.hidden = (D.house_prompts || {}).lane === "review" || (laneOptions(F).length > 0 && !D.selected_lane && !selfOnly()); p.textContent = "";
       if (p.hidden) return;
       if (startOptions() && !laneOptions(F).length) {
-        p.appendChild(document.createTextNode("Ready sends your files and answers for checking. Nothing starts yet. Terms: "));
+        p.appendChild(document.createTextNode("Start means go when everything’s in. Terms: "));
         [["Self-service", "terms-software.html"], ["Partial", "terms.html"]].forEach(function (term, i) {
           if (i) p.appendChild(document.createTextNode(" · "));
           p.appendChild(el("a", { href: "https://appraisalpartners.net/" + term[1], target: "_blank", rel: "noopener noreferrer", text: term[0] }));
         });
         return;
       }
-      var words = minimalCalls() || minimalStart() ? "Start accepts our " : filesChecked() && !inProduction() ? "By tapping Start production you accept our " : customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept our " : "By tapping Ready you accept our ";
+      var words = customerStart() || minimalCalls() || minimalStart() ? "Start accepts our " : filesChecked() && !inProduction() ? "By tapping Start production you accept our " : customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept our " : "By tapping Ready you accept our ";
       p.appendChild(document.createTextNode(words));
       p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: minimalCalls() || selfOnly() ? "Software Terms" : laneOptions(F).length ? ((D.house_prompts || {}).lane === "self-service" ? "Software Terms" : "Service Terms") : "terms" }));
       if (selfLane()) p.appendChild(document.createTextNode(" and ")), p.appendChild(el("a", { href: SELF_NOTICE, target: "_blank", rel: "noopener noreferrer", text: "Self-service notice" }));   // Matt 2026-11-03
@@ -2805,13 +2794,15 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var accepted = acceptance();
     $("acceptance").hidden = !!startRecord() || !accepted;
     $("acceptance").textContent = accepted ? "Accepted " + new Date(accepted.at).toLocaleDateString([], { month: "short", day: "numeric" }) + (accepted.accepted.ready_by && !/^self-service/.test(accepted.accepted.lane || "") ? " · ready " + day(accepted.accepted.ready_by) : "") : "";
-    $("quote").hidden = !!startRecord() || simpleStart() || laneOptions(F).length && !D.selected_lane || stage !== "open" && !!accepted && !quoteChanged();
-    $("start-production").hidden = !filesChecked() || inProduction() || (D.house_prompts || {}).lane === "review";
+    $("quote").hidden = !quoteMoved() && (!!startRecord() || simpleStart() || laneOptions(F).length && !D.selected_lane || stage !== "open" && !!accepted && !quoteChanged());
+    $("quote").textContent = quoteMoved() ? movedQuote() : O.ready_by && !selfLane() ? "Ready " + day(O.ready_by) : "";
+    $("start-production").hidden = customerStart() || !filesChecked() || inProduction() || (D.house_prompts || {}).lane === "review";
     $("start-production").textContent = simpleStart() ? "Start" : "Start production";
     $("start-production").disabled = readOnly || !online || pendingTaps > 0 || goBusy;
-    document.querySelectorAll("#lane-picker button, #lane-picker input").forEach(function (b) { b.disabled = locked || !!startRecord(); });
+    document.querySelectorAll("#lane-picker button, #lane-picker input, #lane-picker textarea").forEach(function (b) { b.disabled = locked || !!startRecord(); });
     if (optionSent()) $("help").textContent = readyNote();
     if (answered()) $("help").textContent = readyNote();
+    if (quoteMoved()) $("help").textContent = MOVED;
     $("agree-value").hidden = !approved || !agreeQ;
     var paymentDue = !!String(O.payment_due || "").trim();
     $("returned-intro").hidden = !customerReturned();
@@ -2832,7 +2823,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (customerReturned()) $("post-box").hidden = postFold || changesClosed();
     statusBtns.forEach(function (b) {
       b.setAttribute("aria-pressed", String(b.getAttribute("data-s") === state.status));
-      b.hidden = simpleStart() && filesChecked() || approved || (customerReturned() ? !signoff() || !reviewReady() || signedOff() || b.getAttribute("data-s") !== "DONE" : STAGES[stage].statuses.indexOf(b.getAttribute("data-s")) < 0 || b.getAttribute("data-s") === "DRAFT");   // answers autosave
+      b.hidden = approved || (customerReturned() ? !signoff() || !reviewReady() || signedOff() || b.getAttribute("data-s") !== "DONE" : STAGES[stage].statuses.indexOf(b.getAttribute("data-s")) < 0 || b.getAttribute("data-s") === "DRAFT");   // answers autosave
       b.disabled = locked || (b.getAttribute("data-s") === "READY" && (inProduction() || minimalStart() && !D.selected_lane));
     });
     document.querySelectorAll("[data-status]").forEach(function (bar) { bar.hidden = approved || (customerReturned() && (!signoff() || !reviewReady() || signedOff())); bar.classList.toggle("one", stage === "open" || signoff()); });
@@ -2860,6 +2851,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (e.accepted) return (e.by === "desk" ? "Desk go-ahead · " : e.by === "no tag" ? "Accepted (no tag) · " : "Accepted · ") + ready(e.accepted) + e.accepted.lane + " · " + e.accepted.terms + " · " + when(e.at);
       return (e.event === "post_change" ? "Change requested" : e.event === "delivered" ? "Delivered" : e.event === "updated" ? "Updated" : "Approved") + " " + when(e.at) + (e.original ? " · " + e.original : "");
     });
+    var start = startRecord(), orderCall = ((start || {}).answers || {}).q_comp_order_weights;
+    if (start && start.quote.lane === "partial" && String(orderCall || "").trim())
+      h.push("Your comp order and weights at Start · " + orderCall + " · " + when(start.at));
     $("history-list").textContent = "";
     h.forEach(function (line) { $("history-list").appendChild(el("li", { text: line })); });
     filed.forEach(function (q) {     // his answers to the questions that left the form at delivery, read only
@@ -2886,8 +2880,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       var gaps=[], files = !minimalChecked() ? filesNeed(D.house_prompts || {}) || "Still needed: your complete file." : !minimalFactsReady() ? "Still needed: your comps from your file." : "";
       var calls = missing().map(function(m){return m.key==="inspection_ok"?"inspection confirmation":m.key==="premise"?"premise":m.key==="q_value"?"your value":m.key==="q_exposure"?"exposure time":m.key==="adjustments_by"?"who fills adjustments":m.label || m.node.querySelector("label")?.textContent || "adjustment rates";});
       if(calls.length) gaps.push("Start unlocks once you answer: " + [...new Set(calls)].join(", ") + ".");
-      else if(files) gaps.push("Start unlocks once your file is in.");
+      else if(files) gaps.push("Tap Start now; we’ll wait for what’s missing.");
       if(files) gaps.push(files);
+      if(quoteMoved()) gaps.unshift(MOVED);
       $("start-missing").hidden = !gaps.length || inProduction();
       $("start-missing").textContent = gaps.join(" ");
       $("optional-line").hidden = inProduction() || stage !== "open";
@@ -2895,9 +2890,19 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       $("help").textContent = "Save to come back, or Start your report.";
       $("start-production").hidden = true;
       $("quote").hidden = false;
-      $("quote").textContent = [laneTitle(D.selected_lane || "self-service"), O.price].filter(Boolean).join(" · ");
-      statusBtns.forEach(function(b) { if(b.dataset.s === "READY") { b.hidden = inProduction(); b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || !minimalChecked() || checkingFiles() || !minimalFactsReady() || missing().length > 0; } });
+      $("quote").textContent = quoteMoved() ? movedQuote() : [laneTitle(D.selected_lane || "self-service"), O.price].filter(Boolean).join(" · ");
+      statusBtns.forEach(function(b) { if(b.dataset.s === "READY") { b.hidden = inProduction(); b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || missing().length > 0; } });
     }
+    if (compOrderLane() && choosingLane()) {
+      var needsOrder = missing().some(function (m) { return m.key === "q_comp_order_weights"; });
+      if (needsOrder) {
+        $("start-production").disabled = true;
+        statusBtns.forEach(function (b) { if (b.dataset.s === "READY") b.disabled = true; });
+        $("start-missing").textContent = "Start unlocks once you add your comp order and weights.";
+        $("start-missing").hidden = false;
+      }
+    }
+    if (newGaps() && customerStart()) { $("start-missing").hidden = false; $("start-missing").textContent = "Your latest file adds a new comp gap. Read the card above, then tap Start again."; }
     paintComp();
     $("ss-reminder").hidden = !selfLane() || stage !== "open" || inProduction() || readOnly;   // Matt 2026-11-03: one line above Start
     $("save-calls").hidden = !minimalCalls() || inProduction();
@@ -2983,12 +2988,12 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
         b.classList.remove("wait"); if(proposalReview()) b.disabled=readOnly || !online || pendingTaps>0 || postBusy || !reviewReady(); return;
       }
       if (b.getAttribute("data-s") !== "READY") return;
-      var go = minimalStart() ? "Start" : asked() && !startOptions() ? "Send answers" : WORD.READY;
-      b.textContent = inProduction() ? "Start production received" : answered() ? "Answers sent" : go;
+      var go = customerStart() || minimalStart() ? "Start" : asked() && !startOptions() ? "Send answers" : WORD.READY;
+      b.textContent = inProduction() ? "Start received" : customerStart() ? "Start" : answered() ? "Answers sent" : go;
       if (!b.hidden && !inProduction() && !answered() && !simpleStart() && !minimalCalls()) lead = "Still to answer:";
       b.classList.toggle("wait", left.length > 0);
     });
-    if (minimalCalls()) statusBtns.forEach(function(b){if(b.dataset.s === "READY") {b.textContent = inProduction() ? "Start received" : "Start"; b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || inProduction() || !minimalChecked() || checkingFiles() || !minimalFactsReady() || left.length > 0;}});
+    if (minimalCalls()) statusBtns.forEach(function(b){if(b.dataset.s === "READY") {b.textContent = inProduction() ? "Start received" : "Start"; b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || inProduction() || left.length > 0;}});
     musts.forEach(function (m) { if (left.indexOf(m) < 0) m.node.classList.remove("need"); });
     var shown = !approved && !readOnly && !(customerReturned() && (!signoff() || !reviewReady() || signedOff()));   // the status bar's own rule (paintStatus)
     var allBtn = $("approve-all-btn"), done = statusBtns.filter(function (b) { return b.getAttribute("data-s") === "DONE"; })[0];
@@ -3061,7 +3066,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var a = saved.answers || {};
     if (kind === "feedback") return Object.keys(doc.answers || {}).every(function (k) { return a[k] === doc.answers[k]; });
     if (kind === "request") return (saved.post_changes || []).some(function (p) { return p.id === doc.post_change.id; });
-    if (kind === "go") return !!saved.go && saved.go.files_checked_at === doc.files_checked_at;
+    if (kind === "go") return !!saved.go && sameQuote(saved.go, doc.quote) && (doc.comp_gaps || []).every(function (g) { return (saved.go.comp_gaps || []).indexOf(g) >= 0; });
     if (kind === "approve") return saved.status === "DONE";
     if (kind === "start") return saved.status === "READY" || !!saved.go;
     return Object.keys(doc.answers || {}).every(function (k) { return /^q_(service_option|rush)$/.test(k) || a[k] === doc.answers[k]; });
@@ -3220,19 +3225,19 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   var goBusy = false;
   function startProduction() {
     if (minimalCalls() && missing().length) return;
-    if (!filesChecked() || realProduction() || readOnly || !online || pendingTaps > 0 || goBusy) return;
+    if (!customerReady() || realProduction() || readOnly || !online || pendingTaps > 0 || goBusy) return;
     if (compNeeds() && pendingStart) { startFailed("comps"); return; }   // a check that arrived mid-Start: he reads it, then taps Start again
     var compWas = state.answers.q_comp_check, accepted = compAccept() ? (edits++, write(false)) : null;   // a GO saves no answers (Code.gs): his acceptance saves first, and the GO waits on it
-    var payload = body(true); payload.go = true; payload.files_checked_at = checkedAt(); payload.request_id = newId();
-    var checkStamp = payload.files_checked_at, doc = JSON.stringify(payload), item = null;
+    var payload = body(true); payload.go = true; payload.files_checked_at = checkedAt(); payload.comp_gaps = (D.comp_check || {}).gaps || []; payload.request_id = newId();
+    var doc = JSON.stringify(payload), item = null;
     goBusy = true; paintStatus();
     function once() {   // each attempt reads first: a check that arrived since needs his own tap (Matt 2026-11-03)
       return read().then(function (r0) { if (r0.form && compBlocks(r0.form, payload.answers)) throw { code: "comps" }; })
         .then(function () { return post(doc).catch(function () {}); }).then(read).then(function (r) {
         if (r.form) refresh(r.form);
         if (r.saved) apply(r.saved);
-        if (!r.form || !r.saved || !filesChecked() || fileChecks().indexOf(checkStamp) < 0 || !sameQuote(currentQuote(), payload.quote)) throw { code: "changed" };
-        if (r.saved.go && r.saved.go.files_checked_at === checkStamp && sameQuote(r.saved.go, payload.quote)) return;
+        if (!r.form || !r.saved || !sameQuote(currentQuote(), payload.quote)) throw { code: "changed" };
+        if (r.saved.go && !newGaps() && sameQuote(r.saved.go, payload.quote)) return;
         throw {};
       });
     }
@@ -3240,7 +3245,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     writing = writing.catch(function () {}).then(function () { return accepted; }).then(function () {
       item = outboxAdd("go", doc, payload.request_id); return settle(item, once, 4);
     }).then(function () {
-      goBusy = false; pendingStart = null; paintStatus(); banner(minimalCalls() ? "Started ✓ We’re building your report." : "Start production received.", "ok");
+      goBusy = false; pendingStart = null; paintStatus(); banner(goNote(), "ok");
     }, function (e) {
       if (!item && accepted) state.answers.q_comp_check = compWas;   // his acceptance never saved: the next Start saves it again
       if (pendingStart) startFailed(e && e.code); else { goBusy = false; paintStatus(); banner("Start not confirmed. Check the form and try again.", "warn"); }
@@ -3251,8 +3256,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (code === "usage") { banner(usageLock() || "Start isn’t open right now. The AI usage line at the top says why.", "warn"); poll(); return; }
     if (code === "matt_hold") { banner("This order needs Matt’s review before it can start. We’ll email you.", "warn"); poll(); return; }
     banner(code === "quote_changed" ? "The price changed. Review it, then tap Start again." : code === "stage" ? STAGES[stage].refused :
-      code === "comps" ? "Your comps were checked again. Read the card at the top, then tap Start again." :
-      "Start not accepted yet: your file isn’t checked on our side. Your answers are saved; tap Start again once it is.", "warn");
+      code === "comps" ? "Your latest file adds a new comp gap. Read the card above, then tap Start again." :
+      "Start not confirmed. Your answers are saved; please try again.", "warn");
   }
   $("start-production").addEventListener("click", startProduction);
   $("save-calls").addEventListener("click", function(){
@@ -3352,7 +3357,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function closed() {               // the order is closed: no form, just the one line
     readOnly = true; pop(false); $("form").disabled = true; $("main").hidden = true; $("gate").hidden = false; gate(CLOSED); conn("Closed");
     if (stage === "open" && !review && $("help").innerHTML.indexOf("Nothing starts") < 0)
-      $("help").innerHTML += " Tap Start production after we check your files to authorize the run.";
+      $("help").innerHTML += " Tap Start once; we’ll begin when everything’s in and your file has sat quiet for 15 minutes.";
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = true; });
   }
   function afterEdit() {
@@ -3370,9 +3375,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function setStatus(s) {
     if (readOnly || approved || pendingTaps || (customerReturned() && (!signoff() || !reviewReady() || signedOff() || s !== "DONE" || roundsLocked()))) return;
-    if (s === "READY" && minimalCalls() && (!minimalChecked() || !minimalFactsReady())) return;
     var gaps = s === "READY" || s === "DONE" ? missing() : [];
-    var blocking = s === "READY" && (callsFirst() || minimalCalls()) ? gaps : gaps.filter(function (m) { return m.key === "q_client_permits"; });
+    var blocking = s === "READY" && (callsFirst() || minimalCalls() || compOrderLane() && choosingLane()) ? gaps : gaps.filter(function (m) { return m.key === "q_client_permits"; });
     if (blocking.length) {
       blocking.forEach(function (m) { m.node.classList.add("need"); });
       reveal(blocking[0].node); blocking[0].node.scrollIntoView({ block: "center" });
@@ -3390,10 +3394,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (s === "READY" && minimalStart()) compAccept();   // his Start accepts the gaps on the card (Matt 2026-11-03)
     state.status = s;
     // Matt 2026-10-30: Start and Approve show as accepted at once; the server's record replaces the stand-in, a refusal rolls it back.
-    if (s === "READY" && minimalCalls()) pendingStart = Object.assign({ at: new Date().toISOString(), files_checked_at: checkedAt() }, currentQuote());
+    if (s === "READY" && customerStart()) pendingStart = Object.assign({ at: new Date().toISOString(), files_checked_at: checkedAt() }, currentQuote());
     if (s === "DONE" && signoff()) pendingApprove = true;
     paintStatus();
-    if (s === "READY") { fastUntil = Date.now() + 60000; pollSoon(); banner(minimalCalls() ? "Started ✓ We’re building your report." : "Sending your files and answers for checking. Nothing starts yet.", "ok"); }
+    if (s === "READY") { fastUntil = Date.now() + 60000; pollSoon(); banner("Saving your Start…", "ok"); }
     if (pendingApprove) banner(approvalNote(), "ok");
     if (connecting) { tapped = s; if (s !== "READY") banner("Sending…", "ok"); return; }
     if (!online) { pendingStart = null; pendingApprove = false; state.status = was; state.answers.q_comp_check = compWas; paintStatus(); banner("Not connected, not sent. Your answers are still here.", "warn"); return; }
@@ -3401,7 +3405,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     write(true).then(function (r) {
       conn(approved ? "Approved" : "Saved " + when(new Date().toISOString()));
       pendingApprove = false;
-      if (s === "READY" && minimalCalls()) { if (filesChecked()) startProduction(); else startFailed("changed"); return; }
+      if (s === "READY" && customerStart()) { startProduction(); return; }
       if (s === "READY" && state.status === "DRAFT" && D.note_kind === "not_ready") {
         banner("Back to Draft: something is still needed.", "warn"); return;
       }
@@ -3508,7 +3512,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return f.questions_only !== F.questions_only || canon(f.matt_hold || null) !== canon(F.matt_hold || null) || canon(f.start_missing || []) !== canon(F.start_missing || []) || canon(f.comp_check || null) !== canon(F.comp_check || null) || canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.change_rounds || 0) !== (F.change_rounds || 0) || canon(f.change_answer || null) !== canon(F.change_answer || null) || f.changes_closed !== F.changes_closed || (f.changes_closed_text || "") !== (F.changes_closed_text || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || canon(f.review_changes || null) !== canon(F.review_changes || null) || canon(f.double_check || []) !== canon(F.double_check || []) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
+  function newer(f) { return f.questions_only !== F.questions_only || (f.start_reconfirm || "") !== (F.start_reconfirm || "") || canon(f.matt_hold || null) !== canon(F.matt_hold || null) || canon(f.start_missing || []) !== canon(F.start_missing || []) || canon(f.comp_check || null) !== canon(F.comp_check || null) || canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.change_rounds || 0) !== (F.change_rounds || 0) || canon(f.change_answer || null) !== canon(F.change_answer || null) || f.changes_closed !== F.changes_closed || (f.changes_closed_text || "") !== (F.changes_closed_text || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || canon(f.review_changes || null) !== canon(F.review_changes || null) || canon(f.double_check || []) !== canon(F.double_check || []) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
   function canon(v) { return JSON.stringify(v, function (k, x) { return x && typeof x === "object" && !Array.isArray(x) ? Object.keys(x).sort().reduce(function (o, j) { o[j] = x[j]; return o; }, {}) : x; }); }   // key order is never a change
   // A re-render keeps the reader's place (Chase 2026-10-20): the scroll, then the box or button in focus and its
   // selection; with nothing in focus it takes none.
@@ -3558,6 +3562,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       mine=Object.fromEntries(Object.entries(mine||{}).filter(function(entry){return !entry[0].startsWith("q_pc_") || active.has(entry[0]);}));
     }
     var self = (D.house_prompts || {}).lane === "self-service", low = Object.assign({}, D.prefill || {}, self && !minimalCalls() && D.our_calls || {});
+    var orderCall = (D.file_calls || {}).q_comp_order_weights;
+    if (compOrderLane() && orderCall && orderCall.source) low.q_comp_order_weights = orderCall.value;
     if(proposalReview() && D.proposed_calls) D.proposed_calls.sections.forEach(function(section){section.calls.forEach(function(c){low["q_pc_"+section.id+"_"+c.id]=String(c.value);});});
     if (valueLast() && !minimalCalls()) (D.comps || []).forEach(function (c, i) {   // a rating in a comp's record is his default too, beneath the rest
       ["quality", "condition"].forEach(function (w) { var k = "comp" + (i + 1) + "_" + w; if (c[w] && !(k in low)) low[k] = c[w]; });
