@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light">
     <meta
       name="description"
-      content="Request conversion, partial desk or full desk report preparation. Start with your contact details; Matt sets up your private order folder.">
+      content="Start a report: you send the comps, we do the rest. Start with your contact details; Matt sets up your private order folder.">
     <title>Start a report | A&amp;AP</title>
     <link rel="canonical" href="https://appraisalpartners.net/start.html">
     <link rel="icon" type="image/png" href="assets/aap-favicon.png">
@@ -33,18 +33,16 @@
   <symbol id="down" viewBox="0 0 20 20"><path d="M10 3v13M4.5 10.5L10 16l5.5-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="phone" viewBox="0 0 20 20"><path d="M6.4 2.9c.5-.3 1.2-.1 1.5.4l1.4 2.4c.3.5.2 1.1-.2 1.5L7.9 8.4a9.6 9.6 0 0 0 3.7 3.7l1.2-1.2c.4-.4 1-.5 1.5-.2l2.4 1.4c.5.3.7 1 .4 1.5l-.9 1.7c-.5.9-1.5 1.4-2.5 1.1A13.6 13.6 0 0 1 3.6 6.3c-.3-1 .2-2 1.1-2.5l1.7-.9z" fill="currentColor"/></symbol>
 </svg>
-    <a class="announce num" href="convert.html"><b>New</b><span>Convert your 2.6 to 3.6</span><span class="dot">·</span><span>Starting at $59</span><span class="arrow">&rarr;</span></a>
+    <a class="announce num" href="index.html#services"><b>New</b><span>Self-Service opens November 15</span><span class="dot">·</span><span>$199 a month, flat rate</span><span class="arrow">&rarr;</span></a>
 <header class="appbar">
   <div class="wrap">
     <a class="brand" href="index.html" aria-label="A&amp;AP home"><img src="assets/aap-mark-light.svg" alt="" width="52" height="30"><b>A&amp;AP</b></a>
     <nav class="nav" aria-label="Site"><a href="index.html#services">Services</a>
-<a href="convert.html">Convert</a>
 <a href="how-it-works.html">How it works</a>
 <a href="about.html">About</a>
 <a href="faq.html">FAQ</a></nav>
     <a class="btn sm" href="start.html" aria-current="page">Start a report</a>
     <details class="menu"><summary aria-label="Menu">Menu</summary><nav aria-label="Site, mobile"><a href="index.html#services">Services</a>
-<a href="convert.html">Convert</a>
 <a href="how-it-works.html">How it works</a>
 <a href="about.html">About</a>
 <a href="faq.html">FAQ</a><a class="go" href="start.html" aria-current="page">Start a report</a></nav></details>
@@ -132,11 +130,10 @@
           <div class="field">
             <label for="f-service">Service</label
             ><select id="f-service" name="service">
-              <option value="conversion">Conversion</option>
-              <option value="partial" selected>Partial desk</option>
-              <option value="full">Full desk</option>
+              <option value="partial" selected>We do it all (you send the comps)</option>
               <option value="2-4-units">2–4 units</option>
             </select>
+            <p class="hint">A finished 2.6 is welcome on either; it comes back as a native 3.6, included. Self-Service, $199 a month, opens November 15: <a href="mailto:desk@aandap.com?subject=Self-Service%20sign-up">sign up by email</a>.</p>
           </div>
           <div class="grid2">
             <div class="field">
@@ -380,7 +377,7 @@
     <footer>
   <div class="wrap num">
     <div class="line1"><span>Appraisal Partners of Texas, Inc.</span><span class="dot">·</span><span>TX #1361115-CR</span><span class="dot">·</span><span>CO #CR200002387</span></div>
-    <nav class="line1" aria-label="Footer"><a href="convert.html">Convert</a><span class="dot">·</span><a href="how-it-works.html">How it works</a><span class="dot">·</span><a href="about.html">About</a><span class="dot">·</span><a href="faq.html">FAQ</a><span class="dot">·</span><a href="terms.html">Terms</a><span class="dot">·</span><a href="terms-software.html">Software terms</a></nav>
+    <nav class="line1" aria-label="Footer"><a href="how-it-works.html">How it works</a><span class="dot">·</span><a href="about.html">About</a><span class="dot">·</span><a href="faq.html">FAQ</a><span class="dot">·</span><a href="terms.html">Terms</a><span class="dot">·</span><a href="terms-software.html">Software terms</a></nav>
     <div>10900 Research Blvd, Suite 160C, Austin, TX 78759</div>
     <div>TOTAL is a product of a la mode. A&amp;AP is not affiliated with a la mode.</div>
   </div>
@@ -431,10 +428,10 @@
           "service",
         );
         var aliases = {
-          convert: "conversion",
-          conversion: "conversion",
+          convert: "partial",
+          conversion: "partial",
           partial: "partial",
-          full: "full",
+          full: "partial",
           "2-4": "2-4-units",
           units: "2-4-units",
           "2-4-units": "2-4-units",
@@ -442,13 +439,8 @@
         if (aliases[requestedService])
           service.value = aliases[requestedService];
         function syncService() {
-          if (service.value === "full") {
-            document.getElementById("d-research").checked = true;
-            document.getElementById("c-proceed").checked = true;
-          } else {
-            document.getElementById("d-mine").checked = true;
-            document.getElementById("c-mine").checked = true;
-          }
+          document.getElementById("d-mine").checked = true;
+          document.getElementById("c-mine").checked = true;
         }
         service.addEventListener("change", syncService);
         syncService();
