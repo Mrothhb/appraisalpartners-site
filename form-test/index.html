@@ -2464,8 +2464,14 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var t = function (s) { var n = s ? Date.parse(s) : NaN; return isNaN(n) ? 0 : n; };
     var P = D.progress || {}, at = P.at || {}, R = D.review || {}, C = P.completion || {};
     var sameReview = P.source !== "receipt" || !P.run_id || (C.attempt === P.run_id && C.source_binding === P.source_binding && C.review_id === R.id && C.report_sha256 === R.report_sha256 && C.pdf === R.pdf);
-    var review = sameReview && R.at, done = D.delivered_at;
+    var retired = P.source === "receipt" && P.status === "complete";
+    var review = (sameReview || retired) && R.at, done = D.delivered_at;
     var current = TRACK.indexOf(P.step) > 1 ? P.step : "files", ch = changeState(), waiting = null;
+    var activeReceipt = P.source === "receipt" && P.run_id && !retired && !sameReview, round = state.change_round;
+    var currentChange = ch && (ch.request.pending ||
+      round && !round.sent_at && (round.request_ids || []).indexOf(ch.request.id) >= 0 ||
+      !round && (ch.kind === "open" || t(ch.request.at) >= t(P.started_at)));
+    if (activeReceipt && !currentChange) ch = null;  // retained history cannot hide this attempt's own status
     if (review) current = "review";
     if (done && t(done) >= t(review)) current = "delivered";
     if (ch && (ch.kind === "open" || ch.kind === "answered")) current = "checking";   // answered with no new report: his round's outcome
@@ -2476,11 +2482,11 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (current === "review" && signoff() && !signedOff() && reviewReady() && !roundsLocked()) waiting = { what: "review", target: "#report" };   // only while Approve is there
     var times = { started: go.at, files: at.files || (t((D.house_prompts || {}).files_checked_at) >= t(go.at) ? D.house_prompts.files_checked_at : null), building: at.building, checking: ch ? ch.request.at : at.checking, review: review, delivered: done };
     var words = ch && changeWords(ch);
-    if (!words && P.source === "receipt" && !review && !done) {
+    if (!words && P.source === "receipt" && !retired && !review && !done) {
       var centralTime = function (value) { return value && t(value) ? new Date(value).toLocaleString("en-US", { timeZone: "America/Chicago", weekday: "short", hour: "numeric", minute: "2-digit", timeZoneName: "short" }) : ""; };
       var details = [];
       if (P.last_stamp) details.push("Last confirmed " + centralTime(P.last_stamp) + ".");
-      if (P.promised_at) details.push("Expected for your review by " + centralTime(P.promised_at) + ".");
+      if (P.promised_at) details.push(fillPromise(P.promised_at));
       var stale = P.last_stamp && Date.now() - t(P.last_stamp) >= 45 * 60000;
       if (stale && P.status !== "stale") details.push("No new update since " + centralTime(P.last_stamp) + ".");
       if (P.line) details.push(P.line);
@@ -2540,10 +2546,21 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     }
     return (slip ? "Taking longer: " + slip.reason + " Revised target: about " : "Target for your updated report: about ") + clock(due) + ". This is an estimate; we’ll update it if needed. Later Sends join this unfinished round.";
   }
+  function fillPromise(promised) {
+    var due = Date.parse(promised), now = Date.now();
+    if (!Number.isFinite(due)) return "";
+    var clock = function (value) { return new Date(value).toLocaleString("en-US", { timeZone: "America/Chicago", weekday: "short", hour: "numeric", minute: "2-digit", timeZoneName: "short" }); };
+    if (now >= due) {
+      var revised = due + (Math.floor((now - due) / 3600000) + 1) * 3600000;
+      return "The review time has passed; completion is not confirmed yet. Provisional revised estimate: " + clock(revised) + ". Awaiting confirmation.";
+    }
+    return "Expected for your review by " + clock(due) + ".";
+  }
   function paintTracker() {
     var status = trackerStatus(), box = $("production-tracker");
     box.hidden = !status;
     if (status) APStatusTracker.render(box, status);
+    if (typeof pollSoon === "function") pollSoon();
   }
   // ---------- the full-screen state (Matt 2026-10-30: "an entire screen taken by a notice that the system is checking files, or
   // pending or in progress") ----------
@@ -3828,8 +3845,20 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // does, since TOTAL's preview may not report itself visible (Matt 2026-10-13: "the red did not show up on the total
   // workfile form").
   var pollT = null, fastUntil = 0, polling = false, pendingTaps = 0;
-  function pollSoon() { clearTimeout(pollT); pollT = setTimeout(function () { paintTracker(); poll(); pollSoon(); }, Date.now() < fastUntil ? 2000 : 30000); }
+  function nextStatusDelay() {
+    var now = Date.now(), delay = now < fastUntil ? 2000 : 30000, P = D.progress || {}, round = state && state.change_round;
+    var times = [];
+    if (P.source === "receipt" && P.status !== "complete") {
+      times.push(Date.parse(P.promised_at));
+      times.push(Date.parse(P.last_stamp) + 45 * 60000);
+    }
+    if (round && !round.sent_at) times.push(Date.parse(round.due_at));
+    times.forEach(function (at) { if (Number.isFinite(at) && at > now) delay = Math.min(delay, at - now); });
+    return Math.max(1, delay);
+  }
+  function pollSoon() { clearTimeout(pollT); pollT = setTimeout(poll, nextStatusDelay()); }
   function poll() {
+    paintTracker();  // re-arms the same timer even when a backend poll is unavailable
     paintStage();   // Checking becomes Still checking by age alone, with no new data
     if (state && changeInFlight()) paintStatus();
     if ((!INLINE && document.visibilityState === "hidden") || polling || readOnly || postBusy || !online || connecting || tapped || pendingTaps || edits !== savedEdits || timer || outbox.length) return;
@@ -3840,6 +3869,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (pendingTaps || readAt !== savedAt || edits !== savedEdits) return;
       var was = state.status;
       if (r.form && newer(r.form)) { refresh(r.form); if (r.saved) apply(r.saved); else if (!savedAt) apply({}); }   // his cleared boxes too; never saved: our latest calls
+      if (r.form && canon(r.form.progress || null) !== canon(F.progress || null)) {
+        F.progress = r.form.progress; D.progress = r.form.progress;
+        paintTracker(); paintStage();  // receipt-only updates never rebuild his inputs or drafts
+      }
       if (r.form && (r.form.stage || "open") !== stage) { D.stage = r.form.stage; setStage(r.form.stage); }
       if (r.form && canon(r.form.usage_bar || null) !== canon(F.usage_bar || null)) { F.usage_bar = r.form.usage_bar; paintStatus(); }   // the usage bar, every 10 minutes
       if (r.saved && (r.saved.updatedAt !== savedAt || r.saved.status !== state.status || canon(r.saved.change_round || null) !== canon(state.change_round || null) || JSON.stringify(r.saved.post_changes || []) !== JSON.stringify(state.post_changes || []))) apply(r.saved);
