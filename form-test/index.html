@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-05.8">
+<html lang="en" data-build="v2026-11-05.9">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1294,7 +1294,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   var savedAt = null, savedStatus = null;  // only a confirmed READY locks the submitted answers; an old receipt cannot confirm a retry
   var answerRevision = null, answerBase = { answers: {}, changes: [] };
   var approved = false;        // only the internal reviewer lane keeps its historical DONE lock
-  var postBusy = false, postDraft = null;
+  var postBusy = false;
   function customerReturned() { return stage === "returned" && (D.house_prompts || {}).lane !== "review"; }
   function approveShips() { return (D.house_prompts || {}).approve_ships !== false && (!D.delivered_at || (D.house_prompts || {}).approve_ships === true); }
   function approveLabel() { return approveShips() ? "Approve and deliver" : "Approve"; }
@@ -2464,7 +2464,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var asked = P.waiting && P.waiting.what, answered = asked && (state.post_changes || []).concat(Object.keys(state.answers || {})
       .filter(function (k) { return /^q_fb_/.test(k); }).map(function (k) { try { return JSON.parse(state.answers[k]); } catch (e) { return null; } }))
       .some(function (c) { return c && t(c.at) > t(P.waiting.at); });
-    if (asked && !answered && TRACK.indexOf(current) < 4) waiting = { what: asked, target: "#feedback" };
+    if (["files", "answer", "review"].indexOf(asked) >= 0 && !answered && TRACK.indexOf(current) < 4) waiting = { what: asked, target: "#feedback" };
     if (current === "review" && signoff() && !signedOff() && reviewReady() && !roundsLocked()) waiting = { what: "review", target: "#report" };   // only while Approve is there
     var times = { started: go.at, files: at.files || (t((D.house_prompts || {}).files_checked_at) >= t(go.at) ? D.house_prompts.files_checked_at : null), building: at.building, checking: ch ? ch.request.at : at.checking, review: review, delivered: done };
     var words = ch && changeWords(ch);
@@ -2773,6 +2773,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var request = changeState(), yours = request && request.kind === "done" && request.made ? "Your updated report" : "Your report";
     var pending = request && (request.kind === "open" || request.kind === "answered");   // his latest request, not yet answered by a new report
     $("returned-headline").textContent = signoff() ? signedOff() ? approvalNote() : !reviewReady() ? request && request.kind === "answered" ? changeWords(request).join(" ") : (state.post_changes || []).length ? "Your changes are with us. We'll post your review PDF below." : "Your review PDF will appear below." : (approveShips() ? yours + " is ready for your review. Tap Approve and deliver to send it to your TOTAL folder, or request a change below." : yours + " is in your TOTAL folder. Review it below, then approve or request a change.") : paymentDue ? "Your report is ready. It goes to your folder once payment is received." : "Your report is in your TOTAL folder. Review and edit it there.";
+    if (request && request.request.pending) $("returned-headline").textContent = changeWords(request).join(" ");
     if(proposalReview() && !signedOff() && !delivered() && !pending) $("returned-headline").textContent="Review " + yours.toLowerCase() + " and your calls, then approve or request a change.";
     if(changesClosed() && !signedOff()) $("returned-headline").textContent="Your review is done. Tap " + (proposalReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " to get your report.";
     if(roundsLocked() && !signedOff()) $("returned-headline").textContent="Two change rounds used. Your final report is being delivered to your TOTAL folder.";
@@ -2794,7 +2795,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var entries = state.history.slice();
     if (stage === "returned") {
       var recorded = entries.filter(function (e) { return e.event === "post_change"; }).map(function (e) { return e.id; });
-      (state.post_changes || []).forEach(function (p) { if (recorded.indexOf(p.id) < 0) entries.push({ event: "post_change", id: p.id, at: p.at }); });
+      (state.post_changes || []).forEach(function (p) { if (!p.pending && recorded.indexOf(p.id) < 0) entries.push({ event: "post_change", id: p.id, at: p.at }); });
       (D.deliveries || []).forEach(function (d) { entries.push({ event: d.kind === "updated" ? "updated" : "delivered", at: d.at, original: d.original }); });
       try { var all = JSON.parse(state.answers.q_pc_all); entries.push({ event: "approve_all", at: all.at, review_id: all.review_id, n: Object.keys(all.sections).length }); } catch (e) {}
       entries.sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); });
@@ -3030,7 +3031,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var prior = outbox.filter(function (i) { return !i.error; }).slice(-1)[0];
     var item = { id: id || newId(), page: PAGE_ID, kind: kind, doc: doc, at: new Date().toISOString(), tries: 0,
       base: JSON.parse(JSON.stringify(answerBase)), after: prior && prior.id,
-      replaces: outbox.filter(function (i) { return i.error && (i.error === "review" || i.page === PAGE_ID) && (answerAction(kind) ? i.kind === kind || i.kind === "save" : i.error === "review" && i.kind === kind); }).map(function (i) { return i.id; }) };
+      replaces: outbox.filter(function (i) { return i.error && (i.error === "review" || i.page === PAGE_ID) && (answerAction(kind) ? i.kind === kind || i.kind === "save" : (i.error === "review" || i.page === PAGE_ID && i.error === "quote_changed") && i.kind === kind); }).map(function (i) { return i.id; }) };
     outbox.push(item); outboxSave(); paintSync(); return item;
   }
   function outboxDrop(item) {
@@ -3067,6 +3068,15 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       return saved;
     }
     if (receipt) throw { code: "request_reused", form: r.form, saved: saved };
+    // A saved receipt wins even if the quote changed after the action committed.
+    // Otherwise every quoted field must match, including on a replay after reload.
+    if (item.kind === "request" && r.form) {
+      var f = r.form, order = f.order || {};
+      if (doc.quote && !sameQuote(doc.quote, { price: order.price || "", ready_by: order.ready_by || "",
+          lane: f.selected_lane || (f.house_prompts || {}).lane || "desk", terms: f.terms }))
+        throw { code: "quote_changed", form: f, saved: saved };
+      if ((f.stage || "open") !== "returned") throw { code: "stage", form: f, saved: saved };
+    }
     if (!saved._revision || !doc.request_id) throw { code: "reload_required" };
     if (answerAction(item.kind) && saved._revision !== doc.expected_revision) throw { code: "conflict", form: r.form, saved: saved };
     throw {};
@@ -3087,6 +3097,12 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     outbox.forEach(function (i) { if (i.wake) i.wake(); });
   }
   function paintSync() {
+    // Queue ownership is synchronous: a second tap must see the first message
+    // pending before its asynchronous write starts (including restored drafts).
+    var wasPostBusy = postBusy, wasFeedbackBusy = feedbackBusy;
+    postBusy = outbox.some(function (i) { return i.kind === "request" && !i.error; });
+    feedbackBusy = outbox.some(function (i) { return i.kind === "feedback" && !i.error; });
+    if (state && (postBusy !== wasPostBusy || feedbackBusy !== wasFeedbackBusy)) paintStatus();
     var held = outbox.some(function (i) { return i.error; }), stuck = storageFailed && outbox.length || storageDamaged || held || outbox.some(function (i) { return i.tries >= STUCK_AFTER; }), note = $("sync-note");
     $("conn").textContent = held ? "Not saved" : outbox.length ? "Syncing…" : lastConn;
     note.hidden = !stuck;
@@ -3121,7 +3137,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
 
   function recoverDraft() {
     clearTimeout(timer); timer = null;
-    var held = outbox.filter(function (i) { return i.error; });
+    var held = outbox.filter(function (i) { return i.error; }), quoteRefused = held.some(function (i) { return i.kind === "request" && i.error === "quote_changed"; });
     var typing = edits !== savedEdits ? { kind: "save", doc: JSON.stringify(body(false)), base: JSON.parse(JSON.stringify(answerBase)) } : null;
     var messages = { request: [], feedback: [] };
     function keepMessage(kind, text) { if (text && messages[kind].indexOf(text) < 0) messages[kind].push(text); }
@@ -3148,12 +3164,12 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       keepMessage("request", unsentRequest); keepMessage("feedback", unsentFeedback);
       if (messages.request.length) { $("post-text").value = messages.request.join("\n\n"); $("post-box").hidden = false; }
       if (messages.feedback.length) { $("feedback-text").value = messages.feedback.join("\n\n"); $("feedback").open = true; }
-      if (held.length || typing) { edits++; paintAll(); paintStatus(); outboxSave(); paintSync(); banner("Your draft is back. Review it, then save or send again.", "warn"); }
+      if (held.length || typing) { edits++; paintAll(); paintStatus(); outboxSave(); paintSync(); banner((quoteRefused ? movedQuote() + ". " : "") + "Your draft is back. Review it, then save or send again.", "warn"); }
       else banner("Your earlier action was saved.", "ok");
     }, function () { banner("Can’t check the latest answers yet. Your draft is still here.", "warn"); });
   }
 
-  var feedbackBusy = false, feedbackDraft = null;
+  var feedbackBusy = false;
   function paintFeedback() {
     if (!state) return;
     $("feedback").hidden = !online;
@@ -3268,28 +3284,25 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var item = outboxAdd("request", doc, request.id);
     function once() {
       return post(item.doc).catch(function () {}).then(read).then(function (r) {
-        if (payload.quote && r.form && r.form.terms !== payload.quote.terms) {
-          refresh(r.form); throw { code: "quote_changed" };
-        }
         if (r.form && newer(r.form)) refresh(r.form);
-        if (landed(item.kind, JSON.parse(item.doc), r.saved || {}, item.hash)) { verifyAction(item, r); if (r.saved) apply(r.saved); return r; }
-        state.post_changes = (state.post_changes || []).concat(stand); paintStatus();   // not there yet: the stand-in stays while we retry
-        if (stage !== "returned") throw { code: "stage" };
-        throw {};
+        verifyAction(item, r);
+        if (r.saved) apply(r.saved);
+        return r;
       });
     }
     writing = writing.catch(function () {}).then(function () { return settle(item, once); }).then(function () {
-      paintStatus(); banner("Changes sent.", "ok");
+      $("post-error").hidden = true; paintStatus(); banner("Changes sent.", "ok");
       // The explicit request reopened the review. Its retained call edits can
       // now save normally, retiring the held draft and allowing fresh reviews.
       if (edits !== savedEdits && outbox.some(function (i) { return i.page === PAGE_ID && i.kind === "save" && i.error === "use_change_request"; }))
         write(false).then(function () { banner("Changes sent.", "ok"); }, function () {});
     }, function (e) {
       // The server refused it: back out the stand-in, return his text to the box, and say why.
+      if (e && e.form) refresh(e.form);
       state.post_changes = (state.post_changes || []).filter(function (p) { return p.id !== request.id; });
       $("post-text").value = request.text; grow($("post-text")); $("post-box").hidden = false; $("post-open").hidden = true; paintStatus();
       if (e && e.code === "unknown") { closed(); return; }
-      $("post-error").textContent = e && e.code === "quote_changed" ? "The terms changed. Review them, then send again." : e && e.code === "stage" ? STAGES[stage].refused : "Not sent. Try again in a minute."; $("post-error").hidden = false;
+      $("post-error").textContent = e && e.code === "quote_changed" ? "The price, day or terms changed. " + movedQuote() + ". Review it and the terms above, then send again." : e && e.code === "stage" ? STAGES[stage].refused : "Not sent. Try again in a minute."; $("post-error").hidden = false;
     });
   });
   var goBusy = false;
