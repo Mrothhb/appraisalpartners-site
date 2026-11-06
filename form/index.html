@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-06.2">
+<html lang="en" data-build="v2026-11-06.4">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -882,7 +882,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
              submitted and ready"); the "Best way" tip on its own line, in its own colour. Round 5: an ATTENTION badge at the top (CSS) and
              the lead starts "Please note:". -->
         <li class="final"><span><b>Please note: Your report doesn’t begin until your work file is complete and ready.</b> Inspection, sketch and photos all in. Changes after that are revisions.</span></li>
-        <li class="time"><span><b>About 2–3 hours to build,</b> plus your review and any fixes.</span></li>
+        <li class="time"><span><b>We post your expected review time when your report starts.</b> We update it if that changes.</span></li>
         <!-- Matt 2026-10-31: two change rounds, the first his full review, the second a grace round (Software Terms 2026-10-31b § 3). -->
         <li class="rounds"><span><b>Two change rounds.</b> Send every change in the first; the second is a grace round.<span id="rounds-price"> A third is $15.</span></span></li>
         <li class="tip"><span><b>Best way:</b> line up several orders, tap Start on each, and step away.</span></li>
@@ -890,7 +890,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
     </div>
     <p class="status-help" id="help"></p>
     <p class="note" id="final-file" hidden><b>Your report doesn’t begin until your work file is complete and ready.</b> Inspection, sketch and photos all in. Changes after that are revisions.</p>
-    <p class="note" id="selfservice-timing" hidden>A report takes about 2–3 hours to build, plus your review and any fixes. Best way: line up several orders, tap Start on each, and step away.</p>
+    <p class="note" id="selfservice-timing" hidden>We post your expected review time when your report starts, and update it if that changes. Best way: line up several orders, tap Start on each, and step away.</p>
     <p id="usage-lock" role="status" hidden></p>
     <p class="start-lock" id="start-missing" role="status" hidden></p>
     <p class="optional-line" id="optional-line" hidden>Everything else is optional. Leave it blank and we’ll propose every call for you to approve.</p>
@@ -926,6 +926,8 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
     <div id="banner" aria-live="polite"></div>
   </section>
   <details class="card history" id="history" hidden><summary>History</summary><ul id="history-list"></ul></details>
+  <details class="card history" id="post-drafts" hidden><summary>Unsent drafts</summary><ul id="post-draft-list"></ul></details>
+  <details class="card history" id="post-history" hidden><summary>Sent changes</summary><ul id="post-history-list"></ul></details>
   <div class="banner rounds" id="changes-closed-bottom" role="alert" hidden></div>
   </div>
 
@@ -2079,14 +2081,15 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // supplied or heavy rework from his missing or wrong information is quoted separately, outside the rounds; older orders keep their wording.
   function newTerms(t) { t = String(t || ""); return /^software-/.test(t) ? t >= "software-2026-11-02" : /^service-/.test(t) && t >= "service-2026-11-02"; }
   function roundsApply() { var lane = (D.house_prompts || {}).lane; return lane === "self-service" || lane !== "review" && /^service-/.test(roundTerms()) && roundsPriced(); }
-  function changesClosed() { return D.stage === "returned" && !D.delivered_at && (D.changes_closed === true || roundsApply() && (+D.change_rounds || 0) >= 2); }
+  function changeInFlight() { return !!(state.change_round && !state.change_round.sent_at); }
+  function changesClosed() { return D.stage === "returned" && !D.delivered_at && (D.changes_closed === true || !changeInFlight() && roundsApply() && (+D.change_rounds || 0) >= 2); }
   // Matt 2026-11-02 ~16:45 ("lock the form and auto delivery and lock the buttons after 2 change rounds and deliver the ship report
   // with email"): after the second counted round the form locks, no Approve and no Request a change, report, History and feedback
   // only, and the desk delivers the final review with no tap (send_notice.rounds_locked/rounds_final). The desk's hand close
   // (changes_closed) keeps Approve. Matt ~17:40: "Auto-deliver after round 2 only on orders on the 2026-11-02b terms; older orders
   // keep the Approve tap." (send_notice.rounds_locked, the same gate)
   function autoDelivers() { var t = roundTerms(); return /^software-/.test(t) ? t >= "software-2026-11-02b" : /^service-/.test(t) && t >= "service-2026-11-02b"; }
-  function roundsLocked() { return D.stage === "returned" && !D.delivered_at && roundsApply() && autoDelivers() && (+D.change_rounds || 0) >= 2; }
+  function roundsLocked() { return D.stage === "returned" && !D.delivered_at && !changeInFlight() && roundsApply() && autoDelivers() && (+D.change_rounds || 0) >= 2; }
   function delivered() { return customerReturned() && !!D.delivered_at && !signoff(); }   // the delivered report is the current one
   function roundsText(where) {   // [headline, line]; where = "below" or "above", from the box to the button
     var price = roundsPriced() ? " ($15 a round)" : "";
@@ -2459,7 +2462,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var go = state && (state.go || pendingStart);
     if (!state || !go || !(selfLane() || /^self-service/.test(go.lane || "")) || !(inProduction() || stage === "returned")) return null;
     var t = function (s) { var n = s ? Date.parse(s) : NaN; return isNaN(n) ? 0 : n; };
-    var P = D.progress || {}, at = P.at || {}, review = D.review && D.review.at, done = D.delivered_at;
+    var P = D.progress || {}, at = P.at || {}, R = D.review || {}, C = P.completion || {};
+    var sameReview = P.source !== "receipt" || !P.run_id || (C.attempt === P.run_id && C.source_binding === P.source_binding && C.review_id === R.id && C.report_sha256 === R.report_sha256 && C.pdf === R.pdf);
+    var review = sameReview && R.at, done = D.delivered_at;
     var current = TRACK.indexOf(P.step) > 1 ? P.step : "files", ch = changeState(), waiting = null;
     if (review) current = "review";
     if (done && t(done) >= t(review)) current = "delivered";
@@ -2471,7 +2476,17 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (current === "review" && signoff() && !signedOff() && reviewReady() && !roundsLocked()) waiting = { what: "review", target: "#report" };   // only while Approve is there
     var times = { started: go.at, files: at.files || (t((D.house_prompts || {}).files_checked_at) >= t(go.at) ? D.house_prompts.files_checked_at : null), building: at.building, checking: ch ? ch.request.at : at.checking, review: review, delivered: done };
     var words = ch && changeWords(ch);
-    return { current: current, waiting: waiting, build: P.build ? { current: current === "building" ? P.sub || null : null, at: P.build } : null,
+    if (!words && P.source === "receipt" && !review && !done) {
+      var centralTime = function (value) { return value && t(value) ? new Date(value).toLocaleString("en-US", { timeZone: "America/Chicago", weekday: "short", hour: "numeric", minute: "2-digit", timeZoneName: "short" }) : ""; };
+      var details = [];
+      if (P.last_stamp) details.push("Last confirmed " + centralTime(P.last_stamp) + ".");
+      if (P.promised_at) details.push("Expected for your review by " + centralTime(P.promised_at) + ".");
+      var stale = P.last_stamp && Date.now() - t(P.last_stamp) >= 45 * 60000;
+      if (stale && P.status !== "stale") details.push("No new update since " + centralTime(P.last_stamp) + ".");
+      if (P.line) details.push(P.line);
+      words = [stale ? "Checking status" : P.title || "Checking status", details.join(" ")];
+    }
+    return { current: current, waiting: waiting, build: null,
       note: words ? { title: words[0], line: words[1] } : null,
       steps: TRACK.map(function (k) { return { key: k, at: times[k] || null, label: k === "checking" && ch ? "Changes" : undefined }; }) };
   }
@@ -2490,6 +2505,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var reason = a.request_id === req.id && CHANGE_REASONS[a.reason] || "", made = !reason || a.reason === "our-mistake";
     var reviewed = (review.request_ids || []).indexOf(req.id) >= 0 || t(review.at) > t(req.at);
     var shipped = (D.resolved_post_changes || []).indexOf(req.id) >= 0 || t(D.delivered_at) > t(req.at);
+    if (!made) return { kind: "answered", request: req, at: a.at, reason: reason, made: false };
     if (shipped && (!reviewed || t(D.delivered_at) >= t(review.at))) return { kind: "delivered", request: req, at: D.delivered_at, reason: reason, made: made };
     if (reviewed) return { kind: "done", request: req, at: review.at, reason: reason, made: made };
     return made ? { kind: "open", request: req, at: req.at, reason: "", made: true } : { kind: "answered", request: req, at: a.at, reason: reason, made: false };
@@ -2500,6 +2516,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       var d = new Date(iso), recent = Math.abs(Date.now() - d) < 5 * 864e5;
       return isNaN(d) ? "" : " (" + (recent ? d.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" }) : when(iso)) + ")";
     };
+    var round = state.change_round;
+    if (ch.kind === "answered") return ["We answered your change request" + stamp(ch.at) + ".", ch.reason];
+    if (round && !round.sent_at) return ["We got your change request" + stamp(ch.at) + ".", changePromise(round)];
     if (ch.kind === "open") return ["We got your change request" + stamp(ch.at) + ".", "We’re making your changes now."];
     if (ch.kind === "answered") return ["We answered your change request" + stamp(ch.at) + ".", ch.reason];
     var report = ch.made ? "Your updated report" : "Your report";
@@ -2508,6 +2527,18 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (signedOff()) return ["You approved " + report.toLowerCase() + ".", used];
     if (roundsLocked()) return [report + " is final" + stamp(ch.at) + ".", [ch.reason, "We’re delivering it to your TOTAL folder.", used].filter(Boolean).join(" ")];
     return [report + " is ready to review" + stamp(ch.at) + ".", [ch.reason, changesClosed() ? "Approve it to get your report." : "Approve it, or ask for more changes.", used].filter(Boolean).join(" ")];
+  }
+  function changePromise(round) {
+    var slips = round.slips || [], slip = slips[slips.length - 1];
+    var due = new Date(round.due_at), expired = Date.now() >= due.getTime();
+    var clock = function (d) { return d.toLocaleString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' }) + ' Central'; };
+    // An offline/late timer cannot leave an expired promise on screen. Its
+    // coarse fallback is labelled provisional; it claims no work or progress.
+    if (expired) {
+      var step = round.minutes * 60000, revised = new Date(due.getTime() + (Math.floor((Date.now() - due.getTime()) / step) + 1) * step);
+      return "Taking longer: the return time has passed and your updated report is not confirmed yet. Provisional revised target: about " + clock(revised) + ". This estimate is awaiting confirmation.";
+    }
+    return (slip ? "Taking longer: " + slip.reason + " Revised target: about " : "Target for your updated report: about ") + clock(due) + ". This is an estimate; we’ll update it if needed. Later Sends join this unfinished round.";
   }
   function paintTracker() {
     var status = trackerStatus(), box = $("production-tracker");
@@ -2519,7 +2550,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function checkingFiles() { return !!Object.assign({}, F.house_prompts || {}, D.house_prompts || {}).files_checking_at; }
   function stageState() {
     if (stage !== "open" || readOnly || approved || !inProduction()) return null;
-    if (D.progress && (D.progress.started_at || D.progress.step)) return { kind: "progress" };
+    if (D.progress && (D.progress.source === "receipt" ? D.progress.started_at : D.progress.started_at || D.progress.step)) return { kind: "progress" };
     var hp = D.house_prompts || {}, missing = D.start_missing || hp.files_missing || [];
     return { kind: "waiting", missing: missing };
   }
@@ -2529,7 +2560,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (tracker.parentNode !== home) home.appendChild(tracker);
     box.hidden = !s;
     if (!s) return;
-    var words = s.kind === "waiting" ? [goNote(), fullGo() ? "" : STAGE_WORDS.waiting[1]] : STAGE_WORDS[s.kind];
+    var words = s.kind === "waiting" ? [goNote(), fullGo() ? "" : selfLane() ? "We will show your expected review time when work begins." : STAGE_WORDS.waiting[1]] : STAGE_WORDS[s.kind];
+    if (s.kind === "progress" && D.progress && D.progress.source === "receipt") words = [D.progress.title || words[0], D.progress.line || ""];
+    if (s.kind === "waiting" && !pendingStart && selfLane() && D.progress && D.progress.source === "receipt") words = [D.progress.title || "Start recorded.", D.progress.line || "We will show your expected review time when work begins."];
     box.dataset.kind = s.kind;
     $("stage-title").textContent = words[0];
     $("stage-line").textContent = words[1]; $("stage-line").hidden = !words[1];
@@ -2834,6 +2867,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     // Matt 2026-10-15: only while his latest request is open; 2026-11-02: received, or answered without a change (changeState).
     $("post-sent").hidden = !pending;
     $("post-sent").textContent = pending ? changeWords(request).join(" ") : "";
+    paintChangeDrafts();
     paintRounds();
     $("start-missing").hidden = true;
     $("optional-line").hidden = true;
@@ -3312,7 +3346,36 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     postOpened = true; $("post-title").hidden = !customerReturned(); $("post-box").hidden = false; $("post-open").hidden = true;
     grow($("post-text")); $("post-text").focus();
   });
-  $("post-text").addEventListener("input", function () { grow(this); $("post-error").hidden = true; });
+  var CHANGE_DRAFT_KEY = "aap-change-draft-" + T + "-";
+  function keepChangeDraft() {
+    try {
+      if ($("post-text").value) localStorage.setItem(CHANGE_DRAFT_KEY + PAGE_ID, JSON.stringify({text: $("post-text").value, at: new Date().toISOString()}));
+      else localStorage.removeItem(CHANGE_DRAFT_KEY + PAGE_ID);
+    } catch (e) { storageFailed = true; paintSync(); }
+  }
+  function paintChangeDrafts() {
+    $("post-draft-list").textContent = "";
+    try {
+      for (var n = 0; n < localStorage.length; n++) {
+        var key = localStorage.key(n);
+        if (key.indexOf(CHANGE_DRAFT_KEY) !== 0) continue;
+        var draft = JSON.parse(localStorage.getItem(key));
+        if (!draft || !draft.text) continue;
+        var button = el("button", {type: "button", text: "Use draft saved " + when(draft.at)});
+        button.disabled = key === CHANGE_DRAFT_KEY + PAGE_ID || readOnly || changesClosed() || roundsLocked() || delivered();
+        (function (text) { button.addEventListener("click", function () {
+          $("post-text").value = [$("post-text").value, text].filter(Boolean).join("\n\n");
+          keepChangeDraft(); postOpened = true; $("post-box").hidden = false; grow($("post-text"));
+        }); })(draft.text);
+        $("post-draft-list").appendChild(el("li", null, [draft.text + " ", button]));
+      }
+    } catch (e) { storageFailed = true; }
+    $("post-drafts").hidden = !$("post-draft-list").children.length;
+    $("post-history-list").textContent = "";
+    (state.post_changes || []).forEach(function (p) { $("post-history-list").appendChild(el("li", {text: (p.pending ? "Sending · " : when(p.at) + " · ") + p.text})); });
+    $("post-history").hidden = !$("post-history-list").children.length;
+  }
+  $("post-text").addEventListener("input", function () { grow(this); $("post-error").hidden = true; keepChangeDraft(); });
   var postTalk = talkRow($("post-text"));
   $("post-text").closest(".line").appendChild(postTalk);
   // Matt 2026-11-02 ~12:40, "fix": a request that only says there are none ("nothing for now") is never sent; it would reopen
@@ -3331,8 +3394,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var doc = JSON.stringify(payload), stand = { id: request.id, text: request.text, at: new Date().toISOString(), pending: true };
     // The pending request keeps its text and stable ID; only its receipt confirms delivery.
     state.post_changes = (state.post_changes || []).concat(stand);
-    $("post-text").value = ""; $("post-error").hidden = true; postOpened = false; $("post-box").hidden = !customerReturned(); $("post-open").hidden = customerReturned(); paintStatus();
     var item = outboxAdd("request", doc, request.id);
+    if (!storageFailed) $("post-text").value = "";
+    $("post-error").hidden = true; postOpened = false; $("post-box").hidden = !customerReturned(); $("post-open").hidden = customerReturned(); paintStatus();
     function once() {
       return post(item.doc).catch(function () {}).then(read).then(function (r) {
         if (r.form && newer(r.form)) refresh(r.form);
@@ -3342,6 +3406,11 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       });
     }
     writing = writing.catch(function () {}).then(function () { return settle(item, once); }).then(function () {
+      // Confirmation retires only this tab's sent text; new typing and every
+      // other tab's draft remain. The immutable request stays in post_changes.
+      if ($("post-text").value === request.text) $("post-text").value = "";
+      keepChangeDraft();
+      paintChangeDrafts();
       $("post-error").hidden = true; paintStatus(); banner("Changes sent.", "ok");
       // The explicit request reopened the review. Its retained call edits can
       // now save normally, retiring the held draft and allowing fresh reviews.
@@ -3351,7 +3420,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       // The server refused it: back out the stand-in, return his text to the box, and say why.
       if (e && e.form) refresh(e.form);
       state.post_changes = (state.post_changes || []).filter(function (p) { return p.id !== request.id; });
-      $("post-text").value = request.text; grow($("post-text")); $("post-box").hidden = false; $("post-open").hidden = true; paintStatus();
+      $("post-text").value = [request.text, $("post-text").value].filter(Boolean).join("\n\n"); keepChangeDraft(); grow($("post-text")); $("post-box").hidden = false; $("post-open").hidden = true; paintStatus();
       if (e && e.code === "unknown") { closed(); return; }
       $("post-error").textContent = e && e.code === "quote_changed" ? "The price, day or terms changed. " + movedQuote() + ". Review it and the terms above, then send again." : e && e.code === "stage" ? STAGES[stage].refused : "Not sent. Try again in a minute."; $("post-error").hidden = false;
     });
@@ -3630,6 +3699,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     state.status = saved.status || state.status;
     state.history = Array.isArray(saved.history) ? saved.history.slice() : [];
     state.post_changes = Array.isArray(saved.post_changes) ? saved.post_changes.slice() : [];
+    state.change_round = saved.change_round || null;
     state.approved_review = saved.approved_review || null;
     state.go = saved.go || null;
     state.customer_submission = saved.customer_submission || null;
@@ -3758,9 +3828,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // does, since TOTAL's preview may not report itself visible (Matt 2026-10-13: "the red did not show up on the total
   // workfile form").
   var pollT = null, fastUntil = 0, polling = false, pendingTaps = 0;
-  function pollSoon() { clearTimeout(pollT); pollT = setTimeout(function () { poll(); pollSoon(); }, Date.now() < fastUntil ? 2000 : 30000); }
+  function pollSoon() { clearTimeout(pollT); pollT = setTimeout(function () { paintTracker(); poll(); pollSoon(); }, Date.now() < fastUntil ? 2000 : 30000); }
   function poll() {
     paintStage();   // Checking becomes Still checking by age alone, with no new data
+    if (state && changeInFlight()) paintStatus();
     if ((!INLINE && document.visibilityState === "hidden") || polling || readOnly || postBusy || !online || connecting || tapped || pendingTaps || edits !== savedEdits || timer || outbox.length) return;
     polling = true;
     var readAt = savedAt;
@@ -3771,7 +3842,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (r.form && newer(r.form)) { refresh(r.form); if (r.saved) apply(r.saved); else if (!savedAt) apply({}); }   // his cleared boxes too; never saved: our latest calls
       if (r.form && (r.form.stage || "open") !== stage) { D.stage = r.form.stage; setStage(r.form.stage); }
       if (r.form && canon(r.form.usage_bar || null) !== canon(F.usage_bar || null)) { F.usage_bar = r.form.usage_bar; paintStatus(); }   // the usage bar, every 10 minutes
-      if (r.saved && (r.saved.updatedAt !== savedAt || r.saved.status !== state.status || JSON.stringify(r.saved.post_changes || []) !== JSON.stringify(state.post_changes || []))) apply(r.saved);
+      if (r.saved && (r.saved.updatedAt !== savedAt || r.saved.status !== state.status || canon(r.saved.change_round || null) !== canon(state.change_round || null) || JSON.stringify(r.saved.post_changes || []) !== JSON.stringify(state.post_changes || []))) apply(r.saved);
       if (was === "READY" && state.status === "DRAFT") banner("Back to Draft: something is still needed.", "warn");
     }, function (e) { polling = false; if (e && e.code === "unknown") closed(); });
   }
