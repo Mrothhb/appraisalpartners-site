@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-05.9">
+<html lang="en" data-build="v2026-11-06.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -2088,7 +2088,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function delivered() { return customerReturned() && !!D.delivered_at && !signoff(); }   // the delivered report is the current one
   function roundsText(where) {   // [headline, line]; where = "below" or "above", from the box to the button
     var price = roundsPriced() ? " ($15 a round)" : "";
-    if (changesClosed()) return ["Maximum change requests used (2 of 2).", (D.changes_closed_text || "Tap " + (proposalReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " below to get your report. To buy more change requests, email desk@aandap.com" + price + ". Or edit your TOTAL report yourself.").replace(/\bbelow\b/, where)];
+    if (changesClosed()) return ["Maximum change requests used (2 of 2).", (D.changes_closed_text || "Tap " + (proposalReview() && !factsOnlyReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " below to get your report. To buy more change requests, email desk@aandap.com" + price + ". Or edit your TOTAL report yourself.").replace(/\bbelow\b/, where)];
     return ["2 change rounds per order.", "Round 1: review everything and send all your changes at once. Round 2 is a grace round. Then the form locks and " + (autoDelivers() ? "we deliver your report." : "only Deliver remains.")];
   }
   // Matt 2026-11-03: "also on the form make it more clear how many roundsa have been used." From change_rounds (formlink.py
@@ -2143,6 +2143,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     $("rounds-mini").textContent = "Rounds used: " + roundsUsed() + " of 2";
   }
   function proposalReview() { return (D.house_prompts||{}).lane === "self-service" && D.stage === "returned" && (D.house_prompts||{}).proposal_review === true; }
+  function factsOnlyReview() { var c=D.proposed_calls, r=D.review||{}; return proposalReview() && c && c.version === 1 && c.facts_only === true && typeof r.id === "string" && r.id.length > 0 && typeof r.report_sha256 === "string" && /^[a-f0-9]{64}$/.test(r.report_sha256) && c.report_sha256 === r.report_sha256 && Array.isArray(c.sections) && c.sections.length === 0; }
   function proposalValues(section) { var values={};section.calls.forEach(function(c){var k="q_pc_"+section.id+"_"+c.id;values[c.key]=String(state.answers[k] == null ? c.value : state.answers[k]);});return values; }
   function proposalReceipt(section) { return JSON.stringify({review_id:(D.review||{}).id, fingerprint:section.fingerprint, values:proposalValues(section)}); }
   function proposalEdited(section) { var values=proposalValues(section);return section.calls.some(function(c){return values[c.key]!==String(c.value);}); }
@@ -2218,7 +2219,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     musts = []; filed = []; highlighted = []; proposalPainters=[];
     $("start-calls").hidden=true; $("start-calls").textContent=""; callLines=[];
     if (minimalCalls()) { minimalSections(host); return; }
-    if (proposalReview()) { $("report").after($("form")); renderProposals(host); return; }
+    if (proposalReview()) { $("report").after($("form")); if (!factsOnlyReview()) renderProposals(host); return; }
     $("report").before($("form"));
     if (simpleStart()) return;
     CHECKLIST.sections.forEach(function (sec) {
@@ -2774,8 +2775,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var pending = request && (request.kind === "open" || request.kind === "answered");   // his latest request, not yet answered by a new report
     $("returned-headline").textContent = signoff() ? signedOff() ? approvalNote() : !reviewReady() ? request && request.kind === "answered" ? changeWords(request).join(" ") : (state.post_changes || []).length ? "Your changes are with us. We'll post your review PDF below." : "Your review PDF will appear below." : (approveShips() ? yours + " is ready for your review. Tap Approve and deliver to send it to your TOTAL folder, or request a change below." : yours + " is in your TOTAL folder. Review it below, then approve or request a change.") : paymentDue ? "Your report is ready. It goes to your folder once payment is received." : "Your report is in your TOTAL folder. Review and edit it there.";
     if (request && request.request.pending) $("returned-headline").textContent = changeWords(request).join(" ");
-    if(proposalReview() && !signedOff() && !delivered() && !pending) $("returned-headline").textContent="Review " + yours.toLowerCase() + " and your calls, then approve or request a change.";
-    if(changesClosed() && !signedOff()) $("returned-headline").textContent="Your review is done. Tap " + (proposalReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " to get your report.";
+    if(proposalReview() && !factsOnlyReview() && !signedOff() && !delivered() && !pending) $("returned-headline").textContent="Review " + yours.toLowerCase() + " and your calls, then approve or request a change.";
+    if(changesClosed() && !signedOff()) $("returned-headline").textContent="Your review is done. Tap " + (proposalReview() && !factsOnlyReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " to get your report.";
     if(roundsLocked() && !signedOff()) $("returned-headline").textContent="Two change rounds used. Your final report is being delivered to your TOTAL folder.";
     $("delivered-at").hidden = paymentDue || !D.delivered_at;
     $("delivered-at").textContent = D.delivered_at ? "Delivered " + when(D.delivered_at) : "";
@@ -2962,7 +2963,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     musts.forEach(function (m) { if (left.indexOf(m) < 0) m.node.classList.remove("need"); });
     var shown = !approved && !readOnly && !(customerReturned() && (!signoff() || !reviewReady() || signedOff()));   // the status bar's own rule (paintStatus)
     var allBtn = $("approve-all-btn"), done = statusBtns.filter(function (b) { return b.getAttribute("data-s") === "DONE"; })[0];
-    $("approve-all").hidden = !proposalReview() || !done || done.hidden || !proposalOpen().length && !changesClosed();   // closed: the one button left
+    $("approve-all").hidden = factsOnlyReview() || !proposalReview() || !done || done.hidden || !proposalOpen().length && !changesClosed();   // closed: the one button left
     allBtn.textContent = approveLabel().replace("Approve", "Approve all");
     $("approve-all-note").textContent = "Confirms every section as shown, then " + (approveShips() ? "delivers." : "approves.");
     allBtn.disabled = readOnly || !online || pendingTaps > 0 || postBusy || !reviewReady();
