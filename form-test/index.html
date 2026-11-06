@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-05.2">
+<html lang="en" data-build="v2026-11-05.4">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1056,7 +1056,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 </script>
 
 <script>
-var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDtDduuMMWfV1kYpmnyQpnVkuVGbRy--euZqvLh1ErQ/exec";   // the web app's /exec URL (SETUP.md); while empty, the page says it is not connected
+var API = "TEST_API_URL";   // the web app's /exec URL (SETUP.md); while empty, the page says it is not connected
 var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.html";   // the self-service notice's dated page (Matt 2026-11-03); a change is a new date
 /* No feed, timers, network calls or form-answer writes. */
 (function (global) {
@@ -3317,7 +3317,13 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
         throw {};
       });
     }
-    writing = writing.catch(function () {}).then(function () { return settle(item, once); }).then(function () { paintStatus(); }, function (e) {
+    writing = writing.catch(function () {}).then(function () { return settle(item, once); }).then(function () {
+      paintStatus();
+      // The explicit request reopened the review. Its retained call edits can
+      // now save normally, retiring the held draft and allowing fresh reviews.
+      if (edits !== savedEdits && outbox.some(function (i) { return i.page === PAGE_ID && i.kind === "save" && i.error === "use_change_request"; }))
+        write(false).catch(function () {});
+    }, function (e) {
       // The server refused it: back out the stand-in, return his text to the box, and say why.
       state.post_changes = (state.post_changes || []).filter(function (p) { return p.id !== request.id; });
       $("post-text").value = request.text; grow($("post-text")); $("post-box").hidden = false; $("post-open").hidden = true; paintStatus();
@@ -3395,6 +3401,17 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
         if (r.form && r.form.stage === "returned" && (r.form.house_prompts || {}).lane === "review" && v && v.status === "DONE") {
           throw { code: "approved", form: r.form, saved: v };
         }
+        // An opaque POST can hide an approval refusal. Recognize only edits the
+        // current approved snapshot cannot accept, so they cannot hold up Send.
+        if (!send && r.form && r.form.stage === "returned" && v && v.status === "DONE" && v._revision === JSON.parse(doc).expected_revision) {
+          var attempted = JSON.parse(doc), allowed = (r.form.questions || []).filter(function (q) { return q.kind !== "confirm" && q.material !== false; }).map(function (q) { return "q_" + q.id; });
+          allowed.push("q_client_permits");
+          var prior = v.answers || {}, defaults = r.form.prefill || {};
+          var changedOther = Object.keys(attempted.answers || {}).some(function (k) { return allowed.indexOf(k) < 0 && attempted.answers[k] !== (k in prior ? prior[k] : defaults[k]); });
+          var changes = function (list) { return (list || []).map(function (x) { return String(x || ""); }).filter(function (x) { return x.trim(); }); };
+          if (s !== "DONE" || changedOther || JSON.stringify(changes(attempted.changes)) !== JSON.stringify(changes(v.changes)))
+            throw { code: "use_change_request" };
+        }
         try { verifyAction(item, r); } catch (e) { if (e && e.code) throw e; }
         if (send && r.form && (STAGES[r.form.stage] || STAGES.open).statuses.indexOf(s) < 0) {   // Code.gs refused the tap
           setStage(r.form.stage);
@@ -3445,6 +3462,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (e.saved) apply(e.saved);
       state.status = "DRAFT"; paintStatus();
       banner("The order changed. Review it and tap Ready again.", "warn");
+    } else if (code === "use_change_request") {
+      banner("Your approval stands. Send your changes below.", "warn");
     } else if (code === "conflict" || code === "reload_required" || code === "request_reused") {
       banner("The saved answers changed. Your draft is kept here. Tap Retry to review it.", "warn");
     } else if (code === "too_large") {
