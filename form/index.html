@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-06.2">
+<html lang="en" data-build="v2026-11-06.3">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -850,6 +850,10 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
     <p class="need-title" id="need-title">Before we can start, we need:</p>
     <ul class="need-list" id="need-list"></ul>
     <p class="note">Tap Start once now, then add what’s missing to your order folder.</p>
+  </section>
+  <section class="card" id="headsup-card" role="note" hidden>
+    <p class="need-title">Heads-up (these won’t hold your start):</p>
+    <ul class="need-list" id="headsup-list"></ul>
   </section>
   <section class="card" id="chosen" aria-label="Your chosen service" hidden>
     <strong id="chosen-lane"></strong>
@@ -2580,6 +2584,12 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var b = e.target && e.target.closest ? e.target.closest('#start-production, [data-status] [data-s="READY"]') : null;
     if (b && mattHold()) { e.preventDefault(); e.stopImmediatePropagation(); paintHold(); jumpTo($("hold-card")); }
   }, true);
+  function paintHeadsup() {
+    var rows = (D.house_prompts || {}).files_headsup || [], box = $("headsup-card"), list = $("headsup-list");
+    box.hidden = stage !== "open" || !rows.length;
+    list.textContent = "";
+    if (!box.hidden) rows.forEach(function (line) { list.appendChild(el("li", { text: String(line) })); });
+  }
   function filesNeed(hp) {
     if (hp.files_checking_at) return "We’re checking your files.";   // Matt 2026-10-30: the desk saw his drop; the result replaces this
     if (hp.files_complete === true && hp.files_checked_at) return "";
@@ -2872,6 +2882,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     }
     if (newGaps() && customerStart()) { $("start-missing").hidden = false; $("start-missing").textContent = "Your latest file adds a new comp gap. Read the card above, then tap Start again."; }
     paintComp();
+    paintHeadsup();
     $("ss-reminder").hidden = !selfLane() || stage !== "open" || inProduction() || readOnly;   // Matt 2026-11-03: one line above Start
     $("save-calls").hidden = !minimalCalls() || inProduction();
     $("save-calls").disabled = locked || !online;
