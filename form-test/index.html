@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-05.7">
+<html lang="en" data-build="v2026-11-05.8">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -716,31 +716,8 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 .ap-tracker__waiting:focus-visible { outline: 2px solid var(--focus, #0b6fc1); outline-offset: 3px; }
 @media (forced-colors: active) { .ap-tracker__step[data-waiting][data-state] .ap-tracker__dot::after { color: ButtonText; } }
 
-/* Secondary build sequence, anchored beneath Building; no inferred times. */
-.ap-tracker--building .ap-tracker__list { padding-bottom: 56px; }
-.ap-tracker__build {
-  position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-  width: 216px; margin: 8px 0 0; padding: 0; list-style: none;
-  color: var(--ink-2, #5f5f5f); font-size: 10px; line-height: 1.5;
-}
-.ap-tracker__build li { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; }
-.ap-tracker__mini-dot { width: 8px; height: 8px; border: 1px solid var(--edge, #8a949f); border-radius: 50%; background: var(--card, #fff); }
-.ap-tracker__build [data-state="done"] .ap-tracker__mini-dot { background: var(--ink-2, #5f5f5f); border-color: var(--ink-2, #5f5f5f); }
-.ap-tracker__build [data-state="current"] { color: var(--primary, #0b6fc1); font-weight: 700; }
-.ap-tracker__build [data-state="current"] .ap-tracker__mini-dot { background: var(--primary, #0b6fc1); border-color: var(--primary, #0b6fc1); outline: 2px solid var(--primary, #0b6fc1); outline-offset: 2px; }
 .ap-tracker__build-times { list-style: none; padding: 0; margin: 12px 0 0; text-align: left; font-size: 11px; }
 .ap-tracker__build-times li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 8px; margin-top: 6px; }
-@container (max-width: 290px) {
-  .ap-tracker--building .ap-tracker__list { padding-bottom: 0; }
-  .ap-tracker__build { position: static; transform: none; width: 100%; margin: 12px 0; }
-}
-@media (forced-colors: active) {
-  .ap-tracker__mini-dot { border-color: ButtonText; }
-  .ap-tracker__build [data-state="done"] .ap-tracker__mini-dot,
-  .ap-tracker__build [data-state="current"] .ap-tracker__mini-dot { background: ButtonText; }
-  .ap-tracker__build [data-state="current"] .ap-tracker__mini-dot { outline-color: Highlight; }
-}
 #calls-saved { margin: 0 0 var(--s-3); }
 
 /* ---------- the full-screen state (Matt 2026-10-30: "an entire screen taken by a notice that the system is checking files, or
@@ -1097,10 +1074,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
         target.focus({ preventScroll: true });
       }
     });
-    const mini = element('ol', 'ap-tracker__build');
-    mini.setAttribute('aria-label', 'Build steps');
-    mini.hidden = true;
-    const instance = { detail, live, waitingLink, mini, build: [], selected: null, rows: [], note: null, shown: '' };
+    const instance = { detail, live, waitingLink, build: [], selected: null, rows: [], note: null, shown: '' };
     instance.rows = definitions.map(([key]) => {
       const item = element('li', 'ap-tracker__step');
       item.dataset.key = key;
@@ -1116,7 +1090,6 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       time.setAttribute('aria-hidden', 'true');
       button.append(target, label);
       item.append(button, time);
-      if (key === 'building') item.append(mini);
       list.append(item);
       const row = { item, button, label, time, date: null, key };
       button.addEventListener('click', () => {
@@ -1205,20 +1178,6 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
         date && (current > 2 || (current === 2 && index < buildIndex)) ? 'done' : 'future';
       return { key, label, date, state };
     });
-    instance.mini.hidden = current !== 2;
-    root.classList.toggle('ap-tracker--building', current === 2);
-    instance.mini.replaceChildren(...instance.build.map(step => {
-      const item = element('li');
-      item.dataset.state = step.state;
-      item.setAttribute('aria-label', step.label + ', ' + (step.state === 'done' ? 'complete' : step.state === 'current' ? 'in progress' : 'upcoming'));
-      if (step.state === 'current') item.setAttribute('aria-current', 'true');
-      const dot = element('span', 'ap-tracker__mini-dot');
-      dot.setAttribute('aria-hidden', 'true');
-      const label = element('span');
-      label.textContent = step.label;
-      item.append(dot, label);
-      return item;
-    }));
     instance.waitingLink.hidden = !waiting;
     if (waiting) {
       instance.waitingLink.setAttribute('href', waiting.target);
