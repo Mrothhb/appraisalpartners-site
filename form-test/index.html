@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-06.1">
+<html lang="en" data-build="v2026-11-06.2">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -865,7 +865,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
   <div class="banner" id="payment" role="status" hidden></div>
   <!-- Matt 2026-10-19: VERY clear on every self-service form; 2026-10-30: the notice word for word; 2026-11-03 ("put the self service
        Matt and his team disclaimer as a link ... put it on our website"): one line here, the five points on their own dated page. -->
-  <div class="banner warn" id="selfservice" role="note" hidden><p><b>Self-service: Matt and his team do not review this report. You review and sign it.</b> <a href="https://appraisalpartners.net/self-service-notice-2026-11-03.html" target="_blank" rel="noopener noreferrer">What this means</a></p></div>
+  <div class="banner warn" id="selfservice" role="note" hidden><p><b><span data-autopilot-name></span>: Matt and his team do not review this report. You review and sign it.</b> <a href="https://appraisalpartners.net/self-service-notice-2026-11-03.html" target="_blank" rel="noopener noreferrer">What this means</a></p></div>
   <div class="card" id="returned-intro" hidden><p id="returned-headline">Your report is in your TOTAL folder. Review and edit it there.</p><p class="note" id="delivered-at" hidden></p><p class="note" id="legacy-approved" hidden></p></div>
   <div class="banner" id="notready" role="status" hidden></div>
   <section class="card" id="calls" aria-label="Our calls" hidden></section>
@@ -913,7 +913,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
     <p id="left-list" role="status" hidden></p>
     <!-- Matt 2026-11-03 ("yes proceed"): the self-service notice shows once, at the top (#selfservice, one line and its page); the word-for-word
          copy after Start (2026-10-30, round 5) became this one plain line directly above Start, self-service forms only. -->
-    <p class="ss-reminder" id="ss-reminder" hidden>Reminder: Matt and his team do not review self-service reports.</p>
+    <p class="ss-reminder" id="ss-reminder" hidden>Reminder: Matt and his team do not review <span data-autopilot-name></span> reports.</p>
     <div class="status" data-status></div>
     <div id="approve-all" hidden><button type="button" class="st" id="approve-all-btn">Approve all and deliver</button><p class="note" id="approve-all-note"></p></div>
     <button type="button" class="pdf-btn" id="start-production" hidden>Start production</button>
@@ -1663,8 +1663,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       house_prompts: hp, selected_lane: pick ? pick.id : "", terms: pick ? pick.terms : "", terms_url: "",
       questions: pick ? pick.questions || [] : [], public_note: pick ? pick.public_note || "" : "" });
   }
+  var AUTOPILOT_NAME = "A&AP Auto-pilot";
+  document.querySelectorAll("[data-autopilot-name]").forEach(function (node) { node.textContent = AUTOPILOT_NAME; });
   var laneNames = { partial: "Partial", "partial-we-set": "Partial · we set order and weights", "partial-conversion": "Partial with 2.6 to 3.6 conversion", full: "Full",
-    "self-service": "Self-service", "self-service-conversion": "Self-service with 2.6 to 3.6 conversion" };
+    "self-service": AUTOPILOT_NAME, "self-service-conversion": AUTOPILOT_NAME + " with 2.6 to 3.6 conversion" };
   // Matt 2026-10-30: self-service options read as the emails do, A then B, with a price and never a day.
   var laneLetters = { "self-service-conversion": "A", "self-service": "B" };
   function selfOnly() { var o = laneOptions(F); return o.length > 0 && o.every(function (x) { return /^self-service/.test(x.id); }); }
@@ -1955,7 +1957,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
         rows.push({ label: name + " · Next day", price: o.next_day.price + (o.next_day.fee ? " (" + o.next_day.fee + ")" : ""), ready: workdays(today, 1) });
       });
       if (!selfOnly()) rows = rows.concat((F.standard_fees || []).filter(function (r) {   // a self-service form shows its own two prices only
-        return !/^Self-service/.test(r.label);
+        return !/^(?:Self[ -]service|TOTAL auto-pilot|A&AP Auto-pilot)/i.test(r.label);
       }));
       rows.forEach(function (r) {
         var ready = r.ready ? r.ready.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : day(r.ready_by);   // a turn's day counts from today
@@ -2276,7 +2278,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (selfLane()) bt = bt.replace(/\s*·\s*(?:ready|due|within|rush)\b[^·]*/gi, "");   // Matt 2026-10-30: no turn times on self-service   // Legacy fixed headers keep their lane and date, without the fee.
     tb.hidden = !bt; tb.textContent = "";
     bt.split(/([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/).forEach(function (part, i) {
-      if (part) tb.appendChild(i % 2 ? el("a", { href: "mailto:" + part, text: part }) : document.createTextNode(part));
+      if (part) tb.appendChild(i % 2 ? el("a", { href: "mailto:" + part, text: part }) : document.createTextNode(part.replace(/\b(?:self[ -]service|TOTAL auto-pilot)\b/gi, AUTOPILOT_NAME)));
     });
     $("payment").textContent = "";
     if (due) $("payment").textContent = "Payment due. Your file follows payment.";
@@ -2743,7 +2745,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (p.hidden) return;
       if (startOptions() && !laneOptions(F).length) {
         p.appendChild(document.createTextNode("Start means go when everything’s in. Terms: "));
-        [["Self-service", "terms-software.html"], ["Partial", "terms.html"]].forEach(function (term, i) {
+        [[AUTOPILOT_NAME, "terms-software.html"], ["Partial", "terms.html"]].forEach(function (term, i) {
           if (i) p.appendChild(document.createTextNode(" · "));
           p.appendChild(el("a", { href: "https://appraisalpartners.net/" + term[1], target: "_blank", rel: "noopener noreferrer", text: term[0] }));
         });
@@ -2752,7 +2754,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       var words = customerStart() || minimalCalls() || minimalStart() ? "Start accepts our " : filesChecked() && !inProduction() ? "By tapping Start production you accept our " : customerReturned() ? signoff() ? "By approving or requesting a change you accept our " : "By requesting a change you accept our " : asked() ? "By sending your answers you accept our " : "By tapping Ready you accept our ";
       p.appendChild(document.createTextNode(words));
       p.appendChild(el("a", { href: url || D.terms_url || "https://appraisalpartners.net/terms.html", target: "_blank", rel: "noopener noreferrer", text: minimalCalls() || selfOnly() ? "Software Terms" : laneOptions(F).length ? ((D.house_prompts || {}).lane === "self-service" ? "Software Terms" : "Service Terms") : "terms" }));
-      if (selfLane()) p.appendChild(document.createTextNode(" and ")), p.appendChild(el("a", { href: SELF_NOTICE, target: "_blank", rel: "noopener noreferrer", text: "Self-service notice" }));   // Matt 2026-11-03
+      if (selfLane()) p.appendChild(document.createTextNode(" and ")), p.appendChild(el("a", { href: SELF_NOTICE, target: "_blank", rel: "noopener noreferrer", text: AUTOPILOT_NAME + " notice" }));   // Matt 2026-11-03
       p.appendChild(document.createTextNode("."));
     });
     document.querySelectorAll("[data-reply-time]").forEach(function (p) { p.hidden = (D.house_prompts || {}).lane === "review"; });
@@ -2813,8 +2815,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (e.event === "approve_all") return "Approve all · confirmed " + e.n + (e.n === 1 ? " section" : " sections") + " as shown · review " + String(e.review_id).slice(0, 8) + " · " + when(e.at);
       if (e.event === "client_permits") return "Client permission · " + e.answer + " · " + when(e.at);
       var ready = function (q) { return /^self-service/.test(q.lane || "") ? "" : "ready " + day(q.ready_by) + " · "; };
-      if (e.event === "go") return "Start production · " + e.quote.lane + " · " + ready(e.quote) + when(e.at);
-      if (e.accepted) return (e.by === "desk" ? "Desk go-ahead · " : e.by === "no tag" ? "Accepted (no tag) · " : "Accepted · ") + ready(e.accepted) + e.accepted.lane + " · " + e.accepted.terms + " · " + when(e.at);
+      if (e.event === "go") return "Start production · " + (laneNames[e.quote.lane] || e.quote.lane) + " · " + ready(e.quote) + when(e.at);
+      if (e.accepted) return (e.by === "desk" ? "Desk go-ahead · " : e.by === "no tag" ? "Accepted (no tag) · " : "Accepted · ") + ready(e.accepted) + (laneNames[e.accepted.lane] || e.accepted.lane) + " · " + e.accepted.terms + " · " + when(e.at);
       return (e.event === "post_change" ? "Change requested" : e.event === "delivered" ? "Delivered" : e.event === "updated" ? "Updated" : "Approved") + " " + when(e.at) + (e.original ? " · " + e.original : "");
     });
     var start = startRecord(), orderCall = ((start || {}).answers || {}).q_comp_order_weights;
@@ -2999,7 +3001,53 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   var storageFailed = false, storageDamaged = false, confirmedActions = {}, PAGE_ID = newId();
   var BACKOFF = [1500, 3000, 6000, 12000, 24000, 30000], STUCK_AFTER = 4;
   var VERB = { save: "Save", start: "Start", go: "Start", feedback: "message", request: "change request", approve: "Approve" };
+  // Failure reports have a separate queue: confirming or replacing the action
+  // cannot erase the report before the desk has durably received it.
+  var FAILURE_KEY = "aap-tap-failure-" + T + "-", failures = {}, failureBusy = false, failureTimer = null;
+  function loadFailures() {
+    try {
+      for (var n = 0; n < localStorage.length; n++) {
+        var key = localStorage.key(n);
+        if (key.indexOf(FAILURE_KEY) === 0) {
+          var f;
+          try { f = JSON.parse(localStorage.getItem(key)); } catch (e) { storageFailed = true; continue; }
+          if (f && /^[A-Za-z0-9_-]{16,80}$/.test(f.id) && VERB[f.action])
+            failures[f.id] = { id: f.id, action: f.action, reason: failureReason(f.reason) };
+        }
+      }
+    } catch (e) { storageFailed = true; }
+    flushFailures();
+  }
+  function failureReason(reason) {
+    var allowed = ["unconfirmed", "conflict", "busy", "storage_error", "reload_required", "request_reused", "bad_request",
+      "too_large", "review_changed", "quote_changed", "stage", "approved", "start_required", "answers_required",
+      "lane_required", "matt_hold", "comps", "usage", "permission", "unknown", "changed", "use_change_request", "damaged", "review"];
+    return allowed.indexOf(reason) >= 0 ? reason : "unconfirmed";
+  }
+  function noteFailure(item, reason) {
+    if (!item || !/^[A-Za-z0-9_-]{16,80}$/.test(item.id) || !VERB[item.kind]) return;
+    var f = failures[item.id] || { id: item.id, action: item.kind, reason: failureReason(reason) };
+    failures[item.id] = f;
+    try { localStorage.setItem(FAILURE_KEY + item.id, JSON.stringify(f)); } catch (e) { storageFailed = true; }
+    flushFailures();
+  }
+  function flushFailures() {
+    if (failureBusy || !T || !API || !Object.keys(failures).length) return;
+    clearTimeout(failureTimer); failureBusy = true;
+    var f = failures[Object.keys(failures)[0]];
+    var confirmed = false, timeout, deadline = new Promise(function (_, reject) { timeout = setTimeout(reject, 25000); });
+    Promise.race([deadline, post(JSON.stringify({ t: T, failure: f }), true).then(function () { return read("&failure=" + encodeURIComponent(f.id)); })])
+      .then(function (r) {
+        if (!r.failure || r.failure.id !== f.id) return;
+        // A failed local deletion is retried too; the backend deduplicates by ID.
+        try { localStorage.removeItem(FAILURE_KEY + f.id); delete failures[f.id]; confirmed = true; } catch (e) { storageFailed = true; }
+      }).catch(function () {}).then(function () {
+        clearTimeout(timeout); failureBusy = false;
+        if (Object.keys(failures).length) { if (confirmed) flushFailures(); else failureTimer = setTimeout(flushFailures, 30000); }
+      });
+  }
   function outboxLoad() {
+    loadFailures();
     try {
       var legacy = [], found = {};
       try { legacy = JSON.parse(localStorage.getItem(OUTBOX_KEY) || "[]"); } catch (e) { storageDamaged = true; }
@@ -3086,8 +3134,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // unless max is set (a Start the server will not record, whose refusal this page cannot read, counts as refused after max).
   function settle(item, once, max) {
     return Promise.resolve().then(function () { return prepareAction(item); }).then(once).then(function (r) { outboxDrop(item); return r; }, function (e) {
-      if (e && e.code) { item.error = e.code; outboxSave(); paintSync(); throw e; }
+      if (e && e.code) { item.error = e.code; outboxSave(); noteFailure(item, e.code); paintSync(); throw e; }
       item.tries++; outboxSave(); paintSync();
+      if (item.tries >= STUCK_AFTER) noteFailure(item, "unconfirmed");
       if (max && item.tries >= max) { item.error = "unconfirmed"; outboxSave(); paintSync(); throw { code: "unconfirmed" }; }
       var ms = BACKOFF[Math.min(item.tries - 1, BACKOFF.length - 1)];
       return new Promise(function (resolve) { item.wake = resolve; setTimeout(resolve, ms); }).then(function () { delete item.wake; return settle(item, once, max); });
@@ -3120,7 +3169,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     outboxLoad();
     return outbox.slice().reduce(function (p, item) { return p.then(function () {
       var doc; try { doc = JSON.parse(item.doc); } catch (e) { item.error = "damaged"; outboxSave(); return; }
-      if (item.error) { replayFailed = VERB[item.kind] || "action"; return; }
+      if (item.error) { noteFailure(item, item.error); replayFailed = VERB[item.kind] || "action"; return; }
       if (!doc.request_id || answerAction(item.kind) && !doc.expected_revision) { item.error = "reload_required"; outboxSave(); replayFailed = VERB[item.kind] || "action"; return; }
       function once() {
         return read().then(function (r) {
@@ -3215,14 +3264,15 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // <script> load carries Google's cookies. So a browser reads with a cookie-free fetch first; only where that fails
   // (TOTAL's pane, which preflights) does it fall back to JSONP, and it remembers which worked.
   var viaScript = false;
-  function read() {
-    if (viaScript) return jsonp();
-    return fetch(API + "?t=" + encodeURIComponent(T) + "&client=2", { credentials: "omit", cache: "no-store" })
+  function read(extra) {
+    extra = typeof extra === "string" ? extra : ""; // also used as .then(read) after a POST
+    if (viaScript) return jsonp(extra);
+    return fetch(API + "?t=" + encodeURIComponent(T) + "&client=2" + extra, { credentials: "omit", cache: "no-store" })
       .then(function (r) { return r.json(); })
       .then(function (r) { if (r && r.ok) return r; throw { code: (r && r.error) || "bad_reply" }; },
-            function () { viaScript = true; return jsonp(); });
+            function () { viaScript = true; return jsonp(extra); });
   }
-  function jsonp() {
+  function jsonp(extra) {
     return new Promise(function (resolve, reject) {
       var cb = "aap" + Date.now() + "_" + Math.floor(Math.random() * 1e6), s = document.createElement("script");
       var t = setTimeout(function () { end(null); }, 20000);
@@ -3233,7 +3283,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       }
       window[cb] = end;
       s.onerror = function () { end(null); };
-      s.src = API + "?t=" + encodeURIComponent(T) + "&client=2&callback=" + cb;
+      s.src = API + "?t=" + encodeURIComponent(T) + "&client=2&callback=" + cb + (extra || "");
       document.head.appendChild(s);
     });
   }
