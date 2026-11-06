@@ -47,8 +47,13 @@
 .report-sample { margin-top: 32px; padding-top: 28px; border-top: 1px solid #cbd7e1; }
 .report-sample > h4 { font: 700 23px/1.3 var(--display); color: var(--bar); margin: 0 0 10px; }
 .report-sample > p { color: #52606d; font-size: 15px; line-height: 1.6; max-width: 68ch; margin: 0 0 20px; }
-.report-sample-pages { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; }
-@media (max-width: 760px) {
- .report-sample-pages { grid-template-columns: minmax(0,1fr); }
+.report-sample-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+.report-sample-actions .btn { min-height: 44px; }
+.report-sample-size { font-size: 12px; font-weight: 400; }
+.report-sample-viewer { display: block; width: 100%; height: 780px; border: 0; background: #f4f5f5; }
+.report-sample-cover, .report-sample-phone-note { display: none; }
+@media (max-width: 760px), (hover: none) and (pointer: coarse) {
+ .report-sample-viewer, .report-sample-desktop-note { display: none; }
+ .report-sample-cover, .report-sample-phone-note { display: block; }
  .report-sample > h4 { font-size: 21px; }
 }
