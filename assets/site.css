@@ -21,6 +21,7 @@
   --success: #2b7e26; --success-edge: #50a81e; --success-bg: #ecf6e8; --success-ink: #236b1f; --success-line: #cfe6c7;
   --warning-bg: #fdf3e1; --warning-edge: #e5a53a; --warning-ink: #7a4300; --warning-line: #f1dcb0;
   --bar: #0d2a46; --bar-h: 64px;
+  --first-class-gold: #b49a60;
   --focus: #0b6fc1; --focus-ring: rgba(11,111,193,.25);
   --r-1: 2px; --r-2: 4px; --r-3: 6px; --r-full: 999px;
   --shadow-1: 0 0 10px -6px rgba(0,0,0,.10);
@@ -173,6 +174,20 @@ table.cvt tr:last-child td { border-bottom: 0; }
 .cockpit-title { font: 700 clamp(28px, 3vw, 42px)/1.14 var(--display); letter-spacing: -.025em; color: var(--bar); margin: 0 0 var(--s-4); text-wrap: balance; }
 .cockpit-title span { display: block; }
 .cockpit-title a { white-space: nowrap; text-decoration-thickness: 2px; text-underline-offset: 5px; }
+/* First Class tones share one muted gold; Auto-pilot retains primary blue. */
+.cockpit-title a[href="#first-class"] {
+  color: color-mix(in srgb, var(--first-class-gold) 70%, #000);
+  text-decoration-color: currentColor;
+}
+.cockpit-title a[href="#first-class"]:hover {
+  color: color-mix(in srgb, var(--first-class-gold) 60%, #000);
+}
+.way#first-class > .h {
+  background: linear-gradient(110deg,
+    color-mix(in srgb, var(--first-class-gold) 65%, #fff),
+    var(--first-class-gold));
+  color: var(--bar);
+}
 .cockpit-intro p { margin: 0; font-size: 18px; text-wrap: pretty; }
 .way[id] { scroll-margin-top: var(--s-6); }
 @media (max-width: 720px) { .cockpit-intro { grid-template-columns: 1fr; gap: var(--s-8); } }
