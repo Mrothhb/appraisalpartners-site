@@ -620,3 +620,9 @@ h2, h3 { text-wrap: balance; }
   .pair .person--text { min-height: 287.296875px; }
   .bio-content--text { min-height: 594.5px; }
 }
+
+/* Three-step introduction and final service copy. */
+#three-steps .process { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.way .price { margin-top: auto; }
+.way .b > p.fineprint:first-child { margin: 0 0 var(--s-3); }
+@media (max-width: 720px) { #three-steps .process { grid-template-columns: 1fr; } }
