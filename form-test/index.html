@@ -32,7 +32,7 @@
      anything else = the A&AP Service Terms (terms.html).
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-06.3">
+<html lang="en" data-build="v2026-11-08.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -152,7 +152,7 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 .now-row { display: flex; align-items: center; gap: var(--s-3); overflow-wrap: anywhere; }
 .now-row .status-now { min-width: 0; }
 .now-row .saved { flex: none; }
-.status-now { display: inline-flex; align-items: center; gap: var(--s-1); margin: 0; min-height: 24px; padding: 0 8px; border: 1px solid var(--line-2); border-radius: var(--r-1); background: #fff; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; line-height: 1.2; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.status-now { display: inline-flex; align-items: center; gap: var(--s-1); margin: 0; min-height: 24px; padding: 0 8px; border: 1px solid var(--line-2); border-radius: var(--r-1); background: #fff; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; line-height: 1.2; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }   /* "Not started" stays one tag; the row wraps it under the order code on a phone */
 .status-now.approved { color: var(--success-ink); border-color: var(--success-line); background: var(--success-bg); }
 .status-now.approved::before { width: 14px; height: 14px; margin: 0; background-size: 14px 14px; }
 .saved { font-size: 13px; color: var(--ink-2); }
@@ -719,6 +719,27 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 .ap-tracker__build-times { list-style: none; padding: 0; margin: 12px 0 0; text-align: left; font-size: 11px; }
 .ap-tracker__build-times li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 8px; margin-top: 6px; }
 #calls-saved { margin: 0 0 var(--s-3); }
+/* Matt 2026-11-08 (readability for trainee to staff appraisers): the "What to do now" card, numbered start questions, short help lines */
+.guide { border-left: 6px solid var(--primary); padding: var(--s-5) var(--card-px) var(--s-5); }
+.guide-title { margin: 0 0 var(--s-3); font: 700 20px/1.3 var(--display); color: var(--bar); }
+.guide-steps { margin: 0; padding: 0 0 0 1.6em; font-size: 17px; line-height: 1.5; color: var(--ink); }
+.guide-steps li { padding-left: 4px; }
+.guide-steps li + li { margin-top: var(--s-2); }
+.guide-steps li::marker { color: var(--primary); font-weight: 700; }
+.guide-note { margin: var(--s-4) 0 0; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+.guide.quiet { border-left-color: var(--success-edge); }
+.guide.quiet .guide-steps { list-style: none; padding-left: 0; }
+.call-help { flex: 1 1 100%; margin: 0 0 var(--s-2); padding: 0 0 0 1.2em; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.line.choice .call-help { order: 1; } .line.choice .call-help ~ .taps { order: 2; } .line.choice .lbl:has(~ .call-help) { flex-basis: 100%; }
+.call-help li + li { margin-top: 2px; }
+.call-help li::marker { color: var(--primary); }
+.to-start { counter-reset: start-q; }
+.to-start .call-line { counter-increment: start-q; position: relative; padding: var(--s-3) 0 var(--s-3) 36px; }
+.to-start .call-line::before { content: counter(start-q); position: absolute; left: 0; top: calc(var(--s-3) + var(--s-4)); display: grid; place-items: center; width: 26px; height: 26px; border-radius: var(--r-full); background: var(--primary); color: #fff; font: 700 13px/1 var(--font); }
+.to-start .call-line[data-done="true"]::before { content: "\2713"; background: var(--success); }
+.to-start .call-line .call-help { margin-top: calc(-1 * var(--s-2)); }
+.to-start .call-line.long .lbl { font-weight: 600; }
+@media (max-width: 480px) { .to-start .call-line { padding-left: 32px; } .to-start .call-line::before { width: 24px; height: 24px; } }
 
 /* ---------- the full-screen state (Matt 2026-10-30: "an entire screen taken by a notice that the system is checking files, or
    pending or in progress"). One card the height of the screen under the bar: an icon, a headline, one line; for missing files
@@ -870,6 +891,14 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
   <!-- Matt 2026-10-19: VERY clear on every self-service form; 2026-10-30: the notice word for word; 2026-11-03 ("put the self service
        Matt and his team disclaimer as a link ... put it on our website"): one line here, the five points on their own dated page. -->
   <div class="banner warn" id="selfservice" role="note" hidden><p><b><span data-autopilot-name></span>: Matt and his team do not review this report. You review and sign it.</b> <a href="https://appraisalpartners.net/self-service-notice-2026-11-03.html" target="_blank" rel="noopener noreferrer">What this means</a></p></div>
+  <!-- Matt 2026-11-08 ("this is hard to follow ... Trainee Jr appraiser up to Staff ... read easier and flow better"): on a
+       self-service form, one short numbered card at the top of every stage says what to do now (paintGuide). Words only;
+       nothing here saves, gates or ships. -->
+  <section class="card guide" id="guide" aria-labelledby="guide-title" hidden>
+    <p class="guide-title" id="guide-title" role="heading" aria-level="2"></p>
+    <ol class="guide-steps" id="guide-steps"></ol>
+    <p class="guide-note" id="guide-note" hidden></p>
+  </section>
   <div class="card" id="returned-intro" hidden><p id="returned-headline">Your report is in your TOTAL folder. Review and edit it there.</p><p class="note" id="delivered-at" hidden></p><p class="note" id="legacy-approved" hidden></p></div>
   <div class="banner" id="notready" role="status" hidden></div>
   <section class="card" id="calls" aria-label="Our calls" hidden></section>
@@ -907,7 +936,8 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
       <p class="rounds-mini" id="rounds-mini" hidden></p>
       <button type="button" class="st" id="post-open">Request a change</button>
       <div id="post-box" hidden>
-        <div class="line"><label class="lbl" for="post-text">What should change?</label>
+        <div class="line"><label class="lbl" for="post-text">What should change? Put everything in one message.</label>
+          <p class="note" id="post-how">Say what to change and where. Example: “Page 2, comp 2: bath adjustment should be $4,000, not $6,000.”</p>
           <textarea id="post-text" rows="8" maxlength="4000" placeholder="Type or talk your changes"></textarea></div>
         <button type="button" class="st" id="post-send">Send</button>
       </div>
@@ -1229,7 +1259,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   var $ = function (id) { return document.getElementById(id); };
   var STATUSES = ["DRAFT", "READY", "NEEDS_CHANGE", "DONE"];
   var LABEL = {}; STATUSES.forEach(function (s) { LABEL[s] = s.replace("_", " "); });
-  var WORD = { DRAFT: "Draft", READY: "Ready", NEEDS_CHANGE: "Changes requested", DONE: "Done" };   // what the customer reads
+  var WORD = { DRAFT: "Not started", READY: "Ready", NEEDS_CHANGE: "Changes requested", DONE: "Done" };   // what the customer reads
   // The order's stage picks the buttons: open until we send the report back, returned once it's in their folder.
   var STAGES = {
     open: { statuses: ["DRAFT", "READY"], help: "Save the report, then tap <b>Ready</b> to have us check your files. Nothing starts yet.",   // TOTAL writes dragged-in Workfile files only on a save
@@ -1715,6 +1745,50 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function minimalChecked() { return (D.house_prompts || {}).files_complete === true && !!checkedAt(); }
   function minimalFactsReady() { return (D.comps || []).length > 0 && (D.comps || []).every(function(c){return !!c.mls;}) && new Set((D.comps || []).map(function(c){return c.mls;})).size === D.comps.length; }
   var callLines = [], minimalRange = null;
+  // Matt 2026-11-08: plain words for the fixed self-service template, by key (desk/skills/form/self-service-template.json carries the same).
+  // Only labels, notes and short help lines; never a key, an option value or what Start requires.
+  var SECTION_WORDS = { "To start": "Answer these to start", "Your inspection": "Inspection date", "Your calls on the house": "The house", "Your comps": "Your comps",
+    "The market": "The market", "Cost approach": "Cost approach", "Your adjustments": "Your adjustments", "Anything else": "Anything else", "Your value": "Your value" };
+  var SECTION_NOTES = { "Your calls on the house": "Rate the whole house, inside and out. If inside and outside differ, say so under Anything else." };
+  var CALL_WORDS = {
+    inspection_ok: { label: "Your inspection. Tap Confirmed if all of these are true:", help: ["You inspected inside and out.", "You measured to ANSI Z765-2021.", "The utilities were on.", "Smoke/CO detectors and water heater strapping meet local rules.", "You have no interest in the property or the parties, and did no work on it in the last 3 years.", "Not all true? Tap With exceptions and tell us what was different."] },
+    inspection_except: { label: "What was different? One per line.", help: ["Example: Utilities were off at the inspection.", "Example: Measured from the plans; no exterior measurement."] },
+    premise: { label: "How are you appraising it?", help: ["As is: no repairs needed.", "Subject to repair: repairs needed first.", "Subject to completion: construction or work not finished.", "Subject to inspection: an expert must check something first."] },
+    repairs: { label: "List the work or inspections, one per line, with a cost.", help: ["Write safety on safety or structural items.", "Example: Replace missing stair handrail, safety, $250."] },
+    helper: { label: "Who helped with this report? If no one, type: No one", help: ["Name, credential and number, state, and what they did.", "Example: Jane Doe, trainee TX 1234567, inspected with me and took photos."] },
+    il_amc_fee: { label: "Illinois: the AMC fee paid to you for this order, $" },
+    terms_ok: { label: "This client’s terms allow outside report preparation and file sharing; this property and market are within my competence." },
+    inspection_date: { label: "Date you inspected (example: 11/06/2026)" },
+    subject_quality: { label: "Quality rating (Q1 best to Q6)" },
+    subject_condition: { label: "Condition rating (C1 best to C6)" },
+    updates: { label: "When were the kitchen and baths updated? Example: kitchen 2019, baths not updated." },
+    condition_as_is: { label: "Condition rating before the repairs or work" },
+    prior_sale_ok: { label: "Was the prior sale a normal arm’s-length sale at a market price?" },
+    contract_ok: { label: "Is the contract arm’s length, with concessions typical for this market?" },
+    influence_effect: { label: "How does this site influence affect value?" },
+    hbu_present_use: { label: "Is the highest and best use the current use?" },
+    site_value: { label: "Your site (land) value, $" },
+    most_weight: { label: "Which comp gets the most weight?" },
+    price_trend: { label: "Prices over the last 12 months" },
+    supply: { label: "Supply of homes for sale" },
+    time_adjustment: { label: "Time adjustment, % per month. Type 0 if none. Example: 0.5" },
+    market_rent: { label: "Market rent, $ per month" },
+    rent_analysis: { label: "Rent comps: your ratings, adjustments and weights, one per line" },
+    cost_age: { label: "Effective age, in years" },
+    cost_source: { label: "Cost source and method (example: Marshall & Swift, calculator method)" },
+    cost_depreciation: { label: "Depreciation: method, economic life, and any functional or external loss" },
+    concessions: { label: "Seller concessions on the comps" },
+    rate_other: { label: "Any other adjustments? One per line: comp, item, + or - dollars. Type None if none.", help: ["Example: comp 2 pool -8,000"] },
+    notes: { label: "Anything else we should know? Extraordinary assumptions, hypothetical conditions, split ratings or client instructions. Type None if none." },
+    value: { label: "Your opinion of value, $" },
+    exposure: { label: "Exposure time (how long it would have taken to sell)" },
+    value_why: { label: "Your value is outside your adjusted sales range. Why?" }
+  };
+  function callWords(line) { return minimalCalls() && CALL_WORDS[line.key] || {}; }
+  function callLabel(line) { return callWords(line).label || line.label; }
+  function callHelp(line) { var h = callWords(line).help; return Array.isArray(h) && h.length ? el("ul", { cls: "call-help" }, h.map(function (t) { return el("li", { text: t }); })) : null; }
+  function sectionTitle(section) { return minimalCalls() && SECTION_WORDS[section.title] || section.title; }
+  function sectionNote(section) { return minimalCalls() && SECTION_NOTES[section.title] || section.note; }
   function callActive(condition) {
     var hp = D.house_prompts || {};
     if (!condition) return true;
@@ -1738,18 +1812,20 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     return line.options === "comps" ? (D.comps||[]).map(function(c,i){return /^(sold|closed|settled)/i.test(c.status||"Sold") ? String(i+1) : null;}).filter(Boolean) : line.options;
   }
   function callSection(section, host, target) {
-    var card=target || (section.slot === "start" ? $("start-calls") : host.appendChild(el("section",{cls:"card fixed-calls"},[el("h2",{text:section.title})])));
+    var card=target || (section.slot === "start" ? $("start-calls") : host.appendChild(el("section",{cls:"card fixed-calls"},[el("h2",{text:sectionTitle(section)})])));
     card.hidden=false;
-    if(section.note)card.appendChild(el("p",{cls:"note",text:section.note}));
+    if(sectionNote(section))card.appendChild(el("p",{cls:"note",text:sectionNote(section)}));
     section.lines.forEach(function(line){
       if (["comps_roster", "search_net"].indexOf(line.key) >= 0) return;
-      var options=callOptions(line), context=(D.house_prompts||{})[line.context], label=line.label+((typeof context === "string" && context.trim()) || typeof context === "number" ? " · "+context : "");   // "contract": true is the line's switch, never its context
+      var options=callOptions(line), context=(D.house_prompts||{})[line.context], label=callLabel(line)+((typeof context === "string" && context.trim()) || typeof context === "number" ? " · "+context : "");   // "contract": true is the line's switch, never its context
       var input=line.kind === "check" ? check(line.key,label) : options ? choice(line.key,label,options) : text(line.key,label,{multi:line.kind === "multi",short:!!line.numeric});
       if(line.key === "calls_ok") {var original=controls.calls_ok.set;controls.calls_ok.set=function(v){original(v === true && ans("calls_checked_at") === (D.accepted_at||""));};}
-      var wrap=card.appendChild(el("div",{cls:"call-line"+(label.length>60?" long":""),"data-call-line":line.key},[input]));
+      var help=callHelp(line), lbl=help && line.kind !== "check" && input.querySelector(".lbl");   // the help sits under the question, above its buttons or box
+      if(lbl)lbl.after(help);
+      var wrap=card.appendChild(el("div",{cls:"call-line"+(label.length>60?" long":""),"data-call-line":line.key},[input,lbl?null:help]));
       var source=(D.file_calls||{})[line.key], summary=null, opened=false;
       if(source && source.source && line.kind !== "check") {
-        summary=el("p",{cls:"file-call"},[el("span",{text:line.label+": "+source.value+" — from your file "}),el("button",{type:"button",cls:"change-call",text:"Change","aria-label":"Change "+line.label})]);
+        summary=el("p",{cls:"file-call"},[el("span",{text:callLabel(line)+": "+source.value+" — from your file "}),el("button",{type:"button",cls:"change-call",text:"Change","aria-label":"Change "+callLabel(line)})]);
         wrap.insertBefore(summary,input);summary.querySelector("button").addEventListener("click",function(){opened=true;paint();input.querySelector("input,textarea,button")?.focus({preventScroll:true});});
       }
       function active(){return callActive(section.when)&&callActive(line.when);}
@@ -1779,15 +1855,21 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (first && first.classList.contains("fixed-calls")) { first.classList.add("to-start"); first.querySelector("h2").appendChild(el("span", { cls: "ready-count", "data-start-count": "" })); }
     // Matt 2026-10-30: optional must be obvious, and quiet (round 2). One row with its promise under it; it opens by itself when his file or his saved answers fill any of it.
     var optionalKeys = [].concat.apply([], sections.slice(1).map(function(sec){return sec.lines.map(function(l){return l.key;});})).concat((D.adjustment_rows || []).map(function(r){return r.key;}), ["adjustments_by"]);
-    var filled = optionalKeys.some(function(k){var v=ans(k);return v === true || typeof v === "number" || typeof v === "string" && !!v.trim();});
-    var more = host.appendChild(el("details",{cls:"optional-calls"},[el("summary",null,[el("span",{cls:"t"},["Add your own calls now ",el("small",{text:"Optional"})]),el("span",{cls:"optional-note",text:"Leave these blank and we’ll propose every call for you to approve."})])]));
+    var some = function(k){var v=ans(k);return v === true || typeof v === "number" || typeof v === "string" && !!v.trim();};
+    var anyFilled = optionalKeys.some(some);
+    // Matt 2026-11-08: open only for something he filled in himself; a value his file supplied (the prefill) is named on the closed row
+    var filled = optionalKeys.some(function(k){return some(k) && String(ans(k)) !== String((D.prefill||{})[k] == null ? "" : (D.prefill||{})[k]);});
+    var fromFile = [];
+    sections.slice(1).forEach(function(sec){sec.lines.forEach(function(l){var s=(D.file_calls||{})[l.key];if(s && s.source && some(l.key) && String(ans(l.key))===String(s.value))fromFile.push(cap(l.need || l.key)+" "+s.value);});});
+    var more = host.appendChild(el("details",{cls:"optional-calls"},[el("summary",null,[el("span",{cls:"t"},["Add your own ratings, adjustments and value now ",el("small",{text:"Optional"})]),el("span",{cls:"optional-note",text:"Or skip it. We’ll fill these in for you to approve at review."})])]));
+    if (fromFile.length) more.querySelector("summary").appendChild(el("span",{cls:"optional-note optional-file",text:"From your file: "+fromFile.join(" · ")+". Open to see or change."}));
     more.open = moreOpen == null ? filled : moreOpen;
-    more.dataset.filled = filled;
+    more.dataset.filled = anyFilled;
     more.addEventListener("toggle", function(){moreOpen = more.open;});
     host = more;
     sections.slice(1,split).forEach(function(sec){callSection(sec,host);});
     var comps = D.comps || [], rows = D.adjustment_rows || [];
-    var mode = host.appendChild(el("section", {cls:"card"}, [el("h2", {text:"Your adjustments"}), el("p", {cls:"note", text:"The grid is optional. Choose who fills your adjustments."})]));
+    var mode = host.appendChild(el("section", {cls:"card"}, [el("h2", {text:"Your adjustments"}), el("p", {cls:"note", text:"Who fills in your adjustment rates? Pick one."})]));
     var picker=mode.appendChild(el("div",{cls:"line choice"})), modeButtons=[];
     [["customer","I'll enter my adjustments"],["archer_profile","Fill from my usual rates — I approve at review"]].forEach(function(option){
       var button=picker.appendChild(el("button",{type:"button",cls:"tap",text:option[1],"aria-pressed":"false","data-adjustments-by":option[0]}));
@@ -1797,9 +1879,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     controls.adjustments_by={set:function(v){modeButtons.forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.adjustmentsBy===v));});}};
     callSection(sections[split],host,mode);
     var card = host.appendChild(el("section", { cls: "card minimal-grid" }, [el("h2", { text: "Your grid" })]));
-    if (!comps.length) card.appendChild(el("p", { cls: "note", text: "Fills in when your comps are saved." }));
+    if (!comps.length) card.appendChild(el("p", { cls: "note", text: "Your grid appears here once your comps are saved in your report." }));
     else {
-      card.appendChild(el("p", { cls: "note", text: "One rate per line. Use 0 for no adjustment. Q/C: your saved ratings, or tap to choose. Rates appear only where a comp differs. Living-area differences under 100 sf use $0." }));
+      card.appendChild(el("p", { cls: "note", text: "Type one rate per line, as dollars per unit. Example: 45 means $45 per sq ft. Type 0 for no adjustment. Tap a comp’s quality or condition to rate it. A line shows only where a comp differs from the subject. Living-area differences under 100 sf count as $0." }));
       var head = el("tr", null, [el("th", { cls: "row", text: "Rate", scope: "col" })]), body = el("tbody");
       comps.forEach(function (c, i) {
         var cell = head.appendChild(el("th", { scope: "col" }, [el("span", { cls: "n", text: String(i + 1) }), el("span", { cls: "addr", text: c.address || c.id }), el("span", { cls: "mls", text: c.mls || String(c.id || "").split(" · ")[0] }), el("span", { text: money(c.price) + (/^(sold|closed)/i.test(c.status || "Sold") ? "" : " · " + c.status) })]));
@@ -2172,7 +2254,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var catalog=D.proposed_calls;
     var fold=host.appendChild(el("details",{cls:"pc-fold",id:"your-calls"})), count=el("span",{cls:"pc-count"});
     fold.appendChild(el("summary",null,[el("span",{cls:"t",text:"Your calls"}),count,el("span",{cls:"pc-open","aria-hidden":"true"})]));
-    fold.appendChild(el("p",{cls:"note pc-intro",text:"We filled in every call below. Each is our proposal and your call. Approve confirms any section still open, as shown."}));
+    fold.appendChild(el("p",{cls:"note pc-intro",text:"We filled in every call below for you. Open each section. Keep what’s right, change what’s not. When you tap Approve, any section you didn’t confirm is confirmed as shown."}));
     fold.open=pcView.open;
     fold.addEventListener("toggle",function(){pcView.open=fold.open;if(fold.open)fold.querySelectorAll("textarea").forEach(grow);});
     if(!catalog || !Array.isArray(catalog.sections) || catalog.report_sha256 !== (D.review||{}).report_sha256) {
@@ -2182,7 +2264,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     }
     proposalPainters.push(function(){var n=catalog.sections.filter(function(s){return !proposalConfirmed(s);}).length;count.textContent=n?n+(n===1?" section":" sections")+" to confirm":"All confirmed";});
     catalog.sections.forEach(function(section){
-      var card=fold.appendChild(el("section",{cls:"card proposal-section","data-proposal":section.id},[el("h2",{text:section.title}),el("p",{cls:"note",text:"We filled these in for you. Keep or change each one, then tap Confirm this section."})]));
+      var card=fold.appendChild(el("section",{cls:"card proposal-section","data-proposal":section.id},[el("h2",{text:section.title}),el("p",{cls:"note",text:"Our proposal for each line, and why. Agree? Tap Confirm. Not quite? Tap Change."})]));
       var lines=card.appendChild(el("ul",{cls:"pc-lines"})), body=card.appendChild(el("div",{cls:"pc-edit"})), shown=[];
       var locked=changesClosed();   // closed: approving is all that is left (a blank call no longer holds delivery)
       section.calls.forEach(function(c){
@@ -2199,14 +2281,14 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       var change=row.appendChild(el("button",{type:"button",cls:"link-inline"})), why=row.appendChild(el("button",{type:"button",cls:"link-inline"}));
       var note=card.appendChild(el("p",{cls:"note"}));
       function mode(m){pcView.mode[section.id]=pcView.mode[section.id]===m?"closed":m;paintMode();if(m==="edit")body.querySelectorAll("textarea").forEach(grow);}
-      function paintMode(){if(locked&&pcView.mode[section.id]==="edit")pcView.mode[section.id]="closed";var m=pcView.mode[section.id]||"";change.hidden=locked;card.setAttribute("data-mode",m);change.textContent=m==="edit"?"Close":"Change";why.textContent=m==="why"?"Hide why":"See why";why.hidden=m==="edit";
+      function paintMode(){if(locked&&pcView.mode[section.id]==="edit")pcView.mode[section.id]="closed";var m=pcView.mode[section.id]||"";change.hidden=locked;card.setAttribute("data-mode",m);change.textContent=m==="edit"?"Close":"Change";why.textContent=m==="why"?"Hide why":"Why we chose this";why.hidden=m==="edit";
         change.setAttribute("aria-expanded",String(m==="edit"));why.setAttribute("aria-expanded",String(m==="why"));change.setAttribute("aria-label",(m==="edit"?"Close ":"Change ")+section.title);why.setAttribute("aria-label",(m==="why"?"Hide why: ":"See why: ")+section.title);}
       change.addEventListener("click",function(){mode("edit");});
       why.addEventListener("click",function(){mode("why");});
       function edited(){return proposalEdited(section);}
       if(edited() && !(section.id in pcView.mode)) { pcView.mode[section.id]="edit"; pcView.open=fold.open=true; }   // his unsent changes open where he left them
       paintMode();
-      function paint(){var done=proposalConfirmed(section),values=proposalValues(section);shown.forEach(function(f){f(values);});button.textContent=edited()?"Send these changes":done?"Confirmed":"Confirm this section";button.disabled=readOnly||!online||postBusy||pendingTaps>0||!reviewReady()||done||section.calls.some(function(c){return !proposalValues(section)[c.key].trim();});note.textContent=edited()?"We’ll update the report, then show it here again before delivery.":done?(proposalCarried(section)?"Confirmed in your last review; unchanged.":"Confirmed for this report."):"";}
+      function paint(){var done=proposalConfirmed(section),values=proposalValues(section);shown.forEach(function(f){f(values);});button.textContent=edited()?"Send these changes":done?"Confirmed":"Confirm this section";button.disabled=readOnly||!online||postBusy||pendingTaps>0||!reviewReady()||done||section.calls.some(function(c){return !proposalValues(section)[c.key].trim();});note.textContent=edited()?"Sending these changes uses a change round. We’ll update the report and show it here again before delivery.":done?(proposalCarried(section)?"Confirmed in your last review; unchanged.":"Confirmed for this report."):"";}
       button.addEventListener("click",function(){
         if(button.disabled)return;
         if(edited()) {
@@ -2524,10 +2606,13 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function stageState() {
     if (stage !== "open" || readOnly || approved || !inProduction()) return null;
     if (D.progress && (D.progress.started_at || D.progress.step)) return { kind: "progress" };
-    var hp = D.house_prompts || {}, missing = D.start_missing || hp.files_missing || [];
-    return { kind: "waiting", missing: missing };
+    return { kind: "waiting", missing: stillMissing() };
   }
-  var STAGE_WORDS = { waiting: [GO_NOTE, "Your file needs to sit quiet for 15 minutes after the last save."], progress: ["Your report is in progress", ""] };
+  function stillMissing() {   // the desk's start list when it has lines, else the self-service file check's (before 2026-11-08 an empty desk list hid the file check's list)
+    var hp = D.house_prompts || {}, desk = Array.isArray(D.start_missing) ? D.start_missing : [], files = Array.isArray(hp.files_missing) ? hp.files_missing : [];
+    return (desk.length ? desk : files).map(function (m) { return String(m || "").trim(); }).filter(Boolean);
+  }
+  var STAGE_WORDS = { waiting: [GO_NOTE, "We begin 15 minutes after your last save in TOTAL."], progress: ["We’re building your report", "Nothing to do right now. We’ll email you when it’s ready to review."] };
   function paintStage() {
     var s = stageState(), box = $("stage"), tracker = $("production-tracker"), home = s && s.kind === "progress" ? $("stage-slot") : $("tracker-home");
     if (tracker.parentNode !== home) home.appendChild(tracker);
@@ -2689,7 +2774,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var rows = readyRows(), open = rows.filter(function (r) { return !r.done; });
     var asks = rows.filter(function (r) { return r.key !== "q_service_option" && r.key !== "files"; });
     var count = document.querySelector("#sections .to-start [data-start-count]");
-    if (count) count.textContent = asks.filter(function (r) { return r.done; }).length + " of " + asks.length;
+    if (count) count.textContent = asks.filter(function (r) { return r.done; }).length + " of " + asks.length + " answered";
     asks.forEach(function (r) { if (r.target && r.target.dataset) r.target.dataset.done = String(r.done); });
     // one quiet line under the musts: what Start still waits on, each open item a tap away (the server's rules are unchanged)
     var lock = $("start-missing"); lock.textContent = ""; lock.className = "start-lock";
@@ -2723,6 +2808,48 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var first = firstControl(node); if (first) first.focus({ preventScroll: true });
     node.classList.remove("flash"); void node.offsetWidth; node.classList.add("flash");
   }
+  // Matt 2026-11-08: what to do now, in numbered steps, at the top of every self-service stage. Words only; every gate,
+  // tap and record below is unchanged. Hidden on every other lane and on a closed form.
+  function guideWords() {   // [title, steps, note] or null
+    if (!state || !selfLane() || readOnly) return null;
+    var hp = D.house_prompts || {};
+    if (stage === "open") {
+      if (inProduction()) {
+        if (D.progress && (D.progress.started_at || D.progress.step)) return ["Nothing to do right now", ["We’re building your report.", "We’ll email you when it’s ready to review. Most reports take 2–3 hours."], ""];
+        return stillMissing().length ? ["What to do now", ["Add what’s missing to your order folder (listed below).", "Save your report in TOTAL.", "That’s it. We begin 15 minutes after your last save."], ""]
+                       : ["Nothing to do right now", ["Your Start is in. We begin 15 minutes after your last save in TOTAL.", "We’ll email you when your report is ready to review."], ""];
+      }
+      var asks = readyRows().filter(function (r) { return r.key !== "q_service_option" && r.key !== "files"; }).length;
+      return ["What to do now", ["Finish your work file in TOTAL: inspection, sketch and photos all in. Save it.",
+                                 "Answer the " + (asks || "few") + " quick questions below.", "Tap Start."],
+              "Everything else is optional. Leave it blank and we’ll propose every call for you to approve at review."];
+    }
+    if (!customerReturned()) return null;
+    if (roundsLocked() && !signedOff()) return ["Nothing to do", ["Your two change rounds are used.", "Your final report is on its way to your TOTAL folder."], ""];
+    if (delivered()) return ["What to do now", ["Open your report in TOTAL.", "Review it, make any edits, and sign it.", "Questions? Use the box at the bottom of this page."], ""];
+    if (signedOff()) return ["Nothing to do", ["You approved your report.", "It goes to your TOTAL folder next. We’ll email you."], ""];
+    var request = changeState();
+    if (request && (request.kind === "open" || request.kind === "answered" || request.request.pending)) return ["Nothing to do right now", ["We got your change request.", "We’ll post the updated report here and email you."], ""];
+    if (signoff() && reviewReady()) {
+      var steps = ["Read your report below."];
+      if (proposalReview() && !factsOnlyReview()) steps.push("Open Your calls. Check each section. Keep it or change it.");
+      steps.push(changesClosed() ? "Tap " + (proposalReview() && !factsOnlyReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " to get your report."
+                                 : "Happy with it? Tap " + approveLabel() + ". Need changes? Tap Request a change and put everything in one message.");
+      return ["What to do now", steps, changesClosed() ? "" : "You have 2 change rounds. Round 1 is your full review, so send every change at once."];
+    }
+    if (signoff()) return ["Nothing to do right now", ["Your updated report is being prepared.", "We’ll post it here and email you."], ""];
+    return null;
+  }
+  function paintGuide() {
+    var g = guideWords(), box = $("guide");
+    box.hidden = !g;
+    if (!g) return;
+    $("guide-title").textContent = g[0];
+    $("guide-steps").textContent = "";
+    g[1].forEach(function (t) { $("guide-steps").appendChild(el("li", { text: t })); });
+    $("guide-note").textContent = g[2] || ""; $("guide-note").hidden = !g[2];
+    box.classList.toggle("quiet", g[1].length < 3 && /^Nothing/.test(g[0]));
+  }
   function paintStatus() {
     paintFeedback();
     paintChosen();
@@ -2731,6 +2858,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     $("form").disabled = locked;
     $("form").hidden = inProduction() && !selfLane();   // Matt 2026-10-30: his self-service calls stay in view, read-only, after Start
     $("calls-saved").hidden = !(inProduction() && selfLane());
+    var startTitle = document.querySelector("#sections .to-start h2");   // Matt 2026-11-08: after Start the card reads as his answers, not a to-do
+    if (startTitle && startTitle.firstChild && startTitle.firstChild.nodeType === 3) startTitle.firstChild.textContent = inProduction() && selfLane() ? "Your answers at Start" : sectionTitle(D.call_sections[0]);
     document.querySelectorAll("#form details.optional-calls").forEach(function (d) { d.hidden = !$("calls-saved").hidden && d.dataset.filled !== "true"; });   // nothing of his to show
     $("form").classList.toggle("approved", approved);
     document.querySelectorAll("#form input, #form textarea, #form button, #form select").forEach(function (c) { c.disabled = locked; });
@@ -2784,7 +2913,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var pending = request && (request.kind === "open" || request.kind === "answered");   // his latest request, not yet answered by a new report
     $("returned-headline").textContent = signoff() ? signedOff() ? approvalNote() : !reviewReady() ? request && request.kind === "answered" ? changeWords(request).join(" ") : (state.post_changes || []).length ? "Your changes are with us. We'll post your review PDF below." : "Your review PDF will appear below." : (approveShips() ? yours + " is ready for your review. Tap Approve and deliver to send it to your TOTAL folder, or request a change below." : yours + " is in your TOTAL folder. Review it below, then approve or request a change.") : paymentDue ? "Your report is ready. It goes to your folder once payment is received." : "Your report is in your TOTAL folder. Review and edit it there.";
     if (request && request.request.pending) $("returned-headline").textContent = changeWords(request).join(" ");
-    if(proposalReview() && !factsOnlyReview() && !signedOff() && !delivered() && !pending) $("returned-headline").textContent="Review " + yours.toLowerCase() + " and your calls, then approve or request a change.";
+    if(proposalReview() && !factsOnlyReview() && !signedOff() && !delivered() && !pending) $("returned-headline").textContent=yours + " is ready for your review.";
     if(changesClosed() && !signedOff()) $("returned-headline").textContent="Your review is done. Tap " + (proposalReview() && !factsOnlyReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " to get your report.";
     if(roundsLocked() && !signedOff()) $("returned-headline").textContent="Two change rounds used. Your final report is being delivered to your TOTAL folder.";
     $("delivered-at").hidden = paymentDue || !D.delivered_at;
@@ -2847,7 +2976,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     // Matt 2026-10-30: one plain line says why Start is locked, from the first view on (filesNeed above paintStatus).
     if (selfOnly() && !D.selected_lane && stage === "open") {
       var first = filesNeed(Object.assign({}, F.house_prompts || {}, laneOptions(F)[0].house_prompts || {}));
-      $("start-missing").textContent = ["Start unlocks once you pick an option and answer the short To start items.", first].filter(Boolean).join(" ");
+      $("start-missing").textContent = ["Start unlocks once you pick an option and answer the short start questions.", first].filter(Boolean).join(" ");
       $("start-missing").hidden = false;
     }
     if (minimalCalls()) {
@@ -2892,6 +3021,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     paintStage();
     paintUsage();
     paintHold();
+    paintGuide();
     // Matt 2026-10-13: a READY the desk sent back says so at the very top, with why, while the form is DRAFT again:
     // a red pop-out when it arrives ("make it red and a popout and very obvious"), then the red banner pinned there.
     var nr = $("notready"), back = D.note_kind === "not_ready" && !!D.public_note && state.status === "DRAFT";
@@ -2960,7 +3090,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (s !== "DRAFT") $("saved").hidden = true;
     statusBtns.forEach(function (b) {
       if (signoff() && b.getAttribute("data-s") === "DONE") {
-        b.textContent = approveLabel(); if (!b.hidden) lead = proposalReview() ? "Not confirmed yet (Approve confirms them as shown):" : "Not answered yet (optional):";
+        b.textContent = approveLabel(); if (!b.hidden) lead = proposalReview() ? "Sections you haven’t confirmed yet (Approve confirms them as shown):" : "Not answered yet (optional):";
         b.classList.remove("wait"); if(proposalReview()) b.disabled=readOnly || !online || pendingTaps>0 || postBusy || !reviewReady(); return;
       }
       if (b.getAttribute("data-s") !== "READY") return;
@@ -2975,7 +3105,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var allBtn = $("approve-all-btn"), done = statusBtns.filter(function (b) { return b.getAttribute("data-s") === "DONE"; })[0];
     $("approve-all").hidden = factsOnlyReview() || !proposalReview() || !done || done.hidden || !proposalOpen().length && !changesClosed();   // closed: the one button left
     allBtn.textContent = approveLabel().replace("Approve", "Approve all");
-    $("approve-all-note").textContent = "Confirms every section as shown, then " + (approveShips() ? "delivers." : "approves.");
+    $("approve-all-note").textContent = "One tap: confirms every section as shown, then " + (approveShips() ? "sends your report to your TOTAL folder." : "approves it.");
     allBtn.disabled = readOnly || !online || pendingTaps > 0 || postBusy || !reviewReady();
     paintLeft(lead && shown && !left.some(function (m) { return m.key === "proposal_catalog"; }) ? left : [], lead);   // never while his calls are still being prepared
   }
