@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
+Disallow: /site-staging/
 Sitemap: https://appraisalpartners.net/sitemap.xml
