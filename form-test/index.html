@@ -1037,7 +1037,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 </script>
 
 <script>
-var API = "https://script.google.com/macros/s/AKfycbysI6U3ai4W18Rk_xXhL3CuoL6GDtDduuMMWfV1kYpmnyQpnVkuVGbRy--euZqvLh1ErQ/exec";   // the web app's /exec URL (SETUP.md); while empty, the page says it is not connected
+var API = "TEST_API_URL";   // the web app's /exec URL (SETUP.md); while empty, the page says it is not connected
 var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.html";   // the self-service notice's dated page (Matt 2026-11-03); a change is a new date
 /* No feed, timers, network calls or form-answer writes. */
 (function (global) {
@@ -2697,12 +2697,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     function say(t) { lock.appendChild(document.createTextNode(t)); }
     var pick = open.filter(function (r) { return r.key === "q_service_option"; })[0], todo = open.filter(function (r) { return r.key !== "q_service_option" && r.key !== "files"; }), file = open.filter(function (r) { return r.key === "files"; })[0];
     if (pick && !document.querySelector("#sections .to-start")) { lock.appendChild(go("Pick A or B", pick.target)); say(" above to begin."); }   // the four answers appear with his option
-    else if (todo.length === asks.length && asks.length) {
-      if (pick) { lock.appendChild(go("Pick A or B", pick.target)); say(" and answer the " + asks.length + " items above."); }
-      else { say("Answer the " + asks.length + " items above."); }
-    } else {
+    else {
       if (pick) { lock.appendChild(go("Pick A or B", pick.target)); say(". "); }
-      if (todo.length) { say("Still to answer: "); todo.forEach(function (r, i) { if (i) say(" · "); lock.appendChild(r.target ? go(r.label, r.target) : document.createTextNode(r.label)); }); say("."); }
+      if (todo.length) { say(todo.length === asks.length ? "To start, answer: " : "Still to answer: "); todo.forEach(function (r, i) { if (i) say(" · "); lock.appendChild(r.target ? go(r.label, r.target) : document.createTextNode(r.label)); }); say("."); }
     }
     if (file) say((lock.textContent ? " " : "") + "Your file: " + file.note.charAt(0).toLowerCase() + file.note.slice(1));
     var why = pick || todo.length || file ? "" : startWhy();   // Matt 2026-11-03: Start is never off without saying why
