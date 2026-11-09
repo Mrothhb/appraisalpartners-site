@@ -441,6 +441,12 @@ label.line { cursor: pointer; }
 .need-list { margin: 0 0 var(--s-3); padding: 0 0 0 var(--s-5); font-size: 15px; line-height: 1.5; color: var(--ink); }
 .need-list li + li { margin-top: var(--s-2); }
 .need-card .note { margin: 0; color: #7a4300; }
+/* Matt 2026-11-08: the desk's items required before delivery, amber like the mockup he approved; the kicker, then each item's title and line */
+.deliver-card { border: 2px solid var(--warning-edge); background: var(--warning-bg); color: var(--warning-ink); padding: var(--s-5) var(--card-px); }
+.deliver-kicker { margin: 0 0 var(--s-3); font: 700 15px/1.3 var(--font); letter-spacing: .03em; text-transform: uppercase; }
+.deliver-item + .deliver-item { margin-top: var(--s-4); }
+.deliver-item h2 { margin: 0 0 var(--s-2); font: 700 20px/1.3 var(--display); color: var(--ink); }
+.deliver-item p { margin: 0; font-size: 16px; line-height: 1.5; color: var(--ink); }
 .standard-fees { width: 100%; max-width: 440px; margin-top: var(--s-4); border-collapse: collapse; font-size: 13px; }
 .standard-fees caption { text-align: left; font-weight: 700; padding-bottom: var(--s-2); }
 .standard-fees th, .standard-fees td { padding: var(--s-1) 0; border-bottom: 1px solid var(--edge); }
@@ -848,6 +854,13 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
        matt_hold (formlink.py): on full desk only (with a lane choice, once he picks Full), one plain line, and no Ready or
        Start until Matt clears it; partial and self-service go on. -->
   <section class="card hold-card" id="hold-card" role="alert" hidden><p id="hold-line">This order needs Matt’s review before it can start. We’ll email you.</p></section>
+  <!-- Matt 2026-11-08 ("Yes, build the 'required before delivery' box into the form"): the desk's items needed before delivery
+       (order.delivery_requires: formlink.py --require-before-delivery, --require-received). After Start, on every stage, while one
+       is not received: its title and one plain line, and Approve shows "held until received". ship.py refuses on its own. -->
+  <section class="card deliver-card" id="deliver-card" role="status" aria-labelledby="deliver-title" hidden>
+    <p class="deliver-kicker" id="deliver-title">Required before delivery</p>
+    <div id="deliver-list"></div>
+  </section>
   <!-- Matt 2026-11-03: "we should be VERY CLEAR with the bold exclamation point front and cetner that these items are lacking
        in comps please revisist this and add more, or continue and be aware and accepr this". The audit's bracketing check of
        his closed comps and, on self-service, his report against his own evidence (tools/comp_bracket.py, prefill comp_check),
@@ -1350,7 +1363,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (D.delivery_status && D.review && D.delivery_status.review_id === D.review.id && !(D.deliveries || []).some(function (d) { return d.review_id === D.review.id; }) && D.delivery_status.message)
       return D.delivery_status.message;
     var h = state.history.filter(function (e) { return e.status === "DONE"; });
-    return (pendingApprove ? "Approved ✓ " : "Approved ") + when(pendingApprove ? new Date().toISOString() : h.length ? h[h.length - 1].at : savedAt) + (approveShips() ? ". It goes to your TOTAL folder next." : ". Your report is in your TOTAL folder.");
+    return (pendingApprove ? "Approved ✓ " : "Approved ") + when(pendingApprove ? new Date().toISOString() : h.length ? h[h.length - 1].at : savedAt) + (approveShips() ? deliveryHold() ? ". It goes to your TOTAL folder " + HELD_LINE : ". It goes to your TOTAL folder next." : ". Your report is in your TOTAL folder.");
   }
 
   // ---------- small DOM helpers ----------
@@ -2669,6 +2682,27 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var b = e.target && e.target.closest ? e.target.closest('#start-production, [data-status] [data-s="READY"]') : null;
     if (b && mattHold()) { e.preventDefault(); e.stopImmediatePropagation(); paintHold(); jumpTo($("hold-card")); }
   }, true);
+  // ---------- required before delivery (Matt 2026-11-08) ----------
+  // Any item not marked met holds delivery; nothing changes on a form without order.delivery_requires.
+  function deliveryHeld() {
+    var rows = O.delivery_requires;
+    return !rows ? [] : (Array.isArray(rows) ? rows : [rows]).filter(function (r) { return !r || typeof r !== "object" || r.met !== true; });
+  }
+  function deliveryHold() { return deliveryHeld().length > 0 && (stage !== "open" || inProduction()) && (D.house_prompts || {}).lane !== "review" && !delivered(); }
+  var HELD = " — held until received", HELD_LINE = "once we receive what’s listed above.";
+  function paintDeliver() {
+    var show = deliveryHold(), list = $("deliver-list");
+    $("deliver-card").hidden = !show; list.textContent = "";
+    if (show) deliveryHeld().forEach(function (r) {
+      r = r && typeof r === "object" ? r : {};
+      list.appendChild(el("div", { cls: "deliver-item" }, [el("h2", { text: String(r.label || "An item from the desk") }),
+        el("p", { text: String(r.detail || "We need it before we can deliver.") })]));
+    });
+  }
+  document.addEventListener("click", function (e) {   // an Approve tapped under the hold (an older paint) only shows why
+    var b = e.target && e.target.closest ? e.target.closest('#approve-all-btn, #all-yes, [data-status] [data-s="DONE"]') : null;
+    if (b && customerReturned() && deliveryHold()) { e.preventDefault(); e.stopImmediatePropagation(); allAsk(false); paintStatus(); jumpTo($("deliver-card")); }
+  }, true);
   function paintHeadsup() {
     var rows = (D.house_prompts || {}).files_headsup || [], box = $("headsup-card"), list = $("headsup-list");
     box.hidden = stage !== "open" || !rows.length;
@@ -2916,6 +2950,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if(proposalReview() && !factsOnlyReview() && !signedOff() && !delivered() && !pending) $("returned-headline").textContent=yours + " is ready for your review.";
     if(changesClosed() && !signedOff()) $("returned-headline").textContent="Your review is done. Tap " + (proposalReview() && !factsOnlyReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " to get your report.";
     if(roundsLocked() && !signedOff()) $("returned-headline").textContent="Two change rounds used. Your final report is being delivered to your TOTAL folder.";
+    if (deliveryHold() && signoff() && reviewReady() && !signedOff() && !(request && request.request.pending))
+      $("returned-headline").textContent = roundsLocked() ? "Two change rounds used. Your final report goes to your TOTAL folder " + HELD_LINE : yours + " is ready for your review. We can deliver it " + HELD_LINE;
     $("delivered-at").hidden = paymentDue || !D.delivered_at;
     $("delivered-at").textContent = D.delivered_at ? "Delivered " + when(D.delivered_at) : "";
     var legacyApproval = state.history.filter(function (e) { return e.status === "DONE"; });
@@ -3021,6 +3057,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     paintStage();
     paintUsage();
     paintHold();
+    paintDeliver();
     paintGuide();
     // Matt 2026-10-13: a READY the desk sent back says so at the very top, with why, while the form is DRAFT again:
     // a red pop-out when it arrives ("make it red and a popout and very obvious"), then the red banner pinned there.
@@ -3057,7 +3094,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // on a Your calls review takes this same path: every open section is confirmed as shown. An edit he has not sent asks for Send
   // while changes are open; once they are closed his unsent edits fall back to what the report shows.
   function approveAll() {
-    if (readOnly || !online || pendingTaps > 0 || postBusy || !reviewReady() || signedOff() || roundsLocked()) return;
+    if (readOnly || !online || pendingTaps > 0 || postBusy || !reviewReady() || signedOff() || roundsLocked() || deliveryHold()) return;
     var open = proposalOpen(), edited = open.filter(proposalEdited);
     if (edited.length && changesClosed()) { edited.forEach(function (s) { s.calls.forEach(function (c) { put("q_pc_" + s.id + "_" + c.id, String(c.value)); }); }); proposalPainters.forEach(function (f) { f(); }); open = proposalOpen(); edited = []; }
     if (edited.length) {
@@ -3091,7 +3128,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     statusBtns.forEach(function (b) {
       if (signoff() && b.getAttribute("data-s") === "DONE") {
         b.textContent = approveLabel(); if (!b.hidden) lead = proposalReview() ? "Sections you haven’t confirmed yet (Approve confirms them as shown):" : "Not answered yet (optional):";
-        b.classList.remove("wait"); if(proposalReview()) b.disabled=readOnly || !online || pendingTaps>0 || postBusy || !reviewReady(); return;
+        b.classList.remove("wait"); if(proposalReview()) b.disabled=readOnly || !online || pendingTaps>0 || postBusy || !reviewReady();
+        if (deliveryHold()) { b.textContent += HELD; b.disabled = true; b.classList.add("wait"); }
+        return;
       }
       if (b.getAttribute("data-s") !== "READY") return;
       var go = customerStart() || minimalStart() ? "Start" : asked() && !startOptions() ? "Send answers" : WORD.READY;
@@ -3107,6 +3146,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     allBtn.textContent = approveLabel().replace("Approve", "Approve all");
     $("approve-all-note").textContent = "One tap: confirms every section as shown, then " + (approveShips() ? "sends your report to your TOTAL folder." : "approves it.");
     allBtn.disabled = readOnly || !online || pendingTaps > 0 || postBusy || !reviewReady();
+    if (deliveryHold()) { allBtn.textContent += HELD; allBtn.disabled = true; $("approve-all-note").textContent = "We can deliver " + HELD_LINE; }
     paintLeft(lead && shown && !left.some(function (m) { return m.key === "proposal_catalog"; }) ? left : [], lead);   // never while his calls are still being prepared
   }
   // Matt 2026-10-31: above the button, what is left by name, each a tap away (a bare "· 7 left" said nothing).
@@ -3657,6 +3697,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function setStatus(s) {
     if (readOnly || approved || pendingTaps || (customerReturned() && (!signoff() || !reviewReady() || signedOff() || s !== "DONE" || roundsLocked()))) return;
+    if (s === "DONE" && customerReturned() && deliveryHold()) { paintStatus(); jumpTo($("deliver-card")); return; }   // held until received
     var gaps = s === "READY" || s === "DONE" ? missing() : [];
     var blocking = s === "READY" && (callsFirst() || minimalCalls() || compOrderLane() && choosingLane()) ? gaps : gaps.filter(function (m) { return m.key === "q_client_permits"; });
     if (blocking.length) {
