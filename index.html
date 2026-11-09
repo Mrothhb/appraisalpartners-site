@@ -3,285 +3,381 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
-<title>UAD 3.6 reports, end to end, in a la mode TOTAL | A&amp;AP</title>
-<meta name="description" content="Send your file. Walk away. Sign a finished report. A&amp;AP First Class from $89 or A&amp;AP Auto-pilot at $199 a month. 2.6 to 3.6 conversion included.">
+<meta name="description" content="UAD 3.6 report help for signing appraisers. Keep inspecting and serving clients while we complete an editable report with private tracking and milestone updates.">
 <link rel="canonical" href="https://appraisalpartners.net/">
-<link rel="icon" type="image/png" href="assets/aap-favicon.png">
-<link rel="apple-touch-icon" href="assets/aap-apple-touch-icon.png">
-<link rel="preload" href="assets/open-sans.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/schibsted-grotesk-700.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="assets/site.css">
+<meta property="og:title" content="UAD 3.6 Overflow Desk for Appraisers | Appraisal Partners">
+<meta property="og:description" content="Keep your volume moving while you learn UAD 3.6. Test the handoff on an authorized past assignment before trusting a live order.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://appraisalpartners.net/">
+<meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
+<title>Appraisal Partners | UAD 3.6 Overflow Desk for Signing Appraisers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+  :root {
+    --paper: #FAFAF7;
+    --ink: #1C2420;
+    --muted: #5C6660;
+    --rule: #D9DED9;
+    --rule-strong: #889089;
+    --accent: #2E5D46;
+    --accent-deep: #24493A;
+    --wash: #F1F3EF;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+    --paper: #141917;
+    --ink: #E8EAE6;
+    --muted: #97A19A;
+    --rule: #2A322D;
+    --rule-strong: #606B62;
+    --accent: #6FA98C;
+    --accent-deep: #8FBFA6;
+    --wash: #1B211E;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #141917;
+    --ink: #E8EAE6;
+    --muted: #97A19A;
+    --rule: #2A322D;
+    --rule-strong: #606B62;
+    --accent: #6FA98C;
+    --accent-deep: #8FBFA6;
+    --wash: #1B211E;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Libre Caslon Text", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.68;
+    margin: 0;
+    padding: 0 24px;
+  }
+  .sheet { max-width: 720px; margin: 0 auto; padding: 44px 0 64px; }
+  .letterhead {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 18px; flex-wrap: wrap;
+    border-bottom: 2px solid var(--ink); padding-bottom: 14px;
+  }
+  .letterhead .name {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-weight: 500; font-size: 14px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ink); text-decoration: none;
+  }
+  .letterhead .cred, .nav {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+  }
+  .nav { width: 100%; display: flex; flex-wrap: wrap; gap: 9px 20px; padding-top: 2px; }
+  .nav a { color: var(--muted); padding: 4px 0; }
+  .nav a, footer a { text-decoration-thickness: 0.5px; text-underline-offset: 2px; }
+  main:focus { outline: none; }
+  h1 {
+    font-size: clamp(34px, 7vw, 52px); font-weight: 700; line-height: 1.15;
+    letter-spacing: -0.02em; text-wrap: balance; margin: 22px 0 20px;
+  }
+  h1 .line { color: var(--accent); display: block; }
+  h2 { font-size: 25px; line-height: 1.3; margin: 0 0 16px; text-wrap: balance; }
+  h3 { font-size: 18px; line-height: 1.35; margin: 0 0 6px; }
+  .deadline {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12.5px; letter-spacing: 0.04em; color: var(--accent-deep);
+    border-left: 2px solid var(--accent); padding: 2px 0 2px 11px; margin: 0 0 14px;
+  }
+  .lede { font-size: 20px; line-height: 1.55; margin: 0 0 16px; max-width: 670px; }
+  .lede .hit, .lede-list .hit, .hero-body .hit { color: var(--accent); font-weight: 700; }
+  .hero-body { font-size: 18px; line-height: 1.55; margin: 0 0 16px; max-width: 670px; }
+  .beat { max-width: 660px; margin: 0 0 11px; }
+  .beat.close { margin-top: 16px; }
+  .actions .btn { text-transform: none; letter-spacing: .01em; padding: 11px 16px; }
+  .lede-list { font-size: 19px; line-height: 1.5; margin: 0 0 16px; padding: 0 0 0 22px; max-width: 670px; }
+  .lede-list li { margin: 0 0 6px; }
+  .scopes + p { margin-top: 16px; }
+  .ways { margin: 26px 0 0; padding-top: 18px; border-top: 1px solid var(--rule); max-width: 720px; }
+  .ways h3 { margin: 0 0 6px; }
+  .ways p { margin: 0 0 10px; }
+  .ways p:last-child { margin-bottom: 0; }
+  .reach { font-size: 17px; line-height: 1.5; }
+  .ways p + p { margin-top: 12px; }
+  .scopes ul.lanes { margin: 8px 0 0; padding: 0 0 0 18px; }
+  .scopes ul.lanes li { margin: 0 0 5px; }
+  p { margin: 0 0 18px; }
+  a { color: var(--accent-deep); text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover, a:focus-visible { text-decoration-color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  section { border-top: 1px solid var(--rule); margin-top: 44px; padding-top: 30px; }
+  .eyebrow, .audience {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  .audience { margin: 44px 0 0; }
+  .answers { border-top: 1px solid var(--rule); margin-top: 26px; }
+  .answers > div { border-bottom: 1px solid var(--rule); padding: 15px 0 12px; }
+  .answers h3 {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 5px;
+  }
+  .answers p { margin: 0; font-size: 16px; }
+  .actions {
+    display: flex; flex-wrap: wrap; gap: 12px 18px; margin-top: 26px; align-items: center;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px;
+  }
+  a.btn {
+    display: inline-block; background: var(--accent); color: var(--paper);
+    padding: 12px 20px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
+    text-decoration: none; border: 1.5px solid var(--accent);
+  }
+  a.btn:hover, a.btn:focus-visible { background: var(--accent-deep); border-color: var(--accent-deep); }
+  a.btn.btn-alt { background: transparent; color: var(--accent-deep); border-color: var(--accent); }
+  a.btn.btn-alt:hover, a.btn.btn-alt:focus-visible { background: var(--wash); border-color: var(--accent-deep); }
+  .docs {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 13px; margin: 14px 0 0; color: var(--muted); line-height: 1.9;
+  }
+  ol.steps { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  ol.steps li { border-top: 2px solid var(--accent); padding-top: 11px; }
+  ol.steps strong { display: block; margin-bottom: 3px; }
+  ol.steps li > span:last-child { color: var(--muted); font-size: 15.5px; }
+  ol.steps .n {
+    display: block; margin-bottom: 7px;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12px; letter-spacing: .1em; color: var(--accent);
+  }
+  ul.plain { margin: 0 0 18px; padding: 0 0 0 1.15em; }
+  ul.plain li { margin-bottom: 10px; }
+  ul.plain li::marker { color: var(--accent); }
+  .scopes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 4px; }
+  .scopes article { border: 1px solid var(--rule); border-top: 3px solid var(--accent); padding: 16px 16px; }
+  .price {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 13.5px; color: var(--accent-deep); margin: 0 0 10px;
+  }
+  .both { border-left: 3px solid var(--accent); margin-top: 18px; padding: 2px 0 2px 16px; }
+  .both p { font-size: 15.5px; margin: 0 0 7px; }
+  .both p:last-child { margin-bottom: 0; color: var(--muted); }
+  .both strong { color: var(--accent-deep); }
+  .scopes .lane { font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 11.5px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+  .scopes p { font-size: 15.5px; margin: 0; }
+  .scopes .note { color: var(--muted); font-size: 13.5px; margin: 12px 0; }
+  .fineprint { font-size: 14.5px; color: var(--muted); margin: 14px 0 0; }
+  .speed {
+    border-left: 3px solid var(--accent); margin: 24px 0 0; padding: 3px 0 3px 16px;
+    font-size: 16px;
+  }
+  .speed strong { display: block; font-size: 18px; margin-bottom: 3px; }
+  .process-link {
+    align-items: baseline; display: flex; flex-wrap: wrap; gap: 7px 18px;
+    font-size: 22px; font-weight: 700; text-decoration-thickness: 1px;
+  }
+  .process-link span {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;
+  }
+  .turn { margin: 10px 0 6px; }
+  .turn .soon { color: var(--accent); font-weight: 700; letter-spacing: -.005em; }
+  .readline { color: var(--muted); font-size: 14px; margin: 3px 0 0; }
+  .qa-list { border-top: 1px solid var(--rule); margin: 4px 0 0; }
+  .qa-list > div {
+    border-bottom: 1px solid var(--rule); display: grid; gap: 12px 24px;
+    grid-template-columns: minmax(170px, .7fr) minmax(0, 1.3fr); padding: 17px 0 14px;
+  }
+  .qa-list dt { font-weight: 700; }
+  .qa-list dd { color: var(--muted); margin: 0; }
+  .profile { display: grid; grid-template-columns: 140px 1fr; gap: 24px; align-items: start; }
+  .profile img { width: 140px; height: 140px; object-fit: cover; border: 1px solid var(--rule); display: block; }
+  .profile p:last-child { margin-bottom: 0; }
+  .cta { border: 1.5px solid var(--ink); padding: 24px 26px; margin-top: 44px; }
+  .cta p:last-child { margin-bottom: 0; }
+  footer {
+    border-top: 2px solid var(--ink); margin-top: 44px; padding-top: 14px;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+    display: flex; justify-content: space-between; gap: 10px 18px; flex-wrap: wrap;
+  }
+  footer .postal-address { flex-basis: 100%; font-style: normal; }
+  @media (max-width: 600px) {
+    .scopes, ol.steps { grid-template-columns: 1fr; }
+    .profile { grid-template-columns: 96px 1fr; gap: 14px; }
+    .profile img { width: 96px; height: 96px; }
+    .qa-list > div { grid-template-columns: 1fr; }
+    .sheet { padding-top: 28px; }
+    .nav { gap: 5px 14px; }
+  }
+  .skip {
+    position: absolute; left: -9999px; top: 0;
+    background: var(--accent); color: var(--paper); padding: 10px 16px;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px; z-index: 10;
+  }
+  .skip:focus { left: 8px; top: 8px; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .convert-band {
+    border: 2px solid var(--accent); background: var(--wash);
+    padding: 24px 26px 22px; margin-top: 30px;
+  }
+  .band-badge {
+    display: inline-block; background: var(--accent); color: var(--paper);
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase;
+    padding: 5px 10px; margin: 0 0 15px;
+  }
+  .band-kicker {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: clamp(19px, 4.4vw, 26px); font-weight: 500; letter-spacing: .05em;
+    color: var(--accent-deep); margin: 0 0 8px;
+  }
+  .band-h { font-size: clamp(25px, 5vw, 34px); line-height: 1.16; margin: 0 0 12px; text-wrap: balance; }
+  .band-sub { font-size: 16.5px; margin: 0 0 18px; }
+  .band-links {
+    align-items: center; display: flex; flex-wrap: wrap; gap: 12px 20px; margin: 0;
+    font-family: "IBM Plex Mono", "Courier New", monospace; font-size: 13px;
+  }
+</style>
+<!-- Privacy-friendly analytics by Plausible -->
+<script async src="https://plausible.io/js/pa-pNkpzZuFyeVpLVvH7hc8w.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+  // Phone and email contacts were invisible in analytics: nothing fired on tel:, sms: or mailto:.
+  document.addEventListener("click", function (event) {
+    var link = event.target.closest && event.target.closest('a[href^="tel:"], a[href^="sms:"], a[href^="mailto:"]');
+    if (!link) return;
+    var href = link.getAttribute("href") || "";
+    var name = href.indexOf("tel:") === 0 ? "Call Click"
+             : href.indexOf("sms:") === 0 ? "Text Click"
+             : "Email Click";
+    plausible(name, { props: { page: location.pathname } });
+  }, true);
+</script>
 </head>
 <body>
+
 <a class="skip" href="#main">Skip to content</a>
-<svg width="0" height="0" class="svg-defs" aria-hidden="true">
-  <symbol id="ck" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="currentColor" opacity=".14"/><path d="M5.5 10.5l3 3 6-6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="tick" viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="x" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="currentColor" opacity=".12"/><path d="M7 7l6 6M13 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-  <symbol id="down" viewBox="0 0 20 20"><path d="M10 3v13M4.5 10.5L10 16l5.5-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="phone" viewBox="0 0 20 20"><path d="M6.4 2.9c.5-.3 1.2-.1 1.5.4l1.4 2.4c.3.5.2 1.1-.2 1.5L7.9 8.4a9.6 9.6 0 0 0 3.7 3.7l1.2-1.2c.4-.4 1-.5 1.5-.2l2.4 1.4c.5.3.7 1 .4 1.5l-.9 1.7c-.5.9-1.5 1.4-2.5 1.1A13.6 13.6 0 0 1 3.6 6.3c-.3-1 .2-2 1.1-2.5l1.7-.9z" fill="currentColor"/></symbol>
-</svg>
-<a class="announce num" href="#services"><b>New</b><span>A&amp;AP Auto-pilot opens November 15</span><span class="dot">·</span><span>$199 a month, flat rate</span><span class="arrow">&rarr;</span></a>
-<header class="appbar">
-  <div class="wrap">
-    <a class="brand" href="index.html" aria-label="A&amp;AP home"><img src="assets/aap-mark-light.svg" alt="" width="52" height="30"><b>A&amp;AP</b></a>
-    <nav class="nav" aria-label="Site"><a href="index.html#services">Services</a>
-<a href="how-it-works.html">How it works</a>
-<a href="about.html">About</a>
-<a href="faq.html">FAQ</a></nav>
-    <a class="btn sm" href="start.html">Start a report</a>
-    <details class="menu"><summary aria-label="Menu">Menu</summary><nav aria-label="Site, mobile"><a href="index.html#services">Services</a>
-<a href="how-it-works.html">How it works</a>
-<a href="about.html">About</a>
-<a href="faq.html">FAQ</a><a class="go" href="start.html">Start a report</a></nav></details>
-  </div>
-</header>
-<main id="main" tabindex="-1">
-<section class="hero">
-  <div class="wrap grid">
-    <div class="hero-copy">
-      <h1>Send your file. Walk away. Sign a finished report.</h1><p class="lede">Your UAD 3.6 report comes off a production line, not off your keyboard. Send your TOTAL file and comps, then go to your next inspection. It comes back finished, every field checked, TOTAL's error check at zero. You look it over, sign, and it's done.</p><p class="lede">Your analysis, your value. You inspect, review and sign.</p>
-      <div class="cta">
-        <a class="btn xl" href="start.html">Start a report</a>
-        <a class="btn xl ghost" href="#services">See both options</a>
-      </div>
-      <ul class="proof">
-        <li><svg aria-hidden="true"><use href="#ck"/></svg>Ready day set on your form</li>
-        <li><svg aria-hidden="true"><use href="#ck"/></svg>Our small team, with you start to finish</li>
-        <li><svg aria-hidden="true"><use href="#ck"/></svg>Made for a la mode TOTAL</li>
-      </ul>
-    </div>
+<div class="sheet">
+  <header class="letterhead">
+    <a class="name" href="index.html">Appraisal Partners</a>
+    <span class="cred">Matt Roth, Certified Residential &middot; Tim Roth, MAI, SRA</span>
+    <nav class="nav" aria-label="Primary">
+      <a href="uad36.html">UAD 3.6</a>
+      <a href="convert.html">Convert</a>
+      <a href="how-it-works.html">How it works</a>
+      <a href="how-it-works.html#pricing">Pricing</a>
+      <a href="technology.html">Behind the desk</a>
+      <a href="portrait.html">The portrait</a>
+      <a href="story.html">Four appraisers</a>
+      <a href="about.html">About us</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html">Contact</a>
+      <a href="start.html">Start with one report</a>
+    </nav>
+  </header>
 
-    <div class="hero-visual">
-      <figure class="report" aria-label="Sample: the finished report, as it comes back to your TOTAL folder">
-        <div class="sheet num">
-          <div class="head"><b>URAR · UAD 3.6</b><span class="addr">123 Sample St</span><span class="sample">Sample</span></div>
-          <div class="sec">Sales Comparison Approach <span>3 closed sales</span></div>
-          <table class="g" aria-hidden="true">
-            <thead><tr><th>Feature</th><th>Subject</th><th>Comp 1</th><th>Comp 2</th><th>Comp 3</th></tr></thead>
-            <tbody>
-              <tr><td class="lab">Address</td><td>123 Sample St</td><td>118 Sample Ct</td><td>205 Sample Dr</td><td>310 Sample Ln</td></tr>
-              <tr><td class="lab">Sale price</td><td>—</td><td>$412,000</td><td>$398,500</td><td>$425,000</td></tr>
-              <tr><td class="lab">Gross living area</td><td>2,104 sf</td><td>2,240 sf</td><td>2,050 sf</td><td>2,180 sf</td></tr>
-              <tr><td class="lab">Quality</td><td>Q3</td><td>Q3</td><td>Q3</td><td>Q3</td></tr>
-              <tr><td class="lab">Condition</td><td>C3</td><td>C3</td><td>C4</td><td>C3</td></tr>
-              <tr><td class="lab">Bedrooms · baths</td><td>4 · 2.1</td><td>4 · 2.1</td><td>3 · 2.0</td><td>4 · 2.1</td></tr>
-              <tr><td class="lab">Garage</td><td>2 car</td><td>2 car</td><td>2 car</td><td>3 car</td></tr>
-              <tr><td class="lab">Net adjustment</td><td>—</td><td>−$6,100</td><td>+$12,400</td><td>−$9,400</td></tr>
-              <tr class="tot"><td>Adjusted price</td><td>—</td><td>$405,900</td><td>$410,900</td><td>$415,600</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <figcaption class="caption">Back in your TOTAL folder, ready to sign.</figcaption>
-      </figure>
-      <div class="meet">
-        <img src="photos/matt.jpg" alt="Matt Roth" width="80" height="80" loading="eager" decoding="sync">
+  <main id="main" tabindex="-1">
+    <p class="audience">UAD 3.6 report help for signing appraisers</p>
+    <h1>UAD 3.6 is here. <span class="line">We want to help.</span></h1>
+    <p class="lede">You inspect and make the final calls. We write the report, you review and sign. We only take what we can personally finish.</p>
+    <p class="deadline">UAD 3.6 is required for new UCDP submissions beginning <strong>November 2, 2026</strong>.</p>
+
+    <p><strong>Want to see it first?</strong> Send the makings of a report: an order, sketch, comps, photos and notes. Use a fake order, or swap the real details for placeholders. We&rsquo;ll send back a finished, editable UAD 3.6 to compare against your own. No charge and no obligation.</p>
+    <div class="actions">
+      <a class="btn" href="start.html">Let&rsquo;s try one</a>
+      <a class="btn btn-alt" href="uad36-work-sample.pdf" target="_blank" rel="noopener">View Sample UAD 3.6 Report</a>
+      <a href="tel:+14692968726" style="white-space:nowrap">Or call Matt &middot; (469) 296-8726</a>
+    </div>
+    <p class="fineprint">No live order, no client involved, and nothing you send is reused or sold. Matt reads every request himself before anything begins.</p>
+
+    <section>
+      <h2>Two things we do. One price each.</h2>
+      <div class="scopes">
+        <article>
+          <p class="lane">Full report</p>
+          <h3>$89 &middot; We handle the full report.</h3>
+          <p class="price">You inspect, review, and sign.</p>
+          <p>We research, pick the comps and prepare the editable report. You inspect, review, sign, and deliver.</p>
+        </article>
+        <article>
+          <p class="lane">Conversion</p>
+          <h3>$59 &middot; Your 2.6 comes back as a 3.6.</h3>
+          <p class="price">Send the finished 2.6. Review and sign the 3.6.</p>
+          <p>Your software won&rsquo;t carry it over. We will. It comes back as a native UAD 3.6 &mdash; your data, your comps, your adjustments &mdash; for you to review and sign. <a href="convert.html">How conversion works &rarr;</a></p>
+        </article>
+      </div>
+      <div class="both">
+        <p><strong>Revisions to the agreed assignment are included and take priority.</strong></p>
+        <p>We read every line before it goes back. Before your first report, we confirm we can cover your market and how soon we can be ready.</p>
+      </div>
+      <p class="fineprint"><strong>These are desk fees</strong> you pay separately from the appraisal fee you charge your client. No subscription or minimum.</p>
+      <p>Have a deadline? Text or call <a href="tel:+14692968726">(469) 296-8726</a> or email <a href="mailto:mrr@appraisalpartners.net?subject=Deadline">mrr@appraisalpartners.net</a> and we will tell you what we can do.</p>
+
+
+      <div class="convert-band">
+        <p class="band-badge">$59</p>
+        <h3 class="band-h">Convert your 2.6 to a 3.6 report.</h3>
+        <p class="band-sub">Your software won&rsquo;t carry it over. We will. Send the 2.6 and it comes back as a native UAD 3.6 &mdash; your data, your comps, your adjustments &mdash; for you to review and sign.</p>
+        <p class="band-links"><a class="btn" href="mailto:mrr@appraisalpartners.net?subject=Conversion%20request">Send a request</a><a href="convert.html">How conversion works &rarr;</a></p>
+      </div>
+
+      <div class="both" id="auto-pilot">
+        <p><strong>Prefer software to a desk?</strong> A&amp;AP, a separate company for tech-forward appraisers, makes Auto-pilot: AI software that fills in your UAD 3.6 right inside your TOTAL, with you in the cockpit. <a href="https://aandap.com">See A&amp;AP Auto-pilot &rarr;</a></p>
+      </div>
+    </section>
+
+    <section>
+      <p class="eyebrow">Before you ask</p>
+      <h2>Straight answers, up front.</h2>
+      <p>The fee, the AI, the disclosure, who signs, what we don&rsquo;t take. <a href="faq.html"><strong>Every common question, answered plainly &rarr;</strong></a></p>
+    </section>
+
+    <section>
+      <p class="eyebrow">Who you would be working with</p>
+      <h2>We&rsquo;re Matt &amp; Tim Roth.</h2>
+      <div class="profile">
+        <img src="photos/matt.jpg" alt="Matt Roth" width="140" height="140">
         <div>
-          <b>Our small team is with you from start to finish.</b>
-          <a class="num" href="tel:+14692968726"><svg aria-hidden="true"><use href="#phone"/></svg>(469) 296-8726</a> <span>Weekdays, 9 to 5 Central</span>
+          <p><strong>Matt</strong> is a second-generation Certified Residential Appraiser, trained in Tim&rsquo;s Southern California shop from 2006. He runs this desk day to day.</p>
+          <p><strong>TX #1361115-CR &middot; CO #CR200002387</strong></p>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-<section id="three-steps" aria-label="Send, walk away, review and sign"><div class="wrap grid"><ol class="process"><li class="card"><h2 class="h">Send.</h2><div class="b"><p>Save your inspection in TOTAL. Drop the file, photos, sketch and comps in your folder.</p></div></li><li class="card"><h2 class="h">Walk away.</h2><div class="b"><p>The report is built while you're out. Grid, adjustments, comments in your words, addenda, every page checked.</p></div></li><li class="card"><h2 class="h">Review and sign.</h2><div class="b"><p>Open a finished report in TOTAL. Change anything you like, sign, and send it.</p></div></li></ol><p class="guarantee num">If a reviewer sends it back, we fix it free.</p></div></section>
-<section id="convert" aria-labelledby="cv-h">
-  <div class="wrap">
-    <div class="convert">
-      <div class="inner">
-        <div class="copy">
-          <span class="tag">Included</span>
-          <h2 id="cv-h">Do your 2.6 as you always have. We'll convert it to 3.6.</h2>
-          <p class="big">Send your finished 2.6. It comes back native 3.6 in TOTAL, values carried over, ready to sign. Conversion is included with both options. No separate price.</p>
-          <div class="cta">
-            <a class="btn xl" href="start.html">Start a report</a>
-            <span class="convert-reassurance">You stay in TOTAL: nothing new to learn</span>
-            <a class="more" href="convert.html">How conversion works</a>
-          </div>
-        </div>
-        <div class="cv num" aria-label="Sample: the same comp as one 2.6 row and as its native 3.6 rows, values carried over">
-          <div class="pane old">
-            <div class="ph"><span>You send</span><span class="path">Your 2.6 · 1004 · Comp 1</span></div>
-            <table class="g cvt" aria-hidden="true">
-              <tr><td class="lab">Date of Sale/Time</td><td class="val">s05/26;c04/26</td></tr>
-              <tr><td class="lab">Condition</td><td class="val">C3;Kitchen-updated-one to five years ago;Bath-not updated</td></tr>
-              <tr><td class="lab">Sale price</td><td class="val">$412,000</td></tr>
-            </table>
-          </div>
-          <div class="step" aria-hidden="true"><svg><use href="#down"/></svg>Converted · values carried over</div>
-          <div class="pane new">
-            <div class="ph"><span>We return</span><span class="path">Native 3.6 · URAR · Comp 1</span></div>
-            <table class="g cvt" aria-hidden="true">
-              <tr><td class="lab">Contract date</td><td class="val">04/2026</td><td class="tk"><svg><use href="#tick"/></svg></td></tr>
-              <tr><td class="lab">Closing date</td><td class="val">05/2026</td><td class="tk"><svg><use href="#tick"/></svg></td></tr>
-              <tr><td class="lab">Condition</td><td class="val">C3</td><td class="tk"><svg><use href="#tick"/></svg></td></tr>
-              <tr><td class="lab">Kitchen</td><td class="val">Updated · 1 to 5 years ago</td><td class="tk"><svg><use href="#tick"/></svg></td></tr>
-              <tr><td class="lab">Bath</td><td class="val">Not updated</td><td class="tk"><svg><use href="#tick"/></svg></td></tr>
-              <tr><td class="lab">Sale price</td><td class="val">$412,000</td><td class="tk"><svg><use href="#tick"/></svg></td></tr>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div class="foot num"><b>Included</b><span>With A&amp;AP First Class and A&amp;AP Auto-pilot, at no separate price</span><span class="dot">·</span><span>UAD 3.6 required for new submissions from November 2, 2026.</span></div>
-    </div>
-  </div>
-</section>
-
-<section id="services" aria-labelledby="sv-h">
-  <div class="wrap grid">
-    <div class="cockpit-intro">
-      <div><h2 class="cockpit-title" id="sv-h">Don't mind being in the cockpit? <span>Take <a href="#auto-pilot">A&amp;AP Auto-pilot</a>.</span></h2><p>Jump in and steer whenever you want to.</p></div>
-      <div><h2 class="cockpit-title">Rather sit back and relax? <span>We've got you in <a href="#first-class">A&amp;AP First Class</a>.</span></h2><p>We'll handle it and get you where you need to be.</p></div>
-    </div>
-    <div class="ways"><article class="card way self" id="auto-pilot"><div class="h">A&amp;AP Auto-pilot</div><div class="b"><p class="fineprint">Your own desk, on a flat rate.</p><p><strong>Drop the file, press Start, come back to a finished report.</strong></p><ul class="checks"><li><svg aria-hidden="true"><use href="#ck"/></svg><span>A private order page: press Start, watch each stage, see your usage, open reports in progress.</span></li><li><svg aria-hidden="true"><use href="#ck"/></svg><span>An AI desk agent by email or text, usually answering in 2 to 15 minutes.</span></li><li><svg aria-hidden="true"><use href="#ck"/></svg><span>A private workspace of your own.</span></li><li><svg aria-hidden="true"><use href="#ck"/></svg><span>A weekly AI allotment that refills every week. Going over costs extra.</span></li><li><svg aria-hidden="true"><use href="#ck"/></svg><span>The flat rate covers your desk, your order page, and the AI usage for production, changes and revisions.</span></li><li><svg aria-hidden="true"><use href="#ck"/></svg><span>A finished 2.6 goes out as a native 3.6. Included.</span></li><li><svg aria-hidden="true"><use href="#ck"/></svg><span>You review and sign. Your analysis, your value.</span></li></ul><div class="price num"><span>Opens November 15. Flat rate <b>$199</b> a month. Per-report tech fee added, discussed at sign-up.</span></div><p class="fineprint"><a href="mailto:desk@aandap.com?subject=A%26AP%20Auto-pilot%20sign-up">Sign up by email</a></p></div></article><article class="card way" id="first-class"><div class="h">A&amp;AP First Class</div><div class="b"><p class="fineprint">We do it all</p><p><strong>Drop the files and walk away.</strong></p><ul class="checks"><li><svg aria-hidden="true"><use href="#ck"/></svg><span>Send your TOTAL file, photos, sketch, comps, MLS sheets and market export. That's your whole part.</span></li><li><svg aria-hidden="true"><use href="#ck"/></svg><span>The whole report, built: grid, adjustments, comments in your voice, addenda and photo pages.</span></li><li><svg aria-hidden="true"><use href="#ck"/></svg><span>The value conclusion, worked out and ready for your review.</span></li><li><svg aria-hidden="true"><use href="#ck"/></svg><span>Every UAD 3.6 field checked. TOTAL's error check at zero.</span></li><li><svg aria-hidden="true"><use href="#ck"/></svg><span>Reviewed by Matt before it comes back to you.</span></li><li><svg aria-hidden="true"><use href="#ck"/></svg><span>A finished 2.6 goes out as a native 3.6. Included.</span></li><li><svg aria-hidden="true"><use href="#ck"/></svg><span>You inspect, review and sign. Your analysis, your value.</span></li></ul><div class="price num"><span>Starting at <b>$89</b>. Price and ready day on your form.</span></div><p class="fineprint">2 to 4 units from $149 · Rent schedule +$35 · Repairs worked out +$30 · Turn time counts from complete files</p></div></article></div>
-    <p class="guarantee num">Every UAD 3.6 field checked · TOTAL's error check at zero · Your analysis, your value · If a reviewer sends it back, we fix it free · No overseas typists · TX #1361115-CR</p>
-  </div>
-</section>
-
-<section class="full-lane" aria-labelledby="full-lane-heading">
-  <div class="wrap">
-    <h2 class="title" id="full-lane-heading">A&amp;AP First Class: you send the comps. That's it.</h2>
-    <p>Save your inspection in TOTAL and add your comps, MLS sheets, market export and all the data. We pick up the file from your shared folder and complete every part of the report: grid, adjustments, commentary and the value conclusion, ready for your review. You open a finished report in TOTAL, review it, change anything you like, sign and send. A finished 2.6 can come in instead. It goes out as a native 3.6, included.</p>
-    <ol class="full-steps">
-      <li>You inspect and send the comps</li>
-      <li>We complete everything</li>
-      <li>You review and sign</li>
-    </ol>
-  </div>
-</section>
-
-<section id="how" aria-labelledby="who-h">
-  <div class="wrap grid">
-    <h2 class="title section-heading" id="who-h">Send the comps. Get the whole report back.</h2>
-    <div class="card who">
-      <div class="cols">
-        <div class="col">
-          <div class="h">You</div>
-          <ul>
-            <li><svg aria-hidden="true"><use href="#ck"/></svg>Inspect.</li>
-            <li><svg aria-hidden="true"><use href="#ck"/></svg>Send your TOTAL file, photos, sketch.</li>
-            <li><svg aria-hidden="true"><use href="#ck"/></svg>Send your comps, MLS sheets and market export.</li>
-            <li><svg aria-hidden="true"><use href="#ck"/></svg>Review and sign.</li>
-            <li><svg aria-hidden="true"><use href="#ck"/></svg><span>Stay the appraiser of record.<br><strong>Your analysis, your value.</strong></span></li>
-          </ul>
-        </div>
-        <div class="col">
-          <div class="h">We</div>
-          <ul>
-            <li><svg aria-hidden="true"><use href="#ck"/></svg>Your comps, verified and gridded.</li>
-            <li><svg aria-hidden="true"><use href="#ck"/></svg>Grid, adjustments, comments.</li>
-            <li><svg aria-hidden="true"><use href="#ck"/></svg>Addenda and photo pages.</li>
-            <li><svg aria-hidden="true"><use href="#ck"/></svg>UAD 3.6 and TOTAL error checks.</li>
-          </ul>
-        </div>
-      </div>
-      <div class="never"><b>Never ours</b><span><svg aria-hidden="true"><use href="#x"/></svg>Signing</span><span><svg aria-hidden="true"><use href="#x"/></svg>Inspecting</span><span><svg aria-hidden="true"><use href="#x"/></svg>Dealing with your client</span></div>
-      <div class="uspap">Our part is named in your certification, as USPAP requires.</div>
-    </div>
-  </div>
-</section>
-
-<section id="fast" aria-labelledby="fa-h">
-  <div class="wrap grid">
-    <div class="fast-copy">
-      <h2 class="title" id="fa-h">Why we're fast.</h2>
-      <p class="sub">Your data becomes a complete report, ready for your review. See every page, request changes and get your report back in your TOTAL folder.</p>
-      <p class="big">Files are never used to train AI.</p>
-      <p class="faq-link"><a class="more" href="faq.html">Read the FAQ</a></p>
-    </div>
-    <div class="qa">
-      <div class="q">
-        <p class="kicker">A common question</p>
-        <p class="qt">&ldquo;Is this software I download?&rdquo;</p>
-      </div>
-      <div class="a">
-        <p class="no">No.</p>
-        <p class="body">You stay in TOTAL and we do the work.</p>
-        <p class="never-line">Never type a report again.</p>
-        <p class="never-line">Never redo a report someone else did for you.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="profile" aria-labelledby="pf-h">
-  <div class="wrap grid">
-    <div class="split-copy">
-      <h2 class="title" id="pf-h">It reads like you wrote it.</h2>
-      <p class="sub">We keep your preferences on file.</p>
-      <p class="big">Your analysis, your value. Change any comp, adjustment or comment before you sign. Our help is named and described in your report.</p>
-    </div>
-    <div class="split-visual">
-      <div class="card note" aria-label="Sample: three preferences on file, in the appraiser's own words">
-        <p class="kicker">On file · Sample</p>
-        <ul>
-          <li>&ldquo;1 mile, 12 months, same subdivision first.&rdquo;</li>
-          <li>&ldquo;My wording, short and plain.&rdquo;</li>
-          <li>&ldquo;My page order and addenda.&rdquo;</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="stand" aria-labelledby="st-h">
-  <div class="wrap grid">
-    <div class="split-copy">
-      <h2 class="title" id="st-h">We stand behind every report.</h2>
-      <ul class="checks">
-        <li><svg aria-hidden="true"><use href="#ck"/></svg>Every UAD 3.6 field checked.</li>
-        <li><svg aria-hidden="true"><use href="#ck"/></svg>TOTAL's error check at zero.</li>
-      </ul>
-      <p class="line">If something's off, we fix it free.</p>
-      <p class="line">No overseas typists. No trainees.</p>
-    </div>
-    <div class="call">
-      <h3>With you from start to finish</h3>
-      <a class="btn tel num" href="tel:+14692968726"><svg aria-hidden="true"><use href="#phone"/></svg>(469) 296-8726</a> <span>Weekdays, 9 to 5 Central</span>
-      <p>Our small team is with you from start to finish, answering your questions and helping along the way. We work with small offices and independent appraisers.</p>
-    </div>
-    <div class="card pair">
-      <div class="person">
-        <img src="photos/matt.jpg" alt="Matt Roth" width="240" height="240" loading="eager" decoding="sync">
+      <div class="profile" style="margin-top:24px">
+        <img src="photos/tim.jpg" alt="Tim Roth" width="140" height="140">
         <div>
-          <p class="role">Reviewed by Matt</p>
-          <h3>Matt Roth</h3>
-          <p>Second-generation Certified Residential appraiser</p>
-          <p>Texas and Colorado · 20 years</p>
-          <p class="bio"><b>Reviews every A&amp;AP First Class report before it comes back to you.</b></p>
+          <p><strong>Tim Roth, MAI, SRA</strong>, built that practice. His standard was simple: define the appraisal problem before opening the form. That standard still runs this desk.</p>
+          <p class="docs"><a href="about.html">More about us</a> &middot; <a href="story.html">Four appraisers</a></p>
         </div>
       </div>
-      <div class="person person--text">
-        <div>
-          <p class="role">Set the standard</p>
-          <h3>Tim Roth</h3>
-          <p>MAI, SRA</p>
-          <p class="bio">Built the Southern California practice where Matt trained from 2006. His standard was simple: define the appraisal problem before opening the form. That standard still runs this desk.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+    </section>
 
+    <div class="cta">
+      <h2>Don&rsquo;t trust us with a live order yet.</h2>
+      <p>We wouldn&rsquo;t either. We&rsquo;ll complete a past assignment at no charge so you can compare the work before a live client or due date is involved.</p>
+      <p>Not every past report can be used. If a lender or AMC does not permit sharing, do not upload that file. A closed estate, divorce or other private-use assignment may work only when you have the original client&rsquo;s explicit permission. Redaction alone is not permission.</p>
+      <p><a class="btn" href="start.html">Let&rsquo;s try one</a></p>
+      <p class="fineprint">No shareable past assignment? Call <a href="tel:+14692968726">(469) 296-8726</a> before using a live order.</p>
+    </div>
+
+    <section>
+      <p class="eyebrow">Know another appraiser whose reports are stacking up?</p>
+      <h2>Send them appraisalpartners.net.</h2>
+      <p>No referral program or affiliate pitch.</p>
+    </section>
 </main>
-<section class="start" id="start">
-  <div class="wrap">
-    <a class="btn xl" href="start.html">Start a report</a>
-    <div class="contact num">
-      <a href="tel:+14692968726">(469) 296-8726</a> <span>Weekdays, 9 to 5 Central</span>
-      <a href="mailto:mrr@appraisalpartners.net">mrr@appraisalpartners.net</a>
-    </div>
-  </div>
-</section>
-<footer>
-  <div class="wrap num">
-    <div class="line1"><span>Appraisal Partners of Texas, Inc.</span><span class="dot">·</span><span>TX #1361115-CR</span><span class="dot">·</span><span>CO #CR200002387</span></div>
-    <nav class="line1" aria-label="Footer"><a href="how-it-works.html">How it works</a><span class="dot">·</span><a href="about.html">About</a><span class="dot">·</span><a href="faq.html">FAQ</a><span class="dot">·</span><a href="terms.html">Terms</a><span class="dot">·</span><a href="terms-software.html">Software terms</a></nav>
-    <div>10900 Research Blvd, Suite 160C, Austin, TX 78759</div>
-    <div>TOTAL is a product of a la mode. A&amp;AP is not affiliated with a la mode.</div>
-  </div>
-</footer>
+  <footer>
+    <span>Appraisal Partners of Texas, Inc.</span>
+    <span>TX #1361115-CR &middot; CO #CR200002387</span>
+    <span><a href="https://www.asc.gov/appraiser?field_state_name_value=All&amp;field_license_type__value=All&amp;field_first_name__value=Matthew&amp;field_last_name__value=Roth&amp;items_per_page=20&amp;submit=Apply">Verify credentials</a></span>
+    <span><a href="terms.html">Terms</a></span>
+    <address class="postal-address">Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address>
+  </footer>
+</div>
 </body>
 </html>

@@ -3,169 +3,180 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
-<title>How it works: your report, filled in right in TOTAL | A&amp;AP</title>
-<meta name="description" content="Create the report in TOTAL, inspect, tap Start. A&amp;AP Auto-pilot fills in the whole report in your own TOTAL, in your voice. You review and sign.">
+<meta name="description" content="Forward, upload, approve, review. A simple handoff for an editable UAD 3.6 report, with scope, fee, format, and return time agreed before production.">
 <link rel="canonical" href="https://appraisalpartners.net/how-it-works.html">
-<link rel="icon" type="image/png" href="assets/aap-favicon.png">
-<link rel="apple-touch-icon" href="assets/aap-apple-touch-icon.png">
-<link rel="preload" href="assets/open-sans.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/schibsted-grotesk-700.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="assets/site.css">
-<link rel="stylesheet" href="assets/how-it-works.css">
+<meta property="og:title" content="How the Production Desk Works | Appraisal Partners">
+<meta property="og:description" content="See the simple handoff from a forwarded order to an editable UAD 3.6 report ready for the signing appraiser's review.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://appraisalpartners.net/how-it-works.html">
+<meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128395;</text></svg>">
+<title>How It Works | Appraisal Partners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+  :root { --paper:#FAFAF7; --ink:#1C2420; --muted:#5C6660; --rule:#D9DED9; --accent:#2E5D46; --accent-deep:#24493A; --wash:#F1F3EF; }
+  @media (prefers-color-scheme:dark) { :root:not([data-theme="light"]) { --paper:#141917; --ink:#E8EAE6; --muted:#A4AEA7; --rule:#354039; --accent:#80B69A; --accent-deep:#A4CFB7; --wash:#1B211E; } }
+  :root[data-theme="dark"] { --paper:#141917; --ink:#E8EAE6; --muted:#A4AEA7; --rule:#354039; --accent:#80B69A; --accent-deep:#A4CFB7; --wash:#1B211E; }
+  * { box-sizing:border-box; }
+  body { background:var(--paper); color:var(--ink); font-family:"Libre Caslon Text",Georgia,serif; font-size:17px; line-height:1.65; margin:0; padding:0 24px; }
+  .sheet { max-width:820px; margin:auto; padding:36px 0 48px; }
+  .letterhead { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:12px; border-bottom:2px solid var(--ink); padding-bottom:16px; }
+  .name { color:var(--ink); font-family:"IBM Plex Mono",monospace; font-size:14px; font-weight:500; letter-spacing:.16em; text-decoration:none; text-transform:uppercase; }
+  .cred { color:var(--muted); font-size:13px; }
+  .nav { display:flex; flex-wrap:wrap; gap:6px 18px; width:100%; font-family:"IBM Plex Mono",monospace; font-size:13px; }
+  .nav a { color:var(--muted); padding:4px 0; }
+  .nav a[aria-current] { color:var(--ink); }
+  h1 { font-size:clamp(36px,6.5vw,54px); line-height:1.13; letter-spacing:-.035em; margin:12px 0 18px; text-wrap:balance; }
+  h1 span { color:var(--accent); }
+  h2 { font-size:26px; line-height:1.3; margin:0 0 18px; text-wrap:balance; }
+  h3 { font-size:20px; line-height:1.35; margin:0 0 8px; }
+  p { margin:0 0 16px; }
+  a { color:var(--accent-deep); text-underline-offset:4px; }
+  a:focus-visible, summary:focus-visible { outline:2px solid var(--accent); outline-offset:5px; }
+  .eyebrow { color:var(--accent); font-family:"IBM Plex Mono",monospace; font-size:13px; letter-spacing:.12em; text-transform:uppercase; margin:40px 0 0; }
+  .lede { font-size:20px; max-width:650px; }
+  .technology-link { display:flex; gap:18px; align-items:center; justify-content:space-between; padding:20px 0; margin:24px 0 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); text-decoration:none; }
+  .technology-link strong { display:block; color:var(--ink); font-size:18px; }
+  .technology-link span span { font-size:15px; }
+  .technology-link .arrow { font-size:28px; transition:transform .2s ease; }
+  .technology-link:hover .arrow { transform:translateX(5px); }
+  section { margin-top:40px; }
+  .steps { padding:0; margin:0; list-style:none; }
+  .steps li { display:grid; grid-template-columns:42px 1fr; gap:16px; padding:19px 0; border-bottom:1px solid var(--rule); }
+  .steps .n { color:var(--accent); font-family:"IBM Plex Mono",monospace; font-size:14px; padding-top:3px; }
+  .steps p { margin:0; color:var(--muted); font-size:16px; }
+  .steps.day li { grid-template-columns:76px 1fr; }
+  .scopes { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-top:4px; }
+  .scopes article { border:1px solid var(--rule); border-top:3px solid var(--accent); padding:16px 16px; }
+  .scopes .lane { font-family:"IBM Plex Mono","Courier New",monospace; font-size:11.5px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
+  .scopes h3 { font-size:18px; margin:0 0 6px; }
+  .price { font-family:"IBM Plex Mono","Courier New",monospace; font-size:13.5px; color:var(--accent-deep); margin:0 0 10px; }
+  .scopes p { font-size:15.5px; margin:0; }
+  .scopes .note { color:var(--muted); font-size:13.5px; margin:12px 0; }
+  .both { border-left:3px solid var(--accent); margin:18px 0 14px; padding:2px 0 2px 16px; }
+  .both p { font-size:15.5px; margin:0 0 7px; }
+  .both p:last-child { margin-bottom:0; color:var(--muted); }
+  .both strong { color:var(--accent-deep); }
+  .fineprint { color:var(--muted); font-size:14px; }
+  .delivery { background:var(--wash); padding:26px; }
+  .delivery ul { padding-left:20px; margin:0 0 16px; }
+  .delivery li { margin-bottom:5px; }
+  details { border-bottom:1px solid var(--rule); padding:16px 0; }
+  summary { cursor:pointer; font-weight:700; }
+  details p { color:var(--muted); font-size:16px; margin:12px 0 0; }
+  .cta { margin-top:40px; padding-top:28px; border-top:2px solid var(--ink); }
+  .btn { display:inline-block; background:var(--accent); color:var(--paper); padding:12px 20px; text-decoration:none; font-family:"IBM Plex Mono",monospace; font-size:14px; }
+  .contact { font-size:15px; margin-top:18px; }
+  footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; border-top:1px solid var(--rule); padding-top:20px; margin-top:36px; color:var(--muted); font-size:13px; }
+  footer address { width:100%; font-style:normal; }
+  .skip { position:absolute; left:-9999px; top:8px; padding:12px; background:var(--accent); color:var(--paper); }
+  .skip:focus { left:8px; }
+  @media(max-width:560px) { body { padding:0 20px; } .sheet { padding-top:24px; } .scopes { grid-template-columns:1fr; gap:12px; } .cred { display:none; } .delivery { padding:22px; } }
+  @media(prefers-reduced-motion:reduce) { .technology-link .arrow { transition:none; } }
+  @media (max-width:600px) { .scopes { grid-template-columns:1fr; } }
+</style>
+<!-- Privacy-friendly analytics by Plausible -->
+<script async src="https://plausible.io/js/pa-pNkpzZuFyeVpLVvH7hc8w.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+  // Phone and email contacts were invisible in analytics: nothing fired on tel:, sms: or mailto:.
+  document.addEventListener("click", function (event) {
+    var link = event.target.closest && event.target.closest('a[href^="tel:"], a[href^="sms:"], a[href^="mailto:"]');
+    if (!link) return;
+    var href = link.getAttribute("href") || "";
+    var name = href.indexOf("tel:") === 0 ? "Call Click"
+             : href.indexOf("sms:") === 0 ? "Text Click"
+             : "Email Click";
+    plausible(name, { props: { page: location.pathname } });
+  }, true);
+</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<svg width="0" height="0" class="svg-defs" aria-hidden="true">
-  <symbol id="ck" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="currentColor" opacity=".14"/><path d="M5.5 10.5l3 3 6-6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="tick" viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="x" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="currentColor" opacity=".12"/><path d="M7 7l6 6M13 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-  <symbol id="down" viewBox="0 0 20 20"><path d="M10 3v13M4.5 10.5L10 16l5.5-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="phone" viewBox="0 0 20 20"><path d="M6.4 2.9c.5-.3 1.2-.1 1.5.4l1.4 2.4c.3.5.2 1.1-.2 1.5L7.9 8.4a9.6 9.6 0 0 0 3.7 3.7l1.2-1.2c.4-.4 1-.5 1.5-.2l2.4 1.4c.5.3.7 1 .4 1.5l-.9 1.7c-.5.9-1.5 1.4-2.5 1.1A13.6 13.6 0 0 1 3.6 6.3c-.3-1 .2-2 1.1-2.5l1.7-.9z" fill="currentColor"/></symbol>
-</svg>
-<a class="announce num" href="index.html#services"><b>New</b><span>A&amp;AP Auto-pilot opens November 15</span><span class="arrow">&rarr;</span></a>
-<header class="appbar">
-  <div class="wrap">
-    <a class="brand" href="index.html" aria-label="A&amp;AP home"><img src="assets/aap-mark-light.svg" alt="" width="52" height="30"><b>A&amp;AP</b></a>
-    <nav class="nav" aria-label="Site"><a href="index.html#services">Services</a>
-<a href="how-it-works.html" aria-current="page">How it works</a>
-<a href="about.html">About</a>
-<a href="faq.html">FAQ</a></nav>
-    <a class="btn sm" href="start.html">Start a report</a>
-    <details class="menu"><summary aria-label="Menu">Menu</summary><nav aria-label="Site, mobile"><a href="index.html#services">Services</a>
-<a href="how-it-works.html" aria-current="page">How it works</a>
-<a href="about.html">About</a>
-<a href="faq.html">FAQ</a><a class="go" href="start.html">Start a report</a></nav></details>
-  </div>
-</header>
-<main id="main" tabindex="-1">
-<section class="hero page-heading"><div class="wrap grid">
-  <div class="page-intro">
-    <p class="kicker">A&amp;AP AUTO-PILOT · HOW IT WORKS</p>
-    <h1>Your report fills itself in.<br>Right in your TOTAL.</h1>
-    <p class="lede">Do the inspection like always, tap Start, and come back to a report that's written the way you'd write it, waiting for your review and signature.</p>
-    <div class="cta"><a class="btn xl" href="start.html">Start a report</a><a class="more" href="#demo">See how it works</a></div>
-    <p class="hero-note">No files to send. A private sync connection links your TOTAL with A&amp;AP. You make every final call and you sign.</p>
-  </div>
-  <div class="page-hero-contact"><div class="meet">
-    <img src="photos/matt.jpg" alt="Matt Roth" width="80" height="80" loading="eager" decoding="sync">
-    <div><b>Our small team is with you from start to finish.</b><a class="num" href="tel:+14692968726"><svg aria-hidden="true"><use href="#phone"/></svg>(469) 296-8726</a><span>Weekdays, 9 to 5 Central</span></div>
-  </div></div>
-</div></section>
-<section class="demo-tour" id="demo" aria-labelledby="demo-heading"><div class="wrap">
-  <div class="demo-intro"><p class="kicker">SIX STEPS · WHAT YOU DO, WHAT YOU SEE</p><h2 class="title" id="demo-heading">From a blank report to your signature.</h2><p class="tour-intro-note">Screens below are from the A&amp;AP form. Fictional examples; the report is a sanitized work sample.</p></div>
-  <ol class="demo-flow">
-    <li class="demo-step prep-step" id="connected">
-      <div class="demo-step-head"><span class="demo-number" aria-hidden="true">01</span><div>
-        <h3>Create the report in TOTAL.</h3><p>Blank, or from your template. Same as any other day.</p>
-      </div></div>
+<div class="sheet">
+  <header class="letterhead">
+    <a class="name" href="index.html">Appraisal Partners</a>
+    <span class="cred">An appraiser at the other end.</span>
+    <nav class="nav" aria-label="Primary">
+      <a href="uad36.html">UAD 3.6</a><a href="convert.html">Convert</a><a href="how-it-works.html" aria-current="page">How it works</a><a href="#pricing">Pricing</a><a href="technology.html">Behind the desk</a><a href="portrait.html">The portrait</a><a href="story.html">Four appraisers</a><a href="about.html">About us</a><a href="faq.html">FAQ</a><a href="contact.html">Contact</a>
+      <a href="start.html">Start with one report</a>
+    </nav>
+  </header>
+  <main id="main" tabindex="-1">
+    <p class="eyebrow">How it works</p>
+    <h1>Your assignment.<br><span>A lighter workload.</span></h1>
+    <p class="lede">Forward the order. We create the folder and prepare the editable UAD 3.6 appraisal. You review it, make the final decisions, and sign.</p>
+    <a class="technology-link" href="technology.html"><span><strong>Curious what happens behind our desk?</strong><span>See the technology &amp; human review.</span></span><span class="arrow" aria-hidden="true">&rarr;</span></a>
 
-    </li>
-    <li class="demo-step prep-step" id="inspection">
-      <div class="demo-step-head"><span class="demo-number" aria-hidden="true">02</span><div>
-        <h3>Do the inspection in TOTAL for Mobile.</h3><p>Photos, sketch, notes, all in the app you already use. Keep your comps, MLS sheets and market export with the file, like always.</p>
-      </div></div>
-      <figure class="sync-visual" aria-labelledby="sync-caption">
-        <div class="sync-endpoints"><div class="sync-endpoint"><svg viewBox="0 0 40 48" aria-hidden="true"><path d="M6 2h19l9 9v35H6z M25 2v10h9 M12 21h16 M12 28h16 M12 35h10"/></svg><strong>Your TOTAL</strong><span>Your report</span></div><div class="sync-line" aria-hidden="true"><span>↔</span></div><div class="sync-endpoint aap-endpoint"><img src="assets/aap-mark-light.svg" alt="" width="58" height="34"><strong>A&amp;AP</strong><span>Working with you</span></div></div>
-        <p class="sync-label">A private sync connection</p>
-        <p class="sync-result">Your report fills in.<br>Right in your own TOTAL.</p>
-        <figcaption id="sync-caption">Connection illustrated · not a TOTAL screen</figcaption>
-      </figure>
-    </li>
-    <li class="demo-step phase-form" id="go-ahead">
-      <div class="demo-step-head"><span class="demo-number" aria-hidden="true">03</span><div>
-        <h3>Tap Start.</h3><p>Open your order page, check the To start details, tap Start. That's the whole hand-off. Nothing to send, nothing to type.</p>
-      </div></div>
-      <div class="form-tour start-tour" aria-label="Starting your report"><figure class="demo-screen " data-tour-stage="orders">
-        <div class="demo-screen-bar"><span>Your orders</span><span class="demo-tag">Fictional demo</span></div>
-        <a class="demo-image" href="assets/how-it-works/demo-orders.webp" target="_blank" rel="noopener" aria-label="Enlarge fictional demo: Your orders"><picture><source media="(max-width: 600px)" srcset="assets/how-it-works/demo-orders-phone.webp" width="780" height="980"><img src="assets/how-it-works/demo-orders.webp" width="1200" height="914" alt="Fictional order overview with open orders and their status." loading="lazy" decoding="async"></picture><span class="demo-enlarge">Tap to enlarge ↗</span></a>
-        <figcaption>Every order in one place. Open the one you're starting.</figcaption>
-      </figure><div class="start-stack"><figure class="demo-screen " data-tour-stage="start">
-        <div class="demo-screen-bar"><span>To start</span><span class="demo-tag">Fictional demo</span></div>
-        <a class="demo-image" href="assets/how-it-works/demo-start.webp" target="_blank" rel="noopener" aria-label="Enlarge fictional demo: To start"><picture><source media="(max-width: 600px)" srcset="assets/how-it-works/demo-start-phone.webp" width="780" height="750"><img src="assets/how-it-works/demo-start.webp" width="1200" height="606" alt="Fictional To start section with inspection and premise selections." loading="lazy" decoding="async"></picture><span class="demo-enlarge">Tap to enlarge ↗</span></a>
-        <figcaption>A quick check before you go: inspection done, anything to flag. If something's missing, it tells you here.</figcaption>
-      </figure><figure class="demo-screen " data-tour-stage="start-button">
-        <div class="demo-screen-bar"><span>Start</span><span class="demo-tag">Fictional demo</span></div>
-        <a class="demo-image" href="assets/how-it-works/demo-start-button.webp" target="_blank" rel="noopener" aria-label="Enlarge fictional demo: Start"><picture><source media="(max-width: 600px)" srcset="assets/how-it-works/demo-start-button-phone.webp" width="780" height="160"><img src="assets/how-it-works/demo-start-button.webp" width="1200" height="160" alt="Start button on the fictional order form." loading="lazy" decoding="async"></picture><span class="demo-enlarge">Tap to enlarge ↗</span></a>
-        <figcaption>One tap. The report is on its way.</figcaption>
-      </figure></div></div>
-    </li>
-    <li class="demo-step phase-form" id="progress">
-      <div class="demo-step-head"><span class="demo-number" aria-hidden="true">04</span><div>
-        <h3>Watch it fill in. Or don't.</h3><p>Grid, adjustments, comments, exhibits. Your order page shows each stage as it's done. About 2-3 hours to build, plus your review round.</p>
-      </div></div>
-      <div class="form-tour" aria-label="Following your report"><figure class="demo-screen tour-progress" data-tour-stage="progress">
-        <div class="demo-screen-bar"><span>Building → Checking</span><span class="demo-tag">Fictional demo</span></div>
-        <a class="demo-image" href="assets/how-it-works/demo-progress.webp" target="_blank" rel="noopener" aria-label="Enlarge fictional demo: Building → Checking"><picture><source media="(max-width: 600px)" srcset="assets/how-it-works/demo-progress-phone.webp" width="780" height="812"><img src="assets/how-it-works/demo-progress.webp" width="1200" height="310" alt="Fictional progress tracker: Started, Files, Building, Checking, Review and Delivered; Checking is active." loading="lazy" decoding="async"></picture><span class="demo-enlarge">Tap to enlarge ↗</span></a>
-        <figcaption>Started, Files, Building, Checking, Review, Delivered. Each one lights up as it's done.</figcaption>
-      </figure></div>
-    </li>
-    <li class="demo-step phase-form" id="report-review">
-      <div class="demo-step-head"><span class="demo-number" aria-hidden="true">05</span><div>
-        <h3>Come back. It's done.</h3><p>Open your order page. The whole report is filled in, in your voice, as if you'd spent the last 2-3 hours on it yourself. Read it, check Your calls, ask for a change or tap Approve and deliver.</p>
-      </div></div>
-      <div class="form-tour review-tour" aria-label="Reviewing and approving your report"><figure class="demo-screen tour-report" id="sample-report" data-tour-stage="report">
-          <div class="demo-screen-bar"><span>Your report</span><span class="demo-tag">Read-only sample</span></div>
-          <iframe class="review-demo-frame" src="review-demo/" title="Read-only sample review form with the complete UAD 3.6 PDF" loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-downloads allow-top-navigation-by-user-activation"></iframe>
-          <figcaption>Read the whole report here, page by page.</figcaption>
-          <div class="sample-details"><p>Sanitized 26-page work sample; fictional review details. Review buttons are disabled.</p><div class="report-sample-actions"><a href="review-demo/" target="_blank" rel="noopener">Open the sample form ↗</a><a href="uad36-work-sample.pdf" target="_blank" rel="noopener">Open PDF (26 pages · 9.5 MB) ↗</a></div></div>
-        </figure><figure class="demo-screen " data-tour-stage="calls">
-        <div class="demo-screen-bar"><span>Your calls</span><span class="demo-tag">Fictional demo</span></div>
-        <a class="demo-image" href="assets/how-it-works/demo-calls.webp" target="_blank" rel="noopener" aria-label="Enlarge fictional demo: Your calls"><picture><source media="(max-width: 600px)" srcset="assets/how-it-works/demo-calls-phone.webp" width="780" height="1076"><img src="assets/how-it-works/demo-calls.webp" width="1200" height="912" alt="Fictional Your calls section showing quality, condition, Confirm this section, Change and See why." loading="lazy" decoding="async"></picture><span class="demo-enlarge">Tap to enlarge ↗</span></a>
-        <figcaption>Every call made for you, with the reason. Confirm it, change it, or see why.</figcaption>
-      </figure><figure class="demo-screen " data-tour-stage="change">
-        <div class="demo-screen-bar"><span>Request a change</span><span class="demo-tag">Fictional demo</span></div>
-        <a class="demo-image" href="assets/how-it-works/demo-change.webp" target="_blank" rel="noopener" aria-label="Enlarge fictional demo: Request a change"><picture><source media="(max-width: 600px)" srcset="assets/how-it-works/demo-change-phone.webp" width="780" height="760"><img src="assets/how-it-works/demo-change.webp" width="1200" height="722" alt="Fictional Request a change box with a condition and comment correction, and Send button." loading="lazy" decoding="async"></picture><span class="demo-enlarge">Tap to enlarge ↗</span></a>
-        <figcaption>Don't like a comp, an adjustment or a sentence? Put it all in one note and tap Send.</figcaption>
-      </figure><figure class="demo-screen " data-tour-stage="approve">
-        <div class="demo-screen-bar"><span>Approve and deliver</span><span class="demo-tag">Fictional demo</span></div>
-        <a class="demo-image" href="assets/how-it-works/demo-approve.webp" target="_blank" rel="noopener" aria-label="Enlarge fictional demo: Approve and deliver"><picture><source media="(max-width: 600px)" srcset="assets/how-it-works/demo-approve-phone.webp" width="780" height="674"><img src="assets/how-it-works/demo-approve.webp" width="1200" height="630" alt="Fictional review form with Approve and deliver and Approve all and deliver." loading="lazy" decoding="async"></picture><span class="demo-enlarge">Tap to enlarge ↗</span></a>
-        <figcaption>Reads the way you'd write it? Tap Approve and deliver.</figcaption>
-      </figure></div>
-    </li>
-    <li class="demo-step delivery-step" id="delivered">
-      <div class="demo-step-head"><span class="demo-number" aria-hidden="true">06</span><div>
-        <h3>Sign it. It's yours.</h3><p>It lands in your TOTAL, filled in and ready. Sign it and send it to your client the way you always have. Your client hears from you, never from us.</p>
-      </div></div>
-      <figure class="demo-screen " data-tour-stage="delivered">
-        <div class="demo-screen-bar"><span>Delivered</span><span class="demo-tag">Fictional demo</span></div>
-        <a class="demo-image" href="assets/how-it-works/demo-delivered.webp" target="_blank" rel="noopener" aria-label="Enlarge fictional demo: Delivered"><picture><source media="(max-width: 600px)" srcset="assets/how-it-works/demo-delivered-phone.webp" width="780" height="670"><img src="assets/how-it-works/demo-delivered.webp" width="1200" height="584" alt="Fictional Delivered status confirming that the report is in TOTAL." loading="lazy" decoding="async"></picture><span class="demo-enlarge">Tap to enlarge ↗</span></a>
-        <figcaption>It's in your TOTAL. Open it, sign it, send it to your client.</figcaption>
-      </figure>
-    </li>
-  </ol>
-<section class="your-profile" aria-labelledby="profile-heading">
-        <div><p class="kicker">MADE YOURS</p><h2 id="profile-heading">It sounds like you. That's the point.</h2></div>
-        <p>A&amp;AP Auto-pilot runs on a custom profile built for you. It holds how you write your comments, how you work your adjustments and how you like a report to read. Every report follows it. So when you open the file, the comments are in your voice, the methods are yours, and the adjustments land the way you'd make them. Nothing to re-read like a stranger wrote it.</p>
-      </section>
-</div></section>
-<section id="pricing" aria-labelledby="pricing-heading"><div class="wrap">
-  <h2 class="title" id="pricing-heading">Two ways to fly.</h2>
-  <div class="service-options">
-    <article class="service-choice" id="auto-pilot"><p class="kicker">You fly it.</p><h3>A&amp;AP Auto-pilot</h3><p>Create, inspect, tap Start. Watch it fill in, check your calls, sign. All from your own order page, on your own schedule.</p><a href="mailto:desk@aandap.com?subject=A%26AP%20Auto-pilot%20sign-up">Sign up by email</a></article>
-    <article class="service-choice first-class" id="first-class"><p class="kicker">We fly it.</p><h3>A&amp;AP First Class</h3><p>Matt handles the report and brings it back to you for review and signature. You inspect, you review, you sign.</p><a href="start.html">Talk to Matt about a report</a></article>
-  </div>
-  <p class="service-note">Have a finished 2.6? Both services can turn it into a native 3.6.</p>
-</div></section>
-<section id="walkthrough" aria-label="Your report, your responsibility"><div class="wrap" id="sample"><p class="big">You inspect. You make the final calls. You sign, and your client stays yours. Never ours: inspecting, signing, your client. Our part is named in your certification, as USPAP requires. Files are never used to train AI.</p></div></section>
+    <section id="process">
+      <h2>Here&rsquo;s how it works.</h2>
+      <p>When a new assignment arrives, forward the client&rsquo;s order email to Matt. He replies in that thread with the partial-desk and full-desk rates and the return time.</p>
+      <p>Say it works and which one you want. Matt sends the link to that assignment&rsquo;s private shared folder. After the inspection, add your photos, sketch, notes, mobile report file and other agreed materials there, and we start.</p>
+      <p>We complete the agreed desk work and Matt personally reviews the report. The finished unsigned appraisal file lands in the same shared folder, ready to open in TOTAL. You review it, make any edits, sign it and send it to your client. Revisions within the agreed assignment go to the front of the line.</p>
+    </section>
 
-</main>
-<section class="start" id="start" aria-labelledby="closing-heading">
-  <div class="wrap">
-    <div class="closing-copy" id="revisions"><h2 id="closing-heading">Try it on your next order.</h2><p>Create the report. Do the inspection. Tap Start. Come back to a report that's ready to sign.</p></div>
-    <a class="btn xl" href="start.html">Start a report</a>
-    <div class="contact num">
-      <a href="tel:+14692968726">(469) 296-8726, weekdays 9 to 5 Central</a>
+    <section id="day">
+      <h2>An example of what your day looks like.</h2>
+      <p>You have three inspections today. You forwarded the client orders as they arrived, Matt replied to each with the rates and return time, you said yes to all three, and each got its own AP folder.</p>
+      <ol class="steps day">
+        <li><span class="n">9:00 AM</span><div><h3>First inspection.</h3><p>When you&rsquo;re done, add the photos, sketch, notes and mobile file to its AP folder. We start.</p></div></li>
+        <li><span class="n">10:30 AM</span><div><h3>Second inspection.</h3><p>Add that packet to its own folder. The first one is already in research.</p></div></li>
+        <li><span class="n">1:00 PM</span><div><h3>Third inspection.</h3><p>Add the last packet and head home.</p></div></li>
+        <li><span class="n">Later</span><div><h3>We handle the desk.</h3><p>Track each report while we research, build and review it. The finished unsigned appraisal file returns to the same AP folder at the agreed return time.</p></div></li>
+        <li><span class="n">Review</span><div><h3>You stay in control.</h3><p>Open the file in TOTAL, independently review it, make any edits, sign and deliver it to your client.</p></div></li>
+      </ol>
+      <p class="fineprint" id="tracking">Follow progress through your private tracker, with optional email or text updates. <a href="tracking.html">See how tracking works &rarr;</a></p>
+    </section>
+
+    <section id="pricing">
+      <h2>Two things we do. One price each.</h2>
+      <div class="scopes">
+        <article>
+          <p class="lane">Full report</p>
+          <h3>$89 &middot; We handle the full report.</h3>
+          <p class="price">You inspect, review, and sign.</p>
+          <p>We research, pick the comps and prepare the editable report. You inspect, review, sign, and deliver.</p>
+        </article>
+        <article>
+          <p class="lane">Conversion</p>
+          <h3>$59 &middot; Your 2.6 comes back as a 3.6.</h3>
+          <p class="price">Send the finished 2.6. Review and sign the 3.6.</p>
+          <p>Your software won&rsquo;t carry it over. We will. It comes back as a native UAD 3.6 &mdash; your data, your comps, your adjustments &mdash; for you to review and sign. <a href="convert.html">How conversion works &rarr;</a></p>
+        </article>
+      </div>
+      <div class="both">
+        <p><strong>Revisions to the agreed assignment are included and take priority.</strong></p>
+        <p>We read every line before it goes back. Before your first report, we confirm we can cover your market and how soon we can be ready.</p>
+      </div>
+      <p class="fineprint"><strong>These are desk fees</strong> you pay separately from the appraisal fee you charge your client. No subscription or minimum.</p>
+      <p>Have a deadline? Text or call <a href="tel:+14692968726">(469) 296-8726</a> or email <a href="mailto:mrr@appraisalpartners.net?subject=Deadline">mrr@appraisalpartners.net</a> and we will tell you what we can do.</p>
+    </section>
+
+    <section class="delivery" id="return">
+      <h2>A working report. Not more homework.</h2>
+      <ul><li>Editable report, with agreed photos and exhibits in place</li><li>Organized sources and support for your workfile</li><li>Open items clearly marked for your decision</li></ul>
+      <p>You retain the inspection, final analysis, signature, and delivery to your client. XML and PDF are included when part of the accepted order.</p>
+      <p class="fineprint">Software automation and AI assist the production work. Matt personally reviews each report before return.</p>
+    </section>
+
+    <section aria-label="A few practical details">
+      <details id="comps"><summary>Can I steer the comps?</summary><p>Yes. Send your set, ask to see candidates, or request changes in the order thread. You make the final selection. We do not work toward a predetermined value.</p></details>
+      <details id="revisions"><summary>What if a revision comes back?</summary><p>Forward it to us. Revisions within the report as delivered are included, with one additional comparable each time a revision comes back. Materially new scope is quoted before work begins. <a href="terms.html">Full revision terms &rarr;</a></p></details>
+      <details id="boundaries"><summary>Which assignments fit?</summary><p>UAD 3.6 production only. Dallas&ndash;Fort Worth research is established; other markets and packet-based work are checked individually for access, competence, and client and state requirements. No FHA/VA panel or Georgia assignments under current desk policy. Have a legacy report? <a href="convert.html">See conversion &rarr;</a></p><p>Your authority to share materials and the approved data-provider route are confirmed before production. Required assistance disclosures remain part of the handoff. <a href="terms.html">Read the terms &rarr;</a></p></details>
+    </section>
+
+    <div class="cta">
+      <h2>Start with a report you know.</h2>
+      <p>Try an authorized, closed prior assignment for internal evaluation before bringing us live work.</p>
+      <a class="btn" href="start.html">Let&rsquo;s try one &rarr;</a>
+      <p class="contact">Prefer to talk? <a href="tel:+14692968726">(469) 296-8726</a> &middot; <a href="mailto:mrr@appraisalpartners.net">Email Matt</a></p>
     </div>
-  </div>
-</section>
-<footer>
-  <div class="wrap num">
-    <div class="line1"><span>Appraisal Partners of Texas, Inc.</span><span class="dot">·</span><span>TX #1361115-CR</span><span class="dot">·</span><span>CO #CR200002387</span></div>
-    <nav class="line1" aria-label="Footer"><a href="how-it-works.html">How it works</a><span class="dot">·</span><a href="about.html">About</a><span class="dot">·</span><a href="faq.html">FAQ</a><span class="dot">·</span><a href="terms.html">Terms</a><span class="dot">·</span><a href="terms-software.html">Software terms</a></nav>
-    <div>10900 Research Blvd, Suite 160C, Austin, TX 78759</div>
-    <div>TOTAL is a product of a la mode. A&amp;AP is not affiliated with a la mode.</div>
-  </div>
-</footer>
+  </main>
+  <footer><span><a href="index.html">Appraisal Partners</a></span><span>TX #1361115-CR &middot; CO #CR200002387</span><span><a href="terms.html">Terms</a></span><address>Business mail: 10900 Research Blvd, Suite 160C &middot; Austin, TX 78759</address></footer>
+</div>
 </body>
 </html>
