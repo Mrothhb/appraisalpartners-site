@@ -2859,15 +2859,16 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
               "Everything else is optional. Leave it blank and we’ll propose every call for you to approve at review."];
     }
     if (!customerReturned()) return null;
-    if (roundsLocked() && !signedOff()) return ["Nothing to do", ["Your two change rounds are used.", "Your final report is on its way to your TOTAL folder."], ""];
+    if (roundsLocked() && !signedOff()) return ["Nothing to do", ["Your two change rounds are used.", deliveryHold() ? "Your final report goes to your TOTAL folder " + HELD_LINE : "Your final report is on its way to your TOTAL folder."], ""];
     if (delivered()) return ["What to do now", ["Open your report in TOTAL.", "Review it, make any edits, and sign it.", "Questions? Use the box at the bottom of this page."], ""];
-    if (signedOff()) return ["Nothing to do", ["You approved your report.", "It goes to your TOTAL folder next. We’ll email you."], ""];
+    if (signedOff()) return ["Nothing to do", ["You approved your report.", deliveryHold() ? "It goes to your TOTAL folder " + HELD_LINE : "It goes to your TOTAL folder next. We’ll email you."], ""];
     var request = changeState();
     if (request && (request.kind === "open" || request.kind === "answered" || request.request.pending)) return ["Nothing to do right now", ["We got your change request.", "We’ll post the updated report here and email you."], ""];
     if (signoff() && reviewReady()) {
       var steps = ["Read your report below."];
       if (proposalReview() && !factsOnlyReview()) steps.push("Open Your calls. Check each section. Keep it or change it.");
-      steps.push(changesClosed() ? "Tap " + (proposalReview() && !factsOnlyReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " to get your report."
+      if (deliveryHold()) steps.push("Add what’s listed under Required before delivery. You can approve once we receive it." + (changesClosed() ? "" : " Need changes? Tap Request a change."));
+      else steps.push(changesClosed() ? "Tap " + (proposalReview() && !factsOnlyReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " to get your report."
                                  : "Happy with it? Tap " + approveLabel() + ". Need changes? Tap Request a change and put everything in one message.");
       return ["What to do now", steps, changesClosed() ? "" : "You have 2 change rounds. Round 1 is your full review, so send every change at once."];
     }
