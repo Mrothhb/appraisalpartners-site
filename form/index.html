@@ -779,9 +779,9 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 @media (max-width: 480px) { .comp-taps { grid-template-columns: minmax(0, 1fr); } .comp-title { font-size: 17px; } }
 #stage { display: grid; grid-template-rows: 1fr auto 1fr; justify-items: center; min-height: calc(100svh - var(--bar-h) - var(--gap) - var(--s-6)); padding: var(--s-8) var(--card-px) var(--s-4); text-align: center; }
 #stage[hidden] { display: none; }
-#stage[data-kind="waiting"] { min-height: 0; display: block; padding: var(--s-6) var(--card-px); }
-#stage[data-kind="waiting"] .stage-body { gap: var(--s-4); margin-inline: auto; }
-#stage[data-kind="waiting"] #stage-more { margin-top: var(--s-5); }
+#stage[data-kind="waiting"], #stage[data-kind="round"] { min-height: 0; display: block; padding: var(--s-6) var(--card-px); }
+#stage[data-kind="waiting"] .stage-body, #stage[data-kind="round"] .stage-body { gap: var(--s-4); margin-inline: auto; }
+#stage[data-kind="waiting"] #stage-more, #stage[data-kind="round"] #stage-more { margin-top: var(--s-5); }
 .stage-body { grid-row: 2; display: grid; justify-items: center; gap: var(--s-5); width: 100%; max-width: 560px; }
 #stage-title { margin: 0; font: 700 clamp(28px, 2vw + 20px, 36px)/1.15 var(--display); letter-spacing: -.02em; color: var(--bar); text-wrap: balance; }
 #stage-line { margin: 0; max-width: 28em; font-size: 18px; line-height: 1.5; color: var(--ink-2); text-wrap: balance; }
@@ -1310,9 +1310,13 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // Matt 2026-10-30: a tapped Start or Approve shows at once; the server's record replaces the stand-in, a refusal rolls it back.
   var pendingStart = null, pendingApprove = false;
   function inProduction() { return !!pendingStart || realProduction(); }
+  // Matt 2026-11-09 (Grant St): questions the desk sets after his Start are a round he answers in production; his form shows
+  // them with a working Send answers instead of hiding the whole answers block.
+  function lateRound() { var go = state && state.go; return stage === "open" && !selfLane() && ["review", "regression"].indexOf((D.house_prompts || {}).lane) < 0 && asked() && !!go && Date.parse(askedAt(D)) > Date.parse(go.at || ""); }
+  function roundOpen() { return inProduction() && lateRound(); }
   function answered() { return customerReady() && asked(); }
   function optionSent() { return customerReady(); }
-  function readyNote() { if(D.questions_only === true && stage === "open" && asked())return answered()?"Answers sent.":""; if (quoteMoved()) return MOVED; return inProduction() ? goNote() : "Tap Start once. We'll begin when everything's in and your file has sat quiet for 15 minutes."; }
+  function readyNote() { if(D.questions_only === true && stage === "open" && asked() || inProduction() && roundOpen())return answered()?"Answers sent.":""; if (quoteMoved()) return MOVED; return inProduction() ? goNote() : "Tap Start once. We begin as soon as your saved file checks out. Later changes are revisions."; }
   var NCHANGES = 5;
   var MAX_BODY = 100000;       // Code.gs's limit on one save
   var CHECKLIST = JSON.parse($("checklist").textContent);
@@ -1695,7 +1699,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     delete hp.start_options;
     return Object.assign({}, f, pick && /^self-service/.test(pick.id) ? Object.fromEntries(["call_sections","file_calls","prefill","adjustment_rows","grid_missing","roster_text","subject","comps"].filter(function(k){return k in pick;}).map(function(k){return [k,pick[k]];})) : {}, { order: Object.assign({}, f.order, { price: pick ? quoted.price : "", ready_by: pick ? quoted.ready_by : "" }),
       house_prompts: hp, selected_lane: pick ? pick.id : "", terms: pick ? pick.terms : "", terms_url: "",
-      questions: pick ? pick.questions || [] : [], public_note: pick ? pick.public_note || "" : "" });
+      questions: pick ? (pick.questions || []).length ? pick.questions : f.questions || [] : [], public_note: pick ? pick.public_note || "" : "" });   // Grant St 2026-11-09: a lane with no questions of its own keeps the desk's round
   }
   var AUTOPILOT_NAME = "A&AP Auto-pilot";
   document.querySelectorAll("[data-autopilot-name]").forEach(function (node) { node.textContent = AUTOPILOT_NAME; });
@@ -2521,7 +2525,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       built0 ? (O.files_by === "email" ? "Answer each, then tap <b>Send answers</b>." : "Save the report in TOTAL so your files come through, then tap <b>Send answers</b>.") :
       stage === "open" && O.files_by === "email" ? "Tap <b>Ready</b> to have us check your files. Nothing starts yet." : STAGES[stage].help;   // files by email, no Workfile
     if (stage === "open" && !review && !selfLane() && $("help").innerHTML.indexOf("Nothing starts") < 0)
-      $("help").innerHTML += " Tap Start once; we’ll begin when everything’s in and your file has sat quiet for 15 minutes.";
+      $("help").innerHTML += " Tap Start once. We begin as soon as your saved file checks out. Later changes are revisions.";
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = review || desk || stage === "returned"; });
     // After the run the questions are all that is left to answer: the START sections (already answered) step aside.
     var built = (D.questions || []).length > 0;
@@ -2605,6 +2609,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function checkingFiles() { return !!Object.assign({}, F.house_prompts || {}, D.house_prompts || {}).files_checking_at; }
   function stageState() {
     if (stage !== "open" || readOnly || approved || !inProduction()) return null;
+    if (roundOpen() && !answered()) return { kind: "round" };
     if (D.progress && (D.progress.started_at || D.progress.step)) return { kind: "progress" };
     return { kind: "waiting", missing: stillMissing() };
   }
@@ -2612,7 +2617,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var hp = D.house_prompts || {}, desk = Array.isArray(D.start_missing) ? D.start_missing : [], files = Array.isArray(hp.files_missing) ? hp.files_missing : [];
     return (desk.length ? desk : files).map(function (m) { return String(m || "").trim(); }).filter(Boolean);
   }
-  var STAGE_WORDS = { waiting: [GO_NOTE, "We begin 15 minutes after your last save in TOTAL."], progress: ["We’re building your report", "Nothing to do right now. We’ll email you when it’s ready to review."] };
+  var STAGE_WORDS = { round: ["A few questions for you", "Answer them below, then tap Send answers."], waiting: [GO_NOTE, "We begin as soon as your saved file checks out. Later changes are revisions."], progress: ["We’re building your report", "Nothing to do right now. We’ll email you when it’s ready to review."] };
   function paintStage() {
     var s = stageState(), box = $("stage"), tracker = $("production-tracker"), home = s && s.kind === "progress" ? $("stage-slot") : $("tracker-home");
     if (tracker.parentNode !== home) home.appendChild(tracker);
@@ -2816,8 +2821,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (stage === "open") {
       if (inProduction()) {
         if (D.progress && (D.progress.started_at || D.progress.step)) return ["Nothing to do right now", ["We’re building your report.", "We’ll email you when it’s ready to review. Most reports take 2–3 hours."], ""];
-        return stillMissing().length ? ["What to do now", ["Add what’s missing to your order folder (listed below).", "Save your report in TOTAL.", "That’s it. We begin 15 minutes after your last save."], ""]
-                       : ["Nothing to do right now", ["Your Start is in. We begin 15 minutes after your last save in TOTAL.", "We’ll email you when your report is ready to review."], ""];
+        return stillMissing().length ? ["What to do now", ["Add what’s missing to your order folder (listed below).", "Save your report in TOTAL.", "That’s it. We begin as soon as your saved file checks out. Later changes are revisions."], ""]
+                       : ["Nothing to do right now", ["Your Start is in. We begin as soon as your saved file checks out. Later changes are revisions.", "We’ll email you when your report is ready to review."], ""];
       }
       var asks = readyRows().filter(function (r) { return r.key !== "q_service_option" && r.key !== "files"; }).length;
       return ["What to do now", ["Finish your work file in TOTAL: inspection, sketch and photos all in. Save it.",
@@ -2854,10 +2859,11 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     paintFeedback();
     paintChosen();
     $("lane-picker").hidden = !choosingLane();
-    var locked = readOnly || approved || pendingTaps > 0 || inProduction() || !customerStart() && (answered() || optionSent() && !minimalCalls());
+    var locked = readOnly || approved || pendingTaps > 0 || inProduction() && !roundOpen() || !customerStart() && (answered() || optionSent() && !minimalCalls());
     $("form").disabled = locked;
-    $("form").hidden = inProduction() && !selfLane();   // Matt 2026-10-30: his self-service calls stay in view, read-only, after Start
+    $("form").hidden = inProduction() && !selfLane() && !roundOpen();   // Matt 2026-10-30: his self-service calls stay in view, read-only, after Start; 2026-11-09: a desk round after Start shows
     $("calls-saved").hidden = !(inProduction() && selfLane());
+    if (inProduction() && roundOpen()) $("final-file").hidden = true;   // 2026-11-09: his Start already settled the work file and the terms
     var startTitle = document.querySelector("#sections .to-start h2");   // Matt 2026-11-08: after Start the card reads as his answers, not a to-do
     if (startTitle && startTitle.firstChild && startTitle.firstChild.nodeType === 3) startTitle.firstChild.textContent = inProduction() && selfLane() ? "Your answers at Start" : sectionTitle(D.call_sections[0]);
     document.querySelectorAll("#form details.optional-calls").forEach(function (d) { d.hidden = !$("calls-saved").hidden && d.dataset.filled !== "true"; });   // nothing of his to show
@@ -2877,7 +2883,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       var url = D.terms_url || (a && a.terms === terms && a.terms_url);
       if (!url && /^(service|software)-\d{4}-\d{2}-\d{2}[a-z]?$/.test(terms || ""))
         url = "https://appraisalpartners.net/terms" + (terms.indexOf("software-") === 0 ? "-software" : "") + "-" + terms.replace(/^(service|software)-/, "") + ".html";
-      p.hidden = (D.house_prompts || {}).lane === "review" || (laneOptions(F).length > 0 && !D.selected_lane && !selfOnly()); p.textContent = "";
+      p.hidden = (D.house_prompts || {}).lane === "review" || inProduction() && roundOpen() || (laneOptions(F).length > 0 && !D.selected_lane && !selfOnly()); p.textContent = "";
       if (p.hidden) return;
       if (startOptions() && !laneOptions(F).length) {
         p.appendChild(document.createTextNode("Start means go when everything’s in. Terms: "));
@@ -2928,7 +2934,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     statusBtns.forEach(function (b) {
       b.setAttribute("aria-pressed", String(b.getAttribute("data-s") === state.status));
       b.hidden = approved || (customerReturned() ? !signoff() || !reviewReady() || signedOff() || b.getAttribute("data-s") !== "DONE" : STAGES[stage].statuses.indexOf(b.getAttribute("data-s")) < 0 || b.getAttribute("data-s") === "DRAFT");   // answers autosave
-      b.disabled = locked || (b.getAttribute("data-s") === "READY" && (inProduction() || minimalStart() && !D.selected_lane));
+      b.disabled = locked || (b.getAttribute("data-s") === "READY" && (inProduction() && !roundOpen() || minimalStart() && !D.selected_lane));
     });
     document.querySelectorAll("[data-status]").forEach(function (bar) { bar.hidden = approved || (customerReturned() && (!signoff() || !reviewReady() || signedOff())); bar.classList.toggle("one", stage === "open" || signoff()); });
     var entries = state.history.slice();
@@ -3086,7 +3092,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // 2026-10-13: a READY tapped at the top sent nine post-run questions blank).
   function paintNow() {
     var s = state.status, left = stage === "open" || signoff() ? missing() : [], lead = "";
-    $("now").textContent = pendingStart || pendingApprove ? "Sending…" : permissionHeld() ? "On hold · client permission" : approved || signedOff() ? "Approved" : inProduction() ? "Start production received" : filesChecked() ? "Files checked" : answered() ? "Answers sent" : signoff() ? "Review your report" : quoteChanged() ? WORD.DRAFT : WORD[s];
+    $("now").textContent = pendingStart || pendingApprove ? "Sending…" : permissionHeld() ? "On hold · client permission" : approved || signedOff() ? "Approved" : inProduction() ? roundOpen() ? answered() ? "Answers sent" : "Questions for you" : "Start production received" : filesChecked() ? "Files checked" : answered() ? "Answers sent" : signoff() ? "Review your report" : quoteChanged() ? WORD.DRAFT : WORD[s];
     if (s !== "DRAFT") $("saved").hidden = true;
     statusBtns.forEach(function (b) {
       if (signoff() && b.getAttribute("data-s") === "DONE") {
@@ -3095,11 +3101,11 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       }
       if (b.getAttribute("data-s") !== "READY") return;
       var go = customerStart() || minimalStart() ? "Start" : asked() && !startOptions() ? "Send answers" : WORD.READY;
-      b.textContent = pendingStart ? "Sending…" : inProduction() ? "Start received" : customerStart() ? "Start" : answered() ? "Answers sent" : go;
-      if (!b.hidden && !inProduction() && !answered() && !simpleStart() && !minimalCalls()) lead = "Still to answer:";
+      b.textContent = pendingStart ? "Sending…" : inProduction() ? roundOpen() ? answered() ? "Answers sent" : "Send answers" : "Start received" : customerStart() ? "Start" : answered() ? "Answers sent" : go;
+      if (!b.hidden && (!inProduction() || roundOpen()) && !answered() && !simpleStart() && !minimalCalls()) lead = "Still to answer:";
       b.classList.toggle("wait", left.length > 0);
     });
-    if (minimalCalls()) statusBtns.forEach(function(b){if(b.dataset.s === "READY") {b.textContent = pendingStart ? "Sending…" : inProduction() ? "Start received" : "Start"; b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || inProduction() || left.length > 0;}});
+    if (minimalCalls() && !(inProduction() && roundOpen())) statusBtns.forEach(function(b){if(b.dataset.s === "READY") {b.textContent = pendingStart ? "Sending…" : inProduction() ? "Start received" : "Start"; b.disabled = readOnly || !online || pendingTaps > 0 || goBusy || inProduction() || left.length > 0;}});
     musts.forEach(function (m) { if (left.indexOf(m) < 0) m.node.classList.remove("need"); });
     var shown = !approved && !readOnly && !(customerReturned() && (!signoff() || !reviewReady() || signedOff()));   // the status bar's own rule (paintStatus)
     var allBtn = $("approve-all-btn"), done = statusBtns.filter(function (b) { return b.getAttribute("data-s") === "DONE"; })[0];
@@ -3639,7 +3645,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function closed() {               // the order is closed: no form, just the one line
     readOnly = true; pop(false); $("form").disabled = true; $("main").hidden = true; $("gate").hidden = false; gate(CLOSED); conn("Closed");
     if (stage === "open" && !review && $("help").innerHTML.indexOf("Nothing starts") < 0)
-      $("help").innerHTML += " Tap Start once; we’ll begin when everything’s in and your file has sat quiet for 15 minutes.";
+      $("help").innerHTML += " Tap Start once. We begin as soon as your saved file checks out. Later changes are revisions.";
     document.querySelectorAll("p.foot").forEach(function (f) { f.hidden = true; });
   }
   function afterEdit() {
@@ -3679,7 +3685,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (s === "READY" && customerStart()) pendingStart = Object.assign({ at: new Date().toISOString(), files_checked_at: checkedAt() }, currentQuote());
     if (s === "DONE" && signoff()) pendingApprove = true;
     paintStatus();
-    if (s === "READY") { fastUntil = Date.now() + 60000; pollSoon(); banner("Saving your Start…", "ok"); }
+    if (s === "READY") { fastUntil = Date.now() + 60000; pollSoon(); banner(inProduction() && roundOpen() ? "Sending your answers…" : "Saving your Start…", "ok"); }
     if (pendingApprove) banner(approvalNote(), "ok");
     if (connecting) { tapped = s; if (s !== "READY") banner("Sending…", "ok"); return; }
     if (!online) { pendingStart = null; pendingApprove = false; state.status = was; state.answers.q_comp_check = compWas; paintStatus(); banner("Not connected, not sent. Your answers are still here.", "warn"); return; }
