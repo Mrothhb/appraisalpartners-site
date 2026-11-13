@@ -57,36 +57,29 @@
     return data.orders.find(order => order.ap === scope());
   }
 
-  // Entry identity is a multiset: unchanged refreshes and repeated text are safe.
-  function entries(thread) {
-    const counts = new Map();
-    return thread.map(function (message) {
-      const key = JSON.stringify([message.at, message.who, message.order || null, message.text]);
-      const count = (counts.get(key) || 0) + 1;
-      counts.set(key, count);
-      return { message: message, key: key + ":" + count };
-    });
+  // A desk reply answers the message its re names (the id send returned); never matched by text, time or order alone.
+  // With nothing asked here yet, the latest reply shows on its own; one bound to no message stays unbound.
+  function replyFor(order, request) {
+    const desks = data.thread.filter(message => sameScope(message, order) && message.who === "desk");
+    if (!request) return desks.length ? desks[desks.length - 1] : null;
+    if (request.status !== "sent" || !request.id) return null;
+    const bound = desks.filter(message => message.re === request.id);
+    return bound.length ? bound[bound.length - 1] : null;
   }
 
-  function replyFor(order, request) {
-    const messages = entries(data.thread).filter(entry => sameScope(entry.message, order));
-    if (!request) {
-      const desks = messages.filter(entry => entry.message.who === "desk");
-      return desks.length ? desks[desks.length - 1].message : null;
-    }
-    if (request.status !== "sent") return null;
-    const echo = messages.findIndex(entry => !request.before.has(entry.key) &&
-      entry.message.who === "you" && entry.message.text === request.text);
-    const candidates = messages.filter(function (entry, index) {
-      if (entry.message.who !== "desk" || request.before.has(entry.key)) return false;
-      if (echo >= 0) return index > echo;
-      // Some board refreshes contain the desk reply before the outgoing echo.
-      // Only accept a new entry dated since this submission (seconds precision).
-      const at = Date.parse(entry.message.at);
-      return Number.isFinite(at) && at >= request.started - 1000;
-    });
-    if (candidates.length) request.reply = candidates[candidates.length - 1].message;
-    return request.reply || null;
+  function askedBy(reply) {
+    const asked = reply && reply.re ? data.thread.find(message => message.who === "you" && message.id === reply.re) : null;
+    return asked ? asked.text : "";
+  }
+
+  // The page retries an unconfirmed message on its own; once the thread shows it confirmed, this panel says Sent.
+  function recover(order, request) {
+    if (!request || request.status !== "failed" || !request.id) return;
+    const mine = data.thread.find(message => message.who === "you" && message.id === request.id);
+    if (!mine || mine.pending) return;
+    request.status = "sent";
+    if ((drafts.get(order) || "").trim() === request.text) drafts.set(order, "");
+    if (ui && scope() === order && ui.input.value.trim() === request.text) ui.input.value = "";
   }
 
   function suggestions() {
@@ -149,6 +142,7 @@
     const order = scope();
     const request = conversations.get(order);
     const reply = replyFor(order, request);
+    const asked = request ? request.text : askedBy(reply);
     const sending = Boolean(request && request.status === "sending");
     ui.input.disabled = sending;
     ui.send.disabled = sending || !ui.input.value.trim();
@@ -166,8 +160,8 @@
     ui.status.classList.toggle("aap-agent-error", Boolean(request && request.status === "failed"));
     ui.answer.hidden = !reply;
     ui.reply.textContent = reply ? reply.text : "";
-    ui.question.hidden = !request;
-    ui.question.textContent = request ? "You asked: " + request.text : "";
+    ui.question.hidden = !asked;
+    ui.question.textContent = asked ? "You asked: " + asked : "";
   }
 
   function stopSpeech() {
@@ -211,16 +205,17 @@
     event.preventDefault();
     const order = scope();
     const text = ui.input.value.trim();
-    if (!text || (conversations.get(order) || {}).status === "sending") return;
+    const previous = conversations.get(order);
+    if (!text || (previous || {}).status === "sending") return;
     stopSpeech();
-    const request = {
-      text: text, status: "sending", started: Date.now(),
-      before: new Set(entries(data.thread).map(entry => entry.key))
-    };
+    // The same words sent again after a failure retry that message (its id); they never make a second one.
+    const retry = previous && previous.status === "failed" && previous.id && previous.text === text ? previous.id : null;
+    const request = { text: text, status: "sending", id: retry };
     conversations.set(order, request);
     renderConversation();
     try {
-      const result = await config.send({ order: order, text: text });
+      const result = await config.send(retry ? { order: order, text: text, id: retry } : { order: order, text: text });
+      if (result && typeof result.id === "string" && result.id) request.id = result.id;
       if (!result || result.ok !== true) throw new Error(result && result.error || "Please try again.");
       request.status = "sent";
       drafts.set(order, "");
@@ -438,6 +433,7 @@
         orders: Array.isArray(next.orders) ? next.orders : [],
         thread: Array.isArray(next.thread) ? next.thread : [], plan: next.plan || null
       };
+      conversations.forEach((request, order) => recover(order, request));
       render();
     }
   });

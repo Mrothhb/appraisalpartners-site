@@ -193,7 +193,7 @@ footer.site a { color: var(--ink-2); }
   var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPwO_MB0iqsrAarETBMjLEdV5GfyFd_tgh_PiEA4z_w/exec";   // the order form's web address; this page reads and sends the same way
   var Q = new URLSearchParams(location.search), T = Q.get("t") || "", DESK = Q.has("desk"), viaScript = false, timer = null;
   var FORM = /^https:\/\/appraisalpartners\.net\/form\/\?t=([A-Za-z0-9_-]{32,64})(?:&r=([a-f0-9]{64}))?$/, ID = /^[A-Za-z0-9_-]{10,}$/;
-  var B = null, last = null, sentAt = 0, find = {}, status = {}, open = {}, boxKey = "aap-board-outbox-" + T, agentReady = false;
+  var B = null, last = null, sentAt = 0, find = {}, status = {}, open = {}, drafts = {}, boxKey = "aap-board-outbox-" + T, agentReady = false;
   function $(id) { return document.getElementById(id); }
   // h("a.btn.ghost", {href: ...}, "text", node...): every piece of text goes in as text, never as markup
   function h(spec, props) {
@@ -347,30 +347,43 @@ footer.site a { color: var(--ink-2); }
   }
   function download(label, id, ghost) { return out(h(ghost ? "a.btn.ghost" : "a.btn", { href: "https://drive.google.com/uc?export=download&id=" + id }, label)); }
   function statusLine(key) { var s = status[key]; return s ? h(s.bad ? "p.status.bad" : "p.status", s.text) : null; }
+  function blurRev() { var active = document.activeElement; if (active && active.closest && active.closest("#main .rev") && active.blur) active.blur(); }
   function sendFrom(key, order, text, done) {   // a page button's message: the same send the agent uses, its outcome in plain words
-    var active = document.activeElement;   // pressing Send ends the typing: the page may redraw the form away
-    if (active && active.closest && active.closest("#main .rev") && active.blur) active.blur();
+    blurRev();   // pressing Send ends the typing: the page may redraw the form (its words are kept in drafts)
     status[key] = { text: "Sending…" }; paintPage();
-    send({ order: order, text: text }).then(function (r) {
-      status[key] = r.ok ? { text: SENT } : { text: r.error || "Not sent yet.", bad: true };
+    send({ order: order, text: text }).then(function (r) {   // pressed again with the same words, it is the same message
+      status[key] = r.ok ? { text: SENT } : { text: r.error || "Not sent yet.", bad: true, id: r.id, done: done };
       if (r.ok && done) done();
       paintPage();
     });
   }
+  function settle() {   // a page message that failed and was then confirmed by the automatic retry says Sent, and its form closes
+    Object.keys(status).forEach(function (key) {
+      var s = status[key];
+      if (s && s.bad && s.id && confirmed(s.id)) { status[key] = { text: SENT }; if (s.done) s.done(); }
+    });
+  }
   function revisionForm(o) {   // a revision on a delivered report is a message on that order, as the order form takes it after delivery
-    var text = h("textarea", { rows: "4", maxlength: "2800", "aria-label": "What the lender or client asks for" }), due = h("input", { type: "text", placeholder: "Optional", "aria-label": "Client due date" });
+    var d = drafts[o.order] || (drafts[o.order] = { text: "", due: "" });
+    var text = h("textarea", { rows: "4", maxlength: "2800", "aria-label": "What the lender or client asks for" }), due = h("input", { type: "text", maxlength: "100", placeholder: "Optional", "aria-label": "Client due date" });
+    text.value = d.text; due.value = d.due;
+    text.addEventListener("input", function () { d.text = text.value; });
+    due.addEventListener("input", function () { d.due = due.value; });
     var go = h("button.btn", { type: "button" }, "Send revision"), cancel = h("button.btn.ghost", { type: "button" }, "Cancel");
     go.addEventListener("click", function () {
-      var words = text.value.trim(); if (!words) { text.focus(); return; }
-      sendFrom("rev-" + o.order, o.order, "Revision request: " + words + (due.value.trim() ? "\nClient due date: " + due.value.trim() : ""), function () { open[o.order] = false; });
+      d.text = text.value; d.due = due.value;
+      var words = d.text.trim(), when = d.due.trim(); if (!words) { text.focus(); return; }
+      var msg = "Revision request: " + words + (when ? "\nClient due date: " + when : "");
+      if (msg.length > 3000) { blurRev(); status["rev-" + o.order] = { text: "Please shorten this by " + (msg.length - 3000) + " characters. Your words are kept.", bad: true }; paintPage(); return; }
+      sendFrom("rev-" + o.order, o.order, msg, function () { open[o.order] = false; delete drafts[o.order]; });
     });
-    cancel.addEventListener("click", function () { open[o.order] = false; paintPage(); });
+    cancel.addEventListener("click", function () { open[o.order] = false; delete drafts[o.order]; status["rev-" + o.order] = null; paintPage(); });
     return h("div.rev", h("label", "What the lender or client asks for", text), h("label", "Client due date", due),
       o.files ? h("p.meta", "Add the lender's letter with ", out(h("a", { href: filesHref(o) }, filesLabel(o))), ".") : null, h("div.acts", go, cancel));
   }
   function deliveredRow(o) {
     var vers = Array.isArray(o.versions) && o.versions.length ? o.versions : [{ n: 1, at: o.delivered_at, kind: o.update ? "updated" : "delivered", total_file: o.total_file }];
-    var latest = vers[0], earlier = vers.slice(1), link = formOf(o), tf = o.total_file || latest.total_file;
+    var latest = vers[0], earlier = vers.slice(1), link = formOf(o), tf = o.total_file;   // the latest download: only the record's own guarded file
     var acts = h("div.acts");
     if (tf && ID.test(tf.id || "")) acts.appendChild(download("Download TOTAL file", tf.id));
     if (ID.test(o.pdf || "")) acts.appendChild(download("Download report PDF", o.pdf, true));
@@ -482,7 +495,7 @@ footer.site a { color: var(--ink-2); }
       try { var e = JSON.parse(answers[k]); if (e && e.text) all.push({ at: e.at, who: "customer", text: e.text, key: k, order: "" }); } catch (x) {}
     });
     ((r.form && r.form.log) || []).forEach(function (e) {
-      if (e && e.what === "reply" && e.text) all.push({ at: e.at, who: "desk", text: e.text, order: "" });
+      if (e && e.what === "reply" && e.text) all.push({ at: e.at, who: "desk", text: e.text, order: "", re: e.re || "" });
     });
     return all;
   }
@@ -500,8 +513,10 @@ footer.site a { color: var(--ink-2); }
   function deliver(item) {   // post, then confirm by reading the entry back; silence retries, the text is never lost
     var doc = JSON.stringify({ t: item.t, r: item.r, actor: DESK ? "desk" : "", status: "DRAFT", answers: (function () { var a = {}; a[item.key] = item.value; return a; })(),
                                changes: [], send: false, feedback: true, request_id: item.rid });
-    return post(doc).catch(function () {}).then(function () { return read(item.t); }).then(function (r) {
-      if (((r.saved || {}).answers || {})[item.key] !== item.value) throw {};
+    function landed(r) { return !!r && ((r.saved || {}).answers || {})[item.key] === item.value; }
+    var look = item.failed ? read(item.t).then(function (r) { return landed(r) ? r : null; }, function () { return null; }) : Promise.resolve(null);   // a retry looks first: the last post may have landed
+    return look.then(function (seen) { return seen || post(doc).catch(function () {}).then(function () { return read(item.t); }); }).then(function (r) {
+      if (!landed(r)) throw {};
       var all = outbox(); all.forEach(function (i) { if (i.key === item.key) { i.sent = new Date(Date.now()).toISOString(); delete i.failed; } }); keep(all);
       return r;
     });
@@ -517,10 +532,17 @@ footer.site a { color: var(--ink-2); }
       entries(last).concat(B.messages || []).forEach(function (m) { if (m.key) keys[m.key] = true; });
       // a sent message leaves once the record shows it (or a day after it was confirmed); an unsent one never leaves on its own
       keep(all.filter(function (i) { return !i.sent || !keys[i.key] && Date.now() - Date.parse(i.sent) < 864e5; }));
-      if (B) { paintPage(); agentSync(); }
+      if (B) { settle(); paintPage(); agentSync(); }
     });
   }
-  // send({order, text}): the agent's and the page's one way to message the desk (General when order is empty)
+  function known(id, text) {   // the message send returned this id for, while these are still its words: outbox first, then the record
+    return outbox().concat(entries(last || {}), (B && B.messages) || []).filter(function (m) { return m.key === id && m.text === text; })[0] || null;
+  }
+  function confirmed(id) {   // the desk has this message: confirmed by read-back, or the record shows it
+    return outbox().some(function (i) { return i.key === id && i.sent; }) || entries(last || {}).concat((B && B.messages) || []).some(function (m) { return m.key === id; });
+  }
+  // send({order, text, id?}): the agent's and the page's one way to message the desk (General when order is empty). A
+  // retry (the id send returned, or the same words still unsent) goes again as that same message, never a second one.
   function send(msg) {
     var text = String((msg && msg.text) || "").trim(), order = (msg && msg.order) || "";
     if (!B || !messaging()) return Promise.resolve({ ok: false, error: "Messages are not on for this page." });
@@ -528,13 +550,20 @@ footer.site a { color: var(--ink-2); }
     if (text.length > 3000) return Promise.resolve({ ok: false, error: "Please shorten this message." });
     var to = target(order);
     if (!to) return Promise.resolve({ ok: false, error: "That order can't take messages here. Send it as a general message." });
+    var id = msg && msg.id ? String(msg.id) : "", was = id ? known(id, text) : null;
+    if (was && (was.sent || !was.rid)) return Promise.resolve({ ok: true, id: id });   // already with the desk
+    var item = was || outbox().filter(function (i) { return !i.sent && (i.order || "") === order && i.text === text; })[0];
+    if (item) { sentAt = Date.now(); soon(); return settled(item); }
     var at = new Date(Date.now()).toISOString(), o = byCode(order);
-    var item = { key: "q_fb_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12), at: at, text: text,
+    item = { key: "q_fb_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12), at: at, text: text,
                  from: B.person || "", order: order, street: o ? o.street : "General", t: to.t, r: to.r,
                  rid: "rq_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10) };
     item.value = JSON.stringify({ at: at, text: text, from: item.from });
     var all = outbox(); all.push(item); keep(all);   // in memory either way; stored only when this browser can keep it
     sentAt = Date.now(); soon(); agentSync();
+    return settled(item);
+  }
+  function settled(item) {
     return deliver(item).then(function () { paintPage(); agentSync(); return { ok: true, id: item.key }; }, function (e) {
       failed(item); paintPage(); agentSync();
       return { ok: false, id: item.key, error: e && e.code === "unknown" ? "This order's page has closed. Send it as a general message." : "Not sent yet. " + kept() };
@@ -552,7 +581,7 @@ footer.site a { color: var(--ink-2); }
         needs: (B.needs || []).map(function (n) { var o = byCode(n.order); return { ap: n.order, street: n.street || n.order, kind: n.kind === "start" ? "answer" : n.kind,
                                                    label: n.kind === "files" ? filesLabel(o) : LABEL[n.kind] || "Open order", href: needHref(n, o) }; }).filter(function (n) { return n.href; }),
         orders: rows().map(function (o) { return { ap: o.order, street: o.street || o.order, status: o.stage || "", ready: o.due || "", due: o.client_due || "" }; }),
-        thread: conversation().map(function (m) { return { at: m.at, who: m.who === "desk" ? "desk" : "you", order: m.order || null, text: m.text }; }),
+        thread: conversation().map(function (m) { return { at: m.at, who: m.who === "desk" ? "desk" : "you", order: m.order || null, text: m.text, id: m.key || "", re: m.re || "", pending: !!m.pending }; }),
         plan: plan() ? { pct: Math.max(0, Math.round(Number(plan().pct) || 0)), resets: plan().resets_text || "", refill: messaging() } : null
       });
     } catch (e) {}   // the panel's trouble never stops this page
