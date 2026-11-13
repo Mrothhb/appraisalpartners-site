@@ -1,10 +1,5 @@
 <!doctype html>
-<!-- A&AP orders board: appraisalpartners.net/orders/?t=<code>. One customer's private board (Matt 2026-11-03: "a dashboard on our
-     site thats for orders and AI usage", one customer's orders only): his orders in progress, the AI usage bar, and per-order metrics
-     (score where one exists, change rounds, our mistakes fixed; blank where there is none). It reads one keyed record through the
-     form's own web app at API, exactly as the form reads an order; the desk's usage job writes that record's board, and nothing
-     else reaches this page. No order data lives in this file; never add analytics here (the link carries the code). -->
-<html lang="en" data-build="v2026-11-03.1">
+<html lang="en" data-build="v2026-11-13.6">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -13,218 +8,867 @@
 <title>A&amp;AP Orders</title>
 <link rel="icon" href="../assets/aap-favicon.png">
 <style>
-/* The form's look (its tokens, from appraisalpartners.net/assets/site.css), the site's own font files. */
 @font-face { font-family: "Open Sans"; font-style: normal; font-weight: 300 800; font-display: swap; src: url("../assets/open-sans.woff2") format("woff2"); }
 @font-face { font-family: "Schibsted Grotesk"; font-style: normal; font-weight: 700; font-display: swap; src: url("../assets/schibsted-grotesk-700.ttf") format("truetype"); }
 :root {
   --font: "Open Sans", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --display: "Schibsted Grotesk", var(--font);
-  --ink: #1c1c1c; --ink-2: #5f5f5f; --canvas: #f4f5f5; --card: #ffffff; --field-off: #f4f5f5;
-  --line: #e3e3e3; --line-2: #cccccc; --primary: #0b6fc1; --primary-hover: #00669b; --tint: #eaf3fb; --tint-line: #d5e6f5;
-  --success-ink: #236b1f; --success-bg: #ecf6e8; --success-line: #cfe6c7;
+  --ink: #1c1c1c; --ink-2: #444444; --canvas: #f4f5f5; --field-off: #f4f5f5; --line: #e3e3e3; --line-2: #cccccc;
+  --primary: #005ea8; --primary-hover: #004f8f; --primary-active: #004378; --tint: #eaf3fb; --tint-line: #d5e6f5;
+  --success-ink: #236b1f; --success-bg: #ecf6e8; --success-line: #cfe6c7; --success-edge: #50a81e;
   --warning-bg: #fdf3e1; --warning-edge: #e5a53a; --warning-ink: #7a4300; --warning-line: #f1dcb0;
-  --danger: #a72a2a; --bar: #0d2a46; --bar-h: 64px; --focus: #0b6fc1;
-  --r-1: 2px; --r-2: 4px; --r-full: 999px; --shadow-1: 0 0 10px -6px rgba(0,0,0,.10);
-  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-12: 48px;
-  --gutter: 24px; --gap: var(--gutter); --card-px: 20px; --card-py: 20px; --dur: 150ms; --ease: cubic-bezier(.2,0,.2,1);
+  --danger: #a72a2a; --danger-bg: #fdf3f3; --bar: #0d2a46; --bar-h: 64px; --focus: #005ea8;
+  --r-1: 2px; --r-2: 4px; --r-3: 6px; --r-full: 999px;
+  --shadow-2: 0 24px 48px -28px rgba(13,42,70,.35), 0 1px 2px rgba(13,42,70,.10);
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px;
+  --gutter: 24px; --dur: 150ms; --ease: cubic-bezier(.2,0,.2,1);
 }
-@media (max-width: 600px) { :root { --gutter: 16px; --card-px: 16px; --card-py: 16px; } }
+@media (max-width: 720px) { :root { --gutter: 16px; } }
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
-html, body { margin: 0; background: var(--canvas); color: var(--ink); font: 400 16px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
-body { background: var(--canvas) linear-gradient(var(--bar), var(--bar)) top / 100% var(--bar-h) no-repeat; }
-p, h1, h2 { margin: 0; }
-a { color: var(--primary); text-underline-offset: 3px; }
+html, body { margin: 0; background: #fff; color: var(--ink); font: 400 18px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+p, h1, h2, h3 { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+a { color: var(--primary); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--primary-hover); }
+button, input, select, textarea { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--r-1); }
-.wrap { max-width: 760px; margin: 0 auto; padding: 0 var(--gutter) var(--s-12); }
-header { display: flex; align-items: center; gap: var(--s-3); height: var(--bar-h); margin: 0 0 var(--gap); color: #fff; }
-header svg { width: 52px; height: 30.5px; flex: none; }
-header svg path { fill: #e8eae6; } header svg path[fill^="url"] { fill: #96aac4; }
-header > div { display: flex; align-items: baseline; gap: var(--s-4); min-width: 0; }
-.brand { font: 700 20px/1.2 var(--font); color: #fff; white-space: nowrap; }
-.sub { color: rgba(255,255,255,.86); font-size: 15px; font-weight: 600; white-space: nowrap; }
-.conn { margin-left: auto; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.86); text-align: right; font-variant-numeric: tabular-nums; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-2); box-shadow: var(--shadow-1); padding: var(--card-py) var(--card-px); margin: 0 0 var(--s-4); min-width: 0; }
-#gate p { color: var(--ink-2); }
-h1 { font: 700 clamp(24px, 1vw + 18px, 28px)/1.2 var(--display); letter-spacing: -.015em; color: var(--bar); }
-.updated { margin: var(--s-1) 0 var(--s-5); font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.kicker { margin: var(--s-6) 0 var(--s-3); color: var(--primary); font: 600 13px/1.4 var(--font); letter-spacing: .12em; text-transform: uppercase; }
-/* the usage bar, as on his forms */
-.usage { padding: var(--s-3) var(--card-px); }
-.usage-track { height: 8px; border-radius: var(--r-full); background: var(--field-off); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
-.usage-track i { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--primary); }
-.usage-line { margin: var(--s-2) 0 0; font-size: 14px; line-height: 1.45; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.usage-note { margin: var(--s-1) 0 0; font-size: 14px; line-height: 1.45; font-weight: 600; overflow-wrap: anywhere; }
-.usage[data-state="amber"] { border-left: 4px solid var(--warning-edge); }
-.usage[data-state="amber"] .usage-track i { background: var(--warning-edge); }
-.usage[data-state="amber"] .usage-note { color: var(--warning-ink); }
-.usage[data-state="red"] { border-left: 4px solid var(--danger); background: #fdf3f3; }
-.usage[data-state="red"] .usage-track i { background: var(--danger); }
-.usage[data-state="red"] .usage-note { color: var(--danger); }
-.usage[data-stale="1"] .usage-track { background: repeating-linear-gradient(45deg, var(--field-off) 0 6px, var(--line) 6px 12px); }
-.usage[data-stale="1"] .usage-track i { display: none; }
-/* three counts in one row */
-.counts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); }
-.count { padding: var(--s-3); border: 1px solid var(--line); border-radius: var(--r-2); background: var(--card); text-align: center; }
-.count b { display: block; font: 700 22px/1.2 var(--display); color: var(--bar); font-variant-numeric: tabular-nums; }
-.count span { display: block; margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--ink-2); }
-.count.full b { color: var(--danger); }
-.next-start { margin: var(--s-3) 0 0; font-size: 15px; font-weight: 600; color: var(--danger); text-align: center; overflow-wrap: anywhere; }
-/* one card per order */
-.order-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
-.street { font: 700 19px/1.25 var(--display); color: var(--bar); overflow-wrap: anywhere; }
-.code { margin-top: 2px; font-size: 13px; color: var(--ink-2); }
-.pill { flex: none; padding: 2px 10px; border-radius: var(--r-full); background: var(--tint); color: var(--primary); font-size: 13px; font-weight: 700; white-space: nowrap; }
-.pill[data-tone="you"] { background: var(--warning-bg); color: var(--warning-ink); }
-.pill[data-tone="done"] { background: var(--success-bg); color: var(--success-ink); }
-.next { margin: var(--s-3) 0 0; font-size: 15px; line-height: 1.45; overflow-wrap: anywhere; }
-.metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); margin: var(--s-4) 0 0; padding: var(--s-3) 0 0; border-top: 1px solid var(--line); }
-.metrics div { min-width: 0; }
-.metrics dt { font-size: 12px; line-height: 1.35; color: var(--ink-2); }
-.metrics dd { margin: 2px 0 0; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.open-form { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; margin: var(--s-4) 0 0; padding: 0 var(--s-5); border: 1px solid var(--primary); border-radius: var(--r-2); color: var(--primary); font-weight: 600; text-decoration: none; }
-.open-form:hover { background: var(--tint); }
-.empty { color: var(--ink-2); font-size: 15px; }
-.foot { margin: var(--s-6) 0 0; font-size: 13px; color: var(--ink-2); text-align: center; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 var(--gutter); }
+.col { max-width: 720px; margin: 0 auto; padding: 0 var(--gutter) 96px; }
+.meta { font-size: 16px; color: var(--ink-2); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-5); border: 1px solid var(--primary); border-radius: var(--r-2); background: var(--primary); color: #fff; font: 600 18px/1.2 var(--font); text-decoration: none; text-align: center; cursor: pointer; transition: background var(--dur) var(--ease); }
+.btn:hover { background: var(--primary-hover); border-color: var(--primary-hover); color: #fff; }
+.btn:active { background: var(--primary-active); }
+.btn.ghost { background: #fff; color: var(--primary); }
+.btn.ghost:hover { background: var(--tint); color: var(--primary-hover); }
+.btn svg { width: 20px; height: 20px; flex: none; }
+.acts { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.link-btn { padding: 0; min-height: 48px; border: 0; background: none; color: var(--primary); font: 600 16px/1.5 var(--font); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+.appbar { background: var(--bar); color: #fff; min-height: var(--bar-h); }
+.appbar .wrap { display: flex; align-items: center; gap: var(--s-4); min-height: var(--bar-h); }
+.brand { display: flex; align-items: center; gap: var(--s-3); color: #fff; text-decoration: none; min-height: 48px; flex: none; }
+.brand img { width: 52px; height: 30px; }
+.brand b { font: 700 20px/1.2 var(--font); }
+.nav { display: flex; gap: var(--s-2); margin-left: var(--s-10); }
+.nav a, .tabs a { color: rgba(255,255,255,.86); text-decoration: none; font: 600 16px/1.2 var(--font); min-height: 48px; padding: 0 var(--s-4); display: inline-flex; align-items: center; white-space: nowrap; }
+.nav a:hover, .tabs a:hover { color: #fff; background: rgba(255,255,255,.08); }
+.nav a[aria-current], .tabs a[aria-current] { color: #fff; box-shadow: inset 0 -3px 0 #fff; }
+.appbar .right { margin-left: auto; display: flex; align-items: center; gap: var(--s-4); }
+.who { font: 700 16px/1.2 var(--font); white-space: nowrap; }
+.tabs { background: var(--bar); border-top: 1px solid rgba(255,255,255,.12); }
+.tabs .wrap { display: flex; flex-wrap: wrap; }
+@media (min-width: 1200px) { .tabs { display: none; } }
+@media (max-width: 1199px) { .nav, .appbar .meter { display: none; } }
+@media (max-width: 1399px) { .appbar .meter .m-reset { display: none; } }
+.meter { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-3); border-radius: var(--r-2); color: #fff; text-decoration: none; font: 600 16px/1.2 var(--font); white-space: nowrap; }
+.meter:hover { background: rgba(255,255,255,.08); color: #fff; }
+.meter i { display: block; width: 72px; height: 8px; border-radius: var(--r-full); background: rgba(255,255,255,.22); overflow: hidden; flex: none; }
+.meter i b { display: block; height: 100%; background: #8fc3ee; border-radius: inherit; }
+.meter[data-level="amber"] i b, .meter[data-level="full"] i b { background: var(--warning-edge); }
+.meter[data-level="amber"], .meter[data-level="full"] { color: #ffe3b0; }
+.meter-row { display: none; }
+@media (max-width: 1199px) { .meter-row { display: flex; background: var(--bar); padding: 0 var(--gutter) var(--s-2); } .meter-row .meter { padding-left: 0; white-space: normal; } }
+@media (min-width: 1200px) and (max-width: 1439px) {
+  .appbar .meter { display: none; } .meter-row { display: flex; background: var(--bar); padding: 0 max(var(--gutter), calc((100% - 1200px) / 2 + var(--gutter))) var(--s-2); } }
+
+.gate { max-width: 720px; margin: var(--s-8) auto; padding: 0 var(--gutter); color: var(--ink-2); }
+.top { padding: var(--s-6) 0 var(--s-4); }
+.top h1 { font: 700 30px/1.2 var(--display); letter-spacing: -.015em; color: var(--bar); margin: 0 0 var(--s-2); }
+.top p { max-width: 60ch; }
+.sec { padding: var(--s-6) 0; }
+.sec + .sec { border-top: 1px solid var(--line); }
+.sec > h2 { font: 700 18px/1.4 var(--font); color: var(--bar); margin: 0 0 var(--s-4); display: flex; justify-content: space-between; align-items: baseline; gap: var(--s-4); flex-wrap: wrap; }
+.sec > h2 a { font-size: 16px; font-weight: 600; }
+.find { display: flex; align-items: center; gap: var(--s-2); border: 1px solid var(--line-2); border-radius: var(--r-2); padding: 0 var(--s-4); min-height: 48px; margin-bottom: var(--s-4); }
+.find input { flex: 1; border: 0; outline: 0; font: 400 18px/1.5 var(--font); min-width: 0; background: transparent; }
+.find svg { width: 20px; height: 20px; color: var(--ink-2); flex: none; }
+.empty { color: var(--ink-2); }
+
+.todo { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); padding: var(--s-4) var(--s-5); border: 2px solid var(--warning-line); border-left: 8px solid var(--warning-edge); border-radius: var(--r-2); background: var(--warning-bg); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.todo + .todo { margin-top: var(--s-3); }
+.todo p { overflow-wrap: anywhere; }
+.todo p b { font: 700 20px/1.3 var(--display); color: var(--bar); display: block; }
+.todo .btn { flex: none; }
+
+.rows { border-top: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px var(--s-4); align-items: center; padding: var(--s-4) 0; border-bottom: 1px solid var(--line); text-decoration: none; color: inherit; min-height: 48px; }
+a.row:hover .street { color: var(--primary); }
+.row .street { grid-column: 1; font: 700 20px/1.3 var(--display); letter-spacing: -.01em; color: var(--bar); overflow-wrap: anywhere; }
+.row .meta { grid-column: 1; overflow-wrap: anywhere; }
+.row .state { grid-column: 2; grid-row: 1 / span 2; text-align: right; font-size: 16px; color: var(--ink-2); }
+.row .state b { display: block; font-weight: 700; color: var(--bar); font-size: 18px; }
+.row[data-tone="you"] .state b { color: var(--warning-ink); }
+a.row .state::after { content: "\203A"; display: inline-block; margin-left: var(--s-3); color: var(--line-2); font-size: 24px; line-height: 0; vertical-align: -2px; }
+.row .more { grid-column: 1 / -1; margin-top: var(--s-2); display: grid; gap: var(--s-3); }
+.balance { color: var(--warning-ink); font-weight: 600; }
+details.hist summary { cursor: pointer; font-weight: 600; min-height: 48px; display: flex; align-items: center; gap: var(--s-2); list-style: none; }
+details.hist summary::-webkit-details-marker { display: none; }
+details.hist summary::before { content: "\25B8"; color: var(--ink-2); }
+details.hist[open] summary::before { content: "\25BE"; }
+details.hist .acts { padding: var(--s-2) 0; align-items: center; }
+
+.usage { display: grid; gap: var(--s-3); }
+.usage .big { display: flex; align-items: baseline; gap: var(--s-3); flex-wrap: wrap; }
+.usage .big b { font: 700 30px/1.1 var(--display); color: var(--bar); font-variant-numeric: tabular-nums; }
+.bar { height: 14px; border-radius: var(--r-full); background: var(--field-off); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--primary); border-radius: inherit; }
+.bar[data-level="amber"] i, .bar[data-level="full"] i { background: var(--warning-edge); }
+.inv { display: flex; justify-content: space-between; align-items: center; gap: var(--s-4); padding: var(--s-4) 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.inv .l b { font: 700 20px/1.3 var(--display); color: var(--bar); display: block; }
+.inv .l span { display: block; font-size: 16px; color: var(--ink-2); }
+.inv.due .l span.st { color: var(--warning-ink); font-weight: 600; }
+.inv .r { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
+
+.help li { border-bottom: 1px solid var(--line); }
+.help summary { cursor: pointer; min-height: 48px; display: flex; align-items: center; padding: var(--s-2) 0; font: 700 20px/1.3 var(--display); color: var(--primary); list-style: none; }
+.help summary::-webkit-details-marker { display: none; }
+.help ol { padding: 0 0 var(--s-4) var(--s-6); list-style: decimal; display: grid; gap: var(--s-1); }
+.help .more { padding: 0 0 var(--s-4); }
+
+footer.site { border-top: 1px solid var(--line); padding: var(--s-6) 0 96px; color: var(--ink-2); font-size: 16px; }
+footer.site .wrap { max-width: 720px; display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-3); }
+footer.site a { color: var(--ink-2); }
+
+.notice { margin: var(--s-6) 0 0; padding: var(--s-4) var(--s-5); border: 1px solid var(--warning-line); border-left: 4px solid var(--warning-edge); border-radius: var(--r-2); background: var(--warning-bg); color: var(--warning-ink); display: grid; gap: var(--s-2); }
+.notice q { quotes: "\201C" "\201D"; color: var(--ink); }
+.status { font-size: 16px; color: var(--ink-2); }
+.status.bad { color: var(--warning-ink); font-weight: 600; }
+.rev { display: grid; gap: var(--s-3); padding: var(--s-4); border: 1px solid var(--line); border-radius: var(--r-2); }
+.rev label { display: grid; gap: var(--s-1); font-weight: 600; }
+.rev textarea, .rev input { width: 100%; min-height: 48px; padding: var(--s-3) var(--s-4); border: 1px solid var(--line-2); border-radius: var(--r-2); font: 400 18px/1.5 var(--font); }
+.rev textarea { min-height: 96px; resize: vertical; }
+.orow { border-bottom: 1px solid var(--line); }
+.orow .row { border-bottom: 0; }
+.orow .acts { padding: 0 0 var(--s-4); }
+.nav a.newbtn, .tabs a.newbtn { background: #fff; color: var(--bar); border-radius: 4px; margin: 4px 0; min-height: 48px; font-weight: 700; }
+.nav a.newbtn:hover, .tabs a.newbtn:hover { background: #eaf3fb; color: var(--bar); }
+.nav a.newbtn[aria-current], .tabs a.newbtn[aria-current] { box-shadow: inset 0 -3px 0 #005ea8; }
+.talk { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-5); border: 0; border-radius: var(--r-full); background: #fff; color: var(--bar); font: 700 16px/1.2 var(--font); cursor: pointer; white-space: nowrap; align-self: center; }
+.talk:hover { background: var(--tint); }
+.talk svg, .talkline svg { width: 22px; height: 22px; flex: none; }
+.nav .talk { margin-left: var(--s-4); }
+.tabs .talk { margin: var(--s-2) 0 var(--s-2) var(--s-2); }
+.talk[hidden], .talkline[hidden] { display: none; }
+.talkline { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); margin-top: var(--s-4); padding: var(--s-4) var(--s-5); border: 1px solid var(--tint-line); border-radius: var(--r-2); background: var(--tint); }
+.talkline p { font-weight: 600; color: var(--bar); }
+.talkline p { flex: 1 1 auto; min-width: 0; }
+.talkline .btn { flex: none; white-space: nowrap; }
+.up { display: grid; gap: var(--s-3); }
+.drop { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; padding: var(--s-3) var(--s-4); border: 2px dashed #7fb0dc; border-radius: var(--r-2); background: var(--tint); }
+.drop.over { border-color: var(--primary); background: var(--tint); }
+.drop p { color: var(--ink-2); }
+.drop input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.uplist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3); }
+.uplist li { display: grid; gap: var(--s-1); }
+.uplist .nm { font-weight: 600; overflow-wrap: anywhere; }
+.uplist .bar { height: 10px; }
+.uplist .bar[data-level="done"] i { background: var(--success-edge); }
+.uplist .st { font-size: 16px; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-3); align-items: center; }
+.uplist .st.ok { color: var(--success-ink); font-weight: 600; }
+.uplist .st.bad { color: var(--warning-ink); font-weight: 600; }
+.link-btn { background: none; border: 0; padding: 0; min-height: 48px; color: var(--primary); font: 600 16px/1.2 var(--font); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.todo.files { flex-direction: column; align-items: stretch; }
+.orow .up { padding: 0 0 var(--s-4); }
+@media (max-width: 600px) {
+  .talkline { flex-direction: column; align-items: stretch; }
+  .talkline .btn { width: 100%; }
+  .drop { border: 0; padding: 0; background: none; }
+  .drop p { display: none; }
+  .drop .btn { flex: 1 1 100%; }
+  .todo { flex-direction: column; align-items: stretch; gap: var(--s-3); }
+  .row { grid-template-columns: 1fr; }
+  .row .state { grid-column: 1; grid-row: auto; text-align: left; margin-top: 4px; }
+  .row .state b { display: inline; margin-right: var(--s-2); }
+  a.row .state::after { display: none; }
+  .acts .btn { flex: 1 1 100%; }
+  .inv { flex-direction: column; align-items: stretch; }
+  .inv .r .btn { flex: 1 1 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 354 208" width="64" height="37.6" id="logo" aria-hidden="true" focusable="false">
-      <defs>
-        <linearGradient id="apSteel" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#5b7893"/>
-          <stop offset="1" stop-color="#486480"/>
-        </linearGradient>
-      </defs>
-      <path fill="#0d2a46" d="M133.28 9.00 L148.00 9.00 Q158.32 9.00 165.50 21.00 L272.54 200.00 L211.88 200.00 L176.00 140.00 L176.00 104.50 L135.50 64.00 L135.50 95.00 L82.00 140.00 L82.00 178.00 L67.58 200.00 L8.06 200.00 Z"/>
-      <path fill="#0d2a46" d="M174.12 12.00 L279.00 12.00 A66.50 66.50 0 0 1 279.00 145.00 L253.65 145.00 L229.43 104.50 L276.00 105.00 A26.50 26.50 0 0 0 276.00 52.00 L198.04 52.00 Z"/>
-      <path fill="url(#apSteel)" d="M92.00 200.00 L92.00 145.30 L112.00 128.48 L112.00 200.00 Z M118.50 200.00 L118.50 123.01 L138.50 106.19 L138.50 200.00 Z M145.00 200.00 L145.00 88.35 L165.00 108.35 L165.00 200.00 Z"/>
-    </svg>
-    <div><div class="brand">A&amp;AP</div><div class="sub">Orders</div></div>
-    <div class="conn" id="conn" aria-live="polite"></div>
-  </header>
-  <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
-  <main id="board" hidden>
-    <h1 id="title">Your orders</h1>
-    <p class="updated" id="updated"></p>
-    <section class="card usage" id="usage" aria-label="AI usage this week">
-      <div class="usage-track" id="usage-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-labelledby="usage-line"><i id="usage-fill"></i></div>
-      <p class="usage-line" id="usage-line"></p>
-      <p class="usage-note" id="usage-note" hidden></p>
-    </section>
-    <div class="counts" aria-label="This week">
-      <div class="count" id="count-progress"><b></b><span>In progress</span></div>
-      <div class="count" id="count-week"><b></b><span>Orders this week</span></div>
-      <div class="count" id="count-delivered"><b></b><span>Delivered this week</span></div>
-    </div>
-    <p class="next-start" id="next-start" hidden></p>
-    <h2 class="kicker">Open orders</h2>
-    <div id="orders"></div>
-    <h2 class="kicker">Delivered this week</h2>
-    <div id="delivered"></div>
-    <p class="foot">Private to your office. This page updates by itself.</p>
-  </main>
-</div>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <symbol id="icon-talk" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 8.5h8M8 11.5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
+<header class="appbar">
+  <div class="wrap">
+    <a class="brand" href="#home"><img src="../assets/aap-mark-light.svg" alt="" width="52" height="30"><b>A&amp;AP</b></a>
+    <nav class="nav" id="nav" aria-label="Orders pages"></nav>
+    <div class="right"><a class="meter" id="meter" href="#billing" hidden></a><span class="who" id="who"></span></div>
+  </div>
+</header>
+<nav class="tabs" aria-label="Orders pages, phone"><div class="wrap" id="tabs"></div></nav>
+<div class="meter-row" id="meter-row"></div>
+<p class="gate" id="gate" aria-live="polite">Loading…</p>
+<main class="col" id="main" hidden></main>
+<footer class="site" id="foot" hidden><div class="wrap" id="foot-line"></div></footer>
+
+<script src="agent.js?v=20261113c" defer></script>
 <script>
 (function () {
   "use strict";
-  var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPwO_MB0iqsrAarETBMjLEdV5GfyFd_tgh_PiEA4z_w/exec";   // the form's web app /exec URL; the board reads the same way the form does
-  var T = new URLSearchParams(location.search).get("t") || "", viaScript = false, timer = null;
+  var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPwO_MB0iqsrAarETBMjLEdV5GfyFd_tgh_PiEA4z_w/exec";
+  var Q = new URLSearchParams(location.search), T = Q.get("t") || "", DESK = Q.has("desk"), viaScript = false, timer = null;
+  var FORM = /^https:\/\/appraisalpartners\.net\/form\/\?t=([A-Za-z0-9_-]{32,64})(?:&r=([a-f0-9]{64}))?$/, ID = /^[A-Za-z0-9_-]{10,}$/;
+  var B = null, last = null, sentAt = 0, find = {}, status = {}, open = {}, drafts = {}, boxKey = "aap-board-outbox-" + T, agentInit = false, agentReady = false;
   function $(id) { return document.getElementById(id); }
-  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
-  function gate(msg) { $("gate-msg").textContent = msg; $("gate").hidden = false; $("board").hidden = true; }
-  function jsonp() {
+  function h(spec, props) {
+    var m = /^([a-z0-9]+)((?:\.[a-z0-9-]+)*)$/.exec(spec), n = document.createElement(m[1]);
+    if (m[2]) n.className = m[2].slice(1).replace(/\./g, " ");
+    var kids = Array.prototype.slice.call(arguments, 2);
+    if (props && (typeof props !== "object" || props.nodeType)) { kids.unshift(props); props = null; }
+    for (var k in props || {}) { if (props[k] == null || props[k] === false) continue; if (k === "text") n.textContent = props[k]; else n.setAttribute(k, props[k]); }
+    kids.forEach(function (c) { if (c != null && c !== false && c !== "") n.appendChild(c.nodeType ? c : document.createTextNode(String(c))); });
+    return n;
+  }
+  function gate(msg) { $("gate").textContent = msg; $("gate").hidden = false; $("main").hidden = $("foot").hidden = true; }
+
+  function jsonp(t) {
     return new Promise(function (resolve, reject) {
       var cb = "aap" + Date.now() + "_" + Math.floor(Math.random() * 1e6), s = document.createElement("script");
-      var t = setTimeout(function () { end(null); }, 20000);
+      var timeout = setTimeout(function () { end(null); }, 20000);
       function end(r) {
-        clearTimeout(t); s.remove();
+        clearTimeout(timeout); s.remove();
         if (r) delete window[cb]; else window[cb] = function () { delete window[cb]; };
         if (r && r.ok) resolve(r); else reject({ code: r && r.error });
       }
       window[cb] = end;
       s.onerror = function () { end(null); };
-      s.src = API + "?t=" + encodeURIComponent(T) + "&callback=" + cb;
+      s.src = API + "?t=" + encodeURIComponent(t) + "&client=2&callback=" + cb;
       document.head.appendChild(s);
     });
   }
-  function read() {
-    if (viaScript) return jsonp();
-    return fetch(API + "?t=" + encodeURIComponent(T), { credentials: "omit", cache: "no-store" })
+  function read(t) {
+    t = t || T;
+    if (viaScript) return jsonp(t);
+    return fetch(API + "?t=" + encodeURIComponent(t) + "&client=2", { credentials: "omit", cache: "no-store" })
       .then(function (r) { return r.json(); })
       .then(function (r) { if (r && r.ok) return r; throw { code: (r && r.error) || "bad_reply" }; },
-            function () { viaScript = true; return jsonp(); });
+            function () { viaScript = true; return jsonp(t); });
   }
+  function post(doc) {
+    return fetch(API, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: doc });
+  }
+
   function when(iso, withDay) {
     var d = new Date(iso); if (isNaN(d)) return "";
     var o = { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" };
     if (withDay) { o.weekday = "short"; o.month = "short"; o.day = "numeric"; }
     try { return d.toLocaleString("en-US", o); } catch (e) { return d.toLocaleString(); }
   }
-  var TONE = { "Your review": "you", "Files missing": "you", "Ready to start": "you", "Delivered": "done", "Delivering": "done" };
-  function metric(dl, label, value) {
-    var d = el("div"); d.appendChild(el("dt", null, label)); d.appendChild(el("dd", null, value === "" || value == null ? "—" : String(value))); dl.appendChild(d);
+  function day(iso) {
+    var d = /^\d{4}-\d{2}-\d{2}$/.test(iso || "") ? new Date(iso + "T12:00:00") : new Date(iso);
+    return isNaN(d) ? "" : d.toLocaleDateString("en-US", { timeZone: "America/Chicago", month: "short", day: "numeric", year: "numeric" });
   }
-  function orderCard(o, delivered) {
-    var card = el("article", "card"), head = el("div", "order-head"), left = el("div");
-    left.appendChild(el("div", "street", o.street || o.order));
-    left.appendChild(el("div", "code", o.order));
-    head.appendChild(left);
-    var pill = el("span", "pill", delivered ? "Delivered" : o.stage); pill.dataset.tone = delivered ? "done" : TONE[o.stage] || ""; head.appendChild(pill);
-    card.appendChild(head);
-    card.appendChild(el("p", "next", delivered ? "Delivered " + when(o.delivered_at, true) + "." : o.next));
-    var dl = el("dl", "metrics");
-    metric(dl, "Score", o.score);
-    metric(dl, "Change rounds", o.change_rounds + " of " + (o.rounds || 2));
-    metric(dl, "Our mistakes fixed", o.our_mistakes);
-    card.appendChild(dl);
-    if (/^https:\/\/appraisalpartners\.net\/form\/\?t=[A-Za-z0-9_-]{32,64}$/.test(o.form || "")) {
-      var a = el("a", "open-form", "Open form"); a.href = o.form; a.target = "_blank"; a.rel = "noopener noreferrer"; card.appendChild(a);
+  var SENT = "Sent. Your desk answers within a few minutes.";
+
+  function rows() { return (B.orders || []).slice(); }
+  function delivered() { return (B.delivered || []).slice(); }
+  function byCode(code) { return rows().concat(delivered()).filter(function (o) { return o.order === code; })[0]; }
+  function formOf(o) { return o && FORM.test(o.form || "") ? o.form : ""; }
+  function needsOf(code) { return (B.needs || []).filter(function (n) { return n.order === code; }); }
+  function plan() { var u = B.usage || B.usage_bar; return u && typeof u === "object" ? u : null; }
+  function billName() { return plan() ? "Plan & billing" : "Billing"; }
+  function messaging() { return Array.isArray(B.messages); }
+  function filesHref(o) {
+    var f = (o && o.files) || {};
+    if (f.how === "drive" && ID.test(f.id || "")) return "https://drive.google.com/drive/folders/" + f.id;
+    return "mailto:desk@aandap.com?subject=" + encodeURIComponent("Files · " + ((o && o.order) || "") + " " + ((o && o.street) || ""));
+  }
+  function filesLabel(o) { return o && o.files && o.files.how === "drive" ? "Add files" : "Send files"; }
+  function out(a) { if (!/^(mailto:|#)/.test(a.getAttribute("href") || "")) { a.target = "_blank"; a.rel = "noopener noreferrer"; } return a; }
+  var LABEL = { review: "Review report", answer: "Answer questions", start: "Start", pay: "Pay" };
+  function needHref(n, o) { return n.kind === "files" ? (canUpload(o) ? "#orders/" + n.order : filesHref(o)) : formOf(o); }
+  function needAction(n, o) {
+    var href = needHref(n, o); if (!href) return null;
+    var a = h("a.btn", { href: href }, n.kind === "files" ? filesLabel(o) : LABEL[n.kind] || "Open order");
+    return n.kind === "files" ? out(a) : a;
+  }
+  function needText(n, o) {
+    var text = String(n.text || ""), listed = !!(o && Array.isArray(o.still));
+    var still = (listed ? o.still : text.replace(/^Add what's missing:?\s*/, "").replace(/\s*\(\+\d+ more\)\s*$/, "").split(/;\s*/))
+      .filter(function (l) { return !/:\s*$/.test(l); }).map(function (l) { return String(l).replace(/[.\s]+$/, ""); }).filter(Boolean);
+    var more = listed ? still.length > 3 : /\(\+\d+ more\)\s*$/.test(text);
+    if (n.kind === "review") return "Ready for your review.";
+    if (n.kind === "files" && still.length) return "Still needed: " + still.slice(0, 3).join("; ") + (more ? "; and more." : ".");
+    if (n.kind === "start") return "Tap Start when your file is final.";
+    if (n.kind === "pay") return n.text.replace(/^Payment due /, "Payment due: ") + ".";
+    return n.text;
+  }
+
+  function meter() {
+    var u = plan(); if (!u) return null;
+    var pct = Math.max(0, Math.round(Number(u.pct) || 0)), red = u.state === "red", level = red ? "full" : (u.state === "amber" || pct >= 85) ? "amber" : "calm";
+    var reset = u.resets_text ? " · resets " + u.resets_text : "";
+    return { pct: Math.min(100, pct), level: level, main: u.stale ? "This week: updating" : red ? "Week used" : "This week " + pct + "%", reset: u.stale ? "" : reset };
+  }
+  function bar() {
+    var NAV = [["#home", "Home"], ["#orders", "Orders"], ["#delivered", "Delivered"], ["#billing", billName()], ["#help", "Help"]], page = route();
+    [$("nav"), $("tabs")].forEach(function (host) {
+      host.textContent = "";
+      NAV.forEach(function (n) { var a = h("a", { href: n[0] }, n[1]); if (n[0] === "#" + page) a.setAttribute("aria-current", "page"); host.appendChild(a); });
+      var nw = h("a.newbtn", { href: "#new" }, "New order"); if (page === "new") nw.setAttribute("aria-current", "page"); host.appendChild(nw);
+      host.appendChild(talk("talk"));
+    });
+    $("who").textContent = B.person || "";
+    var m = meter(), top = $("meter"), row = $("meter-row");
+    row.textContent = ""; top.hidden = !m;
+    if (m) {
+      var fill = function () { return h("i", h("b", { style: "width:" + m.pct + "%" })); };
+      top.textContent = ""; top.dataset.level = m.level; top.appendChild(fill()); top.appendChild(h("span", m.main, h("span.m-reset", m.reset)));
+      row.appendChild(h("a.meter", { href: "#billing", "data-level": m.level }, fill(), h("span", m.main + m.reset)));
     }
-    return card;
   }
-  function list(host, rows, delivered, empty) {
+
+  function talk(spec) {
+    var b = spec === "talk" ? h("button.talk", { type: "button", hidden: !agentReady }, svgUse("icon-talk"), "Talk to your agent")
+                            : h("button.btn", { type: "button" }, svgUse("icon-talk"), "Talk to your agent");
+    b.addEventListener("click", function () { var A = window.AAPAgent; if (A && typeof A.open === "function") A.open(); });
+    return b;
+  }
+  function showTalk() { document.querySelectorAll(".talk, .talkline").forEach(function (b) { b.hidden = !agentReady; }); }
+
+  var UP_TYPES = /\.(zap|zip|pdf|jpe?g|png|heic|xml|csv|xlsx|docx|txt|eml)$/i, UP_MAX = 500 * 1024 * 1024, CHUNK = 8 * 1024 * 1024;
+  var UP_ACCEPT = ".zap,.zip,.pdf,.jpg,.jpeg,.png,.heic,.xml,.csv,.xlsx,.docx,.txt,.eml";
+  var ups = {}, upQueue = [], upBusy = false, upN = 0;
+  function canUpload(o) { return !!(o && o.files && o.files.how === "drive" && ID.test(o.files.id || "")); }
+  function size(n) { return n >= 1048576 ? (n / 1048576).toFixed(n >= 104857600 ? 0 : 1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB"; }
+  function mailFiles(o) { return h("a", { href: "mailto:desk@aandap.com?subject=" + encodeURIComponent("Files · " + ((o && o.order) || "") + " " + ((o && o.street) || "")) }, "desk@aandap.com"); }
+  function uploader(o) {
+    if (!canUpload(o)) return h("div.up", { "data-up": o.order }, h("p", "Email your files to ", mailFiles(o), "."));
+    var input = h("input", { type: "file", multiple: "multiple", accept: UP_ACCEPT, tabindex: "-1", "aria-hidden": "true" });
+    var choose = h("button.btn.ghost", { type: "button" }, "Choose files"), drop = h("div.drop", h("p", "Drop files here, or"), choose, input);
+    choose.addEventListener("click", function () { input.click(); });
+    input.addEventListener("change", function () { addFiles(o.order, input.files); input.value = ""; });
+    drop.addEventListener("dragover", function (e) { e.preventDefault(); drop.classList.add("over"); });
+    drop.addEventListener("dragleave", function () { drop.classList.remove("over"); });
+    drop.addEventListener("drop", function (e) { e.preventDefault(); drop.classList.remove("over"); if (e.dataTransfer && e.dataTransfer.files.length) addFiles(o.order, e.dataTransfer.files); });
+    return h("div.up", { "data-up": o.order }, drop, upList(o.order), h("p.meta", "Or send files by email: ", mailFiles(o), "."));
+  }
+  function upList(order) {
+    var list = h("ul.uplist", { "aria-live": "polite" });
+    (ups[order] || []).forEach(function (it) {
+      var pct = it.size ? Math.floor(100 * it.sent / it.size) : 0, st;
+      if (it.state === "received") st = h("p.st.ok", "Received " + when(it.at));
+      else if (it.state === "refused") st = h("p.st.bad", it.note);
+      else if (it.state === "failed") {
+        var again = h("button.link-btn", { type: "button" }, "Try again");
+        again.addEventListener("click", function () { it.state = "waiting"; it.note = ""; upQueue.push(it); paintUps(order); pump(); });
+        st = h("p.st.bad", it.note, " ", again, it.email ? h("span", " Or email it to ", mailFiles(byCode(order) || { order: order }), ".") : null);
+      } else st = h("p.st", it.state === "waiting" ? "Waiting…" : "Sending… " + pct + "%");
+      list.appendChild(h("li", { "data-item": it.id }, h("span.nm", it.name + " · " + size(it.size)),
+        it.state === "refused" ? null : h("div.bar", { "data-level": it.state === "received" ? "done" : "" }, h("i", { style: "width:" + (it.state === "received" ? 100 : pct) + "%" })), st));
+    });
+    return list;
+  }
+  function paintUps(order) {
+    document.querySelectorAll(".up").forEach(function (u) { if (u.getAttribute("data-up") === order) { var old = u.querySelector(".uplist"); if (old) old.replaceWith(upList(order)); } });
+  }
+  function bump(it) {
+    if (it.progress) it.progress();
+    var pct = Math.floor(100 * it.sent / it.size);
+    document.querySelectorAll("[data-item]").forEach(function (li) {
+      if (li.getAttribute("data-item") !== it.id) return;
+      var bar = li.querySelector(".bar i"), st = li.querySelector(".st"); if (bar) bar.style.width = pct + "%"; if (st) st.textContent = "Sending… " + pct + "%";
+    });
+  }
+  function addFiles(order, files) {
+    Array.prototype.forEach.call(files, function (f) {
+      var it = { id: "up" + (++upN), order: order, file: f, name: f.name, size: f.size, sent: 0, done: 0, state: "waiting", url: "" };
+      if (!UP_TYPES.test(f.name)) { it.state = "refused"; it.note = "We can't take this kind of file. Send ZAP, ZIP, PDF, photos (JPG, PNG, HEIC), XML, CSV, Excel, Word, text or email files."; }
+      else if (f.size > UP_MAX) { it.state = "refused"; it.note = "This file is over 500 MB. Email desk@aandap.com and we'll help."; }
+      else if (!f.size) { it.state = "refused"; it.note = "This file is empty."; }
+      else upQueue.push(it);
+      (ups[order] = ups[order] || []).push(it);
+    });
+    paintUps(order); pump();
+  }
+  function pump() {
+    if (upBusy || !upQueue.length) return;
+    var it = upQueue.shift(); upBusy = true; it.state = "sending"; paintUps(it.order);
+    (it.url ? Promise.resolve(it.url) : opening(it)).then(function (url) { it.url = url; return pieces(it); }).then(function () {
+      it.state = "received"; it.at = new Date(Date.now()).toISOString();
+    }, function (e) {
+      it.state = "failed"; it.note = (e && e.note) || "Sending stopped."; it.email = !!(e && e.email); if (e && e.restart) { it.url = ""; it.sent = it.done = 0; }
+    }).then(function () { upBusy = false; paintUps(it.order); pump(); });
+  }
+  function opening(it) {
+    return fetch(API, { method: "POST", credentials: "omit", headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify({ t: T, upload: { order: it.order, name: it.name, size: it.size }, origin: location.origin }) })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (r && r.ok && /^https:\/\/www\.googleapis\.com\/upload\//.test(r.url || "")) return r.url;
+        var e = (r && r.error) || "";
+        throw e === "type" ? { note: "We can't take this kind of file." } : e === "size" ? { note: "This file is over 500 MB.", email: true }
+          : e === "folder" || e === "unknown" ? { note: "We can't take files here for this order right now.", email: true } : { note: "Couldn't start sending.", email: true };
+      }, function (e) { throw e && e.note ? e : { note: "Couldn't reach us. Check your connection.", email: true }; });
+  }
+  function pieces(it) {
+    return new Promise(function (resolve, reject) {
+      var tries = 0;
+      function landed(x) { var r = /bytes=0-(\d+)/.exec(x.getResponseHeader("Range") || ""); return r ? +r[1] + 1 : null; }
+      function send(from) {
+        var to = Math.min(it.size, from + CHUNK), x = new XMLHttpRequest();
+        x.open("PUT", it.url);
+        x.setRequestHeader("Content-Range", "bytes " + from + "-" + (to - 1) + "/" + it.size);
+        x.upload.onprogress = function (e) { it.sent = from + e.loaded; bump(it); };
+        x.onload = function () {
+          if (x.status === 200 || x.status === 201) { it.sent = it.done = it.size; return resolve(); }
+          if (x.status === 308) { tries = 0; it.done = landed(x) == null ? to : landed(x); it.sent = it.done; bump(it); return send(it.done); }
+          if (x.status === 404 || x.status === 410) return reject({ note: "Sending stopped.", restart: true });
+          again();
+        };
+        x.onerror = again;
+        x.send(it.file.slice(from, to));
+      }
+      function ask() {
+        var x = new XMLHttpRequest();
+        x.open("PUT", it.url);
+        x.setRequestHeader("Content-Range", "bytes */" + it.size);
+        x.onload = function () {
+          if (x.status === 200 || x.status === 201) { it.sent = it.done = it.size; return resolve(); }
+          if (x.status === 308) { var at = landed(x); it.done = at == null ? 0 : at; it.sent = it.done; return send(it.done); }
+          if (x.status === 404 || x.status === 410) return reject({ note: "Sending stopped.", restart: true });
+          again();
+        };
+        x.onerror = again;
+        x.send();
+      }
+      function again() { if (++tries > 6) return reject({ note: "Sending stopped. Check your connection." }); setTimeout(ask, Math.min(15000, 1000 * tries * tries)); }
+      if (it.done) ask(); else send(0);
+    });
+  }
+  window.addEventListener("beforeunload", function (e) { if (upBusy || upQueue.length || Object.keys(newUps).some(function (k) { return newUps[k].sent < newUps[k].size; })) { e.preventDefault(); e.returnValue = ""; } });
+
+  function route() { var p = (location.hash || "#home").slice(1).split("/")[0]; return ["home", "orders", "delivered", "billing", "help", "new"].indexOf(p) >= 0 ? p : "home"; }
+  function svgUse(id) { var s = document.createElementNS("http://www.w3.org/2000/svg", "svg"), u = document.createElementNS("http://www.w3.org/2000/svg", "use"); u.setAttribute("href", "#" + id); s.setAttribute("aria-hidden", "true"); s.appendChild(u); return s; }
+  function findBox(page) {
+    var input = h("input", { type: "text", placeholder: "Find by address or order number", "aria-label": "Find by address or order number", value: find[page] || "" });
+    input.addEventListener("input", function () { find[page] = input.value; paintList(page); });
+    return h("label.find", svgUse("icon-search"), input);
+  }
+  function match(o, page) { var q = (find[page] || "").trim().toLowerCase(); return !q || [o.street, o.address, o.order, o.city].join(" ").toLowerCase().indexOf(q) >= 0; }
+  function sorted() { return rows().sort(function (a, b) { return (needsOf(b.order).length ? 1 : 0) - (needsOf(a.order).length ? 1 : 0); }); }
+  function orderRow(o, withFiles) {
+    var you = needsOf(o.order).length > 0, meta = [o.city, o.order, o.lane, o.client_due ? "Client due " + o.client_due : ""].filter(Boolean).join(" · ");
+    var state = you ? "Needs your attention" : o.due && o.due !== "after you start" ? "Ready " + o.due : o.due === "after you start" ? "Ready date set at Start" : o.next || "";
+    var link = formOf(o), row = h(link ? "a.row" : "div.row", link ? { href: link, "data-tone": you ? "you" : "" } : { "data-tone": you ? "you" : "" },
+      h("span.street", o.street || o.order), h("span.meta", meta), h("span.state", h("b", o.stage || ""), state));
+    if (!withFiles || !o.files) return row;
+    return h("div.orow", row, uploader(o));
+  }
+  function home() {
+    var items = B.needs || [], needs = h("section.sec", h("h2", items.length ? "Needs your attention (" + items.length + ")" : "Needs your attention"));
+    if (B.next_start) needs.appendChild(h("div.todo", h("p", B.next_start)));
+    items.forEach(function (n) {
+      var o = byCode(n.order), text = h("p", h("b", n.street || n.order), needText(n, o));
+      needs.appendChild(n.kind === "files" && o ? h("div.todo.files", text, uploader(o)) : h("div.todo", text, needAction(n, o)));
+    });
+    if (!items.length && !B.next_start) needs.appendChild(h("p.empty", "Nothing needs you right now."));
+    if (newSent.length) needs.appendChild(h("div.todo", h("p", h("b", newSent.length === 1 ? "Your new order is with the desk." : newSent.length + " new orders are with the desk."),
+      " It shows under Open orders when the desk opens it, within a few minutes.")));
+    if (messaging()) needs.appendChild(h("div.talkline", { hidden: !agentReady }, h("p", "Questions about an order or a file? Your agent answers here."), talk("btn")));
+    var list = h("div.rows");
+    sorted().forEach(function (o) { list.appendChild(orderRow(o, true)); });
+    return h("div", needs, h("section.sec", h("h2", "Open orders (" + rows().length + ")", h("a", { href: "#orders" }, "All orders")), rows().length ? list : h("p.empty", "No open orders.")));
+  }
+  function paintList(page) {
+    var host = $("list"); if (!host) return;
     host.textContent = "";
-    if (!rows.length) { host.appendChild(el("p", "empty card", empty)); return; }
-    rows.forEach(function (o) { host.appendChild(orderCard(o, delivered)); });
+    var items = page === "orders" ? sorted() : delivered();
+    items.filter(function (o) { return match(o, page); }).forEach(function (o) { host.appendChild(page === "orders" ? orderRow(o, true) : deliveredRow(o)); });
+    if (!host.children.length) host.appendChild(h("p.empty", items.length ? "No order matches that." : page === "orders" ? "No open orders." : "Nothing delivered in the last 30 days."));
   }
-  function paint(b) {
-    var u = b.usage_bar || {}, pct = Math.max(0, Math.round(Number(u.pct) || 0)), ip = b.in_progress || {};
-    $("title").textContent = b.title || "Your orders";
-    $("updated").textContent = b.as_of ? "Updated " + when(b.as_of) + " Central" : "";
-    $("usage").dataset.state = u.state === "red" || u.state === "amber" ? u.state : "ok"; $("usage").dataset.stale = u.stale ? "1" : "";
-    $("usage-fill").style.width = Math.min(100, pct) + "%";
-    $("usage-track").setAttribute("aria-valuenow", String(Math.min(100, pct)));
-    $("usage-line").textContent = u.line || "AI usage this week: " + pct + "%";
-    $("usage-note").textContent = u.note || ""; $("usage-note").hidden = !u.note;
-    function count(id, value, full) { var c = $(id); c.querySelector("b").textContent = value; c.classList.toggle("full", !!full); }
-    count("count-progress", (ip.count || 0) + " of " + (ip.limit || 2), (ip.count || 0) >= (ip.limit || 2));
-    count("count-week", (u.orders || 0) + " of " + (u.cap || 7), (u.orders || 0) >= (u.cap || 7));
-    count("count-delivered", String((b.delivered || []).length), false);
-    $("next-start").textContent = b.next_start || ""; $("next-start").hidden = !b.next_start;
-    list($("orders"), b.orders || [], false, "No open orders.");
-    list($("delivered"), b.delivered || [], true, "Nothing delivered yet this week.");
-    $("gate").hidden = true; $("board").hidden = false;
+  function orders() {
+    return h("div", h("section.top", h("h1", "Orders")),
+      h("section.sec", { style: "padding-top:0" }, h("h2", "Open orders (" + rows().length + ")"), findBox("orders"), h("div.rows", { id: "list" }),
+        h("p.meta", { style: "margin-top:16px" }, "Orders that need your attention come first. Each order opens its own page, with its review, files and changes. Files you add here go straight to that order. Delivered reports are under ", h("a", { href: "#delivered" }, "Delivered"), ".")));
+  }
+  function download(label, id, ghost) { return out(h(ghost ? "a.btn.ghost" : "a.btn", { href: "https://drive.google.com/uc?export=download&id=" + id }, label)); }
+  function statusLine(key) { var s = status[key]; return s ? h(s.bad ? "p.status.bad" : "p.status", s.text) : null; }
+  function blurRev() { var active = document.activeElement; if (active && active.closest && active.closest("#main .rev") && active.blur) active.blur(); }
+  function sendFrom(key, order, text, done) {
+    blurRev();
+    status[key] = { text: "Sending…" }; paintPage();
+    send({ order: order, text: text, id: (status[key] || {}).id || "" }).then(function (r) {
+      status[key] = r.ok ? { text: SENT } : { text: r.error || "Not sent yet.", bad: true, id: r.id, done: done };
+      if (r.ok && done) done();
+      paintPage();
+    });
+  }
+  function settle() {
+    Object.keys(status).forEach(function (key) {
+      var s = status[key];
+      if (s && s.bad && s.id && confirmed(s.id)) { status[key] = { text: SENT }; if (s.done) s.done(); }
+    });
+  }
+  function revisionForm(o) {
+    var d = drafts[o.order] || (drafts[o.order] = { text: "", due: "" });
+    var text = h("textarea", { rows: "4", maxlength: "2800", "aria-label": "What the lender or client asks for" }), due = h("input", { type: "text", maxlength: "100", placeholder: "Optional", "aria-label": "Client due date" });
+    text.value = d.text; due.value = d.due;
+    text.addEventListener("input", function () { d.text = text.value; });
+    due.addEventListener("input", function () { d.due = due.value; });
+    var go = h("button.btn", { type: "button" }, "Send revision"), cancel = h("button.btn.ghost", { type: "button" }, "Cancel");
+    go.addEventListener("click", function () {
+      d.text = text.value; d.due = due.value;
+      var words = d.text.trim(), when = d.due.trim(); if (!words) { text.focus(); return; }
+      var msg = "Revision request: " + words + (when ? "\nClient due date: " + when : "");
+      if (msg.length > 3000) { blurRev(); status["rev-" + o.order] = { text: "Please shorten this by " + (msg.length - 3000) + " characters. Your words are kept.", bad: true }; paintPage(); return; }
+      var sent = { text: d.text, due: d.due };
+      sendFrom("rev-" + o.order, o.order, msg, function () {
+        var now = drafts[o.order];
+        if (!now || now.text === sent.text && now.due === sent.due) { open[o.order] = false; delete drafts[o.order]; }
+      });
+    });
+    cancel.addEventListener("click", function () { open[o.order] = false; delete drafts[o.order]; status["rev-" + o.order] = null; paintPage(); });
+    return h("div.rev", h("label", "What the lender or client asks for", text), h("label", "Client due date", due),
+      o.files ? h("div", h("p", { style: "font-weight:600;margin-bottom:8px" }, "Add the lender's letter"), uploader(o)) : null, h("div.acts", go, cancel));
+  }
+  function deliveredRow(o) {
+    var vers = Array.isArray(o.versions) && o.versions.length ? o.versions : [{ n: 1, at: o.delivered_at, kind: o.update ? "updated" : "delivered", total_file: o.total_file }];
+    var latest = vers[0], earlier = vers.slice(1), link = formOf(o), tf = o.total_file;
+    var acts = h("div.acts");
+    if (tf && ID.test(tf.id || "")) acts.appendChild(download("Download TOTAL file", tf.id));
+    if (ID.test(o.pdf || "")) acts.appendChild(download("Download report PDF", o.pdf, true));
+    if (messaging() && link && !o.payment_due) {
+      var rev = h("button.btn.ghost", { type: "button", "aria-expanded": String(!!open[o.order]) }, "Send a revision");
+      rev.addEventListener("click", function () { open[o.order] = !open[o.order]; paintPage(); });
+      acts.appendChild(rev);
+    }
+    if (link) acts.appendChild(h("a.btn.ghost", { href: link }, o.payment_due ? "Pay" : "Open order"));
+    var more = h("div.more", h("span.meta", h("b", "Version " + latest.n + " · Latest · " + day(latest.at))), acts);
+    if (open[o.order]) more.appendChild(revisionForm(o));
+    var sent = statusLine("rev-" + o.order); if (sent) more.appendChild(sent);
+    if (o.payment_due) more.appendChild(h("p.balance", "Balance due: " + o.payment_due + ". Your files follow payment."));
+    if (tf) more.appendChild(h("p.meta", out(h("a", { href: "../total-file.html" }, "Where does the TOTAL file go?"))));
+    if (earlier.length) {
+      var d = h("details.hist", h("summary", "Earlier versions (" + earlier.length + ")"));
+      earlier.forEach(function (v) {
+        var r = h("div.acts", h("span.meta", "Version " + v.n + " · " + day(v.at)));
+        if (v.total_file && ID.test(v.total_file.id || "")) r.appendChild(download("Download TOTAL file", v.total_file.id, true));
+        d.appendChild(r);
+      });
+      more.appendChild(d);
+    }
+    return h("div.row", h("span.street", o.street || o.order), h("span.meta", [o.city, o.order, "Delivered " + day(o.delivered_at)].filter(Boolean).join(" · ")), more);
+  }
+  function deliveredPage() {
+    return h("div", h("section.top", h("h1", "Delivered reports"), h("p", "Review and sign the report before sending it to your client.")),
+      h("section.sec", { style: "padding-top:0" }, findBox("delivered"), h("div.rows", { id: "list" })));
+  }
+  function billing() {
+    var main = h("div"), u = plan(), m = meter();
+    main.appendChild(h("section.top", h("h1", billName())));
+    if (u) {
+      var pct = Math.max(0, Math.round(Number(u.pct) || 0)), refill = h("button.btn", { type: "button" }, "Request a refill");
+      refill.addEventListener("click", function () {
+        if (confirm("Send the desk a request to add a refill to this week?")) sendFrom("refill", null, "Please add a refill to this week's usage.");
+      });
+      main.appendChild(h("section.sec", { style: "padding-top:0" }, h("h2", "This week's usage"), h("div.usage",
+        h("div.big", h("b", u.stale ? "Updating" : pct + "% used"), h("span.meta", [u.cap ? (u.orders || 0) + " of " + u.cap + " orders started this week" : "", u.resets_text ? "resets " + u.resets_text : ""].filter(Boolean).join(" · "))),
+        h("div.bar", { "data-level": m.level }, h("i", { style: "width:" + m.pct + "%" })),
+        h("p", "When the week is used up, Start waits for the reset. Orders already started still finish."),
+        messaging() ? h("div.acts", refill) : null, statusLine("refill"))));
+    }
+    main.appendChild(h("section.sec", h("h2", "Invoices"), h("p", "Invoices come by email for now."),
+      h("p.meta", { style: "margin-top:16px" }, "Questions: ", h("a", { href: "mailto:desk@aandap.com" }, "desk@aandap.com"))));
+    return main;
+  }
+  function help() {
+    var TOPICS = [
+      ["Where does the delivered TOTAL file go?", ["Open your TOTAL folder, or tap Download TOTAL file under Delivered.", "Find the file named with the order number and address.", "Open it in TOTAL, review, then sign."], "../total-file.html"],
+      ["Fix a signing error", ["Open the report in TOTAL.", "Remove the signature.", "Make the fix.", "Run the error check.", "Sign again."]],
+      ["Export comps from your MLS", ["In your MLS, select the comps.", "Choose Export, CSV format.", "Save the file and add it to the order's files with Add files."]],
+      ["Unsign, fix, re-sign after a lender revision", ["Send the lender's conditions with Send a revision under Delivered.", "Wait for the corrected report in your TOTAL folder.", "Open it, review the changes, then sign and deliver to your client."]],
+      ["How ordering works", ["Put the engagement letter and your TOTAL file in your orders folder, or email them to desk@aandap.com.", "We confirm by email, and the order shows here.", "Each order's page shows what we still need.", "Tap Start on the order's page when your file is final."]]
+    ];
+    var list = h("ul.help");
+    TOPICS.forEach(function (t) {
+      var ol = h("ol"); t[1].forEach(function (s) { ol.appendChild(h("li", s)); });
+      list.appendChild(h("li", h("details", h("summary", t[0]), ol, t[2] ? h("p.more", out(h("a", { href: t[2] }, "Step by step, with pictures"))) : null)));
+    });
+    return h("div", h("section.top", h("h1", "Help with reports and orders"),
+        h("div.acts", { style: "margin-top:12px" }, out(h("a.btn", { href: "../total-file.html" }, "Where your TOTAL file goes"))),
+        h("p.meta", { style: "margin-top:12px" }, "Questions? Ask your agent, or email ", h("a", { href: "mailto:desk@aandap.com" }, "desk@aandap.com"), ".")),
+      h("section.sec", list));
+  }
+  function notice() {
+    var failed = outbox().filter(function (i) { return !i.sent && i.failed; });
+    if (!failed.length) return null;
+    var box = h("div.notice", { role: "status" }, h("p", h("b", failed.length === 1 ? "1 message not sent yet. " : failed.length + " messages not sent yet. "), kept()));
+    failed.forEach(function (i) {
+      var again = h("button.link-btn", { type: "button" }, "Try again"), drop = h("button.link-btn", { type: "button" }, "Discard");
+      again.addEventListener("click", function () { flush(); });
+      drop.addEventListener("click", function () { if (!confirm("Discard this message? It has not been sent.")) return; keep(outbox().filter(function (x) { return x.key !== i.key; })); paintPage(); agentSync(); });
+      box.appendChild(h("p", h("q", i.text.length > 80 ? i.text.slice(0, 80) + "…" : i.text), " ", again, " · ", drop));
+    });
+    return box;
+  }
+  function paintPage() {
+    var page = route(), main = $("main"), y = window.scrollY, active = document.activeElement;
+    if (active && active.closest && active.closest("#main .find")) return paintList(page);
+    if (active && active.closest && active.closest("#main .rev")) return;
+    if (page === "new" && newMounted && main.querySelector(".aap-new-root")) return;
+    main.textContent = "";
+    var n = notice(); if (n) main.appendChild(n);
+    main.appendChild(({ home: home, orders: orders, delivered: deliveredPage, billing: billing, help: help, new: newOrderPage })[page]());
+    if (page === "orders" || page === "delivered") paintList(page);
+    window.scrollTo(0, y);
+  }
+
+  var newScript = null, newState = "", newMounted = false, newRoot = null, newDone = false, newSent = [], newUps = {};
+  var newDraftKey = "aap-board-newdraft-" + T, newDraftMem = null, newRid = "", newMine = null, newBlank = false;
+  try { localStorage.removeItem("aap-board-neworder-" + T); } catch (e) {}
+  function newOrderOk() { return Array.isArray(B.lanes) && B.lanes.length > 0 && !!B.new_order_files && B.new_order_files.how === "drive" && ID.test(B.new_order_files.id || ""); }
+  function emailOrder() { return h("p", "Email your order to ", h("a", { href: "mailto:desk@aandap.com?subject=" + encodeURIComponent("New order") }, "desk@aandap.com"), ", with the engagement letter and your files."); }
+  function newOrderPage() {
+    if (!newOrderOk()) return h("div", h("section.top", h("h1", "New order"), emailOrder()));
+    if (newMounted && newRoot) return newRoot;
+    var root = newRoot = h("div.neworder");
+    loadNewOrder(function (ok) {
+      if (newRoot !== root) return;
+      var A = window.AAPNewOrder;
+      try { if (!ok || !A || typeof A.mount !== "function") throw 0; A.mount(root, newOrderCtx()); newMounted = true; newDone = false; }
+      catch (e) { newMounted = false; newRoot = null; root.textContent = ""; root.appendChild(h("section.top", h("h1", "New order"), emailOrder())); }
+    });
+    return root;
+  }
+  function loadNewOrder(done) {
+    if (window.AAPNewOrder) return done(true);
+    if (newState === "failed") return done(false);
+    if (!newScript) {
+      newScript = document.createElement("script"); newScript.src = "neworder.js?v=20261113e"; newScript.defer = true; newState = "loading";
+      newScript.addEventListener("load", function () { newState = "loaded"; });
+      newScript.addEventListener("error", function () { newState = "failed"; });
+      document.head.appendChild(newScript);
+    }
+    newScript.addEventListener("load", function () { done(true); });
+    newScript.addEventListener("error", function () { done(false); });
+  }
+  function leaveNewOrder() {
+    if (!newMounted || route() === "new" || !newDone) return;
+    dropNewOrder();
+  }
+  function dropNewOrder() {
+    newMounted = false; newRoot = null; newDone = false;
+    try { window.AAPNewOrder.unmount(); } catch (e) {}
+  }
+  function newOrderCtx() {
+    var u = plan(), pct = u ? Math.max(0, Math.round(Number(u.pct) || 0)) : 0, d = newBlank ? null : newDraft();
+    newBlank = false; newMine = d; newRid = d && RID.test(d.rid || "") ? d.rid : "";
+    return { office: { name: B.office || "", person: B.person || "" }, lanes: B.lanes, addons: Array.isArray(B.addons) ? B.addons : [],
+             payment: B.payment || { card_fee_pct: 3, ach_fee: 0, due: "on delivery" },
+             plan: u && Number(u.cap) > 0 ? { pct: pct, resets: u.resets_text || "", order_share_pct: Math.round(100 / Number(u.cap)), refill_cents: 10000, runout_fee_cents: 5000 } : null,
+             draft: d, saveDraft: saveDraft, startOver: startOver,
+             createOrder: createOrder, uploadFile: uploadFile,
+             afterCreate: function (rid) { newSent.push({ id: rid, at: new Date(Date.now()).toISOString() }); dropDraft(rid); newRid = ""; newMine = null; newDone = true; sentAt = Date.now(); soon(); } };
+  }
+  var NEW_ERR = { lane: "That choice isn't on your list any more. Reload the page and try again.", type: "One of these files is a kind we can't take.",
+                  size: "A file is over 500 MB. Email it to desk@aandap.com and we'll help.", folder: "We can't take new orders here right now. Email your order to desk@aandap.com.",
+                  too_large: "Please shorten your notes.", busy: "We're busy for a moment. Try again." };
+  var RID = /^[A-Za-z0-9_-]{16,80}$/;
+  function newDraft(d) {
+    if (d === undefined) {
+      var raw, v = null;
+      try { raw = localStorage.getItem(newDraftKey); } catch (e) { return newDraftMem; }
+      try { v = raw ? JSON.parse(raw) : null; } catch (e) {}
+      return v && typeof v === "object" && !Array.isArray(v) ? v : null;
+    }
+    newDraftMem = d;
+    if (d) store(newDraftKey, JSON.stringify(d)); else try { localStorage.removeItem(newDraftKey); } catch (e) {}
+  }
+  function dropDraft(rid) {
+    var d = newDraft();
+    if (d && (d.rid || "") === (rid || "")) newDraft(null);
+  }
+  function saveDraft(d) {
+    var files = ((d && d.files) || []).slice(0, 30).map(function (f) { return { name: String(f.name || ""), size: Number(f.size) || 0 }; });
+    var keep = { lane: String((d && d.lane) || ""), addons: ((d && d.addons) || []).map(String), due: String((d && d.due) || ""), notes: String((d && d.notes) || "").slice(0, 3000), files: files };
+    if (newRid) keep.rid = newRid;
+    newMine = keep; newDraft(keep);
+  }
+  function startOver() {
+    if (newRid && !window.confirm("Start over with a blank order? If your last Start order reached us, the desk already has it.")) return;
+    dropDraft(newRid); newRid = ""; newMine = null; newBlank = true;
+    var old = newRoot; dropNewOrder();
+    if (old && old.parentNode) old.parentNode.replaceChild(newOrderPage(), old);
+  }
+  function createOrder(o) {
+    var files = ((o && o.files) || []).map(function (f) { return { name: String(f.name || ""), size: Number(f.size) || 0 }; });
+    var want = { lane: o && o.lane, addons: (o && o.addons) || [], notes: String((o && o.notes) || ""), client_due: String((o && o.client_due) || ""), files: files };
+    var rid = newRid || "no_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12);
+    if (!newRid) { newRid = rid; newMine = Object.assign({}, newMine || {}, { rid: rid }); newDraft(newMine); }
+    return fetch(API, { method: "POST", credentials: "omit", headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify({ t: T, new_order: Object.assign({ request_id: rid }, want), origin: location.origin }) })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (r && r.ok && r.request_id === rid && Array.isArray(r.uploads)) return { ok: true, request_id: rid, uploads: r.uploads };
+        return { ok: false, error: NEW_ERR[r && r.error] || "Your order wasn't received. Try again, or email desk@aandap.com." };
+      }, function () { return { ok: false, error: "Couldn't reach us. Check your connection and try again." }; });
+  }
+  function uploadFile(url, file, onProgress) {
+    if (!/^https:\/\/www\.googleapis\.com\/upload\//.test(url || "") || !file) return Promise.resolve({ ok: false, error: "That file can't be sent here." });
+    var it = newUps[url] || (newUps[url] = { id: "no" + (++upN), url: url, file: file, name: file.name, size: file.size, sent: 0, done: 0 });
+    it.progress = function () { if (typeof onProgress === "function") onProgress({ loaded: it.sent, total: it.size }); };
+    return pieces(it).then(function () { it.progress(); return { ok: true }; }, function (e) { return { ok: false, error: (e && e.note) || "Sending stopped." }; });
+  }
+
+  function store(key, value) {
+    try { if (value === undefined) return localStorage.getItem(key); localStorage.setItem(key, value); return true; }
+    catch (e) { return value === undefined ? null : false; }
+  }
+  var box = null, boxStored = true;
+  function outbox() {
+    var raw = boxStored ? store(boxKey) : null, v = null;
+    try { v = raw === null ? null : JSON.parse(raw); } catch (e) {}
+    if (Array.isArray(v)) box = v;
+    return (box || []).slice();
+  }
+  function keep(items) { box = items.slice(); boxStored = store(boxKey, JSON.stringify(box)); return boxStored; }
+  function kept() { return boxStored ? "It's kept here and will send." : "Keep this page open; it will send."; }
+  function entries(r) {
+    var all = [], answers = (r.saved && r.saved.answers) || {};
+    Object.keys(answers).forEach(function (k) {
+      if (!/^q_fb_[a-z0-9_]+$/.test(k)) return;
+      try { var e = JSON.parse(answers[k]); if (e && e.text) all.push({ at: e.at, who: "customer", text: e.text, key: k, order: "" }); } catch (x) {}
+    });
+    ((r.form && r.form.log) || []).forEach(function (e) {
+      if (e && e.what === "reply" && e.text) all.push({ at: e.at, who: "desk", text: e.text, order: "", re: e.re || "" });
+    });
+    return all;
+  }
+  function conversation() {
+    var all = entries(last).concat(B.messages || []), keys = {};
+    all.forEach(function (m) { if (m.key) keys[m.key] = true; });
+    outbox().forEach(function (i) { if (!keys[i.key]) all.push({ at: i.at, who: "customer", text: i.text, key: i.key, order: i.order || "", pending: !i.sent }); });
+    return all.sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); });
+  }
+  function target(order) {
+    if (!order) return { t: T, r: "" };
+    var o = byCode(order), m = o && FORM.exec(o.form || "");
+    return m ? { t: m[1], r: m[2] || "" } : null;
+  }
+  function deliver(item) {
+    var doc = JSON.stringify({ t: item.t, r: item.r, actor: DESK ? "desk" : "", status: "DRAFT", answers: (function () { var a = {}; a[item.key] = item.value; return a; })(),
+                               changes: [], send: false, feedback: true, request_id: item.rid });
+    function landed(r) { return !!r && ((r.saved || {}).answers || {})[item.key] === item.value; }
+    var look = item.failed ? read(item.t).then(function (r) { return landed(r) ? r : null; }, function () { return null; }) : Promise.resolve(null);
+    return look.then(function (seen) { return seen || post(doc).catch(function () {}).then(function () { return read(item.t); }); }).then(function (r) {
+      if (!landed(r)) throw {};
+      var all = outbox(); all.forEach(function (i) { if (i.key === item.key) { i.sent = new Date(Date.now()).toISOString(); delete i.failed; } }); keep(all);
+      return r;
+    });
+  }
+  function failed(item) { var all = outbox(); all.forEach(function (i) { if (i.key === item.key) i.failed = (i.failed || 0) + 1; }); keep(all); }
+  function flush() {
+    var pending = outbox().filter(function (i) { return !i.sent; });
+    return pending.reduce(function (p, item) {
+      return p.then(function () { return deliver(item); }).catch(function () { failed(item); });
+    }, Promise.resolve()).then(function () {
+      var all = outbox(), keys = {};
+      entries(last).concat(B.messages || []).forEach(function (m) { if (m.key) keys[m.key] = true; });
+      keep(all.filter(function (i) { return !i.sent || !keys[i.key] && Date.now() - Date.parse(i.sent) < 864e5; }));
+      if (B) { settle(); paintPage(); agentSync(); }
+    });
+  }
+  function known(id, text) {
+    return outbox().concat(entries(last || {}), (B && B.messages) || []).filter(function (m) { return m.key === id && m.text === text; })[0] || null;
+  }
+  function confirmed(id) {
+    return outbox().some(function (i) { return i.key === id && i.sent; }) || entries(last || {}).concat((B && B.messages) || []).some(function (m) { return m.key === id; });
+  }
+  function send(msg) {
+    var text = String((msg && msg.text) || "").trim(), order = (msg && msg.order) || "";
+    if (!B || !messaging()) return Promise.resolve({ ok: false, error: "Messages are not on for this page." });
+    if (!text) return Promise.resolve({ ok: false, error: "Type your message first." });
+    if (text.length > 3000) return Promise.resolve({ ok: false, error: "Please shorten this message." });
+    var to = target(order);
+    if (!to) return Promise.resolve({ ok: false, error: "That order can't take messages here. Send it as a general message." });
+    var id = msg && msg.id ? String(msg.id) : "", was = id ? known(id, text) : null;
+    if (was && (was.sent || !was.rid)) return Promise.resolve({ ok: true, id: id });
+    var item = was || outbox().filter(function (i) { return (i.order || "") === order && i.text === text; })[0];
+    if (item && item.sent) return Promise.resolve({ ok: true, id: item.key });
+    if (item) { sentAt = Date.now(); soon(); return settled(item); }
+    var at = new Date(Date.now()).toISOString(), o = byCode(order);
+    item = { key: "q_fb_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12), at: at, text: text,
+                 from: B.person || "", order: order, street: o ? o.street : "General", t: to.t, r: to.r,
+                 rid: "rq_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10) };
+    item.value = JSON.stringify({ at: at, text: text, from: item.from });
+    var all = outbox(); all.push(item); keep(all);
+    sentAt = Date.now(); soon(); agentSync();
+    return settled(item);
+  }
+  function settled(item) {
+    return deliver(item).then(function () { paintPage(); agentSync(); return { ok: true, id: item.key }; }, function (e) {
+      failed(item); paintPage(); agentSync();
+      return { ok: false, id: item.key, error: e && e.code === "unknown" ? "This order's page has closed. Send it as a general message." : "Not sent yet. " + kept() };
+    });
+  }
+
+  function agentSync() {
+    var A = window.AAPAgent;
+    if (!B || !messaging() || !A || typeof A.init !== "function" || typeof A.update !== "function") return;
+    try {
+      if (!agentInit) { A.init({ send: send, office: { name: B.office || "", person: B.person || "" } }); agentInit = true; agentReady = typeof A.open === "function"; showTalk(); }
+      A.update({
+        route: route(), order: null,
+        needs: (B.needs || []).map(function (n) { var o = byCode(n.order); return { ap: n.order, street: n.street || n.order, kind: n.kind === "start" ? "answer" : n.kind,
+                                                   label: n.kind === "files" ? filesLabel(o) : LABEL[n.kind] || "Open order", href: needHref(n, o) }; }).filter(function (n) { return n.href; }),
+        orders: rows().map(function (o) { return { ap: o.order, street: o.street || o.order, status: o.stage || "", ready: o.due || "", due: o.client_due || "" }; }),
+        thread: conversation().map(function (m) { return { at: m.at, who: m.who === "desk" ? "desk" : "you", order: m.order || null, text: m.text, id: m.key || "", re: m.re || "", pending: !!m.pending }; }),
+        plan: plan() ? { pct: Math.max(0, Math.round(Number(plan().pct) || 0)), resets: plan().resets_text || "", refill: messaging() } : null
+      });
+    } catch (e) {}
+  }
+
+  function paint() {
+    bar(); paintPage();
+    var stale = Date.now() - Date.parse(B.as_of) > 20 * 60000, line = $("foot-line");
+    line.textContent = "";
+    line.appendChild(h("span", ["Private to your office.", "The desk answers 7 AM to 9 PM Central, every day.",
+      B.as_of ? "Updated " + when(B.as_of) + " Central" + (stale ? ", updating…" : "") : ""].filter(Boolean).join(" · ") + " · ", h("a", { href: "#help" }, "Help")));
+    $("gate").hidden = true; $("main").hidden = $("foot").hidden = false;
+    agentSync();
   }
   function load() {
     return read().then(function (r) {
-      var b = r.form && r.form.board;
-      if (!b || typeof b !== "object") { gate(r.form && r.form.kind === "customer-board" ? "Your board is being set up. Check back in a few minutes." : "This link isn't an orders board."); return; }
-      $("conn").textContent = ""; paint(b);
+      var f = r.form || {}, b = (f.house_prompts || {}).board || f.board;
+      if (!b || typeof b !== "object") { gate(f.kind === "customer-board" ? "Your page is being set up. Check back in a few minutes." : "This link isn't an orders page."); return; }
+      var first = !B; last = r; B = b; paint(); if (first) toUpload();
     }, function (e) {
       if (e && e.code === "unknown") gate("This link has closed. Email desk@aandap.com for a new one.");
-      else if ($("board").hidden) gate("Couldn't load your orders. Check your connection and try again.");
-      else $("conn").textContent = "Not connected";
+      else if (!B) gate("Couldn't load your orders. Check your connection and try again.");
     });
   }
-  function soon() { clearTimeout(timer); timer = setTimeout(function () { if (document.visibilityState !== "hidden") load(); soon(); }, 60000); }
-  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") load(); });
+  function opened() {
+    if (DESK) return;
+    try { post(JSON.stringify({ t: T, opened: { source: "web", device: /Android.*Mobile|iPhone|iPod|Windows Phone/i.test(navigator.userAgent || "") ? "phone" : "desktop" } })).catch(function () {}); } catch (e) {}
+  }
+  function soon() {
+    clearTimeout(timer);
+    timer = setTimeout(function () { if (document.visibilityState !== "hidden") load().then(flush); soon(); }, Date.now() - sentAt < 30 * 60000 ? 30000 : 60000);
+  }
+  window.addEventListener("hashchange", function () {
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    leaveNewOrder();
+    if (B) { bar(); paintPage(); agentSync(); if (!toUpload()) window.scrollTo(0, 0); }
+  });
+  function toUpload() {
+    var ap = (location.hash.split("/")[1] || ""), u = /^AP-[0-9]{4,6}$/.test(ap) ? document.querySelector('.up[data-up="' + ap + '"]') : null;
+    if (!u) return false;
+    u.scrollIntoView({ block: "center" }); var b = u.querySelector("button"); if (b) b.focus({ preventScroll: true });
+    return true;
+  }
+  window.addEventListener("load", agentSync);
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") load().then(flush); });
   if (!T) { gate("Open this page from your link."); return; }
-  if (!API) { gate("Not connected yet."); return; }
-  load().then(soon);
+  load().then(function () { opened(); if (B && messaging()) flush(); }).then(soon);
 })();
 </script>
 </body>

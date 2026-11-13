@@ -1,6 +1,8 @@
-/* A&AP New order, contract v1.6. No transport: only the supplied ctx functions.
+/* A&AP New order, contract v1.7. No transport: only the supplied ctx functions.
  * Progress accepts a percentage (0–100), or {loaded, total}/{percent}.
  * ACH and card totals are quotes; the contract does not collect a payment method.
+ * ctx.draft restores a kept draft (files come back as names to choose again); ctx.saveDraft gets every change;
+ * ctx.startOver clears it for a different order.
  */
 (function () {
   'use strict';
@@ -42,6 +44,8 @@
     const chosen = new Set();
     const files = [];
     const completed = new Set();
+    const again = [];
+    const draft = ctx.draft && typeof ctx.draft === 'object' ? ctx.draft : null;
     const wrapper = node('div', 'root');
     const style = node('style');
     style.textContent = `
@@ -118,9 +122,11 @@
     drop.append(choose, picker);
     const fileList = node('ul', 'files');
     fileList.setAttribute('aria-label', 'Selected files');
+    const againNote = node('p', 'note', 'Your files need choosing again. The rest of your order is as you left it.');
+    againNote.hidden = true;
     const fileError = node('p', 'error');
     fileError.setAttribute('role', 'alert'); fileError.hidden = true;
-    fields.append(drop, fileList, fileError);
+    fields.append(drop, againNote, fileList, fileError);
     function button(text, secondary) {
       const b = node('button', secondary ? 'button aap-new-secondary' : 'button', text);
       b.type = 'button'; return b;
@@ -129,6 +135,8 @@
       if (busy || created || done) return;
       fileError.hidden = true;
       for (const file of incoming) {
+        const kept = again.find(entry => entry.name === file.name);
+        if (kept) dropAgain(kept);
         const same = files.find(entry => entry.file.name === file.name);
         if (same) {
           if (same.file.size !== file.size || same.file.lastModified !== file.lastModified) {
@@ -150,10 +158,26 @@
         const entry = {file, row, status, progress, remove};
         remove.addEventListener('click', () => {
           if (busy || created || done) return;
-          files.splice(files.indexOf(entry), 1); row.remove();
+          files.splice(files.indexOf(entry), 1); row.remove(); save();
         });
         row.append(copy, remove, progress); fileList.append(row); files.push(entry);
       }
+      save();
+    }
+    function addAgain(name, size) {
+      if (!name || again.some(entry => entry.name === name)) return;
+      const row = node('li', 'file');
+      const copy = node('div', 'file-copy');
+      copy.append(node('span', null, name), node('span', 'status', ' · Choose it again'));
+      const remove = button('Remove', true);
+      remove.setAttribute('aria-label', 'Remove ' + name);
+      const entry = {name, size, row};
+      remove.addEventListener('click', () => { if (!busy && !created && !done) { dropAgain(entry); save(); } });
+      row.append(copy, remove); fileList.append(row); again.push(entry);
+    }
+    function dropAgain(entry) {
+      again.splice(again.indexOf(entry), 1); entry.row.remove();
+      againNote.hidden = !again.length;
     }
     picker.addEventListener('change', () => { addFiles(Array.from(picker.files)); picker.value = ''; });
     drop.addEventListener('dragover', event => {
@@ -164,7 +188,7 @@
       event.preventDefault(); drop.classList.remove('aap-new-drag');
       addFiles(Array.from(event.dataTransfer.files));
     });
-    const addonInputs = {};
+    const addonInputs = {}, laneInputs = {};
     function options(title, list, isLane) {
       const group = node('fieldset', 'fieldset');
       group.append(node('legend', 'legend', title));
@@ -174,7 +198,7 @@
         input.type = isLane ? 'radio' : 'checkbox';
         input.name = id + (isLane ? 'lane' : 'addons'); input.value = item.id;
         input.checked = isLane && index === 0;
-        if (!isLane) addonInputs[item.id] = input;
+        if (isLane) laneInputs[item.id] = {input, item}; else addonInputs[item.id] = input;
         const copy = node('span', 'option-copy', item.label);
         if (item.note) copy.append(node('span', 'note', item.note));
         label.append(input, copy, node('b', 'price', (isLane ? '' : '+') + money(item.price_cents)));
@@ -182,7 +206,7 @@
           if (isLane) { selected = item; fitNeedBy(); }
           else if (input.checked) chosen.add(item.id);
           else chosen.delete(item.id);
-          waiting = false; update();
+          waiting = false; update(); save();
         });
         group.append(label);
       });
@@ -215,9 +239,10 @@
       if (earliest > want) { dueHint.textContent = 'Our earliest is ' + dateText(earliest) + '. Add a note and the desk will reach out.'; dueHint.hidden = false; }
       else if (box && box.checked) { dueHint.textContent = 'Next day added to meet your date.'; dueHint.hidden = false; }
     }
-    due.addEventListener('change', () => { fitNeedBy(); waiting = false; update(); });
+    due.addEventListener('change', () => { fitNeedBy(); waiting = false; update(); save(); });
     const notes = field('Notes', 'textarea'); notes.rows = 3;
     notes.placeholder = 'Anything the desk should know';
+    notes.addEventListener('input', save);
     const summary = node('dl', 'summary');
     function fact(label, total) {
       const row = node('div', total ? 'kv aap-new-total' : 'kv');
@@ -243,6 +268,10 @@
     const receipt = node('p', 'receipt'); receipt.hidden = true; receipt.setAttribute('role', 'status');
     const actions = node('div', 'actions');
     const start = button('Start order'); start.type = 'submit'; actions.append(start);
+    const over = button('Start over', true);
+    over.hidden = typeof ctx.startOver !== 'function';
+    over.addEventListener('click', () => { if (!busy && !done) ctx.startOver(); });
+    actions.append(over);
     form.append(fields, summary, usage, warning, status, error, receipt, actions);
     wrapper.append(back, title, intro, form); root.replaceChildren(wrapper);
 
@@ -278,6 +307,7 @@
       warning.hidden = !selected || !runsOut() || waiting || !!created || done;
       actions.hidden = !warning.hidden || done;
       start.disabled = !selected || busy || done;
+      over.disabled = busy || done;
       if (!selected) {
         status.textContent = 'No services are on file for your office. Contact the desk before starting an order.';
       }
@@ -293,10 +323,14 @@
     async function submit(accepted) {
       if (busy || done || !selected || !alive) return;
       if (!form.reportValidity()) return;
+      if (again.length) {
+        error.textContent = 'Choose these files again, or remove them: ' + again.map(entry => entry.name).join(', ') + '.';
+        error.hidden = false; return;
+      }
       if (!created && runsOut() && !accepted) {
         waiting = false; update(); warning.focus(); return;
       }
-      busy = true; fields.disabled = true; start.disabled = true; anyway.disabled = true; wait.disabled = true;
+      busy = true; fields.disabled = true; start.disabled = true; over.disabled = true; anyway.disabled = true; wait.disabled = true;
       error.hidden = true; status.textContent = created ? 'Retrying files…' : 'Sending…';
       try {
         if (!created) {
@@ -355,10 +389,31 @@
       } finally {
         busy = false;
         if (alive) {
-          fields.disabled = !!created || done; start.disabled = done;
+          fields.disabled = !!created || done; start.disabled = done; over.disabled = done;
           anyway.disabled = done; wait.disabled = done;
         }
       }
+    }
+    function save() {
+      if (done || !alive || typeof ctx.saveDraft !== 'function') return;
+      const names = files.map(({file}) => ({name: file.name, size: file.size})).concat(again.map(({name, size}) => ({name, size})));
+      try {
+        ctx.saveDraft({lane: selected ? selected.id : '', addons: Array.from(chosen), due: due.value, notes: notes.value, files: names});
+      } catch (_) { /* the form still works without a kept draft */ }
+    }
+    if (draft) {
+      const lane = laneInputs[draft.lane];
+      if (lane) { lane.input.checked = true; selected = lane.item; }
+      for (const addon of Array.isArray(draft.addons) ? draft.addons : []) {
+        if (addonInputs[addon]) { addonInputs[addon].checked = true; chosen.add(addon); }
+      }
+      if (/^\d{4}-\d{2}-\d{2}$/.test(draft.due || '')) due.value = draft.due;
+      if (typeof draft.notes === 'string') notes.value = draft.notes;
+      fitNeedBy();
+      for (const file of Array.isArray(draft.files) ? draft.files.slice(0, 30) : []) {
+        if (file && typeof file.name === 'string') addAgain(file.name, Number(file.size) || 0);
+      }
+      againNote.hidden = !again.length;
     }
     update();
     const instance = {unmount() { alive = false; wrapper.remove(); }};

@@ -6,7 +6,7 @@
      order form. Files go straight to the order's own folder: the web app checks the order is on this page and opens a
      one-file upload link, and this page sends the bytes there in pieces. No order data lives in this file. Never add
      analytics here (the link carries the code). -->
-<html lang="en" data-build="v2026-11-13.4">
+<html lang="en" data-build="v2026-11-13.6">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -655,17 +655,24 @@ footer.site a { color: var(--ink-2); }
   // ---------- New order: neworder.js (beside this file) draws it; this page hands it the office's own choices and the calls ----------
   // The web app's new_order takes the request (board code checked) and returns one upload session per file into the
   // office's own AP Orders folder (_new/<request id>/); the files go straight there, piece by piece, as Add files does.
-  var newScript = null, newState = "", newMounted = false, newId = "", newIdKey = "aap-board-neworder-" + T, newSent = [], newUps = {};
+  // The form he is filling in stays mounted while he looks at other pages (files and all), until it is received or he
+  // starts over; a reload brings back its draft from localStorage, files as names to choose again.
+  var newScript = null, newState = "", newMounted = false, newRoot = null, newDone = false, newSent = [], newUps = {};
+  // newRid and newMine belong to the mounted form in this tab: another tab on the same board shares the stored draft, never
+  // this form's request id (a stored rid is taken over only when a form is mounted from it).
+  var newDraftKey = "aap-board-newdraft-" + T, newDraftMem = null, newRid = "", newMine = null, newBlank = false;
+  try { localStorage.removeItem("aap-board-neworder-" + T); } catch (e) {}   // a v1.6 id with no draft behind it is never reused
   function newOrderOk() { return Array.isArray(B.lanes) && B.lanes.length > 0 && !!B.new_order_files && B.new_order_files.how === "drive" && ID.test(B.new_order_files.id || ""); }
   function emailOrder() { return h("p", "Email your order to ", h("a", { href: "mailto:desk@aandap.com?subject=" + encodeURIComponent("New order") }, "desk@aandap.com"), ", with the engagement letter and your files."); }
   function newOrderPage() {
-    var root = h("div.neworder");
     if (!newOrderOk()) return h("div", h("section.top", h("h1", "New order"), emailOrder()));
+    if (newMounted && newRoot) return newRoot;   // the order he left half filled
+    var root = newRoot = h("div.neworder");
     loadNewOrder(function (ok) {
-      if (route() !== "new" || !root.isConnected) return;
+      if (newRoot !== root) return;
       var A = window.AAPNewOrder;
-      try { if (!ok || !A || typeof A.mount !== "function") throw 0; A.mount(root, newOrderCtx()); newMounted = true; }
-      catch (e) { newMounted = false; root.textContent = ""; root.appendChild(h("section.top", h("h1", "New order"), emailOrder())); }
+      try { if (!ok || !A || typeof A.mount !== "function") throw 0; A.mount(root, newOrderCtx()); newMounted = true; newDone = false; }
+      catch (e) { newMounted = false; newRoot = null; root.textContent = ""; root.appendChild(h("section.top", h("h1", "New order"), emailOrder())); }
     });
     return root;
   }
@@ -673,7 +680,7 @@ footer.site a { color: var(--ink-2); }
     if (window.AAPNewOrder) return done(true);
     if (newState === "failed") return done(false);
     if (!newScript) {
-      newScript = document.createElement("script"); newScript.src = "neworder.js?v=20261113c"; newScript.defer = true; newState = "loading";
+      newScript = document.createElement("script"); newScript.src = "neworder.js?v=20261113e"; newScript.defer = true; newState = "loading";
       newScript.addEventListener("load", function () { newState = "loaded"; });
       newScript.addEventListener("error", function () { newState = "failed"; });
       document.head.appendChild(newScript);
@@ -681,39 +688,62 @@ footer.site a { color: var(--ink-2); }
     newScript.addEventListener("load", function () { done(true); });
     newScript.addEventListener("error", function () { done(false); });
   }
-  function leaveNewOrder() {
-    if (!newMounted || route() === "new") return;
-    newMounted = false;
+  function leaveNewOrder() {   // only a received order is let go; a half-filled one waits for him
+    if (!newMounted || route() === "new" || !newDone) return;
+    dropNewOrder();
+  }
+  function dropNewOrder() {
+    newMounted = false; newRoot = null; newDone = false;
     try { window.AAPNewOrder.unmount(); } catch (e) {}
   }
   function newOrderCtx() {
-    var u = plan(), pct = u ? Math.max(0, Math.round(Number(u.pct) || 0)) : 0;
+    var u = plan(), pct = u ? Math.max(0, Math.round(Number(u.pct) || 0)) : 0, d = newBlank ? null : newDraft();
+    newBlank = false; newMine = d; newRid = d && RID.test(d.rid || "") ? d.rid : "";
     return { office: { name: B.office || "", person: B.person || "" }, lanes: B.lanes, addons: Array.isArray(B.addons) ? B.addons : [],
              payment: B.payment || { card_fee_pct: 3, ach_fee: 0, due: "on delivery" },
              plan: u && Number(u.cap) > 0 ? { pct: pct, resets: u.resets_text || "", order_share_pct: Math.round(100 / Number(u.cap)), refill_cents: 10000, runout_fee_cents: 5000 } : null,
-             createOrder: createOrder, uploadFile: uploadFile, afterCreate: function (rid) { newSent.push({ id: rid, at: new Date(Date.now()).toISOString() }); forgetNewId(rid); sentAt = Date.now(); soon(); } };
+             draft: d, saveDraft: saveDraft, startOver: startOver,
+             createOrder: createOrder, uploadFile: uploadFile,
+             afterCreate: function (rid) { newSent.push({ id: rid, at: new Date(Date.now()).toISOString() }); dropDraft(rid); newRid = ""; newMine = null; newDone = true; sentAt = Date.now(); soon(); } };
   }
   var NEW_ERR = { lane: "That choice isn't on your list any more. Reload the page and try again.", type: "One of these files is a kind we can't take.",
                   size: "A file is over 500 MB. Email it to desk@aandap.com and we'll help.", folder: "We can't take new orders here right now. Email your order to desk@aandap.com.",
                   too_large: "Please shorten your notes.", busy: "We're busy for a moment. Try again." };
-  // One request id per New order form, kept (here and across a reload) until the order is received: a retry after a
-  // lost reply is the same request whatever he edited, and the web app answers it from what it already has.
-  function newOrderId() {
-    var kept = store(newIdKey);
-    if (kept && /^[A-Za-z0-9_-]{16,80}$/.test(kept)) newId = kept;
-    if (!newId) newId = "no_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12);
-    store(newIdKey, newId);
-    return newId;
+  // The draft: lane, add-ons, date, notes, file names and, once he presses Start order, its request id. The id belongs to
+  // the draft: a retry after a lost reply is the same request whatever he edited, and the web app answers it from what it
+  // already has; a received order or Start over ends the draft, so a different order never gets an earlier one's id.
+  var RID = /^[A-Za-z0-9_-]{16,80}$/;
+  function newDraft(d) {   // the stored draft (memory only when this browser cannot store)
+    if (d === undefined) {
+      var raw, v = null;
+      try { raw = localStorage.getItem(newDraftKey); } catch (e) { return newDraftMem; }
+      try { v = raw ? JSON.parse(raw) : null; } catch (e) {}
+      return v && typeof v === "object" && !Array.isArray(v) ? v : null;
+    }
+    newDraftMem = d;
+    if (d) store(newDraftKey, JSON.stringify(d)); else try { localStorage.removeItem(newDraftKey); } catch (e) {}
   }
-  function forgetNewId(rid) {
-    if (rid !== newId && rid !== store(newIdKey)) return;
-    newId = "";
-    try { localStorage.removeItem(newIdKey); } catch (e) {}
+  function dropDraft(rid) {   // clear the stored draft only when it is this form's (its rid, or both without one)
+    var d = newDraft();
+    if (d && (d.rid || "") === (rid || "")) newDraft(null);
   }
-  function createOrder(o) {   // the same form sent again (a retry, an edit, a reload) keeps its request id: the desk never gets it twice
+  function saveDraft(d) {
+    var files = ((d && d.files) || []).slice(0, 30).map(function (f) { return { name: String(f.name || ""), size: Number(f.size) || 0 }; });
+    var keep = { lane: String((d && d.lane) || ""), addons: ((d && d.addons) || []).map(String), due: String((d && d.due) || ""), notes: String((d && d.notes) || "").slice(0, 3000), files: files };
+    if (newRid) keep.rid = newRid;
+    newMine = keep; newDraft(keep);
+  }
+  function startOver() {   // a blank form; when it is sent, a new request id
+    if (newRid && !window.confirm("Start over with a blank order? If your last Start order reached us, the desk already has it.")) return;
+    dropDraft(newRid); newRid = ""; newMine = null; newBlank = true;
+    var old = newRoot; dropNewOrder();
+    if (old && old.parentNode) old.parentNode.replaceChild(newOrderPage(), old);
+  }
+  function createOrder(o) {   // the same draft sent again (a retry, an edit, a reload) keeps its request id: the desk never gets it twice
     var files = ((o && o.files) || []).map(function (f) { return { name: String(f.name || ""), size: Number(f.size) || 0 }; });
     var want = { lane: o && o.lane, addons: (o && o.addons) || [], notes: String((o && o.notes) || ""), client_due: String((o && o.client_due) || ""), files: files };
-    var rid = newOrderId();
+    var rid = newRid || "no_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12);
+    if (!newRid) { newRid = rid; newMine = Object.assign({}, newMine || {}, { rid: rid }); newDraft(newMine); }
     return fetch(API, { method: "POST", credentials: "omit", headers: { "Content-Type": "text/plain;charset=utf-8" },
                         body: JSON.stringify({ t: T, new_order: Object.assign({ request_id: rid }, want), origin: location.origin }) })
       .then(function (r) { return r.json(); })
