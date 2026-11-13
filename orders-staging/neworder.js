@@ -22,6 +22,7 @@
     }
     return date;
   }
+  const isoDay = date => date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
   function node(tag, cls, text) {
     const el = document.createElement(tag);
     if (cls) el.className = 'aap-new-' + cls;
@@ -163,6 +164,7 @@
       event.preventDefault(); drop.classList.remove('aap-new-drag');
       addFiles(Array.from(event.dataTransfer.files));
     });
+    const addonInputs = {};
     function options(title, list, isLane) {
       const group = node('fieldset', 'fieldset');
       group.append(node('legend', 'legend', title));
@@ -172,11 +174,12 @@
         input.type = isLane ? 'radio' : 'checkbox';
         input.name = id + (isLane ? 'lane' : 'addons'); input.value = item.id;
         input.checked = isLane && index === 0;
+        if (!isLane) addonInputs[item.id] = input;
         const copy = node('span', 'option-copy', item.label);
         if (item.note) copy.append(node('span', 'note', item.note));
         label.append(input, copy, node('b', 'price', (isLane ? '' : '+') + money(item.price_cents)));
         input.addEventListener('change', () => {
-          if (isLane) selected = item;
+          if (isLane) { selected = item; fitNeedBy(); }
           else if (input.checked) chosen.add(item.id);
           else chosen.delete(item.id);
           waiting = false; update();
@@ -193,7 +196,25 @@
       if (type) input.type = type;
       el.append(input); fields.append(el); return input;
     }
-    const due = field('Client due date', 'input', 'date');
+    const due = field('When do you need it from us?', 'input', 'date');
+    due.min = isoDay(businessDate(0));
+    const dueHint = node('p', 'note'); dueHint.hidden = true; due.parentNode.append(dueHint);
+    // Matt 11-13: their date from us picks the turn time; Next day only when the standard time misses it.
+    function fitNeedBy() {
+      dueHint.hidden = true;
+      if (!due.value || !selected) return;
+      const want = new Date(due.value + 'T12:00:00');
+      const standard = businessDate(selected.ready_days);
+      const box = addonInputs['next-day'];
+      if (box) {
+        const need = standard > want;
+        if (box.checked !== need) { box.checked = need; if (need) chosen.add('next-day'); else chosen.delete('next-day'); }
+      }
+      const earliest = businessDate(box && box.checked ? Math.min(1, Number(selected.ready_days) || 1) : selected.ready_days);
+      if (earliest > want) { dueHint.textContent = 'Our earliest is ' + dateText(earliest) + '. Add a note and the desk will reach out.'; dueHint.hidden = false; }
+      else if (box && box.checked) { dueHint.textContent = 'Next day added to meet your date.'; dueHint.hidden = false; }
+    }
+    due.addEventListener('change', () => { fitNeedBy(); waiting = false; update(); });
     const notes = field('Notes', 'textarea'); notes.rows = 3;
     notes.placeholder = 'Anything the desk should know';
     const summary = node('dl', 'summary');
@@ -280,7 +301,7 @@
         if (!created) {
           const response = await ctx.createOrder({
             lane: selected.id, addons: Array.from(chosen), notes: notes.value,
-            client_due: due.value, files: files.map(({file}) => ({name: file.name, size: file.size, type: file.type}))
+            client_due: due.value ? 'needed from us by ' + due.value : '', files: files.map(({file}) => ({name: file.name, size: file.size, type: file.type}))
           });
           if (!response || response.ok !== true) throw new Error(response && response.error || 'The order could not be received. Try again.');
           // Keep a successful request even if its upload sessions are incomplete: never create a duplicate on retry.
