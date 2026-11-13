@@ -296,9 +296,9 @@
 .aap-agent-root :focus-visible { outline:3px solid #005ea8; outline-offset:3px; }
 .aap-agent-root p, .aap-agent-root h2 { margin:0; }
 .aap-agent-root button:disabled { cursor:default; opacity:.65; }
-.aap-agent-launch { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:48px; min-width:48px; padding:8px 20px 8px 16px; border-radius:999px; border:0; background:#0d2a46; color:#fff; font-weight:600 !important; cursor:pointer; box-shadow:0 10px 28px -12px rgba(13,42,70,.6); }
+.aap-agent-launch { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:56px; min-width:56px; padding:10px 24px 10px 20px; border-radius:999px; border:0; background:#0d2a46; color:#fff; font-size:18px; font-weight:700 !important; cursor:pointer; box-shadow:0 10px 28px -12px rgba(13,42,70,.6); }
 .aap-agent-launch:hover { background:#163a5e; }
-.aap-agent-mark { display:block; width:28px; height:16px; flex:none; }
+.aap-agent-mark { display:block; width:32px; height:19px; flex:none; }
 .aap-agent-panel { width:440px; max-width:calc(100vw - 32px); max-height:calc(100vh - 96px); max-height:min(calc(100dvh - 96px), calc(var(--aap-agent-view-height, 100dvh) - 96px)); background:#fff; border:1px solid #e3e3e3; border-radius:6px; box-shadow:0 24px 48px -28px rgba(13,42,70,.35),0 1px 2px rgba(13,42,70,.1); overflow:hidden; display:grid; grid-template-rows:auto minmax(0,1fr) auto; min-height:0; }
 .aap-agent-header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 12px 12px 24px; background:#0d2a46; color:#fff; }
 .aap-agent-heading { display:flex; align-items:center; gap:12px; font-size:18px; line-height:1.5; font-weight:700; }
@@ -392,7 +392,7 @@
     panel.append(header, body, footer);
     const launch = element("button", "launch");
     launch.type = "button";
-    launch.append(mark(), element("span", "launch-text", "Your agent"));
+    launch.append(mark(), element("span", "launch-text", "Talk to your agent"));
     launch.setAttribute("aria-expanded", "false");
     launch.setAttribute("aria-controls", panel.id);
     launch.setAttribute("aria-haspopup", "dialog");
@@ -425,6 +425,8 @@
       if (document.body) mount();
       else document.addEventListener("DOMContentLoaded", mount, { once: true });
     },
+    // The page's own "Talk to your agent" buttons open this same panel.
+    open: function () { if (ui && !opened) open(true); },
     update: function (next) {
       if (!next || typeof next !== "object") return;
       data = {

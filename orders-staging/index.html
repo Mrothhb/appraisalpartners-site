@@ -1,10 +1,12 @@
 <!doctype html>
 <!-- A&AP orders: appraisalpartners.net/orders/?t=<code>. One person's private page: Home, Orders, Delivered, Plan & billing
-     (Billing for an office without a weekly plan) and Help; Your agent comes from agent.js beside this file, which this page
-     hands its data and its one way to send. It reads one keyed record the way the order form reads an order, and sends
-     messages exactly as the order form's Questions or feedback box sends them; each order opens its own order form. No order
-     data lives in this file. Never add analytics here (the link carries the code). -->
-<html lang="en" data-build="v2026-11-13.3">
+     (Billing for an office without a weekly plan) and Help; New order (#new) mounts neworder.js beside this file; Talk to your agent opens the panel from agent.js beside this
+     file, which this page hands its data and its one way to send. It reads one keyed record the way the order form reads an
+     order, and sends messages exactly as the order form's Questions or feedback box sends them; each order opens its own
+     order form. Files go straight to the order's own folder: the web app checks the order is on this page and opens a
+     one-file upload link, and this page sends the bytes there in pieces. No order data lives in this file. Never add
+     analytics here (the link carries the code). -->
+<html lang="en" data-build="v2026-11-13.4">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -70,8 +72,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .who { font: 700 16px/1.2 var(--font); white-space: nowrap; }
 .tabs { background: var(--bar); border-top: 1px solid rgba(255,255,255,.12); }
 .tabs .wrap { display: flex; flex-wrap: wrap; }
-@media (min-width: 901px) { .tabs { display: none; } }
-@media (max-width: 900px) { .nav, .appbar .meter { display: none; } }
+@media (min-width: 1200px) { .tabs { display: none; } }
+@media (max-width: 1199px) { .nav, .appbar .meter { display: none; } }
+@media (max-width: 1399px) { .appbar .meter .m-reset { display: none; } }   /* the reset time is on Plan & billing */
 .meter { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-3); border-radius: var(--r-2); color: #fff; text-decoration: none; font: 600 16px/1.2 var(--font); white-space: nowrap; }
 .meter:hover { background: rgba(255,255,255,.08); color: #fff; }
 .meter i { display: block; width: 72px; height: 8px; border-radius: var(--r-full); background: rgba(255,255,255,.22); overflow: hidden; flex: none; }
@@ -79,7 +82,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .meter[data-level="amber"] i b, .meter[data-level="full"] i b { background: var(--warning-edge); }
 .meter[data-level="amber"], .meter[data-level="full"] { color: #ffe3b0; }
 .meter-row { display: none; }
-@media (max-width: 900px) { .meter-row { display: flex; background: var(--bar); padding: 0 var(--gutter) var(--s-2); } .meter-row .meter { padding-left: 0; white-space: normal; } }
+@media (max-width: 1199px) { .meter-row { display: flex; background: var(--bar); padding: 0 var(--gutter) var(--s-2); } .meter-row .meter { padding-left: 0; white-space: normal; } }
+@media (min-width: 1200px) and (max-width: 1439px) {   /* with New order in the bar, the week meter takes its own row below it */
+  .appbar .meter { display: none; } .meter-row { display: flex; background: var(--bar); padding: 0 max(var(--gutter), calc((100% - 1200px) / 2 + var(--gutter))) var(--s-2); } }
 
 /* page parts */
 .gate { max-width: 720px; margin: var(--s-8) auto; padding: 0 var(--gutter); color: var(--ink-2); }
@@ -156,7 +161,42 @@ footer.site a { color: var(--ink-2); }
 .orow { border-bottom: 1px solid var(--line); }
 .orow .row { border-bottom: 0; }
 .orow .acts { padding: 0 0 var(--s-4); }
+/* New order: a light button in the header on every page */
+.nav a.newbtn, .tabs a.newbtn { background: #fff; color: var(--bar); border-radius: 4px; margin: 4px 0; min-height: 48px; font-weight: 700; }
+.nav a.newbtn:hover, .tabs a.newbtn:hover { background: #eaf3fb; color: var(--bar); }
+.nav a.newbtn[aria-current], .tabs a.newbtn[aria-current] { box-shadow: inset 0 -3px 0 #005ea8; }
+/* Talk to your agent: in the header on every page, and on Home */
+.talk { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-5); border: 0; border-radius: var(--r-full); background: #fff; color: var(--bar); font: 700 16px/1.2 var(--font); cursor: pointer; white-space: nowrap; align-self: center; }
+.talk:hover { background: var(--tint); }
+.talk svg, .talkline svg { width: 22px; height: 22px; flex: none; }
+.nav .talk { margin-left: var(--s-4); }
+.tabs .talk { margin: var(--s-2) 0 var(--s-2) var(--s-2); }
+.talk[hidden], .talkline[hidden] { display: none; }
+.talkline { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); margin-top: var(--s-4); padding: var(--s-4) var(--s-5); border: 1px solid var(--tint-line); border-radius: var(--r-2); background: var(--tint); }
+.talkline p { font-weight: 600; color: var(--bar); }
+/* files straight to the order: a drop zone, Choose files, one line per file with its progress */
+.up { display: grid; gap: var(--s-3); }
+.drop { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; padding: var(--s-3) var(--s-4); border: 2px dashed var(--line-2); border-radius: var(--r-2); background: #fff; }
+.drop.over { border-color: var(--primary); background: var(--tint); }
+.drop p { color: var(--ink-2); }
+.drop input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.uplist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3); }
+.uplist li { display: grid; gap: var(--s-1); }
+.uplist .nm { font-weight: 600; overflow-wrap: anywhere; }
+.uplist .bar { height: 10px; }
+.uplist .bar[data-level="done"] i { background: var(--success-edge); }
+.uplist .st { font-size: 16px; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-3); align-items: center; }
+.uplist .st.ok { color: var(--success-ink); font-weight: 600; }
+.uplist .st.bad { color: var(--warning-ink); font-weight: 600; }
+.link-btn { background: none; border: 0; padding: 0; min-height: 48px; color: var(--primary); font: 600 16px/1.2 var(--font); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.todo.files { flex-direction: column; align-items: stretch; }
+.orow .up { padding: 0 0 var(--s-4); }
 @media (max-width: 600px) {
+  .talkline { flex-direction: column; align-items: stretch; }
+  .talkline .btn { width: 100%; }
+  .drop { border: 0; padding: 0; background: none; }
+  .drop p { display: none; }
+  .drop .btn { flex: 1 1 100%; }
   .todo { flex-direction: column; align-items: stretch; gap: var(--s-3); }
   .row { grid-template-columns: 1fr; }
   .row .state { grid-column: 1; grid-row: auto; text-align: left; margin-top: 4px; }
@@ -171,6 +211,7 @@ footer.site a { color: var(--ink-2); }
 </head>
 <body>
 <svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <symbol id="icon-talk" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 8.5h8M8 11.5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
 </svg>
 <header class="appbar">
@@ -193,7 +234,7 @@ footer.site a { color: var(--ink-2); }
   var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPwO_MB0iqsrAarETBMjLEdV5GfyFd_tgh_PiEA4z_w/exec";   // the order form's web address; this page reads and sends the same way
   var Q = new URLSearchParams(location.search), T = Q.get("t") || "", DESK = Q.has("desk"), viaScript = false, timer = null;
   var FORM = /^https:\/\/appraisalpartners\.net\/form\/\?t=([A-Za-z0-9_-]{32,64})(?:&r=([a-f0-9]{64}))?$/, ID = /^[A-Za-z0-9_-]{10,}$/;
-  var B = null, last = null, sentAt = 0, find = {}, status = {}, open = {}, drafts = {}, boxKey = "aap-board-outbox-" + T, agentReady = false;
+  var B = null, last = null, sentAt = 0, find = {}, status = {}, open = {}, drafts = {}, boxKey = "aap-board-outbox-" + T, agentInit = false, agentReady = false;
   function $(id) { return document.getElementById(id); }
   // h("a.btn.ghost", {href: ...}, "text", node...): every piece of text goes in as text, never as markup
   function h(spec, props) {
@@ -265,7 +306,7 @@ footer.site a { color: var(--ink-2); }
   function filesLabel(o) { return o && o.files && o.files.how === "drive" ? "Add files" : "Send files"; }
   function out(a) { if (!/^(mailto:|#)/.test(a.getAttribute("href") || "")) { a.target = "_blank"; a.rel = "noopener noreferrer"; } return a; }
   var LABEL = { review: "Review report", answer: "Answer questions", start: "Start", pay: "Pay" };
-  function needHref(n, o) { return n.kind === "files" ? filesHref(o) : formOf(o); }
+  function needHref(n, o) { return n.kind === "files" ? (canUpload(o) ? "#orders/" + n.order : filesHref(o)) : formOf(o); }
   function needAction(n, o) {   // each item opens the place that already handles it: the order form, or the order's folder
     var href = needHref(n, o); if (!href) return null;
     var a = h("a.btn", { href: href }, n.kind === "files" ? filesLabel(o) : LABEL[n.kind] || "Open order");
@@ -288,26 +329,152 @@ footer.site a { color: var(--ink-2); }
     var u = plan(); if (!u) return null;
     var pct = Math.max(0, Math.round(Number(u.pct) || 0)), red = u.state === "red", level = red ? "full" : (u.state === "amber" || pct >= 85) ? "amber" : "calm";
     var reset = u.resets_text ? " · resets " + u.resets_text : "";
-    return { pct: Math.min(100, pct), level: level, text: u.stale ? "This week: updating" : red ? "Week used" + reset : "This week " + pct + "%" + reset };
+    return { pct: Math.min(100, pct), level: level, main: u.stale ? "This week: updating" : red ? "Week used" : "This week " + pct + "%", reset: u.stale ? "" : reset };
   }
   function bar() {
     var NAV = [["#home", "Home"], ["#orders", "Orders"], ["#delivered", "Delivered"], ["#billing", billName()], ["#help", "Help"]], page = route();
     [$("nav"), $("tabs")].forEach(function (host) {
       host.textContent = "";
       NAV.forEach(function (n) { var a = h("a", { href: n[0] }, n[1]); if (n[0] === "#" + page) a.setAttribute("aria-current", "page"); host.appendChild(a); });
+      var nw = h("a.newbtn", { href: "#new" }, "New order"); if (page === "new") nw.setAttribute("aria-current", "page"); host.appendChild(nw);
+      host.appendChild(talk("talk"));
     });
     $("who").textContent = B.person || "";
     var m = meter(), top = $("meter"), row = $("meter-row");
     row.textContent = ""; top.hidden = !m;
     if (m) {
       var fill = function () { return h("i", h("b", { style: "width:" + m.pct + "%" })); };
-      top.textContent = ""; top.dataset.level = m.level; top.appendChild(fill()); top.appendChild(h("span", m.text));
-      row.appendChild(h("a.meter", { href: "#billing", "data-level": m.level }, fill(), h("span", m.text)));
+      top.textContent = ""; top.dataset.level = m.level; top.appendChild(fill()); top.appendChild(h("span", m.main, h("span.m-reset", m.reset)));
+      row.appendChild(h("a.meter", { href: "#billing", "data-level": m.level }, fill(), h("span", m.main + m.reset)));
     }
   }
 
+  // ---------- Talk to your agent: every one opens the same panel (agent.js); hidden while there is no panel ----------
+  function talk(spec) {
+    var b = spec === "talk" ? h("button.talk", { type: "button", hidden: !agentReady }, svgUse("icon-talk"), "Talk to your agent")
+                            : h("button.btn", { type: "button" }, svgUse("icon-talk"), "Talk to your agent");   // its line shows or hides it
+    b.addEventListener("click", function () { var A = window.AAPAgent; if (A && typeof A.open === "function") A.open(); });
+    return b;
+  }
+  function showTalk() { document.querySelectorAll(".talk, .talkline").forEach(function (b) { b.hidden = !agentReady; }); }
+
+  // ---------- files: straight to the order's own folder from this page ----------
+  // The web app checks the order is on this page and opens a one-file upload link; the file goes there in 8 MB pieces,
+  // each piece confirmed, picking up where it stopped after a dropped connection. The desk's file check then takes it.
+  var UP_TYPES = /\.(zap|zip|pdf|jpe?g|png|heic|xml|csv|xlsx|docx|txt|eml)$/i, UP_MAX = 500 * 1024 * 1024, CHUNK = 8 * 1024 * 1024;
+  var UP_ACCEPT = ".zap,.zip,.pdf,.jpg,.jpeg,.png,.heic,.xml,.csv,.xlsx,.docx,.txt,.eml";
+  var ups = {}, upQueue = [], upBusy = false, upN = 0;
+  function canUpload(o) { return !!(o && o.files && o.files.how === "drive" && ID.test(o.files.id || "")); }
+  function size(n) { return n >= 1048576 ? (n / 1048576).toFixed(n >= 104857600 ? 0 : 1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB"; }
+  function mailFiles(o) { return h("a", { href: "mailto:desk@aandap.com?subject=" + encodeURIComponent("Files · " + ((o && o.order) || "") + " " + ((o && o.street) || "")) }, "desk@aandap.com"); }
+  function uploader(o) {   // one order's drop zone; its list is drawn from ups[order], so a redraw never loses a file
+    if (!canUpload(o)) return h("div.up", { "data-up": o.order }, h("p", "Email your files to ", mailFiles(o), "."));
+    var input = h("input", { type: "file", multiple: "multiple", accept: UP_ACCEPT, tabindex: "-1", "aria-hidden": "true" });
+    var choose = h("button.btn.ghost", { type: "button" }, "Choose files"), drop = h("div.drop", h("p", "Drop files here, or"), choose, input);
+    choose.addEventListener("click", function () { input.click(); });
+    input.addEventListener("change", function () { addFiles(o.order, input.files); input.value = ""; });
+    drop.addEventListener("dragover", function (e) { e.preventDefault(); drop.classList.add("over"); });
+    drop.addEventListener("dragleave", function () { drop.classList.remove("over"); });
+    drop.addEventListener("drop", function (e) { e.preventDefault(); drop.classList.remove("over"); if (e.dataTransfer && e.dataTransfer.files.length) addFiles(o.order, e.dataTransfer.files); });
+    return h("div.up", { "data-up": o.order }, drop, upList(o.order), h("p.meta", "Or send files by email: ", mailFiles(o), "."));
+  }
+  function upList(order) {
+    var list = h("ul.uplist", { "aria-live": "polite" });
+    (ups[order] || []).forEach(function (it) {
+      var pct = it.size ? Math.floor(100 * it.sent / it.size) : 0, st;
+      if (it.state === "received") st = h("p.st.ok", "Received " + when(it.at));
+      else if (it.state === "refused") st = h("p.st.bad", it.note);
+      else if (it.state === "failed") {
+        var again = h("button.link-btn", { type: "button" }, "Try again");
+        again.addEventListener("click", function () { it.state = "waiting"; it.note = ""; upQueue.push(it); paintUps(order); pump(); });
+        st = h("p.st.bad", it.note, " ", again, it.email ? h("span", " Or email it to ", mailFiles(byCode(order) || { order: order }), ".") : null);
+      } else st = h("p.st", it.state === "waiting" ? "Waiting…" : "Sending… " + pct + "%");
+      list.appendChild(h("li", { "data-item": it.id }, h("span.nm", it.name + " · " + size(it.size)),
+        it.state === "refused" ? null : h("div.bar", { "data-level": it.state === "received" ? "done" : "" }, h("i", { style: "width:" + (it.state === "received" ? 100 : pct) + "%" })), st));
+    });
+    return list;
+  }
+  function paintUps(order) {
+    document.querySelectorAll(".up").forEach(function (u) { if (u.getAttribute("data-up") === order) { var old = u.querySelector(".uplist"); if (old) old.replaceWith(upList(order)); } });
+  }
+  function bump(it) {   // progress only: the bar and its words, in place
+    if (it.progress) it.progress();
+    var pct = Math.floor(100 * it.sent / it.size);
+    document.querySelectorAll("[data-item]").forEach(function (li) {
+      if (li.getAttribute("data-item") !== it.id) return;
+      var bar = li.querySelector(".bar i"), st = li.querySelector(".st"); if (bar) bar.style.width = pct + "%"; if (st) st.textContent = "Sending… " + pct + "%";
+    });
+  }
+  function addFiles(order, files) {
+    Array.prototype.forEach.call(files, function (f) {
+      var it = { id: "up" + (++upN), order: order, file: f, name: f.name, size: f.size, sent: 0, done: 0, state: "waiting", url: "" };
+      if (!UP_TYPES.test(f.name)) { it.state = "refused"; it.note = "We can't take this kind of file. Send ZAP, ZIP, PDF, photos (JPG, PNG, HEIC), XML, CSV, Excel, Word, text or email files."; }
+      else if (f.size > UP_MAX) { it.state = "refused"; it.note = "This file is over 500 MB. Email desk@aandap.com and we'll help."; }
+      else if (!f.size) { it.state = "refused"; it.note = "This file is empty."; }
+      else upQueue.push(it);
+      (ups[order] = ups[order] || []).push(it);
+    });
+    paintUps(order); pump();
+  }
+  function pump() {   // one file at a time, in the order chosen
+    if (upBusy || !upQueue.length) return;
+    var it = upQueue.shift(); upBusy = true; it.state = "sending"; paintUps(it.order);
+    (it.url ? Promise.resolve(it.url) : opening(it)).then(function (url) { it.url = url; return pieces(it); }).then(function () {
+      it.state = "received"; it.at = new Date(Date.now()).toISOString();
+    }, function (e) {
+      it.state = "failed"; it.note = (e && e.note) || "Sending stopped."; it.email = !!(e && e.email); if (e && e.restart) { it.url = ""; it.sent = it.done = 0; }
+    }).then(function () { upBusy = false; paintUps(it.order); pump(); });
+  }
+  function opening(it) {   // the web app's one-file upload link for this order, or why not
+    return fetch(API, { method: "POST", credentials: "omit", headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify({ t: T, upload: { order: it.order, name: it.name, size: it.size }, origin: location.origin }) })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (r && r.ok && /^https:\/\/www\.googleapis\.com\/upload\//.test(r.url || "")) return r.url;
+        var e = (r && r.error) || "";
+        throw e === "type" ? { note: "We can't take this kind of file." } : e === "size" ? { note: "This file is over 500 MB.", email: true }
+          : e === "folder" || e === "unknown" ? { note: "We can't take files here for this order right now.", email: true } : { note: "Couldn't start sending.", email: true };
+      }, function (e) { throw e && e.note ? e : { note: "Couldn't reach us. Check your connection.", email: true }; });
+  }
+  function pieces(it) {   // PUT the bytes in order; a 308 says how much has landed; ask again after a dropped piece
+    return new Promise(function (resolve, reject) {
+      var tries = 0;
+      function landed(x) { var r = /bytes=0-(\d+)/.exec(x.getResponseHeader("Range") || ""); return r ? +r[1] + 1 : null; }
+      function send(from) {
+        var to = Math.min(it.size, from + CHUNK), x = new XMLHttpRequest();
+        x.open("PUT", it.url);
+        x.setRequestHeader("Content-Range", "bytes " + from + "-" + (to - 1) + "/" + it.size);
+        x.upload.onprogress = function (e) { it.sent = from + e.loaded; bump(it); };
+        x.onload = function () {
+          if (x.status === 200 || x.status === 201) { it.sent = it.done = it.size; return resolve(); }
+          if (x.status === 308) { tries = 0; it.done = landed(x) == null ? to : landed(x); it.sent = it.done; bump(it); return send(it.done); }
+          if (x.status === 404 || x.status === 410) return reject({ note: "Sending stopped.", restart: true });
+          again();
+        };
+        x.onerror = again;
+        x.send(it.file.slice(from, to));
+      }
+      function ask() {
+        var x = new XMLHttpRequest();
+        x.open("PUT", it.url);
+        x.setRequestHeader("Content-Range", "bytes */" + it.size);
+        x.onload = function () {
+          if (x.status === 200 || x.status === 201) { it.sent = it.done = it.size; return resolve(); }
+          if (x.status === 308) { var at = landed(x); it.done = at == null ? 0 : at; it.sent = it.done; return send(it.done); }
+          if (x.status === 404 || x.status === 410) return reject({ note: "Sending stopped.", restart: true });
+          again();
+        };
+        x.onerror = again;
+        x.send();
+      }
+      function again() { if (++tries > 6) return reject({ note: "Sending stopped. Check your connection." }); setTimeout(ask, Math.min(15000, 1000 * tries * tries)); }
+      if (it.done) ask(); else send(0);
+    });
+  }
+  window.addEventListener("beforeunload", function (e) { if (upBusy || upQueue.length || Object.keys(newUps).some(function (k) { return newUps[k].sent < newUps[k].size; })) { e.preventDefault(); e.returnValue = ""; } });
+
   // ---------- pages ----------
-  function route() { var p = (location.hash || "#home").slice(1).split("/")[0]; return ["home", "orders", "delivered", "billing", "help"].indexOf(p) >= 0 ? p : "home"; }
+  function route() { var p = (location.hash || "#home").slice(1).split("/")[0]; return ["home", "orders", "delivered", "billing", "help", "new"].indexOf(p) >= 0 ? p : "home"; }
   function svgUse(id) { var s = document.createElementNS("http://www.w3.org/2000/svg", "svg"), u = document.createElementNS("http://www.w3.org/2000/svg", "use"); u.setAttribute("href", "#" + id); s.setAttribute("aria-hidden", "true"); s.appendChild(u); return s; }
   function findBox(page) {
     var input = h("input", { type: "text", placeholder: "Find by address or order number", "aria-label": "Find by address or order number", value: find[page] || "" });
@@ -322,13 +489,19 @@ footer.site a { color: var(--ink-2); }
     var link = formOf(o), row = h(link ? "a.row" : "div.row", link ? { href: link, "data-tone": you ? "you" : "" } : { "data-tone": you ? "you" : "" },
       h("span.street", o.street || o.order), h("span.meta", meta), h("span.state", h("b", o.stage || ""), state));
     if (!withFiles || !o.files) return row;
-    return h("div.orow", row, h("div.acts", out(h("a.btn.ghost", { href: filesHref(o) }, filesLabel(o)))));
+    return h("div.orow", row, uploader(o));
   }
   function home() {
     var items = B.needs || [], needs = h("section.sec", h("h2", items.length ? "Needs your attention (" + items.length + ")" : "Needs your attention"));
     if (B.next_start) needs.appendChild(h("div.todo", h("p", B.next_start)));
-    items.forEach(function (n) { var o = byCode(n.order); needs.appendChild(h("div.todo", h("p", h("b", n.street || n.order), needText(n, o)), needAction(n, o))); });
+    items.forEach(function (n) {
+      var o = byCode(n.order), text = h("p", h("b", n.street || n.order), needText(n, o));
+      needs.appendChild(n.kind === "files" && o ? h("div.todo.files", text, uploader(o)) : h("div.todo", text, needAction(n, o)));
+    });
     if (!items.length && !B.next_start) needs.appendChild(h("p.empty", "Nothing needs you right now."));
+    if (newSent.length) needs.appendChild(h("div.todo", h("p", h("b", newSent.length === 1 ? "Your new order is with the desk." : newSent.length + " new orders are with the desk."),
+      " It shows under Open orders when the desk opens it, within a few minutes.")));
+    if (messaging()) needs.appendChild(h("div.talkline", { hidden: !agentReady }, h("p", "Questions about an order or a file? Your agent answers here."), talk("btn")));
     var list = h("div.rows");
     sorted().forEach(function (o) { list.appendChild(orderRow(o, true)); });
     return h("div", needs, h("section.sec", h("h2", "Open orders (" + rows().length + ")", h("a", { href: "#orders" }, "All orders")), rows().length ? list : h("p.empty", "No open orders.")));
@@ -343,7 +516,7 @@ footer.site a { color: var(--ink-2); }
   function orders() {
     return h("div", h("section.top", h("h1", "Orders")),
       h("section.sec", { style: "padding-top:0" }, h("h2", "Open orders (" + rows().length + ")"), findBox("orders"), h("div.rows", { id: "list" }),
-        h("p.meta", { style: "margin-top:16px" }, "Orders that need your attention come first. Each order opens its own page, with its review, files and changes. Add files puts them straight in that order's folder. Delivered reports are under ", h("a", { href: "#delivered" }, "Delivered"), ".")));
+        h("p.meta", { style: "margin-top:16px" }, "Orders that need your attention come first. Each order opens its own page, with its review, files and changes. Files you add here go straight to that order. Delivered reports are under ", h("a", { href: "#delivered" }, "Delivered"), ".")));
   }
   function download(label, id, ghost) { return out(h(ghost ? "a.btn.ghost" : "a.btn", { href: "https://drive.google.com/uc?export=download&id=" + id }, label)); }
   function statusLine(key) { var s = status[key]; return s ? h(s.bad ? "p.status.bad" : "p.status", s.text) : null; }
@@ -351,7 +524,7 @@ footer.site a { color: var(--ink-2); }
   function sendFrom(key, order, text, done) {   // a page button's message: the same send the agent uses, its outcome in plain words
     blurRev();   // pressing Send ends the typing: the page may redraw the form (its words are kept in drafts)
     status[key] = { text: "Sending…" }; paintPage();
-    send({ order: order, text: text }).then(function (r) {   // pressed again with the same words, it is the same message
+    send({ order: order, text: text, id: (status[key] || {}).id || "" }).then(function (r) {   // pressed again with the same words, it is the same message
       status[key] = r.ok ? { text: SENT } : { text: r.error || "Not sent yet.", bad: true, id: r.id, done: done };
       if (r.ok && done) done();
       paintPage();
@@ -375,11 +548,15 @@ footer.site a { color: var(--ink-2); }
       var words = d.text.trim(), when = d.due.trim(); if (!words) { text.focus(); return; }
       var msg = "Revision request: " + words + (when ? "\nClient due date: " + when : "");
       if (msg.length > 3000) { blurRev(); status["rev-" + o.order] = { text: "Please shorten this by " + (msg.length - 3000) + " characters. Your words are kept.", bad: true }; paintPage(); return; }
-      sendFrom("rev-" + o.order, o.order, msg, function () { open[o.order] = false; delete drafts[o.order]; });
+      var sent = { text: d.text, due: d.due };   // what this send carries: a later edit is a new draft and stays
+      sendFrom("rev-" + o.order, o.order, msg, function () {
+        var now = drafts[o.order];
+        if (!now || now.text === sent.text && now.due === sent.due) { open[o.order] = false; delete drafts[o.order]; }
+      });
     });
     cancel.addEventListener("click", function () { open[o.order] = false; delete drafts[o.order]; status["rev-" + o.order] = null; paintPage(); });
     return h("div.rev", h("label", "What the lender or client asks for", text), h("label", "Client due date", due),
-      o.files ? h("p.meta", "Add the lender's letter with ", out(h("a", { href: filesHref(o) }, filesLabel(o))), ".") : null, h("div.acts", go, cancel));
+      o.files ? h("div", h("p", { style: "font-weight:600;margin-bottom:8px" }, "Add the lender's letter"), uploader(o)) : null, h("div.acts", go, cancel));
   }
   function deliveredRow(o) {
     var vers = Array.isArray(o.versions) && o.versions.length ? o.versions : [{ n: 1, at: o.delivered_at, kind: o.update ? "updated" : "delivered", total_file: o.total_file }];
@@ -465,11 +642,89 @@ footer.site a { color: var(--ink-2); }
     var page = route(), main = $("main"), y = window.scrollY, active = document.activeElement;
     if (active && active.closest && active.closest("#main .find")) return paintList(page);   // keep the find box and its words while he types
     if (active && active.closest && active.closest("#main .rev")) return;                    // never wipe a revision he is writing
+    if (page === "new" && newMounted && main.querySelector(".aap-new-root")) return;            // never wipe a new order he is filling in
     main.textContent = "";
     var n = notice(); if (n) main.appendChild(n);
-    main.appendChild(({ home: home, orders: orders, delivered: deliveredPage, billing: billing, help: help })[page]());
+    main.appendChild(({ home: home, orders: orders, delivered: deliveredPage, billing: billing, help: help, new: newOrderPage })[page]());
     if (page === "orders" || page === "delivered") paintList(page);
     window.scrollTo(0, y);
+  }
+
+  // ---------- New order: neworder.js (beside this file) draws it; this page hands it the office's own choices and the calls ----------
+  // The web app's new_order takes the request (board code checked) and returns one upload session per file into the
+  // office's own AP Orders folder (_new/<request id>/); the files go straight there, piece by piece, as Add files does.
+  var newScript = null, newState = "", newMounted = false, newId = "", newIdKey = "aap-board-neworder-" + T, newSent = [], newUps = {};
+  function newOrderOk() { return Array.isArray(B.lanes) && B.lanes.length > 0 && !!B.new_order_files && B.new_order_files.how === "drive" && ID.test(B.new_order_files.id || ""); }
+  function emailOrder() { return h("p", "Email your order to ", h("a", { href: "mailto:desk@aandap.com?subject=" + encodeURIComponent("New order") }, "desk@aandap.com"), ", with the engagement letter and your files."); }
+  function newOrderPage() {
+    var root = h("div.neworder");
+    if (!newOrderOk()) return h("div", h("section.top", h("h1", "New order"), emailOrder()));
+    loadNewOrder(function (ok) {
+      if (route() !== "new" || !root.isConnected) return;
+      var A = window.AAPNewOrder;
+      try { if (!ok || !A || typeof A.mount !== "function") throw 0; A.mount(root, newOrderCtx()); newMounted = true; }
+      catch (e) { newMounted = false; root.textContent = ""; root.appendChild(h("section.top", h("h1", "New order"), emailOrder())); }
+    });
+    return root;
+  }
+  function loadNewOrder(done) {
+    if (window.AAPNewOrder) return done(true);
+    if (newState === "failed") return done(false);
+    if (!newScript) {
+      newScript = document.createElement("script"); newScript.src = "neworder.js"; newScript.defer = true; newState = "loading";
+      newScript.addEventListener("load", function () { newState = "loaded"; });
+      newScript.addEventListener("error", function () { newState = "failed"; });
+      document.head.appendChild(newScript);
+    }
+    newScript.addEventListener("load", function () { done(true); });
+    newScript.addEventListener("error", function () { done(false); });
+  }
+  function leaveNewOrder() {
+    if (!newMounted || route() === "new") return;
+    newMounted = false;
+    try { window.AAPNewOrder.unmount(); } catch (e) {}
+  }
+  function newOrderCtx() {
+    var u = plan(), pct = u ? Math.max(0, Math.round(Number(u.pct) || 0)) : 0;
+    return { office: { name: B.office || "", person: B.person || "" }, lanes: B.lanes, addons: Array.isArray(B.addons) ? B.addons : [],
+             payment: B.payment || { card_fee_pct: 3, ach_fee: 0, due: "on delivery" },
+             plan: u && Number(u.cap) > 0 ? { pct: pct, resets: u.resets_text || "", order_share_pct: Math.round(100 / Number(u.cap)), refill_cents: 10000, runout_fee_cents: 5000 } : null,
+             createOrder: createOrder, uploadFile: uploadFile, afterCreate: function (rid) { newSent.push({ id: rid, at: new Date(Date.now()).toISOString() }); forgetNewId(rid); sentAt = Date.now(); soon(); } };
+  }
+  var NEW_ERR = { lane: "That choice isn't on your list any more. Reload the page and try again.", type: "One of these files is a kind we can't take.",
+                  size: "A file is over 500 MB. Email it to desk@aandap.com and we'll help.", folder: "We can't take new orders here right now. Email your order to desk@aandap.com.",
+                  too_large: "Please shorten your notes.", busy: "We're busy for a moment. Try again." };
+  // One request id per New order form, kept (here and across a reload) until the order is received: a retry after a
+  // lost reply is the same request whatever he edited, and the web app answers it from what it already has.
+  function newOrderId() {
+    var kept = store(newIdKey);
+    if (kept && /^[A-Za-z0-9_-]{16,80}$/.test(kept)) newId = kept;
+    if (!newId) newId = "no_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12);
+    store(newIdKey, newId);
+    return newId;
+  }
+  function forgetNewId(rid) {
+    if (rid !== newId && rid !== store(newIdKey)) return;
+    newId = "";
+    try { localStorage.removeItem(newIdKey); } catch (e) {}
+  }
+  function createOrder(o) {   // the same form sent again (a retry, an edit, a reload) keeps its request id: the desk never gets it twice
+    var files = ((o && o.files) || []).map(function (f) { return { name: String(f.name || ""), size: Number(f.size) || 0 }; });
+    var want = { lane: o && o.lane, addons: (o && o.addons) || [], notes: String((o && o.notes) || ""), client_due: String((o && o.client_due) || ""), files: files };
+    var rid = newOrderId();
+    return fetch(API, { method: "POST", credentials: "omit", headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify({ t: T, new_order: Object.assign({ request_id: rid }, want), origin: location.origin }) })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (r && r.ok && r.request_id === rid && Array.isArray(r.uploads)) return { ok: true, request_id: rid, uploads: r.uploads };
+        return { ok: false, error: NEW_ERR[r && r.error] || "Your order wasn't received. Try again, or email desk@aandap.com." };
+      }, function () { return { ok: false, error: "Couldn't reach us. Check your connection and try again." }; });
+  }
+  function uploadFile(url, file, onProgress) {   // a retry of the same session asks where it stopped and goes on from there
+    if (!/^https:\/\/www\.googleapis\.com\/upload\//.test(url || "") || !file) return Promise.resolve({ ok: false, error: "That file can't be sent here." });
+    var it = newUps[url] || (newUps[url] = { id: "no" + (++upN), url: url, file: file, name: file.name, size: file.size, sent: 0, done: 0 });
+    it.progress = function () { if (typeof onProgress === "function") onProgress({ loaded: it.sent, total: it.size }); };
+    return pieces(it).then(function () { it.progress(); return { ok: true }; }, function (e) { return { ok: false, error: (e && e.note) || "Sending stopped." }; });
   }
 
   // ---------- messages: our live desk on the order form's message channel ----------
@@ -528,8 +783,7 @@ footer.site a { color: var(--ink-2); }
       return p.then(function () { return deliver(item); }).catch(function () { failed(item); });
     }, Promise.resolve()).then(function () {
       var all = outbox(), keys = {};
-      conversation().forEach(function (m) { if (m.key && !m.pending && !all.some(function (i) { return i.key === m.key && !i.sent; })) keys[m.key] = true; });
-      entries(last).concat(B.messages || []).forEach(function (m) { if (m.key) keys[m.key] = true; });
+      entries(last).concat(B.messages || []).forEach(function (m) { if (m.key) keys[m.key] = true; });   // the record's own echo only, never this outbox
       // a sent message leaves once the record shows it (or a day after it was confirmed); an unsent one never leaves on its own
       keep(all.filter(function (i) { return !i.sent || !keys[i.key] && Date.now() - Date.parse(i.sent) < 864e5; }));
       if (B) { settle(); paintPage(); agentSync(); }
@@ -552,7 +806,8 @@ footer.site a { color: var(--ink-2); }
     if (!to) return Promise.resolve({ ok: false, error: "That order can't take messages here. Send it as a general message." });
     var id = msg && msg.id ? String(msg.id) : "", was = id ? known(id, text) : null;
     if (was && (was.sent || !was.rid)) return Promise.resolve({ ok: true, id: id });   // already with the desk
-    var item = was || outbox().filter(function (i) { return !i.sent && (i.order || "") === order && i.text === text; })[0];
+    var item = was || outbox().filter(function (i) { return (i.order || "") === order && i.text === text; })[0];   // confirmed or not, until the record shows it
+    if (item && item.sent) return Promise.resolve({ ok: true, id: item.key });
     if (item) { sentAt = Date.now(); soon(); return settled(item); }
     var at = new Date(Date.now()).toISOString(), o = byCode(order);
     item = { key: "q_fb_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12), at: at, text: text,
@@ -575,7 +830,7 @@ footer.site a { color: var(--ink-2); }
     var A = window.AAPAgent;
     if (!B || !messaging() || !A || typeof A.init !== "function" || typeof A.update !== "function") return;
     try {
-      if (!agentReady) { A.init({ send: send, office: { name: B.office || "", person: B.person || "" } }); agentReady = true; }
+      if (!agentInit) { A.init({ send: send, office: { name: B.office || "", person: B.person || "" } }); agentInit = true; agentReady = typeof A.open === "function"; showTalk(); }
       A.update({
         route: route(), order: null,
         needs: (B.needs || []).map(function (n) { var o = byCode(n.order); return { ap: n.order, street: n.street || n.order, kind: n.kind === "start" ? "answer" : n.kind,
@@ -601,7 +856,7 @@ footer.site a { color: var(--ink-2); }
     return read().then(function (r) {
       var f = r.form || {}, b = (f.house_prompts || {}).board || f.board;
       if (!b || typeof b !== "object") { gate(f.kind === "customer-board" ? "Your page is being set up. Check back in a few minutes." : "This link isn't an orders page."); return; }
-      last = r; B = b; paint();
+      var first = !B; last = r; B = b; paint(); if (first) toUpload();
     }, function (e) {
       if (e && e.code === "unknown") gate("This link has closed. Email desk@aandap.com for a new one.");
       else if (!B) gate("Couldn't load your orders. Check your connection and try again.");
@@ -617,8 +872,15 @@ footer.site a { color: var(--ink-2); }
   }
   window.addEventListener("hashchange", function () {   // a new page always draws, whatever box had focus on the last one
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-    if (B) { bar(); paintPage(); agentSync(); window.scrollTo(0, 0); }
+    leaveNewOrder();
+    if (B) { bar(); paintPage(); agentSync(); if (!toUpload()) window.scrollTo(0, 0); }
   });
+  function toUpload() {   // #orders/AP-####: that order's files, ready for Choose files
+    var ap = (location.hash.split("/")[1] || ""), u = /^AP-[0-9]{4,6}$/.test(ap) ? document.querySelector('.up[data-up="' + ap + '"]') : null;
+    if (!u) return false;
+    u.scrollIntoView({ block: "center" }); var b = u.querySelector("button"); if (b) b.focus({ preventScroll: true });
+    return true;
+  }
   window.addEventListener("load", agentSync);   // the panel's script arrives after this one
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") load().then(flush); });
   if (!T) { gate("Open this page from your link."); return; }
