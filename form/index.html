@@ -41,7 +41,7 @@
      (answer marketability_comment), apart from the adjustments comment.
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-11.6">
+<html lang="en" data-build="v2026-11-13.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1452,6 +1452,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // Matt 2026-10-30: a tapped Start or Approve shows at once; the server's record replaces the stand-in, a refusal rolls it back.
   var pendingStart = null, pendingApprove = false;
   function inProduction() { return !!pendingStart || realProduction(); }
+  // 11-13 drill: his Start saved READY but its GO never posted (the page left mid-Start). Open says so with Start
+  // enabled; only his own tap sends it again. Usage and Matt's hold keep their own lines.
+  function startLost() { return customerStart() && customerReady() && !state.go && !pendingStart && !goBusy && !usageLock() && !mattHold(); }
   // Matt 2026-11-09 (Grant St): questions the desk sets after his Start are a round he answers in production; his form shows
   // them with a working Send answers instead of hiding the whole answers block.
   function lateRound() { var go = state && state.go; return stage === "open" && !selfLane() && ["review", "regression"].indexOf((D.house_prompts || {}).lane) < 0 && asked() && !!go && Date.parse(askedAt(D)) > Date.parse(go.at || ""); }
@@ -4076,6 +4079,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
           if (answerAction(item.kind) && saved._revision !== JSON.parse(item.doc).expected_revision) throw { code: "conflict" };
           var starts = item.kind === "go" || item.kind === "start" && doc.status === "READY" && r.form && (r.form.minimal_start === true || (r.form.house_prompts || {}).lane === "self-service");
           if (starts && compBlocks(r.form, doc.answers)) throw { code: "comps" };   // Matt 2026-11-03: a replayed Start accepts only the check he saw
+          if (starts) throw { code: "review" };   // 11-13: a reopened Start never posts by itself; its receipt is read above, else it waits for his own Start tap
           return post(item.doc).catch(function () {}).then(read).then(function (r2) { verifyAction(item, r2); });
         });
       }
@@ -4256,9 +4260,16 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   });
   var goBusy = false;
   function startProduction() {
-    if (minimalCalls() && missing().length) return;
-    if (!customerReady() || realProduction() || readOnly || !online || pendingTaps > 0 || goBusy) return;
-    if (compNeeds() && pendingStart) { startFailed("comps"); return; }   // a check that arrived mid-Start: he reads it, then taps Start again
+    // 11-13 drill: a stop after his tap saved READY never leaves him on Sending…. A tap or GO in flight settles it itself; a GO
+    // already recorded is received; any other stop says so and leaves the desk a tap-failure record.
+    var stop = minimalCalls() && missing().length ? "answers_required" : !customerReady() ? "start_required" : readOnly ? "unknown" : !online ? "unconfirmed" : "";
+    if (pendingStart && !pendingTaps && !goBusy && (stop || realProduction())) {
+      if (realProduction()) { pendingStart = null; paintStatus(); banner(goNote(), "ok"); }
+      else { noteFailure({ id: newId(), kind: "go" }, stop); startFailed("not_sent"); }
+      return;
+    }
+    if (stop || realProduction() || pendingTaps > 0 || goBusy) return;
+    if (compNeeds() && pendingStart) { noteFailure({ id: newId(), kind: "go" }, "comps"); startFailed("comps"); return; }   // a check that arrived mid-Start: he reads it, then taps Start again
     var compWas = state.answers.q_comp_check, accepted = compAccept() ? (edits++, write(false)) : null;   // a GO saves no answers (Code.gs): his acceptance saves first, and the GO waits on it
     var payload = body(true); payload.go = true; payload.files_checked_at = checkedAt(); payload.comp_gaps = (D.comp_check || {}).gaps || []; payload.request_id = newId();
     var doc = JSON.stringify(payload), item = null;
@@ -4289,6 +4300,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (code === "matt_hold") { banner("This order needs Matt’s review before it can start. We’ll email you.", "warn"); poll(); return; }
     banner(code === "quote_changed" ? "The price changed. Review it, then tap Start again." : code === "stage" ? STAGES[stage].refused :
       code === "comps" ? "Your latest file adds a new comp gap. Read the card above, then tap Start again." :
+      code === "not_sent" ? "Start not sent. Tap Start again." :
       "Start not confirmed. Your draft is still here. Tap Retry to review it.", "warn");
   }
   $("start-production").addEventListener("click", startProduction);
@@ -4553,6 +4565,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     }
     paintStatus();
     banner(approved ? approvalNote() : customerReturned() || state.status === "DRAFT" ? "" : state.status === "READY" && stage === "open" ? readyNote() : SENT, "ok");
+    if (startLost()) banner("Your Start didn't go through. Tap Start again.", "warn");
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
@@ -4713,7 +4726,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   if (!API) { gate("Not connected yet."); return; }
   replay().then(read).then(function (r) {
     online = true; conn("Connected"); boot(r.form, r.saved);
-    if (replayFailed) banner("Your earlier " + replayFailed + " isn’t confirmed. Tap Retry to review your draft.", "warn");
+    if (replayFailed && !startLost()) banner("Your earlier " + replayFailed + " isn’t confirmed. Tap Retry to review your draft.", "warn");
   }, function (e) {
     gate(e && e.code === "unknown" ? CLOSED
                                    : "Couldn't open your form. Check your connection and try again.");

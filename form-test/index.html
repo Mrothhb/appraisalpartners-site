@@ -30,9 +30,18 @@
      older orders keep Approve all and deliver (Matt, 2026-11-02).
      Each customer stage names its accepting action: Ready, sending answers, approving or requesting a change. house_prompts.lane "review" is a partner reviewer's form (review help, no value line or terms). The client-permission question is off on every order; house_prompts.client_permits true turns it on for one order (Matt, 2026-10-20). house_prompts.lane "desk" (partial and full desk) is the minimal form: client permission and READY; "regression" (a customer's regression form, AP-2####, desk/launch/regress.py) shows the same way with its factor questions and its own help. No initials on any lane (Matt 2026-10-13). house_prompts.lane picks the terms: "self-service" = the A&AP Software Terms (terms-software.html),
      anything else = the A&AP Service Terms (terms.html).
+     When the order asks for it (house_prompts.adjustment_grid true) an open form shows the sales comparison grid (Matt, 2026-11-11): the subject and each
+     comp in the form's line order, a +(-) $ box beside every comp on every line, live net, gross and adjusted price, a
+     weight per comp, his comment where a line runs over 10% and his one value. Drawn quietly (his second look, 07:0x: "too
+     busy"): hairline rules, one sans, no grey blocks, a line with nothing on it left off until he adds it; three comps to
+     a grid on a wide screen, and on a narrow one Subject beside one comp with a tab per comp and a totals card. His
+     answers are grid_c<n> (one per comp, bound to its MLS number), grid_lines and grid_comment; the rates grid stays,
+     behind "Fill from my usual rates". It shows on a self-service form or a questions round; without the flag the rates
+     grid is alone, as before. house_prompts.marketability_median (dollars) adds the lender's marketability comment box
+     (answer marketability_comment), apart from the adjustments comment.
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-08.1">
+<html lang="en" data-build="v2026-11-13.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -574,6 +583,139 @@ fieldset:disabled .line input[type="text"], fieldset:disabled .line textarea { b
 .minimal-value .grid-range { flex:1 1 240px; }
 .minimal-grid .adjusted td { font-weight:700; color:var(--bar); }
 .weight-note { flex-basis:100%; color:var(--ink-2); }
+/* The sales comparison grid (Matt 2026-11-11: "we need to show his grid and let him fill in adjustments now with his comps there";
+   07:0x, on the first look: "The ACI form grid is too busy. It's a little bit too much. I also can't even look at it on my
+   phone"). The form's structure, drawn quietly: one sans with tabular figures, values at regular weight, labels a shade
+   lighter; a hairline under each row and no other rule; no grey blocks; air between one home and the next in place of a
+   line. Wide: three comps to a grid, nothing scrolls sideways, nothing is frozen. Narrow (.sg[data-mode="narrow"], set from
+   the grid's own width): no wide table at all; Subject beside ONE comp, a tab per comp, each line's adjustment box beside
+   it, and a totals card at the bottom. Every size and colour is a token on .sg. */
+.sg-card > .note { margin-bottom: var(--s-3); }
+.wrap:has(#sales-grid) { max-width: 1200px; }   /* room for three comps side by side, on a questions round too */
+.sg-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-4); margin: 0 0 var(--s-4); }
+.sg-tools:empty { display: none; }
+.sg-tools .tap { min-height: 36px; padding: 0 var(--s-3); font-size: 14px; }
+.sg-tools .sg-say { margin: 0; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+.sg {
+  --sg-ink: #17212b; --sg-label: #5b6773; --sg-faint: #7a8591; --sg-rule: #e7eaee; --sg-rule-2: #ccd3da; --sg-edit: #f6f8fa; --sg-ring: var(--primary, #0b6fc1);
+  color: var(--sg-ink); font: 400 13.5px/19px var(--font, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  font-variant-numeric: tabular-nums lining-nums; -webkit-text-size-adjust: 100%;
+}
+.sg-bar, .sg-nav, .sg-table .sg-tt { display: none; }   /* a narrow screen's own parts */
+.sg-grid + .sg-grid { margin-top: 36px; }
+.sg-chunk { margin: 0 0 8px; font-size: 11px; font-weight: 600; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; color: var(--sg-faint); }
+.sg-table { width: 100%; margin: 0; table-layout: fixed; border-collapse: collapse; border-spacing: 0; font: inherit; }
+.sg-table col.sg-cf { width: 15.5%; } .sg-table col.sg-cs { width: 15%; } .sg-table col.sg-cd { width: 13.5%; } .sg-table col.sg-ca { width: 9.66%; }
+.sg-table th, .sg-table td { box-sizing: border-box; padding: 8px 8px; border: 0; border-bottom: 1px solid var(--sg-rule); background: none; color: inherit; font: inherit; text-align: left; vertical-align: middle; white-space: normal; overflow-wrap: anywhere; }
+.sg-table th.sg-f { padding-left: 0; color: var(--sg-label); }
+.sg-table .sg-s { padding-left: 0; }
+.sg-table .sg-d { padding-left: 24px; }          /* air between one home and the next, in place of a rule */
+.sg-table thead th { padding-top: 0; padding-bottom: 9px; border-bottom-color: var(--sg-rule-2); color: var(--sg-faint); font-size: 11px; font-weight: 600; line-height: 16px; letter-spacing: .07em; text-transform: uppercase; }
+.sg-t { display: block; }
+.sg-table .sg-n { text-align: right; }
+.sg-tag { color: var(--sg-faint); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; }
+.sg-table .sg-addr > * { vertical-align: top; }
+.sg-table .sg-sub > * { padding-top: 18px; padding-bottom: 7px; vertical-align: bottom; border-bottom-color: var(--sg-rule-2); color: var(--sg-faint); font-size: 11px; font-weight: 600; line-height: 16px; letter-spacing: .07em; text-transform: uppercase; }
+.sg-table .sg-sub .sg-a { padding-right: 0; text-align: right; letter-spacing: .02em; text-transform: none; }   /* one line where it fits, two where it does not: never cut off */
+.sg-table td.sg-a { position: relative; padding: 4px 0 4px 8px; }
+.sg-table td.sg-a.sg-n { padding: 8px 8px 8px 8px; }
+.sg-table td.sg-e, .sg-table th.sg-e { padding-top: 4px; padding-bottom: 4px; }
+/* the boxes he types in: quiet until he is in one */
+.sg-in { display: block; box-sizing: border-box; width: 100%; height: 30px; margin: 0; padding: 0 8px; border: 1px solid transparent; border-radius: 4px; background: var(--sg-edit); color: var(--sg-ink);
+  font: inherit; font-variant-numeric: tabular-nums lining-nums; text-align: right; -webkit-appearance: none; appearance: none; outline: 0; transition: background-color var(--dur, .15s) var(--ease, ease), border-color var(--dur, .15s) var(--ease, ease), box-shadow var(--dur, .15s) var(--ease, ease); }
+.sg-e .sg-in { text-align: left; }
+.sg-in::placeholder { color: var(--sg-faint); opacity: 1; }
+.sg-in:hover { background: #edf1f5; }
+.sg-in:focus { background: #fff; border-color: var(--sg-ring); box-shadow: 0 0 0 3px rgba(11, 111, 193, .14); }
+.sg-in[aria-invalid="true"] { background: #fff; border-color: #b91c1c; }
+.sg-in:disabled, .sg-in[readonly] { background: transparent; color: var(--sg-label); cursor: default; box-shadow: none; border-color: transparent; }
+.sg-in.sg-file { color: var(--sg-label); }
+.sg-over { position: absolute; top: 50%; left: 14px; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%; background: #c2410c; pointer-events: none; }
+.sg-flip { position: absolute; left: 10px; top: 50%; z-index: 1; display: none; width: 32px; height: 32px; margin-top: -16px; padding: 0; border: 1px solid var(--sg-rule-2); border-radius: 6px; background: #fff; color: var(--sg-ink); font-family: inherit; font-size: 17px; font-weight: 600; line-height: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.sg-pick { display: block; width: 100%; margin: 0; padding: 0; border: 0; background: none; color: var(--sg-ink); font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.sg-pick:empty::before { content: "Rate"; color: var(--sg-ring); text-decoration: underline; text-underline-offset: 2px; }
+.sg-pick:hover, .sg-pick:focus-visible { color: var(--sg-ring); outline: 0; text-decoration: underline; text-underline-offset: 2px; }
+.sg-pick:disabled { color: var(--sg-ink); cursor: default; text-decoration: none; }
+.sg-pick:disabled:empty::before { content: ""; }
+/* lines left off, one tap away */
+.sg-table .sg-addrow td { padding: 8px 0; border-bottom: 0; }
+.sg-grid:not(.sg-last) .sg-addrow { display: none; }
+.sg-picks { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.sg-chip { margin: 0; padding: 5px 12px; border: 1px solid var(--sg-rule-2); border-radius: 999px; background: #fff; color: var(--sg-ink); font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.sg-chip:hover, .sg-chip:focus-visible { border-color: var(--sg-ring); color: var(--sg-ring); outline: 0; }
+/* the totals: figured, never typed */
+.sg-table .sg-totals tr.sg-net > * { border-top: 1px solid var(--sg-rule-2); }
+.sg-table .sg-net .sg-d { text-align: right; }
+.sg-signs { display: inline-flex; align-items: center; gap: 5px; color: var(--sg-label); }
+.sg-signs i { position: relative; display: inline-block; box-sizing: border-box; width: 14px; height: 14px; margin-left: 10px; border: 1px solid #9aa4ae; border-radius: 3px; }
+.sg-signs i.sg-on { border-color: var(--sg-ink); }   /* the tick is drawn, so it looks the same on every device */
+.sg-signs i.sg-on::after { content: ""; position: absolute; left: 4px; top: 1px; width: 3px; height: 7px; border: solid var(--sg-ink); border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
+.sg-signs i:first-child { margin-left: 0; }
+.sg-table .sg-adj .sg-n .sg-t { font-size: 15.5px; line-height: 21px; }
+.sg-table .sg-weight > * { border-bottom: 0; }
+.sg-pctin { display: flex; align-items: center; gap: 5px; }
+.sg-pctin .sg-in { flex: 1; min-width: 0; }
+.sg-pctin > span { flex: none; color: var(--sg-label); }
+/* under the grid: his comment where a line runs over 10%, then his one value */
+.sg-sum { margin-top: 22px; }
+.sg-sum label { display: block; color: var(--sg-label); }
+.sg-sum .sg-why { margin: 2px 0 6px; color: #8a4b0f; font-size: 13px; line-height: 18px; }
+.sg-sum textarea { display: block; box-sizing: border-box; width: 100%; min-height: 60px; margin: 0; padding: 8px 10px; border: 1px solid transparent; border-radius: 4px; background: var(--sg-edit); color: var(--sg-ink); font: inherit; resize: vertical; outline: 0; }
+.sg-sum textarea:focus { background: #fff; border-color: var(--sg-ring); box-shadow: 0 0 0 3px rgba(11, 111, 193, .14); }
+.sg-value { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px 14px; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--sg-rule-2); }
+.sg-value label { color: var(--sg-label); }
+.sg-money { display: inline-flex; align-items: center; gap: 6px; color: var(--sg-label); }
+.sg-value .sg-in { width: 170px; height: 38px; font-size: 16px; }
+.sg-after { margin: var(--s-4, 16px) 0 0; }
+.sg-after p { margin: 0 0 var(--s-1, 4px); font-size: 14px; line-height: 1.5; color: var(--ink-2, #5f5f5f); }
+.sg-after p:empty { display: none; }
+.sg-after .sg-range { color: var(--bar, #0d2a46); font-weight: 600; }
+.sg-after .sg-err { color: var(--danger, #a72a2a); font-weight: 600; }
+.sg-rates-go { display: block; margin: var(--s-4) 0 0; }
+@media (pointer: coarse) { .sg-a:focus-within .sg-flip { display: block; } .sg-a:focus-within .sg-in { padding-left: 44px; } }
+
+/* ---- narrow: Subject beside one comp, a tab per comp, a totals card ---- */
+.sg[data-mode="narrow"] { display: flex; flex-direction: column; margin: 0 -8px; font-size: 13.5px; line-height: 19px; }   /* a little past the card's padding: every pixel goes to the two homes */
+.sg[data-mode="narrow"] .sg-bar { display: block; position: sticky; top: 0; z-index: 3; margin: 0 calc(var(--card-px, 20px) * -1 + 8px); padding: 10px calc(var(--card-px, 20px) - 8px) 0; border-bottom: 1px solid var(--sg-rule-2); background: var(--card, #fff); }
+.sg-tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); gap: 6px; }
+.sg-tab { box-sizing: border-box; min-width: 0; height: 38px; margin: 0; padding: 0 4px; border: 1px solid var(--sg-rule-2); border-radius: 6px; background: #fff; color: var(--sg-label); font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.sg-tab[aria-pressed="true"] { border-color: var(--sg-ring); background: var(--sg-ring); color: #fff; }
+.sg-tab.sg-done:not([aria-pressed="true"]) { border-color: var(--sg-ring); color: var(--sg-ring); }
+.sg-tab:disabled { opacity: .45; cursor: default; }
+.sg-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 96px; column-gap: 10px; padding: 10px 0 7px; color: var(--sg-faint); font-size: 11px; font-weight: 600; line-height: 14px; letter-spacing: .07em; text-transform: uppercase; }
+.sg-cols span:last-child { text-align: right; }
+.sg[data-mode="narrow"] .sg-grid { order: 1; margin: 0; }
+.sg[data-mode="narrow"] .sg-off, .sg[data-mode="narrow"] .sg-table .sg-off, .sg[data-mode="narrow"] .sg-chunk, .sg[data-mode="narrow"] .sg-table thead, .sg[data-mode="narrow"] .sg-table colgroup, .sg[data-mode="narrow"] .sg-table tr.sg-sub { display: none !important; }
+.sg[data-mode="narrow"] .sg-table, .sg[data-mode="narrow"] .sg-table tbody { display: block; width: 100%; }
+.sg[data-mode="narrow"] .sg-table tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 96px; column-gap: 10px; align-items: center; padding: 7px 0 8px; border-bottom: 1px solid var(--sg-rule); }
+.sg[data-mode="narrow"] .sg-table th, .sg[data-mode="narrow"] .sg-table td { display: block; min-width: 0; padding: 0; border: 0; }
+.sg[data-mode="narrow"] .sg-table th.sg-f { grid-column: 1 / -1; margin-bottom: 3px; font-size: 12px; line-height: 16px; }
+.sg[data-mode="narrow"] .sg-table td.sg-wide { grid-column: span 2; }
+.sg[data-mode="narrow"] .sg-table .sg-addr { align-items: start; }
+.sg[data-mode="narrow"] .sg-in { height: 44px; font-size: 16px; }
+.sg[data-mode="narrow"] .sg-grid .sg-addrow { display: block; }
+.sg[data-mode="narrow"] .sg-table .sg-addrow td { grid-column: 1 / -1; }
+.sg[data-mode="narrow"] .sg-table .sg-totals { margin-top: 20px; padding: 2px 14px 4px; border: 1px solid var(--sg-rule-2); border-bottom: 0; border-radius: 12px 12px 0 0; background: #fafbfc; }
+.sg[data-mode="narrow"] .sg-table .sg-totals tr { grid-template-columns: minmax(0, 1fr) auto auto; min-height: 26px; padding: 9px 0; }
+.sg[data-mode="narrow"] .sg-table .sg-totals .sg-pctin .sg-in { flex: none; width: 76px; background: #fff; border-color: var(--sg-rule-2); }
+.sg[data-mode="narrow"] .sg-table .sg-totals tr.sg-net > * { border-top: 0; }
+.sg[data-mode="narrow"] .sg-table .sg-totals th.sg-f { grid-column: 1; margin: 0; font-size: 13.5px; line-height: 19px; }
+.sg[data-mode="narrow"] .sg-table .sg-totals td.sg-s { display: none; }
+.sg[data-mode="narrow"] .sg-table .sg-totals tr.sg-tt { display: block; padding: 10px 0 8px; }
+.sg[data-mode="narrow"] .sg-table .sg-totals tr.sg-tt th { color: var(--sg-faint); font-size: 11px; font-weight: 600; line-height: 14px; letter-spacing: .07em; text-transform: uppercase; }
+.sg[data-mode="narrow"] .sg-table .sg-adj .sg-n .sg-t { font-size: 18px; line-height: 24px; }
+.sg[data-mode="narrow"] .sg-value { order: 2; flex-direction: column; align-items: stretch; gap: 6px; margin: 0; padding: 12px 14px 14px; border: 1px solid var(--sg-rule-2); border-top: 1px solid var(--sg-rule); border-radius: 0 0 12px 12px; background: #fafbfc; }
+.sg[data-mode="narrow"] .sg-value .sg-money { display: flex; }
+.sg[data-mode="narrow"] .sg-value .sg-in { flex: 1; width: auto; height: 48px; background: #fff; border-color: var(--sg-rule-2); font-size: 18px; }
+.sg[data-mode="narrow"] .sg-sum { order: 3; margin-top: 16px; }
+.sg-mkt { margin-top: 18px; }
+.sg[data-mode="narrow"] .sg-sum textarea { font-size: 16px; line-height: 22px; }   /* 16px: a phone does not zoom in on focus */
+.sg[data-mode="narrow"] .sg-nav { order: 4; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+.sg[data-mode="narrow"] .sg-nav .sg-tab { height: 44px; }
+@media (max-width: 640px) and (hover: none) and (pointer: coarse) {   /* a phone: the card runs edge to edge, so the two homes get the whole screen */
+  .sg-card { margin-left: calc(50% - 50vw) !important; margin-right: calc(50% - 50vw) !important; border-left: 0; border-right: 0; border-radius: 0; }
+  .sg-card > h2 { margin-left: calc(var(--card-px) * -1); margin-right: calc(var(--card-px) * -1); border-radius: 0; }   /* the title bar ends with the screen, not a pixel past it */
+}
 .call-line {border-bottom:1px solid #edf0f2;padding:4px 0;}
 .file-call {font-size:14px;line-height:1.5;margin:8px 0;overflow-wrap:anywhere;}
 .change-call {border:0;background:transparent;color:#265b83;text-decoration:underline;padding:6px;cursor:pointer;font:inherit;}
@@ -758,12 +900,12 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 .comp-list { margin: 0 0 var(--s-4); padding: 0 0 0 var(--s-5); font-size: 15px; line-height: 1.5; color: var(--ink); }
 .comp-list li + li { margin-top: var(--s-2); }
 .comp-list li b { color: #6b2400; }
-.comp-list li.comp-note { color: var(--ink-2); font-size: 14px; }
+.comp-list li.comp-note { color: var(--ink); font-size: 14px; list-style: none; margin-left: calc(var(--s-5) * -1); }
 .comp-more { display: inline-block; margin: calc(var(--s-2) * -1) 0 var(--s-4) var(--s-5); padding: var(--s-1) 0; border: 0; background: none; color: #6b2400; font: 600 14px/1.4 var(--font); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .comp-taps { display: grid; gap: var(--s-3); }
 .comp-tap { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-1); min-height: 64px; padding: var(--s-3) var(--s-4); border: 1px solid #e8590c; border-radius: var(--r-2); background: #fff; color: #6b2400; text-align: left; cursor: pointer; }
 .comp-tap b { font: 700 16px/1.25 var(--font); }
-.comp-tap span { font-size: 13px; line-height: 1.35; color: var(--ink-2); }
+.comp-tap span { font-size: 13px; line-height: 1.35; color: inherit; }
 .comp-tap:hover { background: #fff7ef; }
 .comp-tap[aria-pressed="true"] { background: #e8590c; border-color: #e8590c; color: #fff; }
 .comp-tap[aria-pressed="true"] span { color: rgba(255,255,255,.92); }
@@ -855,15 +997,15 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
        tapping Start accepts these gaps (Matt 2026-11-03, "for all."). His answer is
        q_comp_check {id, choice, at}, bound to that check; Start records "accept" on the check he sees. No gaps, no card. -->
   <section class="card comp-card" id="comp-card" role="alert" aria-labelledby="comp-title" hidden>
-    <div class="comp-head"><span class="comp-bang" aria-hidden="true">!</span><p class="comp-title" id="comp-title">Gaps a lender or reviewer will flag</p></div>
+    <div class="comp-head"><span class="comp-bang" aria-hidden="true">!</span><p class="comp-title" id="comp-title">Before you start: a reviewer may ask about these</p></div>
     <ul class="comp-list" id="comp-list"></ul>
     <button type="button" class="comp-more" id="comp-more" aria-expanded="false" aria-controls="comp-list" hidden></button>
     <p class="comp-cost" id="comp-cost"></p>
     <div class="comp-taps">
-      <button type="button" class="comp-tap" id="comp-add" aria-pressed="false"><b>I’ll add comps</b><span id="comp-add-why">Add them to your folder. We check again on your next save.</span></button>
+      <button type="button" class="comp-tap" id="comp-add" aria-pressed="false"><b>I’ll add a sale</b><span id="comp-add-why">Add them to your folder. We check again on your next save.</span></button>
     </div>
     <p class="comp-said" id="comp-said" role="status" hidden></p>
-    <p class="comp-start" id="comp-start"><b>Tapping Start accepts these gaps.</b></p>
+    <p class="comp-start" id="comp-start" hidden><b>Tapping Start accepts these gaps.</b></p>
   </section>
   <!-- Matt 2026-11-03: "it should be clear whats missing to begin clear as day". The audit's lines (prefill start_missing),
        on a desk lane before his file is checked; advisory, never a lock. -->
@@ -1310,6 +1452,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // Matt 2026-10-30: a tapped Start or Approve shows at once; the server's record replaces the stand-in, a refusal rolls it back.
   var pendingStart = null, pendingApprove = false;
   function inProduction() { return !!pendingStart || realProduction(); }
+  // 11-13 drill: his Start saved READY but its GO never posted (the page left mid-Start). Open says so with Start
+  // enabled; only his own tap sends it again. Usage and Matt's hold keep their own lines.
+  function startLost() { return customerStart() && customerReady() && !state.go && !pendingStart && !goBusy && !usageLock() && !mattHold(); }
   // Matt 2026-11-09 (Grant St): questions the desk sets after his Start are a round he answers in production; his form shows
   // them with a working Send answers instead of hiding the whole answers block.
   function lateRound() { var go = state && state.go; return stage === "open" && !selfLane() && ["review", "regression"].indexOf((D.house_prompts || {}).lane) < 0 && asked() && !!go && Date.parse(askedAt(D)) > Date.parse(go.at || ""); }
@@ -1384,7 +1529,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if(before !== v && key !== "calls_ok" && key !== "terms_ok") {
         state.answers.calls_ok=state.answers.q_calls_ok=false;own.calls_ok=own.q_calls_ok=true;if(controls.calls_ok)controls.calls_ok.set(false);
       }
-      if(before !== v && /^(subject_(quality|condition)|comp\d+_(quality|condition)|rate_|time_adjustment|concessions|adjustments_by|comps_roster|value$)/.test(key)) {
+      if(before !== v && /^(subject_(quality|condition)|comp\d+_(quality|condition)|rate_|time_adjustment|concessions|adjustments_by|comps_roster|grid_c\d+$|value$)/.test(key)) {
         if("value_why" in state.answers || "q_value_why" in state.answers) {state.answers.value_why="";state.answers.q_value_why="";own.value_why=own.q_value_why=true;if(controls.value_why)controls.value_why.set("");}
       }
     }
@@ -1642,7 +1787,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     picking = null;
   }
   function paintGrid() {
-    if (minimalCalls()) { paintMinimalGrid(); return; }           // every amount from his answers now; the scroller keeps its place across a redraw
+    if (minimalCalls()) { paintMinimalGrid(); sgPaint(); return; }           // every amount from his answers now; the scroller keeps its place across a redraw
+    sgPaint();
     var v = gridView, ranges = document.querySelectorAll("[data-range]");
     if (!v || !v.box.isConnected) { ranges.forEach(function (p) { p.hidden = true; }); return; }
     var f = v.f, totals = f.list.map(function () { return { net: 0, gross: 0, miss: 0, his: 0 }; });
@@ -1744,6 +1890,21 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   // File facts and customer rates, with the same answer keys used by the report backfill.
   function minimalCalls() { return valueLast() && Array.isArray(D.call_sections); }
+  // Presentation only: never change this order's lane, quote, terms or Start requirements.
+  // An order may supply its exact scope in house_prompts.start_scope (or start_scope).
+  function plainStart() {
+    var hp = D.house_prompts || {};
+    return valueLast() && (String(hp.state || D.state || "").toUpperCase() === "IL" || hp.stateIL === true || hp.no_proposals === true || hp.call_policy === "customer_only" || hp.plain_start === true || hp.start_presentation === "plain-start");
+  }
+  function startScope() {
+    var hp = D.house_prompts || {}, text = hp.start_scope == null ? D.start_scope : hp.start_scope;
+    return typeof text === "string" ? text : "";
+  }
+  function renderStartScope(host) {
+    if (!plainStart() || !startScope()) return;
+    var scope = host.appendChild(el("section", {cls:"card", "data-start-scope":""}, [el("h2", {text:"Your scope"}), el("p", {text:startScope()})]));
+    scope.lastChild.style.whiteSpace = "pre-wrap";
+  }
   function archerAdjustments() { return ans("adjustments_by") === "archer_profile"; }
   function numberOnly(v) { var t = String(v == null ? "" : v).replace(/[$,]/g, "").trim(); return /^-?(?:\d+\.?\d*|\.\d+)$/.test(t) && isFinite(Number(t)) ? Number(t) : null; }
   function minimalChecked() { return (D.house_prompts || {}).files_complete === true && !!checkedAt(); }
@@ -1820,14 +1981,14 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     card.hidden=false;
     if(sectionNote(section))card.appendChild(el("p",{cls:"note",text:sectionNote(section)}));
     section.lines.forEach(function(line){
-      if (["comps_roster", "search_net"].indexOf(line.key) >= 0) return;
+      if (["comps_roster", "search_net"].indexOf(line.key) >= 0 || line.key === "value" && sgOn()) return;   // his one value line sits under his grid
       var options=callOptions(line), context=(D.house_prompts||{})[line.context], label=callLabel(line)+((typeof context === "string" && context.trim()) || typeof context === "number" ? " · "+context : "");   // "contract": true is the line's switch, never its context
       var input=line.kind === "check" ? check(line.key,label) : options ? choice(line.key,label,options) : text(line.key,label,{multi:line.kind === "multi",short:!!line.numeric});
       if(line.key === "calls_ok") {var original=controls.calls_ok.set;controls.calls_ok.set=function(v){original(v === true && ans("calls_checked_at") === (D.accepted_at||""));};}
       var help=callHelp(line), lbl=help && line.kind !== "check" && input.querySelector(".lbl");   // the help sits under the question, above its buttons or box
       if(lbl)lbl.after(help);
       var wrap=card.appendChild(el("div",{cls:"call-line"+(label.length>60?" long":""),"data-call-line":line.key},[input,lbl?null:help]));
-      var source=(D.file_calls||{})[line.key], summary=null, opened=false;
+      var source=(D.file_calls||{})[line.key], summary=null, opened=plainStart() && line.key === "il_amc_fee";
       if(source && source.source && line.kind !== "check") {
         summary=el("p",{cls:"file-call"},[el("span",{text:callLabel(line)+": "+source.value+" — from your file "}),el("button",{type:"button",cls:"change-call",text:"Change","aria-label":"Change "+callLabel(line)})]);
         wrap.insertBefore(summary,input);summary.querySelector("button").addEventListener("click",function(){opened=true;paint();input.querySelector("input,textarea,button")?.focus({preventScroll:true});});
@@ -1857,8 +2018,14 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     callSection(sections[0],host);
     var first = host.lastElementChild;   // the To start card: its header counts the answers, each answered line ticks (paintReady)
     if (first && first.classList.contains("fixed-calls")) { first.classList.add("to-start"); first.querySelector("h2").appendChild(el("span", { cls: "ready-count", "data-start-count": "" })); }
+    if (plainStart()) {
+      if (!permitsOff() && (D.house_prompts || {}).client_permits_text) startPermission(first);
+      paintCallLines();
+      return;
+    }
+    if (!permitsOff() && (D.house_prompts || {}).client_permits_text) startPermission(first);
     // Matt 2026-10-30: optional must be obvious, and quiet (round 2). One row with its promise under it; it opens by itself when his file or his saved answers fill any of it.
-    var optionalKeys = [].concat.apply([], sections.slice(1).map(function(sec){return sec.lines.map(function(l){return l.key;});})).concat((D.adjustment_rows || []).map(function(r){return r.key;}), ["adjustments_by"]);
+    var optionalKeys = [].concat.apply([], sections.slice(1).map(function(sec){return sec.lines.map(function(l){return l.key;});})).concat((D.adjustment_rows || []).map(function(r){return r.key;}), ["adjustments_by"], sgOn() ? sgKeys() : []);
     var some = function(k){var v=ans(k);return v === true || typeof v === "number" || typeof v === "string" && !!v.trim();};
     var anyFilled = optionalKeys.some(some);
     // Matt 2026-11-08: open only for something he filled in himself; a value his file supplied (the prefill) is named on the closed row
@@ -1867,7 +2034,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     sections.slice(1).forEach(function(sec){sec.lines.forEach(function(l){var s=(D.file_calls||{})[l.key];if(s && s.source && some(l.key) && String(ans(l.key))===String(s.value))fromFile.push(cap(l.need || l.key)+" "+s.value);});});
     var more = host.appendChild(el("details",{cls:"optional-calls"},[el("summary",null,[el("span",{cls:"t"},["Add your own ratings, adjustments and value now ",el("small",{text:"Optional"})]),el("span",{cls:"optional-note",text:"Or skip it. We’ll fill these in for you to approve at review."})])]));
     if (fromFile.length) more.querySelector("summary").appendChild(el("span",{cls:"optional-note optional-file",text:"From your file: "+fromFile.join(" · ")+". Open to see or change."}));
-    more.open = moreOpen == null ? filled : moreOpen;
+    more.open = moreOpen == null ? filled || sgOn() && sgWanted() : moreOpen;   // the desk asked for his grid: open, no tap
     more.dataset.filled = anyFilled;
     more.addEventListener("toggle", function(){moreOpen = more.open;});
     host = more;
@@ -1882,6 +2049,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     });
     controls.adjustments_by={set:function(v){modeButtons.forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.adjustmentsBy===v));});}};
     callSection(sections[split],host,mode);
+    var sg = sgOn() ? host.appendChild(sgCard()) : null;
     var card = host.appendChild(el("section", { cls: "card minimal-grid" }, [el("h2", { text: "Your grid" })]));
     if (!comps.length) card.appendChild(el("p", { cls: "note", text: "Your grid appears here once your comps are saved in your report." }));
     else {
@@ -1921,6 +2089,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       minimalView = {rows:rendered, net:net, adjusted:adjusted, time:timeCells, concessions:concessionCells, other:otherCells, box:box};
       setTimeout(function () {box.scrollLeft=gridLeft;},0);
     }
+    if (sg) sgRatesCard(card);
     sections.slice(split+1).forEach(function(sec){callSection(sec,host);});
     paintCallLines();
   }
@@ -1984,6 +2153,513 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if(archerAdjustments())out=minimalRange ? "Adjusted sales: "+range(minimalRange) : "Profile adjustments and range will be shown for your approval at review.";
     document.querySelectorAll("[data-range]").forEach(function(p){p.textContent=out;p.hidden=false;});
     paintCallLines();
+  }
+
+  // ---------- the sales comparison grid ----------
+  // Matt 2026-11-11 ("we need to show his grid and let him fill in adjustments now with his comps there"): the sales comparison
+  // grid in the form's own order: Feature, Subject, then each comp's Description beside its +(-) $ Adjustment; the lines above
+  // the adjustments, the form's adjustment lines, then Net Adjustment, Net and Gross % and the Adjusted Sale Price. The words in
+  // it are the order's own grid facts (subject and comps, the data the rates grid reads; a home's "grid" map carries a line's
+  // printed words where the file has them, and a sourced amount already in his file opens in its box). He types only his
+  // adjustments, his weights, any line he adds, his comment and his one value. How it is drawn is further down (sgCard).
+  // Answers, saved like every other: grid_c<n>, one per comp column, a JSON line {mls, weight, adj: {line: amount}, desc: {open
+  // line: words}} bound to that comp's MLS number, so a reordered roster keeps each column with its comp and the backend's
+  // limit on the number of answers is never near; grid_lines, the open lines' names and subject words; grid_comment, his comment
+  // where a line runs over 10% of the comp's price; the value line is the form's own "value". Nothing here gates Start.
+  // It shows only when the order asks for it: house_prompts.adjustment_grid true, on an open self-service form (opened without
+  // a tap) or on a questions round. Without it the rates grid is alone, as before.
+  // A home's facts are read under either name the desk writes them (sgFact): sold / sale_date, contract / contract_date,
+  // price / sale_price / list_price, dom / days_on_market, verification / verification_source, garage_desc / vehicle_storage,
+  // city_line / city + state + zip, basement_desc / basement_finished + basement_unfinished, effective / effective_date.
+  // house_prompts.marketability_median (a dollar figure) adds the lender's marketability comment box, answer
+  // marketability_comment: his comment when his value is more than 10% from that figure; apart from the adjustments comment.
+  var SG_LINES = [                 // none: no entry for the subject; pick: his rating
+    { id: "sale", label: "Sale or Financing", none: true }, { id: "conc", label: "Concessions", none: true },
+    { id: "date", label: "Date of Sale/Time", none: true }, { id: "loc", label: "Location" }, { id: "lease", label: "Leasehold/Fee Simple" },
+    { id: "site", label: "Site" }, { id: "view", label: "View" }, { id: "design", label: "Design (Style)" },
+    { id: "qual", label: "Quality of Construction", pick: "quality" }, { id: "age", label: "Actual Age" }, { id: "cond", label: "Condition", pick: "condition" },
+    { id: "beds", label: "Above Grade Rooms" }, { id: "baths", label: "Baths" },
+    { id: "gla", label: "Gross Living Area" }, { id: "bsmt", label: "Basement & Finished" }, { id: "bsmtrooms", label: "Rooms Below Grade" },
+    { id: "func", label: "Functional Utility" }, { id: "hvac", label: "Heating/Cooling" }, { id: "energy", label: "Energy Efficient Items" },
+    { id: "garage", label: "Garage/Carport" }, { id: "porch", label: "Porch/Patio/Deck" }
+  ];
+  var SG_FACT = { site: "site", year_built: "age", quality: "qual", condition: "cond", gla: "gla", full_baths: "baths", half_baths: "baths", basement: "bsmt", garage: "garage", carport: "garage" };   // a rates row's line
+  var SG_WORDS = { sale: "sale_type", conc: "financing", loc: "location", lease: "rights", view: "view", design: "design", bsmtrooms: "rooms_below", func: "functional", hvac: "heat_cool", energy: "energy", porch: "porch" };   // a line's words, when the home carries them
+  var SG_FILE = [[/^(sale|financ)/i, "sale"], [/^concession/i, "conc"], [/^(date|time|market cond)/i, "date"], [/^location/i, "loc"], [/^(leasehold|fee simple|property rights)/i, "lease"], [/^(site )?view/i, "view"], [/^(site|lot)\b/i, "site"],
+    [/^(design|style)/i, "design"], [/^quality/i, "qual"], [/^(actual )?age|^year built/i, "age"], [/^condition/i, "cond"], [/^bed/i, "beds"], [/^(bath|room count)/i, "baths"], [/^(gla|gross living|living area)/i, "gla"],
+    [/^rooms below/i, "bsmtrooms"], [/^(basement|below grade)/i, "bsmt"], [/^functional/i, "func"], [/^(heat|cool|hvac)/i, "hvac"], [/^(energy|solar)/i, "energy"], [/^(garage|carport|parking)/i, "garage"], [/^(porch|patio|deck)/i, "porch"]];
+  function sgWanted() { return (D.house_prompts || {}).adjustment_grid === true; }
+  function sgOn() {
+    var hp = D.house_prompts || {};
+    return (D.stage || "open") === "open" && hp.adjustment_grid !== false && hp.lane !== "review" && (D.comps || []).length > 0 && sgWanted();   // only when the order asks for it (MAIN 2285)
+  }
+  function sgPrice(c) {            // the comp's price: a sale's sale price, a listing's list price, under any name the desk writes it
+    c = c || {};
+    return fig(c.price) && c.price > 0 ? c.price : sgSold(c) && fig(c.sale_price) && c.sale_price > 0 ? c.sale_price : fig(c.list_price) && c.list_price > 0 ? c.list_price : fig(c.sale_price) && c.sale_price > 0 ? c.sale_price : null;
+  }
+  function sgSold(c) { return /^(sold|closed|settled)/i.test((c || {}).status || "Sold"); }
+  function sgSlug(t) { return String(t || "").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 24); }
+  // A typed amount: -5000, -5,000, (5,000), +2500, $1,200, 5k. null: nothing typed. NaN: not an amount; it is never counted.
+  function sgNum(v) {
+    var t = String(v == null ? "" : v).replace(/[\u2212\u2013\u2014]/g, "-").replace(/[$,\s]/g, ""), paren = /^\((.*)\)$/.exec(t);
+    if (paren) t = "-" + paren[1].replace(/^[-+]/, "");
+    if (!t) return null;
+    var m = /^([-+]?)(\d+\.?\d*|\.\d+)(k?)$/i.exec(t);
+    if (!m) return NaN;
+    var n = (m[1] === "-" ? -1 : 1) * parseFloat(m[2]) * (m[3] ? 1000 : 1);
+    return n === 0 ? 0 : n;
+  }
+  function sgText(n) { return String(Math.round(n * 100) / 100); }   // an amount as it is saved: "-5000"
+  function sgShow(n) {             // and as the grid prints it: +5,000, -2,500, 0
+    var a = Math.abs(n);
+    return (n > 0 ? "+" : n < 0 ? "-" : "") + a.toLocaleString("en-US", a % 1 ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : { maximumFractionDigits: 0 });
+  }
+  function sgPct(v, sign) { if (!fig(v)) return ""; var r = Math.round(v * 10) / 10; return (r < 0 ? "-" : sign && r > 0 ? "+" : "") + Math.abs(r).toFixed(1); }
+  // The form's own arithmetic. Net: the signed amounts added. Gross: their sizes added. Each % is of the comp's price;
+  // adjusted is price plus net. With no price above zero the %s and the adjusted price are null, never a figure.
+  function sgTotals(price, amounts) {
+    var net = 0, gross = 0, count = 0;
+    (amounts || []).forEach(function (a) { if (fig(a)) { net += a; gross += Math.abs(a); count++; } });
+    var priced = fig(price) && price > 0;
+    return { count: count, net: net, gross: gross, netPct: priced ? net / price * 100 : null, grossPct: priced ? gross / price * 100 : null, adjusted: priced ? price + net : null };
+  }
+  function sgOver(price, amount) { return fig(price) && price > 0 && fig(amount) && Math.abs(amount) / price > 0.10; }   // one line over 10% of the comp's price
+  function sgKey(i) { return "grid_c" + (i + 1); }
+  function sgKeys() { return (D.comps || []).map(function (c, i) { return sgKey(i); }).concat(["grid_lines", "grid_comment"]); }
+  function sgParse(raw) { var o = null; try { o = raw ? JSON.parse(raw) : null; } catch (e) {} return o && typeof o === "object" && !Array.isArray(o) ? o : null; }
+  function sgMap(v) { var out = {}; if (v && typeof v === "object" && !Array.isArray(v)) Object.keys(v).forEach(function (k) { if (typeof v[k] === "string") out[k] = v[k]; }); return out; }
+  function sgFileLine(a) { var hit = SG_FILE.filter(function (m) { return m[0].test(a.label); })[0]; return hit ? hit[1] : "a_" + sgSlug(a.label); }
+  function sgFile(c, id) {         // the sourced amount his own file already holds on this line; time and concessions follow his answers, as on the rates grid
+    var sum = null;
+    ((c || {}).fixed_adjustments || []).forEach(function (a) { if (a && a.label && a.source && fig(a.amount) && ["time", "concessions"].indexOf(a.kind) < 0 && sgFileLine(a) === id) sum = (sum || 0) + a.amount; });
+    return sum;
+  }
+  function sgCol(i) {              // comp i's column as saved; a column saved for another comp is not his
+    var c = (D.comps || [])[i] || {}, o = sgParse(state.answers[sgKey(i)]);
+    if (!o || String(o.mls || "") !== String(c.mls || "")) o = {};
+    return { mls: String(c.mls || ""), weight: typeof o.weight === "string" ? o.weight : "", adj: sgMap(o.adj), desc: sgMap(o.desc) };
+  }
+  function sgSave(i, col) {
+    var c = (D.comps || [])[i] || {}, adj = {}, desc = {};
+    Object.keys(col.adj).sort().forEach(function (k) { var t = String(col.adj[k]).trim(); if (t || fig(sgFile(c, k))) adj[k] = t; });   // a cleared box is kept only where his file had an amount to clear
+    Object.keys(col.desc).sort().forEach(function (k) { var t = String(col.desc[k]).trim(); if (t) desc[k] = t; });
+    var weight = String(col.weight || "").trim(), o = { mls: col.mls, weight: weight, adj: adj };
+    if (Object.keys(desc).length) o.desc = desc;
+    put(sgKey(i), weight || Object.keys(adj).length || o.desc ? JSON.stringify(o) : "");
+  }
+  function sgAmount(c, col, id) { return id in col.adj ? col.adj[id] : fig(sgFile(c, id)) ? sgText(sgFile(c, id)) : ""; }   // the box's amount: his, else his file's
+  function sgNames() {             // the open lines he named: {x1: {label, subject}}
+    var o = sgParse(state.answers.grid_lines) || {}, out = {};
+    Object.keys(o).forEach(function (k) { var v = o[k]; if (v && typeof v === "object") out[k] = { label: typeof v.label === "string" ? v.label : "", subject: typeof v.subject === "string" ? v.subject : "" }; });
+    return out;
+  }
+  function sgSaveNames(names) {
+    var out = {};
+    Object.keys(names).sort().forEach(function (k) { var l = String(names[k].label || "").trim(), s = String(names[k].subject || "").trim(); if (l || s) out[k] = { label: l, subject: s }; });
+    put("grid_lines", Object.keys(out).length ? JSON.stringify(out) : "");
+  }
+  function sgBound(mine) {         // each saved column follows its comp's MLS number to that comp's place on the roster now; a comp gone from it leaves
+    if (!mine || !(D.comps || []).length || !Object.keys(mine).some(function (k) { return /^grid_c\d+$/.test(k); })) return mine;
+    var out = Object.assign({}, mine), byMls = {}, byPlace = {};
+    Object.keys(mine).forEach(function (k) {
+      var m = /^grid_c(\d+)$/.exec(k), o = m && sgParse(mine[k]);
+      if (!m) return;
+      delete out[k];
+      if (o && String(o.mls || "")) byMls[String(o.mls)] = mine[k]; else if (o) byPlace[m[1]] = mine[k];
+    });
+    D.comps.forEach(function (c, i) {
+      var id = String(c.mls || ""), hit = id ? byMls[id] : byPlace[i + 1];
+      if (hit != null) { out[sgKey(i)] = hit; own[sgKey(i)] = true; }
+    });
+    return out;
+  }
+  function sgLines() {             // the form's lines, a line for each fact or file amount beyond them, then the three open lines
+    var out = SG_LINES.slice(), seen = {};
+    SG_LINES.forEach(function (l) { seen[l.id] = true; });
+    (D.adjustment_rows || []).forEach(function (r) {
+      var id = "f_" + sgSlug(r.fact);
+      if (SG_FACT[r.fact] || seen[id] || id === "f_") return;
+      seen[id] = true; out.push({ id: id, label: r.label, row: r });
+    });
+    (D.comps || []).forEach(function (c) { (c.fixed_adjustments || []).forEach(function (a) {
+      if (!a || !a.label || ["time", "concessions"].indexOf(a.kind) >= 0) return;
+      var id = sgFileLine(a);
+      if (!seen[id]) { seen[id] = true; out.push({ id: id, label: a.label }); }
+    }); });
+    for (var n = 1; n <= 3; n++) out.push({ id: "x" + n, blank: n });
+    return out;
+  }
+  function sgMonthYear(day) {      // 2026-04-09 or 04/09/2026 -> 04/26; anything else (Unknown, blank) is no date
+    var m = /^(\d{4})-(\d{2})/.exec(String(day || "")), us = /^(\d{1,2})\/\d{1,2}\/(\d{4})$/.exec(String(day || "").trim());
+    return m ? m[2] + "/" + m[1].slice(2) : us ? ("0" + us[1]).slice(-2) + "/" + us[2].slice(2) : "";
+  }
+  function sgYear(day) { var m = /^(\d{4})-|\/(\d{4})$/.exec(String(day || "").trim()); return m ? +(m[1] || m[2]) : null; }
+  function sgAddress(p, subject) { // [street, city line]
+    var g = p.grid && typeof p.grid.address === "string" ? p.grid.address.split(/\n/) : null;
+    if (g) return [g[0] || "", g.slice(1).join(" ")];
+    var whole = String(p.address || (subject ? O.property : "") || p.id || ""), city = String(p.city_line || [p.city ? p.city + "," : "", p.state, p.zip].filter(Boolean).join(" ")), cut = whole.indexOf(",");
+    if (!city && subject && O.property && String(O.property).indexOf(whole + ",") === 0) city = String(O.property).slice(whole.length + 1).trim();
+    if (!city && cut > 0) { city = whole.slice(cut + 1).trim(); whole = whole.slice(0, cut); }
+    return [whole, city];
+  }
+  function sgWords(line, p, subject, n) {   // a line's words for one home: the file's own where it carries them, else from its grid facts
+    var g = p.grid && typeof p.grid === "object" ? p.grid[line.id] : null, unit, parts;
+    if (typeof g === "string") return g;
+    if (line.pick) return subject ? ans("subject_" + line.pick) || p[line.pick] || "" : minimalCalls() ? rating(n, line.pick) : p[line.pick] || "";
+    if (line.row) { g = subject ? line.row.subject : (line.row.comps || [])[n - 1]; return g == null ? "" : typeof g !== "number" ? String(g) : g === 0 ? "None" : g.toLocaleString("en-US") + " " + line.row.unit; }
+    if (line.id === "conc" && p.financing == null && fig(p.concessions)) return "$" + Math.round(p.concessions).toLocaleString("en-US");   // the concession amount alone, when that is what the file gives
+    if (line.id === "design" && p.design == null && p.style != null) return String(p.style);
+    if (SG_WORDS[line.id]) return p[SG_WORDS[line.id]] == null ? "" : String(p[SG_WORDS[line.id]]);
+    switch (line.id) {
+      case "date": parts = [sgMonthYear(p.sold || p.sale_date) && "s" + sgMonthYear(p.sold || p.sale_date), sgMonthYear(p.contract || p.contract_date) && "c" + sgMonthYear(p.contract || p.contract_date)]; return (sgSold(p) ? parts : [p.status || "", parts[1]]).filter(Boolean).join(";");
+      case "site": unit = p.site_unit || (D.subject || {}).site_unit; return fig(p.site) ? p.site.toLocaleString("en-US", { maximumFractionDigits: 2 }) + (unit === "ac" ? " ac" : " sf") : "";
+      case "age": g = sgYear((D.subject || {}).effective || (D.subject || {}).effective_date); return fig(p.age) ? String(p.age) : !fig(p.year_built) ? "" : g ? String(Math.max(0, g - p.year_built)) : "Built " + p.year_built;   // the file's own age, else from a real effective date, never an invented one
+      case "beds": return [fig(p.rooms) && p.rooms + " total", fig(p.beds) && p.beds + " bdrms"].filter(Boolean).join(" \u00b7 ");
+      case "baths": return fig(p.full_baths) ? p.full_baths + "." + (fig(p.half_baths) ? p.half_baths : 0) : "";
+      case "gla": return fig(p.gla) ? p.gla.toLocaleString("en-US") + " sq ft" : "";
+      case "bsmt":                 // finished and unfinished each as the file has them
+        if (typeof p.basement_desc === "string") return p.basement_desc;
+        g = fig(p.basement_finished) ? p.basement_finished : p.basement; unit = p.basement_unfinished;
+        parts = [g > 0 && g.toLocaleString("en-US") + " sf fin.", unit > 0 && unit.toLocaleString("en-US") + " sf unfin."].filter(Boolean);
+        return parts.length ? parts.join("; ") : fig(g) || fig(unit) ? "0 sf" : "";
+      case "garage": parts = [p.garage > 0 && p.garage + "-car garage", p.carport > 0 && p.carport + "-car carport"].filter(Boolean); g = typeof p.garage_desc === "string" ? p.garage_desc : p.vehicle_storage;
+        return typeof g === "string" ? g.replace(/\s+/g, " ").trim() : parts.length ? parts.join(", ") : p.garage === 0 && (p.carport === 0 || p.carport == null) ? "None" : "";
+    }
+    return "";
+  }
+  function sgRateAmounts() {       // each comp's amounts from his rates, by grid line: rate × measured difference, as the rates grid figures them
+    var comps = D.comps || [], out = comps.map(function () { return {}; });
+    function add(i, id, a) { out[i][id] = (out[i][id] || 0) + a; }
+    (D.adjustment_rows || []).forEach(function (r) {
+      var rate = numberOnly(ans(r.key)), id = SG_FACT[r.fact] || "f_" + sgSlug(r.fact);
+      if (rate === null) return;
+      comps.forEach(function (c, i) { var d = minimalDelta(r, i); if (d != null) add(i, id, d === 0 || r.fact === "gla" && Math.abs(d) < 100 ? 0 : d * rate); });
+    });
+    var time = numberOnly(ans("time_adjustment")), conc = String(ans("concessions") || "");
+    comps.forEach(function (c, i) {
+      if (time !== null && fig(sgPrice(c)) && (time === 0 || fig(c.months_to_effective))) add(i, "date", sgPrice(c) * time / 100 * (c.months_to_effective || 0));
+      if (/^Adjust/.test(conc) && fig(c.concession_adjustment)) add(i, "conc", c.concession_adjustment);
+    });
+    return out;
+  }
+  function sgFill() {              // "Fill from my usual rates": his rates' amounts into the boxes, each still his to change
+    var amounts = sgRateAmounts(), filled = 0;
+    amounts.forEach(function (lines, i) {
+      var col = sgCol(i), ids = Object.keys(lines);
+      if (!ids.length) return;
+      ids.forEach(function (id) { var file = sgFile((D.comps || [])[i], id), a = Math.round(lines[id] + (fig(file) ? file : 0)); col.adj[id] = a ? sgText(a) : ""; if (a) filled++; });   // with the sourced amount his file holds on that line, as the rates grid adds both
+      sgSave(i, col);
+    });
+    if (sgView) sgView.said = filled ? "Filled " + filled + (filled === 1 ? " box" : " boxes") + " from your rates. Check each one." : "No rate gives an amount yet. Type a rate above, then fill.";
+    if (filled && minimalCalls() && !String(ans("adjustments_by") || "")) { put("adjustments_by", "customer"); if (controls.adjustments_by) controls.adjustments_by.set("customer"); }
+    changed();
+  }
+  // How it is drawn (Matt 2026-11-11 07:0x: "The ACI form grid is too busy. It's a little bit too much. I also can't even look
+  // at it on my phone"). The form's structure, quieter: one sans, hairline rules under each row and nothing else, no grey
+  // blocks, no empty lines; a line with nothing on it for any home stays off until he adds it. On a wide screen the comps sit
+  // three to a grid, as the form prints them (comps 4 to 6 in a second grid), so nothing scrolls sideways and nothing is
+  // frozen or clipped. On a narrow one there is no wide table: Subject beside ONE comp, a tab for each comp, the
+  // adjustment box beside each line, and a totals card at the bottom. One set of boxes serves both; only the layout changes.
+  var sgView = null, sgRates = false, sgTab = 0, sgMore = {};   // sgTab: the comp in view on a narrow screen; sgMore: lines he asked for
+  function sgShows(ln) {           // a line with nothing on it for any home is left off
+    var comps = D.comps || [], names = sgNames()[ln.id] || {};
+    if (sgMore[ln.id]) return true;
+    if (ln.blank) return !!(names.label || names.subject) || comps.some(function (c, i) { var col = sgCol(i); return !!(col.desc[ln.id] || sgAmount(c, col, ln.id)); });
+    return !!sgWords(ln, D.subject || {}, true) || comps.some(function (c, i) { return !!sgWords(ln, c, false, i + 1) || !!sgAmount(c, sgCol(i), ln.id); });
+  }
+  function sgCard() {
+    var comps = D.comps || [], s = D.subject || {}, minimal = minimalCalls(), all = sgLines(), lines = all.filter(sgShows), off = all.filter(function (l) { return lines.indexOf(l) < 0; });
+    var card = el("section", { cls: "card sg-card", id: "sales-grid", "aria-label": "Sales comparison" }, [el("h2", { text: "Sales comparison" })]);
+    card.appendChild(el("p", { cls: "note", text: "Your comps, from your file. Type each adjustment in its +(-) $ box, like -5000 or 5000. The totals figure as you type." }));
+    var view = { card: card, minimal: minimal, lines: [], comps: [], inputs: [], grids: [], cells: comps.map(function () { return []; }), tabs: [], said: "" };
+    var tools = card.appendChild(el("div", { cls: "sg-tools" }));
+    if (minimal) {
+      var fill = tools.appendChild(el("button", { type: "button", cls: "tap", "aria-pressed": String(sgRates), "aria-expanded": String(sgRates), text: "Fill from my usual rates" }));
+      fill.addEventListener("click", function () {
+        sgRates = !sgRates; fill.setAttribute("aria-pressed", String(sgRates)); fill.setAttribute("aria-expanded", String(sgRates));
+        if (view.rates) { view.rates.hidden = !sgRates; if (sgRates) { view.rates.scrollIntoView({ block: "nearest", behavior: "smooth" }); regrow(); } }
+      });
+      view.say = tools.appendChild(el("p", { cls: "sg-say", role: "status" }));
+    }
+    var box = card.appendChild(el("div", { cls: "sg", "data-mode": window.innerWidth < 880 ? "narrow" : "wide" }));
+    // a narrow screen: a tab for each comp, and the three column names under them
+    var bar = box.appendChild(el("div", { cls: "sg-bar" })), tabs = bar.appendChild(el("div", { cls: "sg-tabs", role: "group", "aria-label": "Comp in view" }));
+    comps.forEach(function (c, i) {
+      var b = tabs.appendChild(el("button", { type: "button", cls: "sg-tab", "aria-pressed": "false", text: "Comp " + (i + 1) }));
+      b.addEventListener("click", function () { sgTab = i; sgShowTab(); });
+      view.tabs.push(b);
+    });
+    view.cols = bar.appendChild(el("div", { cls: "sg-cols", "aria-hidden": "true" }, [el("span", { text: "Subject" }), el("span"), el("span", { text: "+(-) $ Adj." })]));
+    function who(i) { var a = sgAddress(comps[i])[0]; return "Comp " + (i + 1) + (a ? ", " + a : ""); }
+    function words(text, cls) { return el("td", { cls: "sg-v" + (cls ? " " + cls : "") }, String(text == null ? "" : text).split(/\n/).map(function (t) { return el("span", { cls: "sg-t", text: t }); })); }
+    function dollars(text, cls) { return el("td", { cls: "sg-v sg-n" + (cls ? " " + cls : "") }, [el("span", { cls: "sg-t", text: text ? "$" + text : "" })]); }
+    function perFoot(p) { var price = sgPrice(p); return fig(price) && fig(p.gla) && p.gla > 0 ? "$" + (price / p.gla).toFixed(2) + " /sq ft" : ""; }
+    function box1(attrs, onInput) {
+      var input = el("input", Object.assign({ type: "text", autocomplete: "off", autocapitalize: "off", spellcheck: "false", cls: "sg-in" }, attrs));
+      input.addEventListener("input", function () { onInput(input.value); });
+      return input;
+    }
+    function move(input, step) {   // the same comp's box on the next or the last line
+      var list = view.inputs.filter(function (x) { return x.i === input.sg.i; }), at = list.indexOf(input.sg) + step;
+      if (list[at]) { list[at].input.focus(); list[at].input.select(); return true; }
+      return false;
+    }
+    function amountBox(i, id, label) {
+      var input = el("input", { type: "text", inputmode: window.matchMedia && matchMedia("(pointer: coarse)").matches ? "decimal" : "text", autocomplete: "off", autocapitalize: "off", spellcheck: "false", enterkeyhint: "next", cls: "sg-in",
+        "aria-label": who(i) + ": " + label + " dollar adjustment", "data-sg": id, "data-comp": String(i + 1) }), before = "", had = false;
+      input.sg = { i: i, id: id, input: input };
+      function keep(v, undo) {     // a figured amount is saved as the plain number, anything else as he typed it; undo: back to none of his
+        var col = sgCol(i), n = sgNum(v);
+        if (undo && !had) delete col.adj[id]; else col.adj[id] = fig(n) ? sgText(n) : String(v).trim();
+        sgSave(i, col);
+        if (minimal && String(v).trim() && !String(ans("adjustments_by") || "")) { put("adjustments_by", "customer"); if (controls.adjustments_by) controls.adjustments_by.set("customer"); }
+        changed();
+      }
+      input.addEventListener("focus", function () { var col = sgCol(i); had = id in col.adj; before = sgAmount(comps[i], col, id); input.value = before; input.select(); if (input.parentNode) input.parentNode.appendChild(flip); });
+      input.addEventListener("input", function () { keep(input.value); });
+      input.addEventListener("blur", function () { sgPaint(); });
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === "ArrowDown") { if (move(input, 1) || e.key === "Enter") e.preventDefault(); if (e.key === "Enter" && document.activeElement === input) input.blur(); }
+        else if (e.key === "ArrowUp") { if (move(input, -1)) e.preventDefault(); }
+        else if (e.key === "Escape") { input.value = before; keep(before, true); input.select(); e.preventDefault(); }
+      });
+      view.inputs.push(input.sg);
+      return input;
+    }
+    // one shared +/- key for a phone's number pad, shown in the box in focus
+    var flip = el("button", { type: "button", cls: "sg-flip", tabindex: "-1", "aria-label": "Change sign", text: "±" });
+    flip.addEventListener("mousedown", function (e) { e.preventDefault(); });
+    flip.addEventListener("click", function () {
+      var input = flip.parentNode && flip.parentNode.querySelector(".sg-in"); if (!input) return;
+      var t = input.value.trim(); input.value = /^[-−(]/.test(t) ? t.replace(/^[-−(]\s*/, "").replace(/\)$/, "") : "-" + t.replace(/^\+/, "");
+      input.dispatchEvent(new Event("input", { bubbles: true })); input.focus();
+    });
+    var entries = {};              // line id -> what sgPaint fills: the subject's cell in each grid, each comp's cells
+    lines.forEach(function (ln) { entries[ln.id] = { ln: ln, subjects: [], names: [], comps: [] }; view.lines.push(entries[ln.id]); });
+    var facts = [                  // the lines above the adjustments; one with nothing on it for any comp stays off
+      { label: "Address", cls: "sg-addr", cell: function (p, i) { return words(sgAddress(p, !i).filter(Boolean).join("\n")); }, wide: true, on: true },
+      { label: "Proximity to Subject", cell: function (p, i) { return words(i ? p.grid && typeof p.grid.proximity === "string" ? p.grid.proximity : p.proximity : ""); }, wide: true },
+      { label: "Sale Price", price: true, on: true },
+      { label: "Sale Price/Gross Liv. Area", cell: function (p) { return words(perFoot(p)); }, wide: true },
+      { label: "Data Source(s)", cell: function (p, i) { return words(i ? p.grid && typeof p.grid.source === "string" ? p.grid.source : (p.data_source || (p.mls ? "MLS #" + p.mls : "")) + (fig(p.dom) ? ";DOM " + p.dom : fig(p.days_on_market) ? ";DOM " + p.days_on_market : "") : ""); }, wide: true },
+      { label: "Verification Source(s)", cell: function (p, i) { return words(i ? p.grid && typeof p.grid.verify === "string" ? p.grid.verify : p.verification || p.verification_source : ""); }, wide: true }
+    ].filter(function (f) { return f.on || [s].concat(comps).some(function (p, i) { return !!f.cell(p, i).textContent; }); });
+    function add(id) { sgMore[id] = true; sgRedraw(); var first = sgView && sgView.card.querySelector('.sg-grid:not(.sg-off) tr[data-line="' + id + '"] input'); if (first) first.focus(); }
+    function adder() {             // lines left off for want of anything on them, and lines of his own: one tap adds one
+      var rows = el("tbody", { cls: "sg-addrow" }), cell = el("td", { colspan: "8" }), open = cell.appendChild(el("button", { type: "button", cls: "link-inline", "aria-expanded": "false", text: "+ Add a line" })), picks = cell.appendChild(el("div", { cls: "sg-picks", hidden: true }));
+      off.filter(function (l) { return !l.blank; }).forEach(function (l) { var b = picks.appendChild(el("button", { type: "button", cls: "sg-chip", text: l.label })); b.addEventListener("click", function () { add(l.id); }); });
+      var spare = off.filter(function (l) { return l.blank; })[0];
+      if (spare) picks.appendChild(el("button", { type: "button", cls: "sg-chip", text: "Other (name it)" })).addEventListener("click", function () { add(spare.id); });
+      open.addEventListener("click", function () { picks.hidden = !picks.hidden; open.setAttribute("aria-expanded", String(!picks.hidden)); });
+      rows.appendChild(el("tr")).appendChild(cell);
+      return picks.children.length ? rows : null;
+    }
+    for (var from = 0; from < comps.length; from += 3) (function (from) {   // three comps to a grid, as the form prints them
+      var list = comps.slice(from, from + 3), g = box.appendChild(el("div", { cls: "sg-grid" }));
+      if (comps.length > 3) g.appendChild(el("p", { cls: "sg-chunk", text: "Comps " + (from + 1) + (list.length > 1 ? "–" + (from + list.length) : "") }));
+      var table = g.appendChild(el("table", { cls: "sg-table" })), cols = table.appendChild(el("colgroup")), head = table.appendChild(el("thead")).appendChild(el("tr")), body = table.appendChild(el("tbody")), totals = table.appendChild(el("tbody", { cls: "sg-totals" }));
+      cols.appendChild(el("col", { cls: "sg-cf" })); cols.appendChild(el("col", { cls: "sg-cs" }));
+      head.appendChild(el("th", { scope: "col", cls: "sg-f", text: "Feature" })); head.appendChild(el("th", { scope: "col", cls: "sg-s", text: "Subject" }));
+      [0, 1, 2].forEach(function (k) {   // always three comps' room, so a short last grid keeps the same columns
+        cols.appendChild(el("col", { cls: "sg-cd" })); cols.appendChild(el("col", { cls: "sg-ca" }));
+        if (list[k]) head.appendChild(el("th", { scope: "colgroup", colspan: "2", cls: "sg-d", text: (sgSold(list[k]) ? "Comparable Sale # " : "Comparable Listing # ") + (from + k + 1) }));
+      });
+      function row(into, cls, label, id) { var tr = into.appendChild(el("tr", id ? { cls: cls, "data-line": id } : { cls: cls })); tr.appendChild(el("th", { scope: "row", cls: "sg-f" }, label == null ? [] : [label])); return tr; }
+      function mine(td, i, cls) { td.classList.add(cls); td.setAttribute("data-c", String(i + 1)); view.cells[i].push(td); return td; }   // a comp's cell: off the screen on a narrow one unless its tab is up
+      facts.forEach(function (f) {
+        var tr = row(body, "sg-h" + (f.cls ? " " + f.cls : ""), f.label);
+        if (f.price) {
+          tr.appendChild(dollars(fig(s.price) || fig(s.sale_price) ? Math.round(fig(s.price) ? s.price : s.sale_price).toLocaleString("en-US") : "", "sg-s"));   // a sale price only: never his contract price in its place
+          list.forEach(function (c, k) {
+            mine(tr.appendChild(el("td", { cls: "sg-v" }, sgSold(c) ? [] : [el("span", { cls: "sg-tag", text: "List price" })])), from + k, "sg-d");   // a listing's price is its list price, and says so
+            mine(tr.appendChild(dollars(fig(sgPrice(c)) ? Math.round(sgPrice(c)).toLocaleString("en-US") : "")), from + k, "sg-a");
+          });
+          return;
+        }
+        tr.appendChild(f.cell(s, 0)).classList.add("sg-s");
+        list.forEach(function (c, k) { var td = mine(tr.appendChild(f.cell(c, from + k + 1)), from + k, "sg-d"); td.setAttribute("colspan", "2"); td.classList.add("sg-wide"); });
+      });
+      var sub = row(body, "sg-sub", "Value Adjustments"); sub.appendChild(el("td", { cls: "sg-s", text: "Description" }));
+      list.forEach(function (c, k) { mine(sub.appendChild(el("td", { text: "Description" })), from + k, "sg-d"); mine(sub.appendChild(el("td", { text: "+(-) $ Adjustment" })), from + k, "sg-a"); });
+      lines.forEach(function (ln) {
+        var label = ln.blank ? "Additional feature " + ln.blank : ln.label, entry = entries[ln.id], tr = row(body, "sg-l" + (ln.blank ? " sg-open" : ""), ln.blank ? null : ln.label, ln.id);
+        if (ln.blank) {            // a line he added: he names it, and gives its words
+          tr.firstChild.classList.add("sg-e");
+          entry.names.push(tr.firstChild.appendChild(box1({ "aria-label": label + ": name", "data-sg-name": ln.id, placeholder: "Feature" }, function (v) { var a = sgNames(); (a[ln.id] = a[ln.id] || { label: "", subject: "" }).label = v; sgSaveNames(a); changed(); })));
+          entry.subjects.push(tr.appendChild(el("td", { cls: "sg-e sg-s" })).appendChild(box1({ "aria-label": label + ": subject", "data-sg-subject": ln.id }, function (v) { var a = sgNames(); (a[ln.id] = a[ln.id] || { label: "", subject: "" }).subject = v; sgSaveNames(a); changed(); })));
+        } else entry.subjects.push(tr.appendChild(words("", "sg-s")));
+        list.forEach(function (c, k) {
+          var i = from + k, cell = {}, td;
+          if (ln.blank) cell.desc = mine(tr.appendChild(el("td", { cls: "sg-e" })), i, "sg-d").appendChild(box1({ "aria-label": who(i) + ": " + label + " description", "data-sg-desc": ln.id, "data-comp": String(i + 1) }, function (v) { var col = sgCol(i); col.desc[ln.id] = v; sgSave(i, col); changed(); }));
+          else if (ln.pick && minimal) {
+            td = mine(tr.appendChild(el("td", { cls: "sg-v" })), i, "sg-d");
+            cell.pick = td.appendChild(el("button", { type: "button", cls: "sg-pick sg-t", "aria-label": "Comp " + (i + 1) + " " + ln.pick, "data-call": "comp" + (i + 1) + "_" + ln.pick }));
+            cell.pick.addEventListener("click", function () { pickRating({ n: i + 1, c: c }, ln.pick, cell.pick); });
+          } else cell.words = mine(tr.appendChild(words("")), i, "sg-d");
+          cell.td = mine(tr.appendChild(el("td")), i, "sg-a");
+          cell.input = cell.td.appendChild(amountBox(i, ln.id, ln.blank ? label : ln.label));
+          entry.comps[i] = cell;
+        });
+      });
+      // the totals: figured, never typed (but his weight)
+      var title = totals.appendChild(el("tr", { cls: "sg-tt" })).appendChild(el("th", { colspan: "8", scope: "rowgroup" }));
+      var net = row(totals, "sg-net", "Net Adjustment (Total)"), netPct = row(totals, "sg-pct", "Net Adj. %"), grossPct = row(totals, "sg-pct", "Gross Adj. %"), adj = row(totals, "sg-adj", "Adjusted Sale Price of Comparables"), weight = row(totals, "sg-weight", "Comparable Weight");
+      [net, netPct, grossPct, adj, weight].forEach(function (r) { r.appendChild(el("td", { cls: "sg-s" })); });
+      list.forEach(function (c, k) {
+        var i = from + k, t = { plus: el("i"), minus: el("i"), net: el("span", { cls: "sg-t" }), netPct: el("span", { cls: "sg-t" }), grossPct: el("span", { cls: "sg-t" }), price: el("span", { cls: "sg-t" }) };
+        mine(net.appendChild(el("td", { cls: "sg-v" }, [el("span", { cls: "sg-signs", "aria-hidden": "true" }, [t.plus, "+", t.minus, "−"])])), i, "sg-d");
+        t.said = mine(net.appendChild(el("td", { cls: "sg-v sg-n" }, [t.net])), i, "sg-a");   // read aloud with its sign: the boxes are a picture
+        [[netPct, t.netPct], [grossPct, t.grossPct], [adj, t.price]].forEach(function (pair) { mine(pair[0].appendChild(el("td")), i, "sg-d"); mine(pair[0].appendChild(el("td", { cls: "sg-v sg-n" }, [pair[1]])), i, "sg-a"); });
+        mine(weight.appendChild(el("td")), i, "sg-d");
+        t.weight = box1({ inputmode: "decimal", "aria-label": who(i) + ": weight, percent", "data-sg-weight": String(i + 1) }, function (v) { var col = sgCol(i); col.weight = v; sgSave(i, col); sgMost(); changed(); });
+        mine(weight.appendChild(el("td", null, [el("span", { cls: "sg-pctin" }, [t.weight, el("span", { text: "%" })])])), i, "sg-a");
+        view.comps[i] = t;
+      });
+      var adds = adder(); if (adds) table.insertBefore(adds, totals);
+      if (from + 3 >= comps.length) g.classList.add("sg-last");
+      view.grids.push({ node: g, from: from, to: from + list.length, title: title });
+    })(from);
+    // under the lines: his comment where a line runs over 10%, then his one value
+    view.sum = box.appendChild(el("div", { cls: "sg-sum", hidden: true }));
+    view.sum.appendChild(el("label", { "for": "f-grid_comment", text: "Comment on adjustments over 10%" }));
+    view.why = view.sum.appendChild(el("p", { cls: "sg-why" }));
+    view.comment = view.sum.appendChild(el("textarea", { id: "f-grid_comment", rows: "2", maxlength: "4000", "data-call": "grid_comment" }));
+    view.comment.addEventListener("input", function () { put("grid_comment", view.comment.value); grow(view.comment); changed(); });
+    controls.grid_comment = { set: function (v) { v = v == null ? "" : String(v); if (view.comment.value !== v) view.comment.value = v; grow(view.comment); } };
+    if (minimal || !(D.questions || []).some(function (q) { return q.id === "value" || q.id === "value_confirm"; })) {
+      var valueKey = "value", row1 = box.appendChild(el("div", { cls: "sg-value" }, [el("label", { "for": "f-value", text: "Indicated Value by Sales Comparison Approach" })]));
+      view.value = row1.appendChild(el("span", { cls: "sg-money" }, [el("span", { text: "$", "aria-hidden": "true" })])).appendChild(el("input", { id: "f-value", type: "text", inputmode: "decimal", autocomplete: "off", cls: "sg-in", "data-call": valueKey }));
+      view.value.addEventListener("input", function () { put(valueKey, view.value.value); changed(); });
+      view.value.addEventListener("focus", function () { view.value.value = state.answers[valueKey] == null ? "" : String(state.answers[valueKey]); });
+      view.value.addEventListener("blur", function () { controls[valueKey].set(state.answers[valueKey]); });
+      controls[valueKey] = { set: function (v) { v = v == null ? "" : String(v); var n = numberOnly(v); if (document.activeElement !== view.value) view.value.value = n !== null && v.trim() ? n.toLocaleString("en-US", { maximumFractionDigits: 2 }) : v; } };
+      (minimal ? D.call_sections : []).forEach(function (sec) { sec.lines.forEach(function (l) {   // where his value is required, it is required here: the same rule, its line moved
+        if (l.key === valueKey && l.required) musts.push({ key: valueKey, call: true, node: row1, label: l.need || l.label, when: function () { return callActive(sec.when) && callActive(l.when); }, valid: function (x) { return callValid(l, x); } });
+      }); });
+    }
+    var median = numberOnly((D.house_prompts || {}).marketability_median);   // the lender's marketability comment, when the order asks for it: apart from the adjustments comment
+    if (median !== null && median > 0) {
+      view.median = median;
+      view.mkt = box.appendChild(el("div", { cls: "sg-sum sg-mkt" }));
+      view.mkt.appendChild(el("label", { "for": "f-marketability_comment", text: "Marketability comment, if your value is more than 10% from about " + money(median) + " (the area's typical sale price)" }));
+      view.mktWhy = view.mkt.appendChild(el("p", { cls: "sg-why" }));
+      view.mktBox = view.mkt.appendChild(el("textarea", { id: "f-marketability_comment", rows: "2", maxlength: "4000", "data-call": "marketability_comment" }));
+      view.mktBox.addEventListener("input", function () { put("marketability_comment", view.mktBox.value); grow(view.mktBox); changed(); });
+      controls.marketability_comment = { set: function (v) { v = v == null ? "" : String(v); if (view.mktBox.value !== v) view.mktBox.value = v; grow(view.mktBox); } };
+    }
+    if (comps.length > 1) {        // a narrow screen: on to the next comp from the bottom of this one
+      var nav = box.appendChild(el("div", { cls: "sg-nav" })), prev = nav.appendChild(el("button", { type: "button", cls: "sg-tab", text: "‹ Previous comp" })), next = nav.appendChild(el("button", { type: "button", cls: "sg-tab", text: "Next comp ›" }));
+      prev.addEventListener("click", function () { sgTab = Math.max(0, sgTab - 1); sgShowTab(); box.scrollIntoView({ block: "start" }); });
+      next.addEventListener("click", function () { sgTab = Math.min(comps.length - 1, sgTab + 1); sgShowTab(); box.scrollIntoView({ block: "start" }); });
+      view.prev = prev; view.next = next;
+    }
+    var after = card.appendChild(el("div", { cls: "sg-after", role: "status" }));
+    view.err = after.appendChild(el("p", { cls: "sg-err" })); view.range = after.appendChild(el("p", { cls: "sg-range" })); view.weights = after.appendChild(el("p"));
+    function measure() { var mode = box.clientWidth && box.clientWidth < 840 ? "narrow" : box.clientWidth ? "wide" : box.getAttribute("data-mode"); if (box.getAttribute("data-mode") !== mode) box.setAttribute("data-mode", mode); }
+    if (window.ResizeObserver) new ResizeObserver(measure).observe(box);
+    setTimeout(measure, 0);
+    comps.forEach(function (c, i) { controls[sgKey(i)] = { set: function () {} }; });   // sgPaint draws each column from its answer
+    controls.grid_lines = { set: function () {} };
+    view.box = box;
+    sgView = view;
+    sgShowTab();
+    return card;
+  }
+  function sgShowTab() {           // a narrow screen shows Subject beside this one comp
+    var v = sgView, n = (D.comps || []).length;
+    if (!v) return;
+    sgTab = Math.max(0, Math.min(sgTab, n - 1));
+    v.tabs.forEach(function (b, i) { b.setAttribute("aria-pressed", String(i === sgTab)); });
+    v.cols.children[1].textContent = "Comp " + (sgTab + 1);
+    v.grids.forEach(function (g) { g.node.classList.toggle("sg-off", !(sgTab >= g.from && sgTab < g.to)); g.title.textContent = "Totals · Comp " + (sgTab + 1); });
+    v.cells.forEach(function (list, i) { list.forEach(function (td) { td.classList.toggle("sg-off", i !== sgTab); }); });
+    if (v.prev) { v.prev.disabled = sgTab === 0; v.next.disabled = sgTab === n - 1; }
+  }
+  function sgRedraw() {            // the same card again, with a line added
+    var old = sgView;
+    if (!old || !old.card.isConnected) return;
+    var card = sgCard();
+    old.card.replaceWith(card); sgView.rates = old.rates; sgView.said = old.said;
+    sgPaint(); paintStatus();
+  }
+  function sgRatesCard(card) {     // the rates grid, kept as the way to fill the boxes: closed until he asks for it
+    if (!sgView) return;
+    sgView.rates = card; card.hidden = !sgRates;
+    var title = card.querySelector("h2"); if (title) title.textContent = "Your usual rates";
+    var go = card.appendChild(el("button", { type: "button", cls: "st sg-rates-go", text: "Fill my grid from these rates" }));
+    go.addEventListener("click", function () { sgFill(); sgRedraw(); if (sgView) sgView.card.scrollIntoView({ block: "start", behavior: "smooth" }); });
+  }
+  function sgMost() {              // the comp he weighs most is his "most weight" answer too, when one closed sale leads
+    if (!minimalCalls()) return;
+    var w = (D.comps || []).map(function (c, i) { var n = numberOnly(sgCol(i).weight); return n === null ? 0 : n; }), top = Math.max.apply(null, w.concat([0])), at = w.indexOf(top);
+    if (top <= 0 || w.lastIndexOf(top) !== at || !sgSold(D.comps[at]) || String(ans("most_weight") || "") === String(at + 1)) return;
+    put("most_weight", String(at + 1)); if (controls.most_weight) controls.most_weight.set(String(at + 1));
+  }
+  function sgPaint() {
+    var v = sgView;
+    if (!v || !v.card.isConnected) return;
+    var comps = D.comps || [], s = D.subject || {}, names = sgNames(), handed = v.minimal && archerAdjustments(), active = document.activeElement;
+    var cols = comps.map(function (c, i) { return sgCol(i); }), amounts = comps.map(function () { return []; }), bad = [], badWeight = [], over = [], typed = false;
+    function show(node, text) { if (node && node.textContent !== text) node.textContent = text; }
+    function fill(td, text) {      // a words cell: one .sg-t a line
+      var parts = String(text == null ? "" : text).split(/\n/);
+      while (td.children.length > parts.length) td.removeChild(td.lastChild);
+      parts.forEach(function (t, k) { if (!td.children[k]) td.appendChild(el("span", { cls: "sg-t" })); show(td.children[k], t); });
+    }
+    v.lines.forEach(function (entry) {
+      var ln = entry.ln, name = names[ln.id] || {}, label = ln.blank ? name.label || "Additional feature " + ln.blank : ln.label;
+      if (ln.blank) {
+        entry.names.forEach(function (n) { if (active !== n) n.value = name.label || ""; });
+        entry.subjects.forEach(function (n) { if (active !== n) n.value = name.subject || ""; });
+      } else entry.subjects.forEach(function (td) { fill(td, ln.none ? "" : sgWords(ln, s, true)); });
+      entry.comps.forEach(function (cell, i) {
+        var c = comps[i], col = cols[i], text = sgAmount(c, col, ln.id), n = sgNum(text), mine = ln.id in col.adj;
+        if (cell.desc) { if (active !== cell.desc) cell.desc.value = col.desc[ln.id] || ""; }
+        else if (cell.pick) show(cell.pick, sgWords(ln, c, false, i + 1));
+        else fill(cell.words, sgWords(ln, c, false, i + 1));
+        if (active !== cell.input) cell.input.value = fig(n) ? sgShow(n) : text;
+        cell.input.readOnly = handed;
+        cell.input.classList.toggle("sg-file", !mine && !!text);
+        cell.input.title = !mine && text ? "From your file" : "";
+        if (handed) { cell.input.removeAttribute("aria-invalid"); if (cell.flag) { cell.flag.remove(); cell.flag = null; } return; }
+        if (text && !fig(n)) { cell.input.setAttribute("aria-invalid", "true"); bad.push("Comp " + (i + 1) + " " + label); } else cell.input.removeAttribute("aria-invalid");
+        if (fig(n)) { amounts[i].push(n); typed = true; }
+        var hot = sgOver(sgPrice(c), n);
+        if (hot) over.push("Comp " + (i + 1) + " " + label + " " + sgPct(Math.abs(n) / sgPrice(c) * 100) + "%");
+        if (hot && !cell.flag) cell.flag = cell.td.appendChild(el("span", { cls: "sg-over", title: "Over 10% of the price" }));
+        else if (!hot && cell.flag) { cell.flag.remove(); cell.flag = null; }
+      });
+    });
+    var sales = [], others = [], weights = [], weighted = 0, weightSum = 0, weighable = true;
+    comps.forEach(function (c, i) {
+      var t = sgTotals(sgPrice(c), amounts[i]), cell = v.comps[i], any = t.count > 0 && !handed, w = numberOnly(cols[i].weight);
+      cell.plus.classList.toggle("sg-on", any && t.net > 0); cell.minus.classList.toggle("sg-on", any && t.net < 0);   // the boxes tick themselves from the sign of the net
+      show(cell.net, any ? "$" + Math.abs(Math.round(t.net)).toLocaleString("en-US") : "");
+      if (any) cell.said.setAttribute("aria-label", "Net adjustment, " + (t.net < 0 ? "minus " : t.net > 0 ? "plus " : "") + Math.abs(Math.round(t.net)).toLocaleString("en-US") + " dollars"); else cell.said.removeAttribute("aria-label");
+      show(cell.netPct, any && t.netPct !== null ? sgPct(t.netPct, true) + "%" : ""); show(cell.grossPct, any && t.grossPct !== null ? sgPct(t.grossPct) + "%" : "");
+      show(cell.price, t.adjusted === null || handed ? "" : "$" + Math.round(t.adjusted).toLocaleString("en-US"));
+      if (active !== cell.weight) cell.weight.value = cols[i].weight;
+      if (String(cols[i].weight).trim() && (w === null || w < 0 || w > 100)) { cell.weight.setAttribute("aria-invalid", "true"); badWeight.push("Comp " + (i + 1)); } else cell.weight.removeAttribute("aria-invalid");
+      if (t.adjusted !== null) (sgSold(c) ? sales : others).push(t.adjusted);
+      if (w !== null && w > 0) { weights.push(w); weightSum += w; if (t.adjusted === null) weighable = false; else weighted += w * t.adjusted; }
+      if (v.tabs[i]) v.tabs[i].classList.toggle("sg-done", any);   // a narrow screen: which comps have adjustments in
+    });
+    // his comment box, once a line runs over 10% or he has written in it
+    var comment = String(state.answers.grid_comment || "");
+    v.sum.hidden = handed || !over.length && !comment.trim();
+    show(v.why, over.length ? "Over 10% of the price: " + over.join("; ") + "." : "");
+    if (v.mkt) {                   // says when his value is past 10% of the figure; the box is there either way
+      var mine = numberOnly(ans("value")), off = mine !== null && mine > 0 ? (mine - v.median) / v.median * 100 : null;
+      show(v.mktWhy, off !== null && Math.abs(off) > 10 ? "Your value is " + sgPct(Math.abs(off)) + "% " + (off > 0 ? "above" : "below") + " " + money(v.median) + ": a comment is needed." : "");
+    }
+    function span(a) { var lo = Math.min.apply(null, a), hi = Math.max.apply(null, a); return money(lo) + (hi > lo ? " to " + money(hi) : ""); }
+    var range = typed && !handed && sales.length ? [Math.min.apply(null, sales), Math.max.apply(null, sales)] : null;
+    show(v.err, [bad.length ? "Not a dollar amount: " + bad.join("; ") + ". Use a number like -5000." : "", badWeight.length ? "Weight is a percent from 0 to 100: " + badWeight.join("; ") + "." : ""].filter(Boolean).join(" "));
+    show(v.range, handed ? "" : range ? "Adjusted sales: " + span(sales) + (others.length ? " · Listings and pendings: " + span(others) : "") : minimalRange ? "Adjusted sales: " + money(minimalRange[0]) + " to " + money(minimalRange[1]) : "");
+    var total = Math.round(weightSum * 100) / 100;
+    show(v.weights, handed || !weights.length ? "" : total === 100 ? "Weights total 100%." + (weighable ? " Weighted average of your adjusted prices: " + money(weighted / 100) + "." : "") : "Weights total " + total + "%. They should add to 100%.");
+    if (v.say) show(v.say, handed ? "You chose to have these filled from your usual rates. You approve them at review." : v.said);
+    if (v.minimal && range) { minimalRange = range; paintCallLines(); }   // his value is checked against the range his own boxes give
   }
 
   function minimalStart() { if(minimalCalls())return true; return F.minimal_start === true && (D.stage || "open") === "open" && !(D.questions || []).length; }
@@ -2060,7 +2736,28 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (!D.selected_lane) musts.push({ key: "q_service_option", node: box });
   }
   function startOptions() { return laneOptions(F).length > 1 || stage === "open" && (D.house_prompts || {}).start_options === true; }
-  function permissionQuestion() { return (D.house_prompts || {}).lane === "review" || permitsOff() || !CHECKLIST.client_permits ? [] : [CHECKLIST.client_permits]; }
+  function permissionQuestion() {
+    if ((D.house_prompts || {}).lane === "review" || permitsOff() || !CHECKLIST.client_permits) return [];
+    var hp = D.house_prompts || {}, q = CHECKLIST.client_permits;
+    return [hp.client_permits_text ? Object.assign({}, q, {text: hp.client_permits_text, choices: ["Yes, they allow it", "No"], choice_labels: hp.client_permits_choices || {}}) : q];
+  }
+  function permissionLabels(row, q) {
+    if (!q.choice_labels) return row;
+    row.querySelectorAll(".tap").forEach(function(b){ b.textContent = q.choice_labels[b.value] || b.value; });
+    return row;
+  }
+  function permissionAnswerLabel(value) {
+    var hp = D.house_prompts || {};
+    return hp.client_permits_text && (hp.client_permits_choices || {})[value] || value;
+  }
+  function startPermission(card) {
+    permissionQuestion().forEach(function(q){
+      var row = card.appendChild(permissionLabels(choice("q_client_permits", q.text, q.choices), q));
+      row.classList.add("client-permission");
+      row.setAttribute("data-client-permission", "");
+      musts.push({key:"q_client_permits", node:row, label:"Client permission", valid:function(v){return v === "Yes, they allow it";}});
+    });
+  }
   var highlighted = [];
   // Chase 2026-10-20: the value comes last on a self-service form, after his grid; elsewhere the questions stay together.
   var VALUE = ["value", "value_confirm", "value_why", "value_recheck", "exposure"];   // end-questions.json's value set
@@ -2070,14 +2767,19 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var items = (D.questions || []).filter(function (q) { return q.id !== "client_permits"; });
     return (startOptions() ? items.concat(permissionQuestion()) : permissionQuestion().concat(items)).filter(function (q) { return q.kind !== "confirm" && (D.stage !== "returned" || (D.house_prompts || {}).lane === "review" || q.material !== false); }).filter(function (q) {
       var v = state.answers["q_" + q.id];
-      if ((q.id === "client_permits" || settled) && v != null && String(v).trim()) { filed.push(q); return false; }
+      if ((q.id === "client_permits" && !q.choice_labels || settled) && v != null && String(v).trim()) { filed.push(q); return false; }
       return !valueLast() || (VALUE.indexOf(q.id) >= 0) === last;
     }).map(function (q) {   // a confirm lives in the status block
       var name = "q_" + q.id, row = q.kind === "choice" ? el("div", { cls: "line wide" }, [el("span", { cls: "lbl", text: q.text }), taps(name, q.text, q.choices || [])])
         : q.short ? text(name, q.text, { short: true }) : text(name, q.text, { multi: true, rows: "1" });
+      if (q.id === "client_permits") permissionLabels(row, q);
       if (startOptions() && q.id === "service_option") { row.classList.add("service-option"); row.querySelector(".lbl").hidden = true; }
       if (last && q.id === "value" && gridFacts()) row.insertBefore(el("p", { cls: "grid-range", "data-range": "" }), row.children[1]);   // his range beside his value
       if (needs(q.required) || (D.house_prompts || {}).lane === "self-service" && (!callsFirst() || q.material !== false)) musts.push({ key: name, node: row });   // calls first: the ship check's rule
+      if (q.id === "client_permits" && q.choice_labels) {
+        var required = musts.filter(function(m){return m.key === name && m.node === row;})[0];
+        if (required) { required.label = "Client permission"; required.valid = function(v){return v === "Yes, they allow it";}; }
+      }
       if (q.highlight === true) { highlighted.push(row); return null; }
       return row;
     }).filter(Boolean);
@@ -2308,11 +3010,12 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function renderSections() {
     var host = $("sections");
-    musts = []; filed = []; highlighted = []; proposalPainters=[];
+    musts = []; filed = []; highlighted = []; proposalPainters=[]; sgView = null;
     $("start-calls").hidden=true; $("start-calls").textContent=""; callLines=[];
-    if (minimalCalls()) { minimalSections(host); return; }
+    if (minimalCalls()) { minimalSections(host); renderStartScope(host); return; }
     if (proposalReview()) { $("report").after($("form")); if (!factsOnlyReview()) renderProposals(host); return; }
     $("report").before($("form"));
+    renderStartScope(host);
     if (simpleStart()) return;
     CHECKLIST.sections.forEach(function (sec) {
       if (laneOptions(F).length && !D.selected_lane) return;
@@ -2334,6 +3037,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       nodes.forEach(function (n) { card.appendChild(n); });
       host.appendChild(card);
     });
+    if (sgOn()) host.appendChild(sgCard());
     callMusts(host);
   }
   // Legacy calls-first data applies only outside the current self-service template.
@@ -2711,13 +3415,58 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     try { s = JSON.parse((answers || {}).q_comp_check || "null"); } catch (e) { s = null; }
     return !(s && s.id === c.id && s.choice === "accept");
   }
+  // Keep the check and acceptance on the original gap data; these are display words only.
+  function compPlainWords(text) {
+    return String(text).replace(/supplied\s*\d+\s*px/gi, "supplied").replace(/\b\d+\s*(?:px|pixels?)\b/gi, "")
+      .replace(/\bGLA\b/g, "Living area").replace(/\bADU\b/g, "Second living unit").replace(/^Site\b/, "Lot size").replace(/\bsf\b/g, "square feet").replace(/\bac\b/g, "acres")
+      .replace(/\babove-grade\b/gi, "above ground").replace(/\bsubject\b/gi, "your home").replace(/\bclosed comps\b/gi, "sales you picked")
+      .replace(/\bclosed sales\b/gi, "sales you picked").replace(/\bcomps\b/gi, "sales").replace(/\bcomp (\d+)/gi, "sale $1")
+      .replace(/\bbracketing\b/gi, "range check").replace(/\bbrackets?\b/gi, "comparisons").replace(/\bbracketed\b/gi, "covered by your sales")
+      .replace(/\s{2,}/g, " ").trim();
+  }
+  function compPlainLine(text, note) {
+    var raw = String(text), t = compPlainWords(raw), m;
+    if (/Sale-price bracketing is not checked yet because your value is blank/i.test(raw)) return "The price-range check runs once you enter your value.";
+    if (/no comps with MLS sheets/i.test(raw)) return "Sales: we need the listing sheets to compare price, living area and lot size. Add the sheets for the sales you picked.";
+    if (/No comp-bracketing pass or actual bracket failure/i.test(raw)) return "We can check the sales once their listing sheets are in your folder.";
+    m = /^Closed sales: (\d+) in your comps\. Lenders expect at least 3\./i.exec(raw);
+    if (m) return "Sales: you picked " + m[1] + "; lenders expect at least 3. Add enough completed sales to reach 3.";
+    m = /^Recent sale: none within 90 days of ([^;]+); newest (.+)\.$/i.exec(raw);
+    if (m) return "Recent sale: your newest sale is " + m[2] + ". A sale within 90 days of " + m[1] + " would help show prices near that date.";
+    m = /as few above-grade bathrooms as your (\w+) full baths?(?: and no half bath)?\.$/i.exec(raw);
+    if (m) {
+      var numbers = {one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8}, n = numbers[m[1].toLowerCase()] || m[1];
+      return "Bathrooms: your home has " + n + " full baths; every sale you picked has more. One sale with " + n + " baths or fewer would help.";
+    }
+    m = /^([^:]+): (?:subject |contract )?([^;]+); (?:your closed comps|your closed sales) (.+)\. (None .+)\.$/i.exec(raw);
+    if (m) {
+      var label = compPlainWords(m[1]), home = compPlainWords(m[2]), sales = compPlainWords(m[3]), missing = m[4].replace(/^None /, "");
+      var help = {"larger":"as large or larger", "smaller":"as small or smaller", "higher":"as high or higher", "lower":"as low or lower", "older":"as old or older", "newer":"as new or newer", "with more":"with as many or more", "with fewer":"with as few or fewer", "with more spaces":"with as many spaces or more", "with fewer spaces":"with as few spaces or fewer", "of higher quality":"of the same or higher quality", "of lower quality":"of the same or lower quality", "in better condition":"in the same or better condition", "in worse condition":"in the same or worse condition", "match":"that matches"}[missing];
+      if (help) return label + ": " + (label === "Sale price" ? home.replace(/^contract /i, "your contract is ") : label === "Year built" ? "your home was built in " + home : "your home has " + home) + "; your sales show " + sales + ". One sale " + help + " would help.";
+    }
+    m = /^([^:]+): subject has (none|one); (all your closed comps do|none of your closed comps do)\.$/i.exec(raw);
+    if (m) return compPlainWords(m[1]) + ": your home has " + m[2] + "; " + (m[2] === "none" ? "every sale you picked has one. One sale without one would help." : "none of your sales has one. One sale with one would help.");
+    if (!note && !/would help\.|Add |Please |Check /i.test(t)) t += " A sale that matches your home on this point would help.";
+    return t;
+  }
+  function compPlainRows(c) {
+    var rows = c.gaps.map(function(g){return [compPlainLine(g, false), ""];});
+    var notes = Array.isArray(c.notes) ? c.notes : [], photos = 0;
+    var photoCount = /\b(\d+|one|two|three|four|five|six|seven|eight) (?:house.front|front) photo findings/i.exec(notes.join(" "));
+    if (photoCount) photos = Number(photoCount[1]) || {one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8}[photoCount[1].toLowerCase()];
+    if (photos) rows.push(["Photos: " + photos + " front photo" + (photos === 1 ? " needs" : "s need") + " a look (see below).", ""]);
+    notes.forEach(function(n){
+      if (photos && /house.front photo findings|supplied\s*\d+\s*px fronts/i.test(n)) return;
+      rows.push([compPlainLine(n, true), "comp-note"]);
+    });
+    return rows;
+  }
   var compAll = false, COMP_SHOWN = 3;   // a long list shows its first three lines and "+N more"
   function paintComp() {
     var c = compCheck(), box = $("comp-card"), s = compSaid();
     box.hidden = !c || inProduction();
     if (box.hidden) return;
-    var list = $("comp-list"), rows = c.gaps.map(function (g) { return [String(g), ""]; })
-      .concat((Array.isArray(c.notes) ? c.notes : []).map(function (n) { return [String(n), "comp-note"]; }));   // his grid left these open
+    var list = $("comp-list"), rows = compPlainRows(c);
     list.textContent = "";
     rows.forEach(function (r, n) {
       var g = r[0], i = g.indexOf(": "), li = el("li", r[1] ? { cls: r[1] } : null, i > 0 ? [el("b", { text: g.slice(0, i + 1) }), " " + g.slice(i + 2)] : [g]);
@@ -2731,7 +3480,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var again = selfLane() ? "We check again on your next save." : "We’ll check again and update this card.";   // desk lanes: the desk reruns the check after intake
     $("comp-add-why").textContent = "Add them to your folder. " + again;
     // Matt 2026-11-03: "gaps are a big red flag that he will use his own AI usage to have to likely fix them downstream"
-    $("comp-cost").textContent = "Leaving them usually means a fix after the run, which uses a change round" + (usageBar() ? " and your AI usage." : ".");
+    $("comp-cost").textContent = "Add a sale to your folder and we'll recheck on your next save, or tap Start to go ahead as is. Fixing it after the run uses a change round.";
     $("comp-add").setAttribute("aria-pressed", String(!!s && s.choice === "add"));
     $("comp-add").disabled = readOnly || approved || !online || pendingTaps > 0;   // a save keeps a READY
     box.dataset.done = String(!!s && s.choice === "accept");
@@ -2766,6 +3515,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       rows.push({ key: line.key, label: READY_LABEL[line.key] || cap(line.need || line.label), done: done,
         note: done ? (line.kind === "check" || v === true ? "Confirmed" : String(v).trim().slice(0, 60)) : "", target: m ? m.node : null });
     });
+    if (!permitsOff() && (D.house_prompts || {}).client_permits_text) {
+      var permission = musts.filter(function(m){return m.key === "q_client_permits";})[0];
+      rows.push({key:"q_client_permits", label:"Client permission", done:state.answers.q_client_permits === "Yes, they allow it", target:permission ? permission.node : null});
+    }
     var hp = Object.assign({}, F.house_prompts || {}, D.house_prompts || {}), checked = hp.files_complete === true && !!hp.files_checked_at && !hp.files_checking_at;
     rows.push({ key: "files", label: "Your file", done: checked, note: checked ? "Checked by us" : filesNeed(hp), target: null });
     return rows;
@@ -2827,7 +3580,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       var asks = readyRows().filter(function (r) { return r.key !== "q_service_option" && r.key !== "files"; }).length;
       return ["What to do now", ["Finish your work file in TOTAL: inspection, sketch and photos all in. Save it.",
                                  "Answer the " + (asks || "few") + " quick questions below.", "Tap Start."],
-              "Everything else is optional. Leave it blank and we’ll propose every call for you to approve at review."];
+              plainStart() ? "" : "Everything else is optional. Leave it blank and we’ll propose every call for you to approve at review."];
     }
     if (!customerReturned()) return null;
     if (roundsLocked() && !signedOff()) return ["Nothing to do", ["Your two change rounds are used.", "Your final report is on its way to your TOTAL folder."], ""];
@@ -2955,7 +3708,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var h = entries.reverse().filter(function (e) { return e.accepted || (e.event === "client_permits" && !permitsOff()) || e.event === "go" || e.event === "post_change" || e.event === "delivered" || e.event === "updated" || e.event === "approve_all" || e.event === "comp_accept" || e.status === "DONE"; }).map(function (e) {
       if (e.event === "comp_accept") return "Comp gaps accepted · " + when(e.at);
       if (e.event === "approve_all") return "Approve all · confirmed " + e.n + (e.n === 1 ? " section" : " sections") + " as shown · review " + String(e.review_id).slice(0, 8) + " · " + when(e.at);
-      if (e.event === "client_permits") return "Client permission · " + e.answer + " · " + when(e.at);
+      if (e.event === "client_permits") return "Client permission · " + permissionAnswerLabel(e.answer) + " · " + when(e.at);
       var ready = function (q) { return /^self-service/.test(q.lane || "") ? "" : "ready " + day(q.ready_by) + " · "; };
       if (e.event === "go") return "Start production · " + (laneNames[e.quote.lane] || e.quote.lane) + " · " + ready(e.quote) + when(e.at);
       if (e.accepted) return (e.by === "desk" ? "Desk go-ahead · " : e.by === "no tag" ? "Accepted (no tag) · " : "Accepted · ") + ready(e.accepted) + (laneNames[e.accepted.lane] || e.accepted.lane) + " · " + e.accepted.terms + " · " + when(e.at);
@@ -2995,7 +3748,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if(quoteMoved()) gaps.unshift(MOVED);
       $("start-missing").hidden = !gaps.length || inProduction();
       $("start-missing").textContent = gaps.join(" ");
-      $("optional-line").hidden = inProduction() || stage !== "open";
+      $("optional-line").hidden = plainStart() || inProduction() || stage !== "open";
       $("help").hidden = $("help").hidden || !$("start-missing").hidden;
       $("help").textContent = "Save to come back, or Start your report.";
       $("start-production").hidden = true;
@@ -3013,6 +3766,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       }
     }
     if (newGaps() && customerStart()) { $("start-missing").hidden = false; $("start-missing").textContent = "Your latest file adds a new comp gap. Read the card above, then tap Start again."; }
+    if (!permitsOff() && (D.house_prompts || {}).client_permits_text && (D.house_prompts || {}).lane !== "review" && state.answers.q_client_permits !== "Yes, they allow it") {
+      statusBtns.forEach(function(b){if(b.dataset.s === "READY") b.disabled = true;});
+      $("start-production").disabled = true;
+    }
     paintComp();
     paintHeadsup();
     $("ss-reminder").hidden = !selfLane() || stage !== "open" || inProduction() || readOnly;   // Matt 2026-11-03: one line above Start
@@ -3322,6 +4079,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
           if (answerAction(item.kind) && saved._revision !== JSON.parse(item.doc).expected_revision) throw { code: "conflict" };
           var starts = item.kind === "go" || item.kind === "start" && doc.status === "READY" && r.form && (r.form.minimal_start === true || (r.form.house_prompts || {}).lane === "self-service");
           if (starts && compBlocks(r.form, doc.answers)) throw { code: "comps" };   // Matt 2026-11-03: a replayed Start accepts only the check he saw
+          if (starts) throw { code: "review" };   // 11-13: a reopened Start never posts by itself; its receipt is read above, else it waits for his own Start tap
           return post(item.doc).catch(function () {}).then(read).then(function (r2) { verifyAction(item, r2); });
         });
       }
@@ -3502,9 +4260,16 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   });
   var goBusy = false;
   function startProduction() {
-    if (minimalCalls() && missing().length) return;
-    if (!customerReady() || realProduction() || readOnly || !online || pendingTaps > 0 || goBusy) return;
-    if (compNeeds() && pendingStart) { startFailed("comps"); return; }   // a check that arrived mid-Start: he reads it, then taps Start again
+    // 11-13 drill: a stop after his tap saved READY never leaves him on Sending…. A tap or GO in flight settles it itself; a GO
+    // already recorded is received; any other stop says so and leaves the desk a tap-failure record.
+    var stop = minimalCalls() && missing().length ? "answers_required" : !customerReady() ? "start_required" : readOnly ? "unknown" : !online ? "unconfirmed" : "";
+    if (pendingStart && !pendingTaps && !goBusy && (stop || realProduction())) {
+      if (realProduction()) { pendingStart = null; paintStatus(); banner(goNote(), "ok"); }
+      else { noteFailure({ id: newId(), kind: "go" }, stop); startFailed("not_sent"); }
+      return;
+    }
+    if (stop || realProduction() || pendingTaps > 0 || goBusy) return;
+    if (compNeeds() && pendingStart) { noteFailure({ id: newId(), kind: "go" }, "comps"); startFailed("comps"); return; }   // a check that arrived mid-Start: he reads it, then taps Start again
     var compWas = state.answers.q_comp_check, accepted = compAccept() ? (edits++, write(false)) : null;   // a GO saves no answers (Code.gs): his acceptance saves first, and the GO waits on it
     var payload = body(true); payload.go = true; payload.files_checked_at = checkedAt(); payload.comp_gaps = (D.comp_check || {}).gaps || []; payload.request_id = newId();
     var doc = JSON.stringify(payload), item = null;
@@ -3535,6 +4300,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (code === "matt_hold") { banner("This order needs Matt’s review before it can start. We’ll email you.", "warn"); poll(); return; }
     banner(code === "quote_changed" ? "The price changed. Review it, then tap Start again." : code === "stage" ? STAGES[stage].refused :
       code === "comps" ? "Your latest file adds a new comp gap. Read the card above, then tap Start again." :
+      code === "not_sent" ? "Start not sent. Tap Start again." :
       "Start not confirmed. Your draft is still here. Tap Retry to review it.", "warn");
   }
   $("start-production").addEventListener("click", startProduction);
@@ -3799,10 +4565,11 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     }
     paintStatus();
     banner(approved ? approvalNote() : customerReturned() || state.status === "DRAFT" ? "" : state.status === "READY" && stage === "open" ? readyNote() : SENT, "ok");
+    if (startLost()) banner("Your Start didn't go through. Tap Start again.", "warn");
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return canon(f.delivery_status || null) !== canon(F.delivery_status || null) || f.questions_only !== F.questions_only || (f.start_reconfirm || "") !== (F.start_reconfirm || "") || canon(f.matt_hold || null) !== canon(F.matt_hold || null) || canon(f.start_missing || []) !== canon(F.start_missing || []) || canon(f.comp_check || null) !== canon(F.comp_check || null) || canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.terms || "") !== (F.terms || "") || (f.change_rounds || 0) !== (F.change_rounds || 0) || canon(f.change_answer || null) !== canon(F.change_answer || null) || f.changes_closed !== F.changes_closed || (f.changes_closed_text || "") !== (F.changes_closed_text || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || canon(f.review_changes || null) !== canon(F.review_changes || null) || canon(f.double_check || []) !== canon(F.double_check || []) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
+  function newer(f) { return canon(f.delivery_status || null) !== canon(F.delivery_status || null) || f.questions_only !== F.questions_only || (f.start_reconfirm || "") !== (F.start_reconfirm || "") || canon(f.matt_hold || null) !== canon(F.matt_hold || null) || canon(f.start_missing || []) !== canon(F.start_missing || []) || canon(f.comp_check || null) !== canon(F.comp_check || null) || canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.start_scope || "") !== (F.start_scope || "") || (f.terms || "") !== (F.terms || "") || (f.change_rounds || 0) !== (F.change_rounds || 0) || canon(f.change_answer || null) !== canon(F.change_answer || null) || f.changes_closed !== F.changes_closed || (f.changes_closed_text || "") !== (F.changes_closed_text || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || canon(f.review_changes || null) !== canon(F.review_changes || null) || canon(f.double_check || []) !== canon(F.double_check || []) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
   function canon(v) { return JSON.stringify(v, function (k, x) { return x && typeof x === "object" && !Array.isArray(x) ? Object.keys(x).sort().reduce(function (o, j) { o[j] = x[j]; return o; }, {}) : x; }); }   // key order is never a change
   // A re-render keeps the reader's place (Chase 2026-10-20): the scroll, then the box or button in focus and its
   // selection; with nothing in focus it takes none.
@@ -3845,13 +4612,20 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     return out;
   }
   function answersFrom(mine) {
-    mine=boundAnswers(mine);
+    mine=sgBound(boundAnswers(mine));
     if(proposalReview() && D.proposed_calls) {
       var active=new Set();D.proposed_calls.sections.forEach(function(section){active.add("q_pc_confirm_"+section.id);section.calls.forEach(function(c){active.add("q_pc_"+section.id+"_"+c.id);});});
       try { if(JSON.parse((mine||{}).q_pc_all).review_id===(D.review||{}).id) active.add("q_pc_all"); } catch(e) {}
       mine=Object.fromEntries(Object.entries(mine||{}).filter(function(entry){return !entry[0].startsWith("q_pc_") || active.has(entry[0]);}));
     }
     var self = (D.house_prompts || {}).lane === "self-service", low = Object.assign({}, D.prefill || {}, self && !minimalCalls() && D.our_calls || {});
+    if (plainStart()) {
+      var fee = low.il_amc_fee, filedFee = (D.file_calls || {}).il_amc_fee;
+      if (fee == null) fee = (F.prefill || {}).il_amc_fee;
+      if (fee == null && filedFee && filedFee.source) fee = filedFee.value;
+      // V25 accepts text/boolean answers only. Normalize defaults before saved answers win below.
+      if (fee != null) low.il_amc_fee = String(fee);
+    }
     var orderCall = (D.file_calls || {}).q_comp_order_weights;
     if (compOrderLane() && orderCall && orderCall.source) low.q_comp_order_weights = orderCall.value;
     if(proposalReview() && D.proposed_calls) D.proposed_calls.sections.forEach(function(section){section.calls.forEach(function(c){low["q_pc_"+section.id+"_"+c.id]=String(c.value);});});
@@ -3952,7 +4726,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   if (!API) { gate("Not connected yet."); return; }
   replay().then(read).then(function (r) {
     online = true; conn("Connected"); boot(r.form, r.saved);
-    if (replayFailed) banner("Your earlier " + replayFailed + " isn’t confirmed. Tap Retry to review your draft.", "warn");
+    if (replayFailed && !startLost()) banner("Your earlier " + replayFailed + " isn’t confirmed. Tap Retry to review your draft.", "warn");
   }, function (e) {
     gate(e && e.code === "unknown" ? CLOSED
                                    : "Couldn't open your form. Check your connection and try again.");
