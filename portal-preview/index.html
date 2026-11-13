@@ -1,0 +1,539 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>A&amp;AP Desk · A5</title>
+<link rel="icon" href="assets/aap-favicon.png">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+/* A4 type and color, per the audience review: body 18/1.5, metadata 16, addresses 20 bold, titles 30, labels 18 bold sentence case. */
+:root { --ink: #1c1c1c; --ink-2: #444444; --primary: #005ea8; --primary-hover: #004f8f; --primary-active: #004378; --focus: #005ea8; }
+html, body { font-size: 18px; line-height: 1.5; background: #fff; }
+.col { max-width: 720px; margin: 0 auto; padding: 0 var(--gutter) 80px; }   /* 80px reserved for the agent launcher */
+.btn { min-height: 48px; padding: 0 var(--s-5); font-size: 18px; line-height: 1.2; white-space: normal; text-align: center; }
+.btn.sm { min-height: 48px; padding: 0 var(--s-4); font-size: 18px; }
+.acts { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.nav { margin-left: var(--s-10); gap: var(--s-2); }
+.nav a, .tabs a { font-size: 16px; min-height: 48px; white-space: nowrap; padding: 0 var(--s-4); }
+.appbar .btn.sm { white-space: nowrap; }
+.appbar .who { white-space: nowrap; }
+.appbar.plan .who span { display: none; }   /* with the meter in the bar, the office name goes; Pat stays */
+.appbar .who { font-size: 16px; }
+.appbar .btn.sm { font-size: 16px; }
+.tabs { background: var(--bar); border-top: 1px solid rgba(255,255,255,.12); }
+.tabs .wrap { display: flex; flex-wrap: wrap; gap: 0 var(--s-1); }
+.tabs a { color: rgba(255,255,255,.85); text-decoration: none; font-weight: 600; padding: 0 var(--s-3); display: inline-flex; align-items: center; }
+.tabs a[aria-current] { color: #fff; box-shadow: inset 0 -3px 0 #fff; }
+@media (min-width: 901px) { .tabs { display: none; } }
+
+/* usage meter in the bar (plan offices only) */
+.meter { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-3); border-radius: var(--r-2); color: #fff; text-decoration: none; font-size: 16px; font-weight: 600; white-space: nowrap; }
+.meter:hover { background: rgba(255,255,255,.08); color: #fff; }
+.meter i { display: block; width: 72px; height: 8px; border-radius: var(--r-full); background: rgba(255,255,255,.22); overflow: hidden; }
+.meter i b { display: block; height: 100%; width: 0; background: #8fc3ee; border-radius: inherit; }
+.meter[data-level="amber"] i b { background: var(--warning-edge); }
+.meter[data-level="full"] i b { background: var(--warning-edge); }
+.meter[data-level="amber"], .meter[data-level="full"] { color: #ffe3b0; }
+.meter-row { display: none; }
+@media (max-width: 900px) {
+  .appbar .meter { display: none; }
+  .meter-row { display: flex; justify-content: flex-start; background: var(--bar); padding: 0 var(--gutter) var(--s-2); }
+  .meter-row .meter { padding-left: 0; }
+}
+
+/* page top */
+.top { padding: var(--s-6) 0 var(--s-4); }
+.top h1 { font: 700 30px/1.2 var(--display); letter-spacing: -.015em; color: var(--bar); margin: 0 0 var(--s-2); }
+.top .over { font-size: 16px; color: var(--ink-2); margin: 0 0 var(--s-2); }
+.top .line { max-width: 60ch; }
+.top .back { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; font-size: 16px; font-weight: 600; text-decoration: none; }
+.top .back::before { content: "\2190"; }
+.sec { padding: var(--s-6) 0; }
+.sec + .sec { border-top: 1px solid var(--line); }
+.sec > h2 { font: 700 18px/1.4 var(--font); color: var(--bar); margin: 0 0 var(--s-4); display: flex; justify-content: space-between; align-items: baseline; gap: var(--s-4); flex-wrap: wrap; }
+.sec > h2 a { font-weight: 600; font-size: 16px; }
+.find { display: flex; align-items: center; gap: var(--s-2); border: 1px solid var(--line-2); border-radius: var(--r-2); padding: 0 var(--s-4); min-height: 48px; margin-bottom: var(--s-4); }
+.find input { flex: 1; border: 0; outline: 0; font: 400 18px/1.5 var(--font); min-width: 0; }
+.find svg { width: 20px; height: 20px; color: var(--ink-2); flex: none; }
+.meta { font-size: 16px; color: var(--ink-2); }
+
+/* needs you */
+.todo { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); padding: var(--s-4) var(--s-5); border: 1px solid var(--line); border-left: 4px solid var(--warning-edge); border-radius: var(--r-2); }
+.todo + .todo { margin-top: var(--s-3); }
+.todo p b { font: 700 20px/1.3 var(--display); color: var(--bar); display: block; }
+.todo p a { font-weight: 600; }
+.todo .btn { flex: none; }
+.todo.ok { border-left-color: var(--success-edge); }
+
+/* order rows */
+.rows { border-top: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px var(--s-4); align-items: center; padding: var(--s-4) 0; border-bottom: 1px solid var(--line); text-decoration: none; color: inherit; min-height: 48px; }
+.row:hover .street { color: var(--primary); }
+.row .street { grid-column: 1; font: 700 20px/1.3 var(--display); letter-spacing: -.01em; color: var(--bar); }
+.row .meta { grid-column: 1; }
+.row .state { grid-column: 2; grid-row: 1 / span 2; text-align: right; font-size: 16px; color: var(--ink-2); white-space: nowrap; }
+.row .state b { display: block; font-weight: 700; color: var(--bar); font-size: 18px; }
+.row[data-tone="you"] .state b { color: var(--warning-ink); }
+.row .state::after { content: "\203A"; display: inline-block; margin-left: var(--s-3); color: var(--line-2); font-size: 24px; line-height: 0; vertical-align: -2px; }
+.row .more { grid-column: 1 / -1; margin-top: var(--s-2); display: grid; gap: var(--s-2); }
+.row .more .acts .btn { min-height: 48px; }
+.balance { color: var(--warning-ink); font-weight: 600; }
+
+/* order page */
+.facts2 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-4); margin: var(--s-4) 0 0; }
+.facts2 div span { display: block; font-size: 16px; color: var(--ink-2); }
+.facts2 div b { display: block; font: 700 20px/1.3 var(--display); color: var(--bar); margin-top: 2px; }
+.facts2 div b.you { color: var(--warning-ink); }
+.facts2 div a { font-size: 16px; font-weight: 600; display: inline-block; margin-top: 2px; min-height: 48px; line-height: 48px; }
+.plain + .plain { margin-top: var(--s-3); }
+.plain b { color: var(--bar); font-weight: 700; }
+.used { margin-top: var(--s-3); font-size: 16px; color: var(--ink-2); }
+.filehead { display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); flex-wrap: wrap; margin-bottom: var(--s-3); }
+.filehead h3 { font: 700 18px/1.4 var(--font); color: var(--bar); margin: 0; }
+.filehead h3.need { color: var(--warning-ink); }
+.check li { padding: 8px 0; align-items: center; flex-wrap: wrap; }
+.check li svg { width: 22px; height: 22px; margin: 0; }
+.check li span { font-size: 18px; }
+.check li time { font-size: 16px; }
+.check li .pending { color: var(--ink-2); font-size: 16px; margin-left: auto; }
+.list li { display: flex; gap: var(--s-3); align-items: flex-start; padding: var(--s-2) 0; line-height: 1.45; }
+.list li .st { flex: none; width: 110px; font-size: 16px; font-weight: 700; color: var(--ink-2); margin-top: 2px; }
+.list li .st.Completed { color: var(--success-ink); }
+.list li .st.Received { color: var(--warning-ink); }
+.list li time { flex: none; width: 150px; font-size: 16px; color: var(--ink-2); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.list li .note { color: var(--ink-2); }
+details.hist summary { cursor: pointer; font-weight: 600; min-height: 48px; display: flex; align-items: center; gap: var(--s-2); list-style: none; }
+details.hist summary::-webkit-details-marker { display: none; }
+details.hist summary::before { content: "\25B8"; color: var(--ink-2); }
+details.hist[open] summary::before { content: "\25BE"; }
+details.hist .latest { color: var(--ink-2); font-weight: 400; font-size: 16px; }
+
+/* review, revision, new order, prices */
+.sheet { border: 1px solid var(--line); border-radius: var(--r-2); padding: var(--s-5); display: grid; gap: var(--s-3); }
+.sheet .kv { display: flex; justify-content: space-between; gap: var(--s-4); border-bottom: 1px solid var(--line); padding: var(--s-2) 0; }
+.sheet .kv:last-of-type { border-bottom: 0; }
+.sheet .kv b { font-variant-numeric: tabular-nums; }
+.sheet .kv.total { font-weight: 700; color: var(--bar); border-top: 2px solid var(--bar); }
+.opt { display: flex; align-items: center; gap: var(--s-3); min-height: 48px; padding: 0 var(--s-2); }
+.opt input { width: 22px; height: 22px; }
+.opt span { flex: 1; }
+.opt b { font-variant-numeric: tabular-nums; }
+textarea, input[type=text], input[type=date] { font: 400 18px/1.5 var(--font); padding: var(--s-3) var(--s-4); border: 1px solid var(--line-2); border-radius: var(--r-2); width: 100%; min-height: 48px; }
+label.f { display: grid; gap: var(--s-1); font-weight: 600; }
+.receipt { display: flex; gap: var(--s-2); align-items: flex-start; padding: var(--s-3) var(--s-4); border-radius: var(--r-2); background: var(--success-bg); border: 1px solid var(--success-line); color: var(--success-ink); font-weight: 600; }
+.receipt svg { width: 22px; height: 22px; flex: none; margin-top: 2px; }
+.drop { border: 2px dashed var(--line-2); border-radius: var(--r-2); padding: var(--s-6); text-align: center; color: var(--ink-2); }
+
+/* plan & billing */
+.usage { display: grid; gap: var(--s-3); }
+.usage .big { display: flex; align-items: baseline; gap: var(--s-3); flex-wrap: wrap; }
+.usage .big b { font: 700 30px/1.1 var(--display); color: var(--bar); font-variant-numeric: tabular-nums; }
+.bar { height: 14px; border-radius: var(--r-full); background: var(--field-off); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--primary); border-radius: inherit; }
+.bar[data-level="amber"] i, .bar[data-level="full"] i { background: var(--warning-edge); }
+.weeks { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-3); align-items: end; margin-top: var(--s-2); }
+.weeks div { display: grid; gap: 6px; text-align: center; font-size: 16px; color: var(--ink-2); }
+.weeks i { display: block; height: 56px; background: var(--field-off); border-radius: var(--r-1); position: relative; overflow: hidden; }
+.weeks i b { position: absolute; left: 0; right: 0; bottom: 0; background: var(--primary); opacity: .8; }
+.weeks div.now b { opacity: 1; }
+.weeks i b.full { background: var(--warning-edge); }
+.inv { display: flex; justify-content: space-between; align-items: center; gap: var(--s-4); padding: var(--s-4) 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.inv .l b { font: 700 20px/1.3 var(--display); color: var(--bar); display: block; }
+.inv .l span { font-size: 16px; color: var(--ink-2); }
+.inv.due .l span { color: var(--warning-ink); font-weight: 600; }
+.inv .r { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
+.help li { padding: var(--s-2) 0; border-bottom: 1px solid var(--line); }
+.help summary { cursor: pointer; min-height: 48px; display: flex; align-items: center; font: 700 20px/1.3 var(--display); letter-spacing: -.01em; color: var(--primary); list-style: none; }
+.help summary::-webkit-details-marker { display: none; }
+.help ol { padding: 0 0 var(--s-3) var(--s-6); list-style: decimal; display: grid; gap: var(--s-1); }
+footer.site { border-top: 1px solid var(--line); font-size: 16px; }
+
+/* the agent: a visible launcher, 48px high, 16px from the corner; no nudge, no halo */
+.agent { position: fixed; right: 16px; bottom: 16px; z-index: 30; display: grid; justify-items: end; gap: var(--s-3); }
+.launch { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-5) 0 var(--s-4); border-radius: var(--r-full); border: 0; background: var(--bar); color: #fff; font: 600 16px/1 var(--font); cursor: pointer; box-shadow: 0 10px 28px -12px rgba(13,42,70,.6); }
+.launch img { width: 28px; height: 16px; }
+.launch:hover { background: #163a5e; }
+.panel { width: 440px; max-width: calc(100vw - 32px); background: #fff; border: 1px solid var(--line); border-radius: var(--r-3); box-shadow: var(--shadow-2); overflow: hidden; display: grid; grid-template-rows: auto 1fr auto; max-height: calc(100vh - 100px); }
+.panel .ph { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); padding: var(--s-3) var(--s-3) var(--s-3) var(--s-6); background: var(--bar); color: #fff; }
+.panel .ph b { display: inline-flex; align-items: center; gap: var(--s-3); font-size: 18px; }
+.panel .ph img { width: 28px; height: 16px; }
+.panel .ph .close { flex: none; min-height: 48px; padding: 0 var(--s-4); border-radius: var(--r-2); border: 0; background: rgba(255,255,255,.12); color: #fff; font: 600 16px/1 var(--font); cursor: pointer; }
+.panel .pb { padding: var(--s-6); display: grid; gap: var(--s-5); overflow: auto; }
+.panel .greet { color: var(--ink); }
+.panel .greet b { font-weight: 700; color: var(--bar); }
+.panel .sug { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.panel .sug .btn { background: #fff; color: var(--primary); border-color: var(--line-2); font-weight: 600; }
+.panel .sug .btn:hover { background: var(--tint); border-color: var(--primary); }
+.panel .ans { padding: var(--s-4) var(--s-5); border: 1px solid var(--line); border-radius: var(--r-2); background: var(--canvas); display: grid; gap: var(--s-3); }
+.panel .ans .you { font-size: 16px; color: var(--ink-2); }
+.panel .ans .you b { color: var(--ink); font-weight: 600; }
+.panel .ans .reply { gap: var(--s-3); }
+.panel .ans .acts { margin-top: var(--s-1); }
+.panel .pf { padding: var(--s-5) var(--s-6) var(--s-6); border-top: 1px solid var(--line); display: grid; gap: var(--s-4); }
+.panel .ask { padding: 4px 4px 4px var(--s-4); }
+.panel .ask input { font-size: 18px; padding: var(--s-2) 0; border: 0; border-radius: 0; min-height: 0; width: auto; }
+.panel .ask .mic { width: 48px; height: 48px; flex: none; }
+.panel .pf .send { display: flex; justify-content: flex-end; }
+.panel .disclose { margin: 0; font-size: 16px; }
+.agent:not(.open) .panel { display: none; }
+.sending { color: var(--ink-2); font-weight: 600; }
+.reply .says { font-size: 18px; }
+.reply .did { font-size: 16px; }
+@media (max-width: 600px) {
+  .todo { flex-direction: column; align-items: flex-start; gap: var(--s-3); }
+  .todo .btn { width: 100%; }
+  .row { grid-template-columns: 1fr; }
+  .row .state { grid-column: 1; grid-row: auto; text-align: left; white-space: normal; margin-top: 4px; }
+  .row .state b { display: inline; margin-right: var(--s-2); }
+  .row .state::after { display: none; }
+  .facts2 { grid-template-columns: 1fr; }
+  .list li { flex-wrap: wrap; } .list li time { width: 100%; margin: 0; }
+  .check li time { flex-basis: 100%; margin-left: 30px; }
+  details.hist summary { flex-wrap: wrap; } details.hist .latest { flex-basis: 100%; padding-left: 18px; }
+  .inv { flex-direction: column; align-items: flex-start; }
+  .inv .r { width: 100%; }
+  .inv .r .btn { flex: 1; }
+  .weeks i { height: 40px; }
+  .agent.open { left: 0; right: 0; bottom: 0; justify-items: stretch; }
+  .agent.open .launch { display: none; }
+  .panel { width: auto; max-width: none; max-height: 80dvh; border-radius: var(--r-3) var(--r-3) 0 0; border-bottom: 0; }
+  .panel .pf { padding-bottom: calc(var(--s-4) + env(safe-area-inset-bottom)); }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <symbol id="ck" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="currentColor" opacity=".14"/><path d="M5.5 10.5l3 3 6-6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="dot" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="10" r="3" fill="currentColor"/></symbol>
+  <symbol id="mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="send" viewBox="0 0 24 24"><path d="M4 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
+
+<header class="appbar">
+  <div class="wrap">
+    <a class="brand" href="#home" aria-label="A&amp;AP desk"><img src="assets/aap-mark-light.svg" alt="" width="52" height="30"><b>A&amp;AP</b></a>
+    <nav class="nav" aria-label="Portal" id="nav"></nav>
+    <div class="right"><a class="meter" id="meter" href="#billing" hidden></a><div class="who"><b>Pat</b><span>Practice Appraisal Group</span></div><a class="btn sm" href="#new">New order</a></div>
+  </div>
+</header>
+<nav class="tabs" aria-label="Portal, phone"><div class="wrap" id="tabs"></div></nav>
+<div class="meter-row" id="meter-row"></div>
+
+<main class="col" id="main"></main>
+
+<div class="agent" id="agent">
+  <section class="panel" id="panel" aria-label="Your agent" aria-hidden="true">
+    <div class="ph"><b><img src="assets/aap-mark-light.svg" alt="">Your agent</b><button class="close" id="gclose">Close</button></div>
+    <div class="pb">
+      <p class="greet" id="greet"></p>
+      <div class="sug" id="sug"></div>
+      <div class="ans" id="ans" hidden></div>
+    </div>
+    <div class="pf">
+      <form id="askform" autocomplete="off">
+        <div class="ask">
+          <input id="q" type="text" placeholder="Ask about orders, files or billing" aria-label="Ask your agent">
+          <button type="button" class="mic" id="mic" aria-pressed="false" aria-label="Speak"><svg aria-hidden="true"><use href="#mic"/></svg><span class="sr">Speak</span></button>
+        </div>
+        <div class="send" style="margin-top:var(--s-3)"><button type="submit" class="btn"><svg aria-hidden="true"><use href="#send"/></svg>Send</button></div>
+      </form>
+      <p class="disclose">This is your A&amp;AP agent (AI).</p>
+    </div>
+  </section>
+  <button class="launch" id="launch" aria-expanded="false"><img src="assets/aap-mark-light.svg" alt="">Your agent</button>
+</div>
+
+<footer class="site"><div class="wrap"><span>Private to Practice Appraisal Group.</span><span class="dot">·</span><span>The desk answers 7 AM to 9 PM Central, every day.</span><span class="dot">·</span><a href="#help">Help</a></div></footer>
+
+<script src="assets/agent.js"></script>
+<script>
+(function () {
+  const { DATA, answer, ICON_OK, NOW, full } = window.AGENT;
+  const main = document.getElementById("main");
+  const state = { approved: false, paid: false, checkReported: false, emailed: false, revision: {}, started: false, refilled: false };
+  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const PLAN = DATA.plan; if (PLAN) document.querySelector('.appbar').classList.add('plan');
+  const BILL = PLAN ? "Plan &amp; billing" : "Billing";
+
+
+  const NAV = [["#home", "Home"], ["#orders", "Orders"], ["#delivered", "Delivered"], ["#billing", BILL], ["#help", "Help"]];
+  document.getElementById("nav").innerHTML = document.getElementById("tabs").innerHTML = NAV.map(n => `<a href="${n[0]}">${n[1]}</a>`).join("");
+
+  // usage meter
+  function meterHTML() {
+    const u = DATA.usage, pct = state.refilled ? Math.max(0, u.pct - 50) : u.pct;
+    const level = pct >= 100 ? "full" : pct >= 85 ? "amber" : "calm";
+    const text = pct >= 100 ? "Week used · in-progress orders still finish" : `This week ${pct}% · resets ${u.resetShort}`;
+    return { level, text, pct };
+  }
+  function renderMeter() {
+    const m = document.getElementById("meter"), row = document.getElementById("meter-row");
+    if (!PLAN) { m.hidden = true; row.innerHTML = ""; return; }
+    const { level, text, pct } = meterHTML();
+    m.hidden = false; m.dataset.level = level; m.innerHTML = `<i><b style="width:${Math.min(pct, 100)}%"></b></i><span>${text}</span>`;
+    row.innerHTML = `<a class="meter" data-level="${level}" href="#billing"><i><b style="width:${Math.min(pct, 100)}%"></b></i><span>${text}</span></a>`;
+  }
+
+  const sorted = () => DATA.orders.slice().sort((a, b) => (b.tone === "you") - (a.tone === "you"));
+  const rowOf = o => {
+    const approved = state.approved && o.code === "AP-9891";
+    const status = approved ? "Approved" : o.status, tone = approved ? "" : o.tone;
+    return `<a class="row" href="#orders/${o.code}" data-tone="${tone}"><span class="street">${o.street}</span><span class="meta">${o.city} · ${o.code} · ${o.lane}</span><span class="state"><b>${status}</b>${tone === "you" ? "Needs your attention" : "Ready " + o.due}</span></a>`;
+  };
+  const FIND = `<label class="find"><svg><use href="#search"/></svg><input type="text" placeholder="Find by address or order number" aria-label="Find by address or order number"></label>`;
+
+  const pages = {
+    home() {
+      const todos = [
+        state.approved ? `<div class="todo ok"><p><b>3 ZZ Review Ct</b>Approved ${NOW}. Delivery to your TOTAL folder today.</p><a class="btn ghost" href="#orders/AP-9891">Open order</a></div>`
+                       : `<div class="todo"><p><b>3 ZZ Review Ct</b>Ready for your review. <a href="#orders/AP-9891#changes">1 change since your last review</a>.</p><a class="btn" href="#orders/AP-9891/review">Review report</a></div>`,
+        `<div class="todo"><p><b>2 ZZ Files Ln</b>Still needed (3): engagement letter, subject photos, comp MLS sheets.</p><a class="btn ${state.approved ? "" : "ghost"}" href="#orders/AP-9893#files">Add files</a></div>`
+      ].join("");
+      return `
+        <section class="sec" style="padding-top:var(--s-6)"><h2>Needs your attention (${state.approved ? 1 : 2})</h2>${todos}</section>
+        <section class="sec"><h2>Open orders (4) <a href="#orders">All orders</a></h2><div class="rows">${sorted().map(rowOf).join("")}</div></section>`;
+    },
+    orders() {
+      return `
+        <section class="top"><h1>Orders</h1></section>
+        <section class="sec" style="padding-top:0"><h2>Open orders (4)</h2>${FIND}<div class="rows">${sorted().map(rowOf).join("")}</div>
+          <p class="meta" style="margin-top:var(--s-4)">Orders needing your attention are listed first, then by earliest ready date. Delivered reports are under <a href="#delivered">Delivered</a>.</p></section>`;
+    },
+    order(code) {
+      const o = DATA.orders.find(x => x.code === code); if (!o) return pages.orders();
+      const approved = state.approved && code === "AP-9891";
+      const status = approved ? "Approved" : o.status;
+      const need = approved ? `Nothing. Approved ${NOW}.` : o.need;
+      const next = approved ? "Delivery to your TOTAL folder today, Nov 13, 2026." : o.next;
+      const still = o.still.map(s => `<li class="need"><svg><use href="#dot"/></svg><span>${s}</span>${state.emailed ? `<span class="pending">Checking email · Receipt not yet confirmed</span>` : ""}</li>`).join("");
+      const have = o.have.map(h => `<li><svg><use href="#ck"/></svg><span>${h[0]}</span><time>Received ${h[1]} Central</time></li>`).join("");
+      const changes = (o.changes.length ? o.changes : []).map(c => `<li><span class="st ${c.state}">${c.state}</span><span>${c.what}${c.note ? ` <span class="note">· ${c.note}</span>` : ""}</span></li>`).join("") || `<li class="meta">No changes requested.</li>`;
+      const log = (approved ? [["Nov 13, 2:21 PM", "Approved by you"]] : []).concat(o.log);
+      const primary = approved ? "" : o.stage === 3 ? `<a class="btn" href="#orders/${o.code}/review">Review report</a>` : o.still.length ? `<a class="btn" href="#orders/${o.code}#files">Add files</a>` : o.changes.length && o.stage === 2 ? `<a class="btn" href="#revision/${o.code}">Send a revision</a>` : `<button class="btn" data-ask="When will ${o.street} be ready?">When will it be ready?</button>`;
+      return `
+        <section class="top"><a class="back" href="#home">Home</a><p class="over">${o.code} · ${o.lane}</p><h1>${full(o)}</h1>
+          <div class="facts2"><div><span>Status</span><b class="${o.tone === "you" && !approved ? "you" : ""}">${status}</b></div><div><span>Ready for your review</span><b>${o.due}</b></div><div><span>Client due date</span><b>${o.clientDue}</b><a href="#" data-ask="Change the client due date on ${o.street}">Change client due date</a></div></div></section>
+        <section class="sec"><p class="plain"><b>We need from you:</b> ${need}${o.stage === 3 && !approved ? ` <a href="#changes">1 change since your last review</a>.` : ""}</p><p class="plain"><b>Next:</b> ${next}</p>
+          <div class="acts" style="margin-top:var(--s-5)">${primary}<button class="btn ghost" data-ask="Request a change on ${o.street}">Request a change</button></div>
+          ${PLAN && o.used ? `<p class="used">This order used about ${o.used}% of your week.</p>` : ""}</section>
+        <section class="sec" id="files"><h2>Files</h2>
+          ${o.still.length ? `<div class="filehead"><h3 class="need">Still needed (${o.still.length})</h3><div class="acts"><button class="btn" data-files="${o.code}">Add files</button>${state.emailed ? "" : `<button class="btn ghost" data-emailed="${o.code}">I sent them by email</button>`}</div></div><ul class="check">${still}</ul><div class="filehead" style="margin-top:var(--s-4)"><h3>Received (${o.have.length})</h3></div>` : `<div class="filehead"><h3>Received (${o.have.length})</h3></div>`}
+          <ul class="check">${have}</ul></section>
+        <section class="sec" id="changes"><h2>Changes <button class="btn ghost" data-ask="Add a comp to ${o.street}">Add or swap a comp</button></h2><ul class="list">${changes}</ul></section>
+        <section class="sec"><details class="hist" ${approved ? "open" : ""}><summary>Order history <span class="latest">· Latest: ${log[0][1]}, ${log[0][0]}</span></summary><ul class="list">${log.map(l => `<li><time>${l[0]} Central</time><span>${l[1]}</span></li>`).join("")}</ul></details></section>`;
+    },
+    review(code) {
+      const o = DATA.orders.find(x => x.code === code) || DATA.orders[0];
+      const approved = state.approved && code === "AP-9891";
+      return `
+        <section class="top"><a class="back" href="#orders/${o.code}">${o.street}</a><p class="over">Report review · ${o.code}</p><h1>${full(o)}</h1></section>
+        <section class="sec"><div class="sheet">
+          <div class="kv"><span>Report</span><b>URAR · UAD 3.6 · draft of Nov 12, 2026</b></div>
+          <div class="kv"><span>1 change since your last review</span><b>Garage label: 'carport' to '2-car attached', page 2 and comp grid</b></div>
+          <div class="kv"><span>Checks</span><b>UAD 3.6 and TOTAL error check at zero</b></div>
+          <div class="acts" style="margin-top:var(--s-2)"><a class="btn ghost" href="#orders/${o.code}/review">Open report in TOTAL</a>${approved ? `<span class="btn done">Approved ${NOW}</span>` : `<button class="btn" data-approve="${o.code}">Approve report</button>`}<button class="btn ghost" data-ask="Request a change on ${o.street}">Request a change</button></div>
+          ${approved ? `<div class="receipt">${ICON_OK}<span>Approved ${NOW}. Delivery to your TOTAL folder today, Nov 13, 2026.</span></div>` : `<p class="meta">Review the report, then approve. Approval delivers it to your TOTAL folder the same day.</p>`}
+        </div></section>`;
+    },
+    revision(code) {
+      const o = DATA.orders.find(x => x.code === code) || DATA.delivered.find(x => x.code === code) || DATA.orders[3];
+      const r = state.revision[code];
+      return `
+        <section class="top"><a class="back" href="#delivered">Delivered</a><p class="over">Send a revision · ${o.code}</p><h1>${full(o)}</h1></section>
+        <section class="sec">${r ? `<div class="receipt">${ICON_OK}<span>Revision received ${r}. Round ${o.changes && o.changes.length ? 2 : 1} · Status: Received. Corrected report date: not yet confirmed; the desk confirms it by email.</span></div>` : `<form class="sheet" id="revform">
+          <label class="f">Lender conditions<textarea rows="4" placeholder="Paste the conditions, or attach the letter below"></textarea></label>
+          <label class="f">Attach letter<input type="text" placeholder="Choose a file…" readonly></label>
+          <label class="f">Client due date<input type="text" value="${o.clientDue || "Mon, Nov 16, 2026"}"></label>
+          <div class="acts"><button class="btn" type="submit" data-rev="${o.code}">Send revision</button><a class="btn ghost" href="#delivered">Cancel</a></div></form>`}</section>`;
+    },
+    new() {
+      const start = state.started;
+      return `
+        <section class="top"><a class="back" href="#orders">Orders</a><h1>New order</h1><p class="line">Charges, total, payment due and ready date show before you start. <a href="#prices">My prices</a></p></section>
+        <section class="sec"><div class="sheet" id="newform">
+          <div class="drop">Drop the engagement letter and your TOTAL file here, or choose files</div>
+          <label class="opt"><input type="radio" name="lane" checked data-price="89"><span>Partial — your comps</span><b>$89</b></label>
+          <label class="opt"><input type="radio" name="lane" data-price="199"><span>Full</span><b>$199</b></label>
+          <label class="opt"><input type="checkbox" data-add="35"><span>Rent schedule</span><b>+$35</b></label>
+          <label class="opt"><input type="checkbox" data-add="60"><span>Next-day rush</span><b>+$60</b></label>
+          <div class="kv"><span>Selected charges</span><b id="n-charges">$89</b></div>
+          <div class="kv"><span>Payment fee</span><b>$0 by ACH · card adds 3%</b></div>
+          <div class="kv total"><span>Total</span><b id="n-total">$89</b></div>
+          <div class="kv"><span>Payment due</span><b>On delivery, Tue, Nov 17, 2026</b></div>
+          <div class="kv"><span>Ready for your review</span><b id="n-ready">Tue, Nov 17, 2026</b></div>
+          ${PLAN ? `<p class="used">This order will use about 8% of your week.</p>` : ""}
+          ${start ? `<div class="receipt">${ICON_OK}<span>Order received ${NOW}. The desk confirms the start by email.</span></div>` : `<div class="acts"><button class="btn" data-start="1">Start order</button></div>`}
+        </div></section>`;
+    },
+    prices() {
+      return `
+        <section class="top"><a class="back" href="#billing">${BILL}</a><h1>My prices</h1><p class="line">Your office's prices. Conversion from 2.6 to 3.6 is included.</p></section>
+        <section class="sec"><div class="sheet">${DATA.prices.map(p => `<div class="kv"><span>${p[0]}</span><b>${p[1]}</b></div>`).join("")}<div class="acts" style="margin-top:var(--s-2)"><a class="btn" href="#new">New order</a></div></div></section>`;
+    },
+    delivered() {
+      return `
+        <section class="top"><h1>Delivered reports</h1><p class="line">Review and sign the report before sending it to your client.</p></section>
+        <section class="sec" style="padding-top:0">${FIND}<div class="rows">${DATA.delivered.map(d => {
+          const [latest, ...earlier] = d.versions;
+          const bal = d.balance && !state.paid ? `<span class="balance">Balance due: ${d.balance.amount} · Due ${d.balance.due}</span>` : "";
+          const rev = state.revision[d.code] ? `<span class="meta">Revision received ${state.revision[d.code]} · Status: Received</span>` : "";
+          return `<div class="row"><span class="street">${d.street}</span><span class="meta">${d.city} · ${d.code} · Delivered ${d.when}</span>${bal ? `<span class="state">${bal}</span>` : ""}
+            <div class="more"><span class="meta"><b>${latest[0]} · Latest · ${latest[1]}</b></span>
+              <div class="acts"><a class="btn" href="#delivered">Download TOTAL file</a><a class="btn ghost" href="#delivered">Download report PDF</a><a class="btn ghost" href="#revision/${d.code}">Send a revision</a></div>
+              ${earlier.length ? `<details class="hist"><summary>Earlier versions (${earlier.length})</summary>${earlier.map(v => `<div class="acts" style="padding:var(--s-2) 0"><span class="meta" style="align-self:center">${v[0]} · ${v[1]}</span><a class="btn ghost" href="#delivered">Download TOTAL file</a><a class="btn ghost" href="#delivered">Download report PDF</a></div>`).join("")}</details>` : ""}
+              ${rev}${bal ? `<div class="acts"><a class="btn ghost" href="#billing">Pay ${d.balance.amount}</a></div>` : ""}</div></div>`; }).join("")}</div></section>`;
+    },
+    billing() {
+      const open = DATA.invoices.find(i => !i.paid);
+      const dueLine = state.paid ? "Amount due: $0" : state.checkReported ? "Amount due: $89 · Check reported · Awaiting confirmation" : "Amount due: $89";
+      const u = DATA.usage, { level, pct } = meterHTML();
+      const plan = PLAN ? `
+        <section class="sec" id="usage" style="padding-top:0"><h2>This week's usage</h2><div class="usage">
+          <div class="big"><b>${pct}% used</b><span class="meta">${u.started} of ${u.of} orders started this week · resets ${u.resets}</span></div>
+          <div class="bar" data-level="${level}"><i style="width:${Math.min(pct, 100)}%"></i></div>
+          <p>At 100%: orders in progress finish. An order that runs past the week is $50 extra. New orders wait for the reset, or a $100 refill starts them now.</p>
+          <div class="acts">${state.refilled ? `<span class="btn done">Refill requested ${NOW}</span>` : `<button class="btn" data-refill="1">Refill now — $100</button>`}<a class="btn ghost" href="#prices">My prices</a></div>
+          <div class="weeks">${u.weeks.map((w, i) => { const p = i === 3 ? pct : w[1]; return `<div class="${i === 3 ? "now" : ""}"><i><b class="${p >= 100 ? "full" : ""}" style="height:${Math.min(p, 100)}%"></b></i><span>${i === 3 ? "This week" : "Week of " + w[0]}<br>${p}%</span></div>`; }).join("")}</div>
+        </div></section>` : "";
+      return `
+        <section class="top"><h1>${BILL}</h1><p class="line"><b>${dueLine}</b></p></section>
+        ${plan}
+        <section class="sec"><h2>Billing</h2>
+          ${DATA.invoices.map(i => {
+            const paid = i.paid || (i.id === "INV-2041" && state.paid ? "Nov 13, 2026" : null);
+            if (paid) return `<div class="inv"><div class="l"><b>${i.order}</b><span>${i.id} · Paid ${i.amount} on ${paid} · Balance $0</span></div><div class="r"><a class="btn ghost" href="#billing">Download invoice</a></div></div>`;
+            const sub = state.checkReported ? "Check reported · Awaiting confirmation" : `Due ${i.due}`;
+            return `<div class="inv due"><div class="l"><b>${i.order}</b><span>${i.id} · ${sub}</span></div><div class="r"><button class="btn" data-payopen="${i.id}">Pay ${i.amount}</button><a class="btn ghost" href="#billing">Download invoice</a>${state.checkReported ? "" : `<button class="btn ghost" data-check="${i.id}">Report a check payment</button>`}</div></div>
+              <div class="sheet" id="payreview" hidden style="margin-top:var(--s-3)"><div class="kv"><span>Amount</span><b>$89.00</b></div><div class="kv"><span>Payment fee</span><b>$0.00 by ACH · card adds $2.67</b></div><div class="kv total"><span>Total</span><b>$89.00</b></div><div class="acts"><button class="btn" data-payconfirm="${i.id}">Confirm payment</button><button class="btn ghost" data-paycancel="1">Cancel</button></div></div>`;
+          }).join("")}
+          <p class="meta" style="margin-top:var(--s-4)">Card or ACH. Invoices go to Pat only. <a href="#billing">Change who gets invoices</a></p></section>`;
+    },
+    help() {
+      const T = [
+        ["Where does the delivered file go?", ["Open your TOTAL folder.", "Find the file named with the order number and address.", "Open it in TOTAL, review, then sign."]],
+        ["Fix a signing error", ["Open the report in TOTAL.", "Remove the signature.", "Make the fix.", "Run the error check.", "Sign again."]],
+        ["Export comps from your MLS", ["In your MLS, select the comps.", "Choose Export, CSV format.", "Save the file and add it to the order's files."]],
+        ["Unsign, fix, re-sign after a lender revision", ["Wait for the corrected report in your TOTAL folder.", "Open it, review the changes list.", "Sign and deliver to your client."]],
+        ["How ordering works", ["Open New order.", "Drop the engagement letter and your TOTAL file.", "Pick the service and add-ons; the total and ready date show.", "Press Start order."]]
+      ];
+      return `
+        <section class="top"><h1>Help with reports and orders</h1><div class="acts" style="margin-top:var(--s-3)"><button class="btn" data-ask="Request a call with Matt">Request a call with Matt</button><a class="btn ghost" href="#prices">My prices</a></div></section>
+        <section class="sec"><ul class="help">${T.map(t => `<li><details><summary>${t[0]}</summary><ol>${t[1].map(s => `<li>${s}</li>`).join("")}</ol></details></li>`).join("")}</ul></section>`;
+    }
+  };
+
+  function parse() { const h = (location.hash || "#home").slice(1).split("#")[0].split("/"); return h; }
+  function routeHTML() {
+    const h = parse();
+    if (h[0] === "orders" && h[1] && h[2] === "review") return pages.review(h[1]);
+    if (h[0] === "orders" && h[1]) return pages.order(h[1]);
+    if (h[0] === "revision" && h[1]) return pages.revision(h[1]);
+    return (pages[h[0]] || pages.home)();
+  }
+  function route() {
+    const h = parse(); const page = pages[h[0]] ? h[0] : "home";
+    main.innerHTML = routeHTML(); renderMeter();
+    document.querySelectorAll("#nav a, #tabs a").forEach(a => { const cur = a.getAttribute("href") === "#" + (["new", "prices"].includes(page) ? (page === "new" ? "orders" : "billing") : page); if (cur) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    const anchor = (location.hash.split("#")[2] || "");
+    const t = anchor && document.getElementById(anchor); if (t) t.scrollIntoView(); else window.scrollTo(0, 0);
+    context(h);
+    const nf = document.getElementById("newform"); if (nf) nf.addEventListener("change", () => { let sum = 0; nf.querySelectorAll("input:checked").forEach(i => sum += +(i.dataset.price || i.dataset.add || 0)); const rush = nf.querySelector("[data-add='60']").checked; document.getElementById("n-charges").textContent = "$" + sum; document.getElementById("n-total").textContent = "$" + sum; document.getElementById("n-ready").textContent = rush ? "Mon, Nov 16, 2026" : "Tue, Nov 17, 2026"; });
+    const rf = document.getElementById("revform"); if (rf) rf.addEventListener("submit", e => { e.preventDefault(); const code = rf.querySelector("[data-rev]").dataset.rev; state.revision[code] = NOW; route(); });
+  }
+
+  // the agent knows the page
+  const agent = document.getElementById("agent"), ans = document.getElementById("ans"), q = document.getElementById("q");
+  let scopeCode = null;
+  function context(h) {
+    const o = h[0] === "orders" && h[1] ? DATA.orders.find(x => x.code === h[1]) : (h[0] === "revision" && h[1] ? DATA.orders.find(x => x.code === h[1]) : null);
+    scopeCode = o ? o.code : null;
+    let greet, sug, where;
+    if (o) {
+      const approved = state.approved && o.code === "AP-9891";
+      where = full(o);
+      greet = `<b>${full(o)}</b> is ${approved ? "approved" : o.status.toLowerCase()}.`;
+      sug = [
+        o.stage === 3 && !approved ? ["Review report", { go: `#orders/${o.code}/review` }] : null,
+        o.still.length ? ["Add files", { go: `#orders/${o.code}#files` }] : null,
+        ["When will it be ready?", `When will ${o.street} be ready?`],
+        ["Request a change", `Request a change on ${o.street}`],
+        ["Add or swap a comp", `Add a comp to ${o.street}`]
+      ].filter(Boolean).slice(0, 3);
+    } else if (h[0] === "billing" || h[0] === "prices") {
+      where = BILL.replace("&amp;", "&"); greet = state.paid ? "Amount due: $0." : "Amount due: <b>$89</b>. INV-2041, due Nov 13, 2026.";
+      sug = [["Pay $89", { go: "#billing" }], ["Download invoice", "Send me the invoice PDF"], PLAN ? ["How much usage do I have left?", "How much usage do I have left?"] : ["Report a check payment", "I paid by check"]];
+    } else if (h[0] === "delivered" || h[0] === "revision") {
+      where = "Delivered"; greet = "3 delivered reports. The latest version of each is marked.";
+      sug = [["Which version do I upload?", "Which version of 7 ZZ Past Pl do I upload?"], ["Send a revision", { go: "#revision/AP-9894" }], ["Where does the file go?", "Where does the delivered file go in TOTAL?"]];
+    } else if (h[0] === "help") {
+      where = "Help"; greet = "Type the problem, or pick a topic.";
+      sug = [["Fix a signing error", "Fix a signing error"], ["Export comps from your MLS", "How do I export comps from my MLS?"]];
+    } else if (h[0] === "new") {
+      where = "New order"; greet = "New order. Charges, total and ready date show before you start.";
+      sug = [["My prices", { go: "#prices" }], ["How much usage do I have left?", "How much usage do I have left?"]];
+    } else {
+      where = h[0] === "orders" ? "Orders" : "Home";
+      greet = state.approved ? "1 order needs your attention." : "2 orders need your attention.";
+      sug = [state.approved ? null : ["3 ZZ Review Ct: Review report", { go: "#orders/AP-9891/review" }], ["2 ZZ Files Ln: Add files", { go: "#orders/AP-9893#files" }], ["1 ZZ Test Way: When will it be ready?", "When will 1 ZZ Test Way be ready?"], PLAN ? ["How much usage do I have left?", "How much usage do I have left?"] : null].filter(Boolean).slice(0, 3);
+    }
+    document.getElementById("greet").innerHTML = greet;
+    document.getElementById("sug").innerHTML = sug.slice(0, 2).map(x => typeof x[1] === "string" ? `<button class="btn" data-ask="${esc(x[1])}">${x[0]}</button>` : `<a class="btn" href="${x[1].go}">${x[0]}</a>`).join("");
+    ans.hidden = true; ans.innerHTML = "";
+  }
+  function open(yes) {
+    agent.classList.toggle("open", yes);
+    document.getElementById("panel").setAttribute("aria-hidden", String(!yes));
+    document.getElementById("launch").setAttribute("aria-expanded", String(yes));
+  }
+  function ask(text) {
+    open(true); ans.hidden = false;
+    ans.innerHTML = `<p class="you">You asked: <b>${esc(text)}</b></p><span class="typing"><i></i><i></i><i></i></span>`;
+    q.value = "";
+    setTimeout(() => {
+      const a = answer(text, scopeCode);
+      const acts = a.pick ? a.acts : a.acts.slice(0, 1);
+      const so = scopeCode && DATA.orders.find(x => x.code === scopeCode);
+      const lines = (so && a.lines[0] && a.lines[0].startsWith(`<b>${full(so)}</b>`) ? a.lines.slice(1) : a.lines).slice(0, 3);
+      ans.innerHTML = `<p class="you">You asked: <b>${esc(text)}</b></p><div class="reply rise">${lines.map(l => `<p class="says">${l}</p>`).join("")}<div class="acts">${acts.map((x, i) => x.go ? `<a class="btn ${i ? "ghost " : ""}sm" href="${x.go}">${x.label}</a>` : `<button class="btn ${i ? "ghost " : ""}sm" data-i="${i}">${x.label}</button>`).join("")}</div></div>`;
+      ans.querySelectorAll("[data-i]").forEach(b => b.addEventListener("click", () => {
+        const act = acts[+b.dataset.i];
+        if (act.ask) return ask(act.ask);
+        if (act.focus) { q.focus(); q.placeholder = "Type it here, then Send"; return; }
+        const row = b.closest(".acts"); row.querySelectorAll("button").forEach(x => x.disabled = true);
+        row.insertAdjacentHTML("afterend", `<p class="sending">Sending…</p>`);
+        setTimeout(() => {
+          ans.querySelector(".sending").outerHTML = `<div class="did rise">${ICON_OK}<span>Request received ${NOW}. ${act.did}</span></div>`; b.className = "btn done sm";
+          if (act.fx === "emailed") { state.emailed = true; main.innerHTML = routeHTML(); }
+          if (act.fx === "change" && scopeCode) { const o = DATA.orders.find(x => x.code === scopeCode); o.changes.push({ what: act.label, state: "Received" }); main.innerHTML = routeHTML(); }
+        }, 600);
+      }));
+    }, 700);
+  }
+  function tell(text) { open(true); ans.hidden = false; ans.innerHTML = `<div class="reply rise"><div class="did">${ICON_OK}<span>${text}</span></div></div>`; }
+
+  document.getElementById("launch").addEventListener("click", () => open(!agent.classList.contains("open")));
+  document.getElementById("gclose").addEventListener("click", () => open(false));
+  document.getElementById("askform").addEventListener("submit", e => { e.preventDefault(); if (q.value.trim()) ask(q.value.trim()); });
+  document.getElementById("mic").addEventListener("click", function () { this.setAttribute("aria-pressed", "true"); const ph = q.placeholder; q.placeholder = "Listening…"; setTimeout(() => { this.setAttribute("aria-pressed", "false"); q.placeholder = ph; ask("When will 6 ZZ Revision Rd be ready?"); }, 1400); });
+  document.addEventListener("click", e => {
+    const a = e.target.closest("[data-ask]"); if (a) { e.preventDefault(); ask(a.dataset.ask); return; }
+    if (e.target.closest("[data-approve]")) { state.approved = true; route(); tell(`Approved ${NOW}. 3 ZZ Review Ct, Frisco, TX 75034 delivers to your TOTAL folder today, Nov 13, 2026.`); return; }
+    if (e.target.closest("[data-payopen]")) { document.getElementById("payreview").hidden = false; return; }
+    if (e.target.closest("[data-paycancel]")) { document.getElementById("payreview").hidden = true; return; }
+    if (e.target.closest("[data-payconfirm]")) { state.paid = true; route(); tell(`Paid $89 on Nov 13, 2026. INV-2041 · Balance $0.`); return; }
+    if (e.target.closest("[data-check]")) { state.checkReported = true; route(); return; }
+    if (e.target.closest("[data-refill]")) { state.refilled = true; route(); tell(`Refill of $100 requested ${NOW}. It applies as soon as the payment confirms.`); return; }
+    if (e.target.closest("[data-start]")) { state.started = true; route(); return; }
+    if (e.target.closest("[data-emailed]")) { state.emailed = true; route(); return; }
+    if (e.target.closest("[data-files]")) { tell("File chooser opened. Each file appears under Received with its date and time when it lands."); return; }
+  });
+  window.addEventListener("hashchange", route);
+  route();
+})();
+</script>
+</body>
+</html>
