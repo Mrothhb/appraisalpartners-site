@@ -207,7 +207,8 @@
       const standard = businessDate(selected.ready_days);
       const box = addonInputs['next-day'];
       if (box) {
-        const need = standard > want;
+        const fast = businessDate(Math.min(1, Number(selected.ready_days) || 1));
+        const need = standard > want && fast < standard;   // only when Next day actually gets it there sooner
         if (box.checked !== need) { box.checked = need; if (need) chosen.add('next-day'); else chosen.delete('next-day'); }
       }
       const earliest = businessDate(box && box.checked ? Math.min(1, Number(selected.ready_days) || 1) : selected.ready_days);

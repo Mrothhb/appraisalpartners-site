@@ -229,7 +229,7 @@ footer.site a { color: var(--ink-2); }
 <main class="col" id="main" hidden></main>
 <footer class="site" id="foot" hidden><div class="wrap" id="foot-line"></div></footer>
 
-<script src="agent.js?v=20261113b" defer></script>
+<script src="agent.js?v=20261113c" defer></script>
 <script>
 (function () {
   "use strict";
@@ -673,7 +673,7 @@ footer.site a { color: var(--ink-2); }
     if (window.AAPNewOrder) return done(true);
     if (newState === "failed") return done(false);
     if (!newScript) {
-      newScript = document.createElement("script"); newScript.src = "neworder.js?v=20261113b"; newScript.defer = true; newState = "loading";
+      newScript = document.createElement("script"); newScript.src = "neworder.js?v=20261113c"; newScript.defer = true; newState = "loading";
       newScript.addEventListener("load", function () { newState = "loaded"; });
       newScript.addEventListener("error", function () { newState = "failed"; });
       document.head.appendChild(newScript);
