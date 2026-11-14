@@ -2,8 +2,7 @@
   "use strict";
   if (window.AAPAgent) return;
 
-  const PLACEHOLDER = "Ask about orders, files or billing";
-  const SENT = "Sent. Your desk answers within a few minutes.";
+  const PLACEHOLDER = "Message your Desk Agent";
   const LABEL = "Desk Agent";
   const GREETING = "Your Desk Agent: orders, ready dates, pricing. Ask here.";
   const ASK = "Ask about this item";
@@ -66,19 +65,6 @@
     return data.orders.find(order => order.ap === scope());
   }
 
-  function replyFor(order, request) {
-    const desks = data.thread.filter(message => sameScope(message, order) && message.who === "desk");
-    if (!request) return desks.length ? desks[desks.length - 1] : null;
-    if (request.status !== "sent" || !request.id) return null;
-    const bound = desks.filter(message => message.re === request.id);
-    return bound.length ? bound[bound.length - 1] : null;
-  }
-
-  function askedBy(reply) {
-    const asked = reply && reply.re ? data.thread.find(message => message.who === "you" && message.id === reply.re) : null;
-    return asked ? asked.text : "";
-  }
-
   function recover(order, request) {
     if (!request || request.status !== "failed" || !request.id) return;
     const mine = data.thread.find(message => message.who === "you" && message.id === request.id);
@@ -88,67 +74,33 @@
     if (ui && scope() === order && ui.input.value.trim() === request.text) ui.input.value = "";
   }
 
-  function suggestions() {
-    return data.needs.filter(function (need) {
-      if (scope()) return need.ap === scope();
-      if (data.route === "billing") return need.kind === "pay";
-      if (data.route === "help") return false;
-      if (data.route === "delivered") {
-        const order = data.orders.find(item => item.ap === need.ap);
-        return need.kind === "pay" || /(?:#|\/)delivered(?:[/?#]|$)/i.test(need.href || "") ||
-          Boolean(order && /delivered/i.test(order.status || ""));
-      }
-      return data.route !== "orders" || need.kind !== "pay";
-    });
-  }
-
-  function safeHref(value) {
-    if (typeof value !== "string" || !value.trim()) return null;
-    try {
-      const url = new URL(value, document.baseURI);
-      if (!["http:", "https:", "file:"].includes(url.protocol)) return null;
-      if (url.origin !== window.location.origin) return null;
-      return url.href;
-    } catch (_) { return null; }
-  }
-
   function renderContext() {
     const order = selectedOrder();
-    const needs = suggestions();
-    let line;
-    if (scope()) line = (order && order.street ? order.street + " · " : "") + scope() +
+    ui.context.replaceChildren();
+    if (scope()) ui.context.textContent = (order && order.street ? order.street + " · " : "") + scope() +
       (order && order.status ? " · " + order.status : "");
-    else if (data.route === "help") line = "Ask about orders, files or billing.";
-    else if (data.route === "billing") line = needs.length ? "Select a billing item below." : "Ask about billing.";
-    else if (data.route === "delivered") line = needs.length ? "Select a delivered report below." : "Ask about a delivered report.";
     else {
-      const count = new Set(needs.map(need => need.ap).filter(Boolean)).size;
-      line = count ? count + (count === 1 ? " order needs" : " orders need") + " your attention. Select an order below." : "Ask about orders, files or billing.";
-    }
-    ui.context.textContent = line;
-    ui.context.classList.toggle("aap-agent-property", Boolean(scope()));
-    ui.suggestions.replaceChildren();
-    needs.slice(0, 2).forEach(function (need) {
-      const href = safeHref(need.href);
-      const link = element(href ? "a" : "button", "suggestion");
-      const street = need.street || need.ap || "";
-      const label = need.label || "Open order";
-      link.textContent = scope() || !street || label.includes(street) ? label : street + ": " + label;
-      if (href) link.href = href;
-      else {
-        link.type = "button";
-        link.disabled = true;
+      const count = new Set(data.needs.map(need => need.ap).filter(Boolean)).size;
+      if (count) {
+        const view = element("button", "view", "View");
+        view.type = "button";
+        view.addEventListener("click", viewNeeds);
+        ui.context.append(count + (count === 1 ? " order needs you · " : " orders need you · "), view);
       }
-      ui.suggestions.append(link);
-    });
-    ui.suggestions.hidden = !ui.suggestions.childElementCount;
+    }
+    ui.context.classList.toggle("aap-agent-property", Boolean(scope()));
+    ui.context.hidden = !ui.context.childNodes.length;
+  }
+
+  function viewNeeds() {
+    open(false);
+    if (data.route !== "home") { window.location.hash = "#home"; return; }
+    const needs = document.getElementById("needs");
+    if (needs) needs.scrollIntoView({ block: "start", behavior: "smooth" });
   }
 
   function renderConversation() {
-    const order = scope();
-    const request = conversations.get(order);
-    const reply = replyFor(order, request);
-    const asked = request ? request.text : askedBy(reply);
+    const request = conversations.get(scope());
     const sending = Boolean(request && request.status === "sending");
     ui.input.disabled = sending;
     ui.send.disabled = sending || !ui.input.value.trim();
@@ -159,22 +111,18 @@
     if (request) {
       if (sending) status = "Sending…";
       else if (request.status === "failed") status = request.error;
-      else if (!reply && !config.host) status = SENT;
     }
     ui.status.textContent = status;
     ui.status.hidden = !status;
     ui.status.classList.toggle("aap-agent-error", Boolean(request && request.status === "failed"));
-    ui.answer.hidden = !reply || Boolean(config.host);
-    ui.reply.textContent = reply ? reply.text : "";
-    ui.question.hidden = !asked || Boolean(config.host);
-    ui.question.textContent = asked ? "You asked: " + asked : "";
   }
 
   function renderThread() {
     const lines = data.thread.filter(message => sameScope(message, scope()));
     const atEnd = ui.body.scrollHeight - ui.body.scrollTop - ui.body.clientHeight < 48, keep = new Set();
     lines.forEach(function (message, i) {
-      const key = String(message.key || i), you = message.who === "you", who = you ? "You" : message.who === "desk" ? "Desk" : "Agent";
+      const key = String(message.key || message.id || i), you = message.who === "you";
+      const who = you ? "You" : !config.host ? LABEL : message.who === "desk" ? "Desk" : "Agent";
       const text = String(message.text || ""), shape = [who, text, Boolean(message.pending)].join("\n");
       let line = ui.lines.get(key);
       if (!line || line.dataset.shape !== shape) {
@@ -295,21 +243,19 @@
       ui.input.value = drafts.get(order) || "";
     }
     const dedicated = !!(data.plan && data.profile), office = String(config.office.name || "").trim();
+    const first = String(config.office.person || "").trim().split(/\s+/)[0], hi = first ? "Hi " + first + ". " : "Hi. ";
     if (config.host) {
       ui.title.textContent = dedicated ? "Your dedicated agent" : "A&AP agent";
-      ui.intro.textContent = dedicated
-        ? "This agent works only for " + (config.office.name || "your office") + ". It remembers your orders, your preferences and the way you like things done, and it gets more helpful with every order. Think of it as your assistant at A&AP."
-        : "Ask about any order here, or anything else you need. Customers on a monthly plan get their own dedicated agent that remembers their orders, preferences and style.";
+      ui.intro.textContent = hi + "Ask me about this order.";
     } else {
       ui.title.textContent = !dedicated ? "A&AP Desk Agent" : office && office.length <= 20 ? office + " Desk Agent" : "Your Desk Agent";
-      ui.intro.textContent = dedicated
-        ? "This Desk Agent works only for " + (office || "your office") + ". It remembers your orders, your preferences and the way you like things done, and it gets more helpful with every order. Think of it as your assistant at A&AP."
-        : "Ask about any order, a ready date, pricing, your files or a new order. Customers on a monthly plan get their own Desk Agent that remembers their orders, preferences and style.";
-      ui.disclosure.textContent = dedicated ? "This is your " + (office ? office + " " : "") + "Desk Agent (AI)." : "This is the Appraisal Partners A&AP Desk Agent (AI).";
+      ui.intro.textContent = hi + "Ask me about any order, ready date, price or file.";
     }
+    ui.intro.hidden = data.thread.some(message => sameScope(message, scope()));
     renderContext();
     renderConversation();
-    if (config.host) { renderThread(); renderPrompt(); }
+    renderThread();
+    if (config.host) renderPrompt();
     unread();
   }
 
@@ -348,7 +294,7 @@
     greet(false);
     unread();
     const back = [opener, ui.launch].concat(Array.from(document.querySelectorAll(".talk"))).find(shown);
-    if (yes) ui.close.focus({ preventScroll: true });
+    if (yes) { ui.body.scrollTop = ui.body.scrollHeight; ui.close.focus({ preventScroll: true }); }
     else if (back) back.focus({ preventScroll: true });
   }
 
@@ -485,33 +431,29 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
 .aap-agent-heading { display:flex; align-items:center; gap:12px; font-size:18px; line-height:1.5; font-weight:700; }
 .aap-agent-close { flex:none; min-width:48px; min-height:48px; padding:8px 16px; border-radius:4px; border:0; background:rgba(0,0,0,.15); color:#fff; font-weight:600 !important; cursor:pointer; }
 .aap-agent-header :focus-visible { outline-color:#fff; }
-.aap-agent-body { display:grid; align-content:start; gap:20px; padding:24px; min-height:0; overflow:auto; overscroll-behavior:contain; overflow-wrap:anywhere; }
+.aap-agent-body { display:grid; align-content:start; gap:16px; padding:20px 24px; min-height:0; overflow:auto; overscroll-behavior:contain; overflow-wrap:anywhere; }
 .aap-agent-intro { font-size:16px; color:#444; }
+.aap-agent-context { font-size:15px; color:#5f5f5f; }
+.aap-agent-view { min-height:32px; padding:0 2px; border:0; background:none; color:#005ea8; font-weight:600 !important; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
 .aap-agent-property { font-size:20px; font-weight:700; color:#0d2a46; }
-.aap-agent-suggestions { display:flex; flex-wrap:wrap; gap:8px; }
-.aap-agent-suggestion { display:inline-flex; justify-content:center; align-items:center; min-width:48px; min-height:48px; max-width:100%; padding:8px 16px; border:1px solid #ccc; border-radius:4px; background:#fff; color:#005ea8; font-weight:600 !important; text-align:left; text-decoration:none; white-space:normal; overflow-wrap:anywhere; cursor:pointer; }
-.aap-agent-suggestion:hover { background:#eaf3fb; border-color:#005ea8; color:#005ea8; }
-.aap-agent-conversation { display:grid; gap:12px; }
-.aap-agent-question { font-size:16px; color:#444; white-space:pre-wrap; }
-.aap-agent-status { font-weight:600; color:#444; white-space:pre-wrap; }
-.aap-agent-error { color:#a72a2a; }
-.aap-agent-answer { display:grid; gap:8px; padding:16px 20px; border:1px solid #e3e3e3; border-radius:4px; background:#f4f5f5; }
-.aap-agent-answer-heading { font-size:18px; font-weight:700; color:#0d2a46; }
-.aap-agent-reply { white-space:pre-wrap; overflow-wrap:anywhere; }
-.aap-agent-footer { padding:20px 24px 24px; border-top:1px solid #e3e3e3; background:#fff; display:grid; gap:16px; }
-.aap-agent-form { display:grid; gap:12px; margin:0; }
-.aap-agent-field { display:flex; align-items:center; gap:8px; padding:4px 4px 4px 16px; border:1px solid #8a949f; border-radius:4px; background:#fff; }
+.aap-agent-conversation:not(:has(.aap-agent-status:not([hidden]))) { display:none; }
+.aap-agent-status { font-size:15px; color:#5f5f5f; white-space:pre-wrap; }
+.aap-agent-error { font-weight:600; color:#a72a2a; }
+.aap-agent-footer { padding:12px 24px 12px; border-top:1px solid #e3e3e3; background:#fff; display:grid; gap:8px; }
+.aap-agent-form { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; margin:0; }
+.aap-agent-form .aap-agent-speech { grid-column:1 / -1; }
+.aap-agent-field { display:flex; align-items:center; gap:4px; padding:0 4px 0 16px; border:1px solid #8a949f; border-radius:24px; background:#fff; }
 .aap-agent-field:focus-within { outline:2px solid #005ea8; outline-offset:2px; }
-.aap-agent-input { flex:1; min-width:0; width:100%; min-height:48px; padding:8px 0; border:0; border-radius:0; background:#fff; color:#1c1c1c; box-shadow:none; }
+.aap-agent-input { flex:1; min-width:0; width:100%; min-height:48px; padding:8px 0; font-size:16px !important; border:0; border-radius:0; background:#fff; color:#1c1c1c; box-shadow:none; }
 .aap-agent-input:focus-visible { outline:none; }
 .aap-agent-input::placeholder { color:#444; opacity:1; }
-.aap-agent-mic { display:flex; align-items:center; justify-content:center; flex:none; width:48px; height:48px; padding:12px; border:0; border-radius:4px; background:#fff; color:#005ea8; cursor:pointer; }
+.aap-agent-mic { display:flex; align-items:center; justify-content:center; flex:none; width:48px; height:48px; padding:12px; border:0; border-radius:50%; background:#fff; color:#005ea8; cursor:pointer; }
 .aap-agent-mic[aria-pressed="true"] { background:#eaf3fb; }
 .aap-agent-mic-icon { width:24px; height:24px; }
 .aap-agent-send-row { display:flex; justify-content:flex-end; }
-.aap-agent-send { display:inline-flex; align-items:center; justify-content:center; min-width:80px; min-height:48px; padding:8px 20px; border:1px solid #005ea8; border-radius:4px; background:#005ea8; color:#fff; font-weight:600 !important; cursor:pointer; }
+.aap-agent-send { display:inline-flex; align-items:center; justify-content:center; min-width:72px; min-height:48px; padding:8px 18px; border:1px solid #005ea8; border-radius:24px; background:#005ea8; color:#fff; font-weight:600 !important; cursor:pointer; }
 .aap-agent-send:hover:enabled { background:#004f8f; }
-.aap-agent-disclosure { font-size:16px; color:#444; }
+.aap-agent-disclosure { font-size:12px; line-height:1.4; color:#5f5f5f; text-align:center; }
 .aap-agent-speech { font-size:16px; color:#444; }
 .aap-agent-speech:empty { display:none; }
 @media (max-width:600px) {
@@ -519,8 +461,8 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
   .aap-agent-open .aap-agent-launch { display:none; }
   .aap-agent-panel { width:100%; max-width:none; max-height:80vh; max-height:min(80dvh, var(--aap-agent-view-height, 80dvh)); border-radius:6px 6px 0 0; border-bottom:0; }
   .aap-agent-header { padding-left:20px; }
-  .aap-agent-body { padding:20px; }
-  .aap-agent-footer { padding:16px 20px calc(16px + env(safe-area-inset-bottom, 0px)); gap:12px; }
+  .aap-agent-body { padding:16px 20px; }
+  .aap-agent-footer { padding:12px 16px calc(10px + env(safe-area-inset-bottom, 0px)); }
 }
 .aap-agent-root.aap-agent-hosted { position:static; display:block; z-index:auto; font-size:16px; }
 .aap-agent-hosted .aap-agent-panel { width:100%; max-width:none; max-height:none; border-radius:6px; border-bottom:1px solid #e3e3e3; box-shadow:none; grid-template-rows:auto auto auto; }
@@ -528,13 +470,16 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
 .aap-agent-hosted .aap-agent-header { padding:12px 20px; }
 .aap-agent-hosted .aap-agent-close { display:none; }
 .aap-agent-hosted .aap-agent-body { max-height:min(55vh, 520px); max-height:min(55dvh, 520px); padding:20px; gap:16px; }
-.aap-agent-hosted .aap-agent-footer { padding:16px 20px 20px; gap:12px; }
+.aap-agent-hosted .aap-agent-footer { padding:12px 20px; gap:8px; }
 .aap-agent-thread { list-style:none; margin:0; padding:0; display:grid; gap:12px; }
-.aap-agent-says, .aap-agent-you { display:grid; gap:2px; max-width:92%; padding:10px 14px; border-radius:6px; }
-.aap-agent-says { justify-self:start; background:#f4f5f5; border:1px solid #e3e3e3; }
-.aap-agent-you { justify-self:end; background:#eaf3fb; border:1px solid #d5e6f5; }
-.aap-agent-who { font-size:13px; font-weight:700; color:#5f5f5f; }
-.aap-agent-words { white-space:pre-wrap; overflow-wrap:anywhere; }
+.aap-agent-says, .aap-agent-you { display:grid; gap:4px; max-width:85%; }
+.aap-agent-says { justify-self:start; justify-items:start; }
+.aap-agent-you { justify-self:end; justify-items:end; }
+.aap-agent-who { padding:0 4px; font-size:12px; line-height:1.3; font-weight:600; color:#5f5f5f; }
+.aap-agent-you .aap-agent-who { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.aap-agent-words { padding:10px 14px; border-radius:18px; font-size:16px; line-height:1.45; white-space:pre-wrap; overflow-wrap:anywhere; }
+.aap-agent-says .aap-agent-words { background:#f1f3f4; border-bottom-left-radius:4px; }
+.aap-agent-you .aap-agent-words { background:#e3effa; border-bottom-right-radius:4px; }
 .aap-agent-pending .aap-agent-words { color:#5f5f5f; font-style:italic; }
 .aap-agent-prompt { display:grid; gap:12px; }
 .aap-agent-prompt-text { font-weight:600; }
@@ -565,17 +510,12 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     const body = element("div", "body");
     const intro = element("p", "intro");
     const context = element("p", "context");
-    const suggestionBox = element("div", "suggestions");
     const conversation = element("div", "conversation");
     conversation.setAttribute("aria-live", "polite");
     conversation.setAttribute("aria-atomic", "true");
-    const question = element("p", "question");
     const status = element("p", "status");
-    const answer = element("article", "answer");
-    const reply = element("p", "reply");
-    answer.append(element("b", "answer-heading", "Desk reply"), reply);
-    conversation.append(question, status, answer);
-    body.append(intro, context, suggestionBox, conversation);
+    conversation.append(status);
+    body.append(intro, context, conversation);
     const thread = element("ol", "thread");
     thread.setAttribute("aria-live", "polite");
     thread.hidden = true;
@@ -586,7 +526,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     const action = element("div", "action");
     promptRow.append(promptText, answerBox, chips, action);
     promptRow.hidden = true;
-    if (config.host) body.insertBefore(thread, conversation);
+    body.insertBefore(thread, conversation);
     const footer = element("div", "footer");
     const form = element("form", "form");
     form.autocomplete = "off";
@@ -610,7 +550,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     const speech = element("p", "speech");
     speech.setAttribute("role", "status");
     form.append(field, sendRow, speech);
-    const disclosure = element("p", "disclosure", config.host ? "AI agent" : "This is the Appraisal Partners A&AP Desk Agent (AI).");
+    const disclosure = element("p", "disclosure", "AI agent");
     footer.append(form, disclosure);
     if (config.host) footer.prepend(promptRow);
     panel.append(header, body, footer);
@@ -624,7 +564,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     launch.setAttribute("aria-expanded", "false");
     launch.setAttribute("aria-controls", panel.id);
     launch.setAttribute("aria-haspopup", "dialog");
-    ui = { root, panel, close, launch, title, intro, disclosure, greeting: null, context, suggestions: suggestionBox, question, status, answer, reply, input, send, mic, form, speech,
+    ui = { root, panel, close, launch, title, intro, disclosure, greeting: null, context, status, input, send, mic, form, speech,
       body, thread, threadCount: 0, lines: new Map(), prompt: promptRow, promptText, chips, chipShape: "", answerBox, answerInput: null, action, pageShape: "", pageEl: null };
     mountedScope = scope();
     input.addEventListener("input", function () { drafts.set(scope(), input.value); renderConversation(); });
