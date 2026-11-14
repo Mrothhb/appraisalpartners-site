@@ -101,6 +101,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .empty { color: var(--ink-2); }
 
 /* needs your attention */
+#needs { scroll-margin-top: calc(var(--bar-h) + 16px); }
 .todo { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); padding: var(--s-4) var(--s-5); border: 2px solid var(--warning-line); border-left: 8px solid var(--warning-edge); border-radius: var(--r-2); background: var(--warning-bg); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
 .todo + .todo { margin-top: var(--s-3); }
 .todo p { overflow-wrap: anywhere; }
@@ -238,7 +239,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
 <main class="col" id="main" hidden></main>
 <footer class="site" id="foot" hidden><div class="wrap" id="foot-line"></div></footer>
 
-<script src="agent.js?v=20261114d" defer></script>
+<script src="agent.js?v=20261114q" defer></script>
 <script>
 (function () {
   "use strict";
@@ -510,7 +511,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     return h("div.orow", link ? { "data-go": link } : null, row, withFiles && o.files ? uploader(o) : null, messaging() ? rowAgent(o) : null);
   }
   function home() {
-    var items = B.needs || [], needs = h("section.sec", h("h2", items.length ? "Needs your attention (" + items.length + ")" : "Needs your attention"));
+    var items = B.needs || [], needs = h("section.sec", { id: "needs" }, h("h2", items.length ? "Needs your attention (" + items.length + ")" : "Needs your attention"));
     if (B.next_start) needs.appendChild(h("div.todo", h("p", B.next_start)));
     items.forEach(function (n) {
       var o = byCode(n.order), text = h("p", h("b", n.street || n.order), needText(n, o));
