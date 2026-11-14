@@ -110,6 +110,7 @@
     const intro = node('p', 'intro', 'Charges, total, payment due and ready date show before you start.');
     const form = node('form', 'sheet');
     form.setAttribute('aria-label', 'New order');
+    form.noValidate = true;   // Start order checks the date itself (one plain line under it), then reportValidity() as before
     const fields = node('fieldset', 'fieldset');
     const drop = node('div', 'drop');
     drop.append(node('p', null, 'Drop the engagement letter and your TOTAL file here, or choose files'),
@@ -220,9 +221,17 @@
       if (type) input.type = type;
       el.append(input); fields.append(el); return input;
     }
-    const due = field('When do you need it from us?', 'input', 'date');
-    due.min = isoDay(businessDate(0));
-    const dueHint = node('p', 'note'); dueHint.hidden = true; due.parentNode.append(dueHint);
+    const due = field('When do you need it from us? (required)', 'input', 'date');
+    due.min = isoDay(businessDate(0)); due.setAttribute('aria-required', 'true');
+    // Matt 11-14: the date is required. Start order without one (or with a past one) says so under the date and goes to it.
+    const dueNeed = node('p', 'error', 'Pick the date you need it from us.'); dueNeed.id = id + 'due-need'; dueNeed.hidden = true;
+    const dueHint = node('p', 'note'); dueHint.hidden = true; due.parentNode.append(dueNeed, dueHint);
+    const dueOk = () => /^\d{4}-\d{2}-\d{2}$/.test(due.value) && due.value >= isoDay(businessDate(0));
+    function needDate(on) {
+      dueNeed.hidden = !on;
+      if (on) { due.setAttribute('aria-invalid', 'true'); due.setAttribute('aria-describedby', dueNeed.id); }
+      else { due.removeAttribute('aria-invalid'); due.removeAttribute('aria-describedby'); }
+    }
     // Matt 11-13: their date from us picks the turn time; Next day only when the standard time misses it.
     function fitNeedBy() {
       dueHint.hidden = true;
@@ -239,7 +248,7 @@
       if (earliest > want) { dueHint.textContent = 'Our earliest is ' + dateText(earliest) + '. Add a note and the desk will reach out.'; dueHint.hidden = false; }
       else if (box && box.checked) { dueHint.textContent = 'Next day added to meet your date.'; dueHint.hidden = false; }
     }
-    due.addEventListener('change', () => { fitNeedBy(); waiting = false; update(); save(); });
+    due.addEventListener('change', () => { if (dueOk()) needDate(false); fitNeedBy(); waiting = false; update(); save(); });
     const notes = field('Notes', 'textarea'); notes.rows = 3;
     notes.placeholder = 'Anything the desk should know';
     notes.addEventListener('input', save);
@@ -322,6 +331,7 @@
 
     async function submit(accepted) {
       if (busy || done || !selected || !alive) return;
+      if (!created && !dueOk()) { needDate(true); due.focus(); return; }
       if (!form.reportValidity()) return;
       if (again.length) {
         error.textContent = 'Choose these files again, or remove them: ' + again.map(entry => entry.name).join(', ') + '.';

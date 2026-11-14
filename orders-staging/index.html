@@ -26,7 +26,7 @@
   --primary: #0a6ec1; --primary-hover: #085ea6; --primary-active: #074f8c; --tint: #eaf3fb; --tint-line: #d5e6f5;
   --success-ink: #236b1f; --success-bg: #ecf6e8; --success-line: #cfe6c7; --success-edge: #50a81e;
   --warning-bg: #fdf3e1; --warning-edge: #e5a53a; --warning-ink: #7a4300; --warning-line: #f1dcb0;
-  --danger: #a72a2a; --danger-bg: #fdf3f3; --bar: #0d2a46; --bar-bg: linear-gradient(90deg, #016195, #006da5 50%, #016da6); --bar-h: 64px; --focus: #0a6ec1;
+  --danger: #a72a2a; --danger-bg: #fdf3f3; --bar: #0d2a46; --bar-bg: linear-gradient(90deg, #016195, #0073ae 50%, #017dbd); --bar-h: 64px; --focus: #0a6ec1;
   --r-1: 2px; --r-2: 4px; --r-3: 6px; --r-full: 999px;
   --shadow-2: 0 24px 48px -28px rgba(13,42,70,.35), 0 1px 2px rgba(13,42,70,.10);
   --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px;
@@ -65,8 +65,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .brand img { width: 52px; height: 30px; }
 .brand b { font: 700 20px/1.2 var(--font); }
 .nav { display: flex; gap: var(--s-2); margin-left: var(--s-10); }
-.nav a, .tabs a { color: rgba(255,255,255,.86); text-decoration: none; font: 600 16px/1.2 var(--font); min-height: 48px; padding: 0 var(--s-4); display: inline-flex; align-items: center; white-space: nowrap; }
-.nav a:hover, .tabs a:hover { color: #fff; background: rgba(255,255,255,.08); }
+.nav a, .tabs a { color: #fff; text-decoration: none; font: 600 16px/1.2 var(--font); min-height: 48px; padding: 0 var(--s-4); display: inline-flex; align-items: center; white-space: nowrap; }
+.nav a:hover, .tabs a:hover { color: #fff; background: rgba(0,0,0,.12); }
 .nav a[aria-current], .tabs a[aria-current] { color: #fff; box-shadow: inset 0 -3px 0 #fff; }
 .appbar .right { margin-left: auto; display: flex; align-items: center; gap: var(--s-4); }
 .who { font: 700 16px/1.2 var(--font); white-space: nowrap; }
@@ -76,11 +76,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @media (max-width: 1199px) { .nav, .appbar .meter { display: none; } }
 @media (max-width: 1399px) { .appbar .meter .m-reset { display: none; } }   /* the reset time is on Plan & billing */
 .meter { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-3); border-radius: var(--r-2); color: #fff; text-decoration: none; font: 600 16px/1.2 var(--font); white-space: nowrap; }
-.meter:hover { background: rgba(255,255,255,.08); color: #fff; }
+.meter:hover { background: rgba(0,0,0,.12); color: #fff; }
 .meter i { display: block; width: 72px; height: 8px; border-radius: var(--r-full); background: rgba(255,255,255,.22); overflow: hidden; flex: none; }
 .meter i b { display: block; height: 100%; background: #8fc3ee; border-radius: inherit; }
 .meter[data-level="amber"] i b, .meter[data-level="full"] i b { background: var(--warning-edge); }
-.meter[data-level="amber"], .meter[data-level="full"] { color: #ffe3b0; }
+.meter[data-level="amber"], .meter[data-level="full"] { color: #fff; }
 .meter-row { display: none; }
 @media (max-width: 1199px) { .meter-row { display: flex; background: var(--bar-bg); padding: 0 var(--gutter) var(--s-2); } .meter-row .meter { padding-left: 0; white-space: normal; } }
 @media (min-width: 1200px) {   /* with New order and Ask your agent in the bar, the week meter takes its own row below it */
@@ -111,6 +111,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .rows { border-top: 1px solid var(--line); }
 .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px var(--s-4); align-items: center; padding: var(--s-4) 0; border-bottom: 1px solid var(--line); text-decoration: none; color: inherit; min-height: 48px; }
 a.row:hover .street { color: var(--primary); }
+@media (hover: hover) { a.row:hover, [data-go]:hover { background: var(--tint); box-shadow: calc(-1 * var(--s-3)) 0 var(--tint), var(--s-3) 0 var(--tint); cursor: pointer; } }   /* the whole row opens its form */
 .row .street { grid-column: 1; font: 700 20px/1.3 var(--display); letter-spacing: -.01em; color: var(--bar); overflow-wrap: anywhere; }
 .row .meta { grid-column: 1; overflow-wrap: anywhere; }
 .row .state { grid-column: 2; grid-row: 1 / span 2; text-align: right; font-size: 16px; color: var(--ink-2); }
@@ -494,7 +495,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     var link = formOf(o), row = h(link ? "a.row" : "div.row", link ? { href: link, "data-tone": you ? "you" : "" } : { "data-tone": you ? "you" : "" },
       h("span.street", o.street || o.order), h("span.meta", meta), h("span.state", h("b", o.stage || ""), state));
     if (!withFiles || !o.files) return row;
-    return h("div.orow", row, uploader(o));
+    return h("div.orow", link ? { "data-go": link } : null, row, uploader(o));
   }
   function home() {
     var items = B.needs || [], needs = h("section.sec", h("h2", items.length ? "Needs your attention (" + items.length + ")" : "Needs your attention"));
@@ -589,7 +590,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
       });
       more.appendChild(d);
     }
-    return h("div.row", h("span.street", o.street || o.order), h("span.meta", [o.city, o.order, "Delivered " + day(o.delivered_at)].filter(Boolean).join(" · ")), more);
+    return h("div.row", link ? { "data-go": link } : null, h("span.street", o.street || o.order), h("span.meta", [o.city, o.order, "Delivered " + day(o.delivered_at)].filter(Boolean).join(" · ")), more);
   }
   function deliveredPage() {
     return h("div", h("section.top", h("h1", "Delivered reports"), h("p", "Review and sign the report before sending it to your client.")),
@@ -683,7 +684,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     if (window.AAPNewOrder) return done(true);
     if (newState === "failed") return done(false);
     if (!newScript) {
-      newScript = document.createElement("script"); newScript.src = "neworder.js?v=20261113e"; newScript.defer = true; newState = "loading";
+      newScript = document.createElement("script"); newScript.src = "neworder.js?v=20261114a"; newScript.defer = true; newState = "loading";
       newScript.addEventListener("load", function () { newState = "loaded"; });
       newScript.addEventListener("error", function () { newState = "failed"; });
       document.head.appendChild(newScript);
@@ -920,6 +921,12 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
   if ("IntersectionObserver" in window) new IntersectionObserver(function (e) {   // the bar scrolled away (below 1200px): the launcher shows as a circle
     document.documentElement.classList.toggle("aap-agent-scrolled", !e[0].isIntersecting);
   }).observe(document.querySelector(".appbar"));
+  document.addEventListener("click", function (e) {   // a whole order row opens its form, as its Open order link does; its own buttons, links, files and revision box stay theirs
+    var row = e.target.closest ? e.target.closest("[data-go]") : null;
+    if (!row || e.button !== 0 || e.defaultPrevented || e.target.closest("a, button, input, textarea, select, label, summary, details, .drop, .up, .rev")) return;
+    if (window.getSelection && String(window.getSelection())) return;   // he was selecting text, not opening the order
+    if (e.metaKey || e.ctrlKey || e.shiftKey) window.open(row.getAttribute("data-go"), "_blank", "noopener"); else location.href = row.getAttribute("data-go");
+  });
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") load().then(flush); });
   if (!T) { gate("Open this page from your link."); return; }
   load().then(function () { opened(); if (B && messaging()) flush(); }).then(soon);

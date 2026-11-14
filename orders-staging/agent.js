@@ -376,7 +376,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
 .aap-agent-greeting-close { flex:none; min-width:48px; min-height:48px; padding:0 8px; border:0; border-radius:4px; background:none; color:#005ea8; font-weight:600 !important; cursor:pointer; }
 .aap-agent-mark { display:block; width:32px; height:19px; flex:none; }
 .aap-agent-panel { width:440px; max-width:calc(100vw - 32px); max-height:calc(100vh - 96px); max-height:min(calc(100dvh - 96px), calc(var(--aap-agent-view-height, 100dvh) - 96px)); background:#fff; border:1px solid #e3e3e3; border-radius:6px; box-shadow:0 24px 48px -28px rgba(13,42,70,.35),0 1px 2px rgba(13,42,70,.1); overflow:hidden; display:grid; grid-template-rows:auto minmax(0,1fr) auto; min-height:0; }
-.aap-agent-header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 12px 12px 24px; background:linear-gradient(90deg, #016195, #006da5 50%, #016da6); color:#fff; }
+.aap-agent-header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 12px 12px 24px; background:linear-gradient(90deg, #016195, #0073ae 50%, #017dbd); color:#fff; }
 .aap-agent-heading { display:flex; align-items:center; gap:12px; font-size:18px; line-height:1.5; font-weight:700; }
 .aap-agent-close { flex:none; min-width:48px; min-height:48px; padding:8px 16px; border-radius:4px; border:0; background:rgba(0,0,0,.15); color:#fff; font-weight:600 !important; cursor:pointer; }
 .aap-agent-header :focus-visible { outline-color:#fff; }
