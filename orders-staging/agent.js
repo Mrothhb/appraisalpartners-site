@@ -14,6 +14,7 @@
   try { seenKey += new URLSearchParams(window.location.search).get("t") || ""; } catch (_) {   }
   const conversations = new Map();
   const drafts = new Map();
+  const draftKey = seenKey.replace("aap-agent-seen-", "aap-agent-draft-") + "|";   // per link and order; survives a reload
   let data = { route: "home", order: null, needs: [], orders: [], thread: [], plan: null, profile: false };
   let config = null;
   let ui = null;
@@ -57,6 +58,22 @@
     ], "mark");
   }
 
+  function setDraft(order, text) {
+    drafts.set(order, text);
+    try { if (text) localStorage.setItem(draftKey + (order || ""), text); else localStorage.removeItem(draftKey + (order || "")); } catch (_) {   }
+  }
+
+  function getDraft(order) {
+    if (drafts.has(order)) return drafts.get(order) || "";
+    try { return localStorage.getItem(draftKey + (order || "")) || ""; } catch (_) { return ""; }
+  }
+
+  function grow() {   // the message box grows with its text, up to 4 lines, then scrolls
+    if (!ui) return;
+    ui.input.style.height = "auto";
+    ui.input.style.height = Math.min(ui.input.scrollHeight, 120) + "px";
+  }
+
   function placeholder() { return config && config.host ? ASK : PLACEHOLDER; }
   function label() { return config && config.host ? HOST_LABEL : LABEL; }
 
@@ -71,7 +88,7 @@
     return words.length > 12 ? words.slice(0, 12).join(" ").replace(/[,;:.]$/, "") + "…" : words.join(" ");
   }
 
-  function you() { return data.thread.some(message => message.who === "you" && sameScope(message, scope())); }
+  function you() { return data.thread.some(message => message.who === "you" && !message.history && sameScope(message, scope())); }   // this visit; a restored history line does not count
 
   function scope() {
     return data.route === "order" && data.order ? data.order : null;
@@ -90,7 +107,7 @@
     const mine = data.thread.find(message => message.who === "you" && message.id === request.id);
     if (!mine || mine.pending) return;
     request.status = "sent";
-    if ((drafts.get(order) || "").trim() === request.text) drafts.set(order, "");
+    if (getDraft(order).trim() === request.text) setDraft(order, "");
     if (ui && scope() === order && ui.input.value.trim() === request.text) ui.input.value = "";
   }
 
@@ -124,6 +141,7 @@
     const sending = Boolean(request && request.status === "sending");
     ui.input.disabled = sending;
     ui.send.disabled = sending || !ui.input.value.trim();
+    grow();
     ui.send.setAttribute("aria-label", sending ? "Sending" : "Send");
     ui.mic.disabled = sending;
     ui.form.setAttribute("aria-busy", String(sending));
@@ -315,10 +333,10 @@
     if (!ui) return;
     const order = scope();
     if (order !== mountedScope) {
-      drafts.set(mountedScope, ui.input.value);
+      setDraft(mountedScope, ui.input.value);
       stopSpeech();
       mountedScope = order;
-      ui.input.value = drafts.get(order) || "";
+      ui.input.value = getDraft(order);
     }
     const dedicated = !!(data.plan && data.profile), office = String(config.office.name || "").trim();
     const first = String(config.office.person || "").trim().split(/\s+/)[0], hi = first ? "Hi " + first + ". " : "Hi. ";
@@ -421,12 +439,12 @@
       if (result && typeof result.id === "string" && result.id) request.id = result.id;
       if (!result || result.ok !== true) throw new Error(result && result.error || "Please try again.");
       request.status = "sent";
-      drafts.set(order, "");
+      setDraft(order, "");
       if (scope() === order) ui.input.value = "";
     } catch (error) {
       request.status = "failed";
       request.error = "Could not send. " + (error && error.message || "Please try again.");
-      drafts.set(order, text);
+      setDraft(order, text);
     }
     render();
   }
@@ -448,7 +466,7 @@
         const words = Array.from(event.results).filter(result => result.isFinal).map(result => result[0].transcript).join(" ");
         if (!words) return;
         ui.input.value = (speechDraft ? speechDraft + " " : "") + words;
-        drafts.set(scope(), ui.input.value);
+        setDraft(scope(), ui.input.value);
         renderConversation();
       };
       session.onend = function () {
@@ -538,9 +556,9 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
 .aap-agent-error { font-weight:600; color:#a72a2a; }
 .aap-agent-footer { flex:none; padding:12px 16px; border-top:1px solid #e3e3e3; background:#fff; display:grid; gap:8px; }
 .aap-agent-form { display:grid; gap:8px; margin:0; }
-.aap-agent-field { display:flex; align-items:center; gap:2px; padding:0 4px 0 16px; border:1px solid #8a949f; border-radius:24px; background:#fff; }
+.aap-agent-field { display:flex; align-items:flex-end; gap:2px; padding:2px 4px 2px 16px; border:1px solid #8a949f; border-radius:24px; background:#fff; }
 .aap-agent-field:focus-within { border-color:#0a6ec1; box-shadow:0 0 0 1px #0a6ec1; }
-.aap-agent-input { flex:1; min-width:0; width:100%; min-height:48px; padding:8px 0; font-size:16px !important; border:0; border-radius:0; background:#fff; color:#1c1c1c; box-shadow:none; }
+.aap-agent-root .aap-agent-input { flex:1; min-width:0; width:100%; min-height:48px; max-height:120px; padding:12px 0; font-size:16px !important; line-height:24px; border:0; border-radius:0; background:#fff; color:#1c1c1c; box-shadow:none; resize:none; overflow-y:auto; font-family:inherit; }
 .aap-agent-input:focus-visible { outline:none; }
 .aap-agent-input::placeholder { color:#5f5f5f; opacity:1; }
 .aap-agent-mic, .aap-agent-send { display:flex; align-items:center; justify-content:center; flex:none; width:44px; height:44px; padding:10px; border:0; border-radius:50%; cursor:pointer; }
@@ -666,8 +684,9 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     const form = element("form", "form");
     form.autocomplete = "off";
     const field = element("div", "field");
-    const input = element("input", "input");
-    input.type = "text";
+    const input = element("textarea", "input");
+    input.rows = 1;
+    input.maxLength = 3000;
     input.placeholder = placeholder();
     input.setAttribute("aria-label", placeholder());
     const mic = element("button", "mic");
@@ -705,7 +724,13 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
       body, thread, threadCount: 0, lines: new Map(), prompt: promptRow, kicker, cardBody, cardText, more, promptText, chips, chipShape: "", answerBox, answerInput: null, action,
       pageShape: "", pageEl: null, starters, starterShape: "" };
     mountedScope = scope();
-    input.addEventListener("input", function () { drafts.set(scope(), input.value); renderConversation(); });
+    input.value = getDraft(mountedScope);
+    input.addEventListener("input", function () { setDraft(scope(), input.value); renderConversation(); });
+    input.addEventListener("keydown", function (event) {   // Enter sends; Shift+Enter is a new line; never mid-composition (IME)
+      if (event.key !== "Enter" || event.shiftKey || event.isComposing || event.keyCode === 229) return;
+      event.preventDefault();
+      form.requestSubmit();
+    });
     form.addEventListener("submit", submit);
     mic.addEventListener("click", startSpeech);
     if (config.host && !config.float) {

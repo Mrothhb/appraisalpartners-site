@@ -4766,7 +4766,6 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function walkShown(n) { return !!n && n.isConnected && n.getClientRects().length > 0; }
   function walkText(v) { return v == null ? "" : String(v); }
-  function walkShort(v) { var w = walkText(v).trim().split(/\s+/); return w.length > 12 ? w.slice(0, 12).join(" ").replace(/[,;:.]$/, "") + "…" : w.join(" "); }   // Matt 11-14: 12 words a line
   function walkSteps(items, t) {   // one step per red-box line and per other item: how many are left, and where t's card sits
     var out = { total: 0, left: 0, at: 0, kinds: { dc: 0, q: 0, pc: 0 } };
     items.forEach(function (it) {
@@ -4862,26 +4861,26 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (t.kind === "q") return (t.q.kind === "choice" ? "A question for you: " : "Please answer: ") + t.q.text;
     if (t.kind === "pc") {
       var values = proposalValues(t.section);
-      return "Your calls: " + sectionTitle(t.section) + ". Proposed, not yet confirmed: " + t.section.calls.map(function (c) { return c.label + " " + values[c.key]; }).join(" · ") + ".";
+      return ["Your calls: " + sectionTitle(t.section) + ". Proposed, not confirmed yet:"].concat(t.section.calls.map(function (c) { return c.label + ": " + values[c.key]; })).join("\n");
     }
     if (t.kind === "call") return t.call.label + ". Proposed: " + t.call.value + "." + (Array.isArray(t.call.options) ? " Pick one." : " Type yours below.");
-    if (t.kind === "edits") return t.items.length === 1 ? "You changed " + sectionTitle(t.items[0].section) + ". Sending it uses a change round; we update the report and show it here again before delivery."
-      : "You changed " + t.items.length + " sections: " + names(t.items.map(function (it) { return it.section; })) + ". They go together in one change request.";
+    if (t.kind === "edits") return t.items.length === 1 ? "You changed " + sectionTitle(t.items[0].section) + ".\nSend it, and we'll update the report and show it here."
+      : "You changed " + t.items.length + " sections.\nThey go in one change request.";
     return "";
   }
   function walkClosing(items) {   // where it stands, the page's own words for Approve, and the page's own button
     if (signedOff()) return { text: approvalNote() };
     if (roundsLocked() || !reviewReady() || postBusy) return { text: $("returned-headline").textContent };
-    var lines = items.filter(function (it) { return it.kind !== "dc"; }).map(function (it) {
-      var name = it.kind === "q" ? it.q.text : sectionTitle(it.section), v = it.kind === "q" ? walkText(state.answers[it.key]).trim() : "";
-      return name + (v ? ": " + v : "") + " (" + walkLabel(it) + ")";
+    var n = 0, lines = items.filter(function (it) { return it.kind !== "dc"; }).map(function (it) {   // one short line each; the full question is in its card above
+      var v = it.kind === "q" ? walkText(state.answers[it.key]).trim() : "";
+      return it.kind === "q" ? "Question " + (++n) + ": " + (v ? v + " (" + walkLabel(it) + ")" : walkLabel(it)) : sectionTitle(it.section) + ": " + walkLabel(it);
     });
     (D.questions || []).filter(function (q) { return q && q.highlight === true && q.kind !== "confirm"; }).forEach(function (q) { lines.push("Also on your form: " + q.text); });
     if (agreeQ) lines.push("Approving also records: " + agreeQ.text);
     var done = statusBtns.filter(function (b) { return b.getAttribute("data-s") === "DONE"; })[0], all = $("approve-all-btn"), go = walkShown(all) ? all : done;
     var terms = Array.prototype.filter.call(document.querySelectorAll("[data-terms]"), walkShown).map(function (p) { return p.textContent.trim(); })[0] || "";
-    var text = (items.length ? "That's everything on the list. Here's where it stands:\n" + lines.join("\n") + (lines.length ? "\n" : "") : "Nothing open on this review. Ask me anything about it, or approve below.\n") +
-      "Change rounds used: " + roundsUsed() + " of 2." + (go === all && walkShown(all) ? "\n" + $("approve-all-note").textContent : "") + (terms ? "\n" + terms : "");
+    var text = (items.length ? "That's everything. Where it stands:\n" + lines.join("\n") + (lines.length ? "\n" : "") : "Nothing open. Ask me, or approve below.\n") +
+      "Change rounds used: " + roundsUsed() + " of 2." + (go === all && walkShown(all) ? "\n" + $("approve-all-note").textContent : "") + (terms ? "\n" + terms : "");   // one bubble per line (walkPaint)
     return { text: text, button: go, request: walkShown($("post-open")) && !$("post-open").disabled };
   }
   function walkPrompt(t, items) {   // the row under the thread: chips, a box, the page's own button
@@ -4957,6 +4956,13 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function walkThread(code) {
     var out = [], replies = walkReplies();
+    // After a reload: his saved messages that got a reply, oldest first, with their replies (this page's own sends follow below)
+    Object.keys(state.answers || {}).filter(function (k) { return /^q_fb_[a-z0-9_]+$/.test(k) && !walk.asks[k]; }).map(function (k) {
+      try { var e = JSON.parse(state.answers[k]); return e && typeof e.text === "string" ? { key: k, at: e.at, text: e.text } : null; } catch (x) { return null; }
+    }).filter(function (m) { return m && replies.some(function (r) { return r.re === m.key; }); }).sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); }).forEach(function (m) {
+      out.push({ who: "you", text: m.text, key: "h-" + m.key, order: code, history: true });
+      replies.filter(function (r) { return r.re === m.key; }).forEach(function (r, i) { out.push({ who: r.by === "agent" ? "agent" : "desk", text: r.text, key: "re-" + m.key + "-" + i, order: code, history: true }); });
+    });
     walk.lines.forEach(function (l) {
       out.push({ who: l.who, text: l.text, key: l.key, order: code });
       if (!l.ask) return;
@@ -5001,8 +5007,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (id !== walk.cur) {   // a new item, or the closing's words changed (approving, approved, changes sent): one new line
         walk.cur = id;
         walk.curVersion = ["dc", "q", "pc", "call"].indexOf(t.kind) >= 0 ? t.version : null;
-        if (end) { if (end.text) say(end.text); }
-        else if (t.kind !== "dc" && t.kind !== "q") say(walk.line && walk.line.version === t.version ? "Which line?" : walkAsked(t));   // a check or question shows as its card
+        var words = end ? end.text : t.kind !== "dc" && t.kind !== "q" ? (walk.line && walk.line.version === t.version ? "Which line?" : walkAsked(t)) : "";   // a check or question shows as its card
+        walkText(words).split("\n").filter(function (l) { return l.trim(); }).forEach(function (l) { say(l); });   // short bubbles, one fact each
       }
       var prompt = walkPrompt(t, items);
       prompt.id = id + (t.kind === "dc" ? "|" + (walk.dcAt[t.version] || 0) : "");
@@ -5022,7 +5028,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       var cur = walkCurrent(), t = cur.t;
       if (chip.version && chip.version !== t.version) return walkStale();
       if (t.kind === "dc" && chip.at !== undefined && chip.at !== (walk.dcAt[t.version] || 0)) return walkPaint();   // a second tap on a card already moved on
-      if (["got", "skip", "opt"].indexOf(chip.key) >= 0 && walkCard(t)) say(walkShort(walkCard(t)));   // the card goes into the thread as one short line
+      if (["got", "skip", "opt"].indexOf(chip.key) >= 0 && walkCard(t)) say(walkCard(t));   // the card goes into the thread, in full
       you(chip.label);
       if (t.kind === "dc" && (chip.key === "got" || chip.key === "skip")) {   // next line; the box is acknowledged only when every line got Got it
         if (chip.key === "skip") walk.dcSkip[t.version] = true;
@@ -5044,13 +5050,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       else if (chip.key === "opt") walkOption(t, chip.value);
       else if (chip.key === "confirm") walkConfirm(t);
       else if (chip.key === "fill") walkFill(t);
-      else if (chip.key === "request") {   // the page's own Request a change box; a panel over the page steps aside so he sees it
+      else if (chip.key === "request") {   // the page's own Request a change box
         if (walkShown($("post-open")) && !$("post-open").disabled) $("post-open").click();
-        if (walkShown($("post-text")) && !$("post-text").disabled) {
-          say("Type your changes in the Request a change box, then tap Send.");
-          if (!window.matchMedia("(min-width:1280px)").matches) AAPAgent.open(false);
-          $("post-box").scrollIntoView({ block: "center", behavior: "smooth" }); $("post-text").focus({ preventScroll: true });
-        } else say("Changes aren't open on this review.");
+        if (walkShown($("post-text")) && !$("post-text").disabled) { say("Type your changes in the Request a change box, then tap Send."); walkHandoff(); }
+        else say("Changes aren't open on this review.");
       }
       else if (chip.key === "retry") { var r = document.querySelector("#sync-note button"); if (r) r.click(); }
       walkPaint();
@@ -5075,13 +5078,18 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     $("post-text").value = t.items.map(function (it) { var v = proposalValues(it.section); return "Your calls — " + it.section.title + " (review " + D.review.id + ")\n" + it.section.calls.map(function (c) { return c.label + ": " + v[c.key]; }).join("\n"); }).join("\n\n");
     $("post-text").dispatchEvent(new Event("input"));
     say("Your changes are in the request box. Check, then tap Send.");
+    walkHandoff();
+  }
+  function walkHandoff() {   // the request box on the page: a panel over the page (below 1280px) steps aside, the box comes into view with focus
+    if (!window.matchMedia("(min-width:1280px)").matches) AAPAgent.open(false);
+    $("post-box").scrollIntoView({ block: "center", behavior: "smooth" }); $("post-text").focus({ preventScroll: true });
   }
   function walkSaveText(text, item) {   // "Save this answer": his words into the page's own box, through its own input listener
     try {
       var t = walkCurrent().t, box = t && t.key && $("f-" + t.key);
       if (!item || item.key !== t.key || item.version !== t.version) return walkStale();   // a Save offered for an item since changed saves nothing
       if (!box || box.disabled || !(t.kind === "q" || t.kind === "call")) { say("That box isn't open on the form right now."); walkPaint(); return; }
-      if (walkCard(t)) say(walkShort(walkCard(t)));
+      if (walkCard(t)) say(walkCard(t));
       you(String(text));
       box.value = String(text);
       walk.pending[t.version] = { key: t.key, value: box.value, kind: "answer" };
@@ -5106,7 +5114,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     delete walk.pending[version];
     walk.saved[version] = walkText(value);
     if (walk.line && walk.line.version + "|call|" + walk.line.call === version) walk.line = null;
-    say(p && p.kind === "confirm" ? "Saved ✓ (confirmed by you)." : p && p.kind === "request" ? "Sent ✓. We'll update the report and show it here again." : "Saved ✓");
+    say(p && p.kind === "confirm" ? "Saved ✓ (confirmed by you)." : p && p.kind === "request" ? "Sent ✓. We'll update the report and show it here." : "Saved ✓");
   }
   // verifyAction: this exact payload has its committed receipt. A tap or Save is Saved only when the landed answers carry
   // its value and its version is still current; a confirm is Saved only by its own receipt string.
@@ -5148,7 +5156,14 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (text.length > 3000) return Promise.reject(new Error("Please shorten this message."));
     if (feedbackBusy || readOnly || !online) return Promise.reject(new Error("Your last message is still sending."));
     var t = walkCurrent().t, rev = (D.review || {}).id || "", item = t.kind === "call" ? { kind: "pc", id: t.section.id, sig: t.parent } : ["dc", "q", "pc"].indexOf(t.kind) >= 0 ? { kind: t.kind, id: t.id, sig: t.version } : { kind: "review", id: "", sig: rev + "|review" };
-    var sent = sendFeedback(text, { review_id: rev, kind: item.kind, id: item.id, sig: item.sig });
+    // The card on show, in the message itself (same feedback contract): which check or question, in full. Only once he
+    // has started the walk (before that the card is not shown).
+    var shown = walk.lines.some(function (l) { return l.who === "you"; }), at = t.kind === "dc" ? Math.min(walk.dcAt[t.version] || 0, t.lines.length - 1) : 0;
+    var about = !shown ? "" : t.kind === "dc" ? "Double check: " + t.lines[at] : t.kind === "q" ? "Question: " + t.q.text
+      : t.kind === "pc" || t.kind === "call" ? "Your calls: " + sectionTitle(t.section) + (t.kind === "call" ? ", " + t.call.label : "") : "";
+    var full = about ? "[" + about + "]\n" + text : text;
+    if (full.length > 3000) return Promise.reject(new Error("Please shorten this message."));
+    var sent = sendFeedback(full, { review_id: rev, kind: item.kind, id: item.id, sig: item.sig });
     var a = walk.asks[sent.key] = { at: Date.now(), sent: false, failed: false };
     you(text, { ask: sent.key });
     walkRead(sent.key);
