@@ -962,6 +962,12 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
   <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
 
   <div id="main" hidden>
+  <!-- P2 (Matt 2026-11-14): one opt-in card, "Go through it with your agent", shown only on a review round of an order the
+       desk turned on (house_prompts.agent_form) for an office whose plan covers it; hidden otherwise (walkPaint). -->
+  <section class="card" id="agent-card" aria-label="Go through it with your agent" hidden>
+    <button type="button" class="st" id="agent-open" aria-expanded="false" aria-controls="agent-host">Go through it with your agent</button>
+    <div id="agent-host" hidden></div>
+  </section>
   <!-- Matt 2026-11-04: "any items of high interest make it clear on the form colors, bold in its own box at the top 'double check these'".
        prefill double_check (review_round.py from the review note's double-check and highest-risk bullets; formlink.py --double-check):
        one line each, page numbers in the line, on a returned review. No items, no box. -->
@@ -3792,6 +3798,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (back) nr.appendChild(el("div", null, [el("b", { text: "Not ready yet" }), rich(D.public_note)]));
     if (!back) { if (popKind === "back") pop(false); }   // pops once per reason, once boot settles
     else if (popped !== D.public_note) setTimeout(function () { if (!$("notready").hidden && popped !== D.public_note) { popped = D.public_note; pop(D.public_note, "back"); } }, 0);
+    walkPaint();   // P2: the opt-in card (hidden unless it applies)
   }
   var popped = "", popKind = "";
   function pop(text, kind) {   // the red pop-out: a DOM overlay, never alert() or a window
@@ -4009,8 +4016,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function verifyAction(item, r) {
     var doc = JSON.parse(item.doc), saved = r.saved || {}, receipt = (saved.action_receipts || {})[doc.request_id];
+    takeLog(r.form);   // P2: replies on this record show in the walk (save, feedback, both replay reads, recoverDraft)
     if (landed(item.kind, doc, saved, item.hash)) {
       confirmedActions[item.id] = Object.assign({}, receipt, answerAction(item.kind) ? { base: { answers: doc.answers || {}, changes: doc.changes || [] } } : {});
+      walkLanded(item.kind, doc);   // P2: the only place a walk item becomes Saved
       if (!answerAction(item.kind) && receipt.prior_revision === answerRevision) {
         answerRevision = receipt.revision;
         if (item.kind === "feedback") Object.assign(answerBase.answers, doc.answers || {});
@@ -4144,17 +4153,25 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var text = $("feedback-text").value.trim();
     if (!text) { $("feedback-text").focus(); return; }
     if (text.length > 3000) { $("feedback-note").textContent = "Please shorten this message. Your text is still here."; return; }
+    sendFeedback(text);
+  });
+  // One customer message (q_fb_<id>): from the box above, or the walk's "Ask about this item" (ask names the item, P2).
+  function sendFeedback(text, ask) {
     var entry = { key: "q_fb_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,12), at: new Date().toISOString(), text: text };
     var value = JSON.stringify({at:entry.at,text:entry.text}), answers = {}; answers[entry.key] = value;
     // Show the pending message immediately; its exact receipt changes Sending to Sent.
-    state.answers[entry.key] = value; own[entry.key] = true; $("feedback-text").value = ""; grow($("feedback-text"));
+    state.answers[entry.key] = value; own[entry.key] = true; if (!ask) { $("feedback-text").value = ""; grow($("feedback-text")); }
     $("feedback-note").textContent = "Sending…"; paintFeedback();
-    var rid = newId(), doc = JSON.stringify({ t: T, r: R, actor: ACTOR, status: "DRAFT", answers: answers, changes: [], send: false, feedback: true, request_id: rid });
+    var rid = newId(), payload = { t: T, r: R, actor: ACTOR, status: "DRAFT", answers: answers, changes: [], send: false, feedback: true, request_id: rid };
+    if (ask) payload.ask = ask;
+    var doc = JSON.stringify(payload);
     var item = outboxAdd("feedback", doc, rid);
     function once(){ return post(item.doc).catch(function(){}).then(read).then(function(r){ return verifyAction(item, r); }); }
     // Share the save chain so an in-flight autosave cannot erase the new entry.
-    writing = writing.catch(function(){}).then(function(){ return settle(item, once); }).then(function(){ $("feedback-note").textContent = "Sent ✓ We’ll reply by email."; paintFeedback(); }, function(e){ if (e && e.code === "unknown") closed(); });
-  });
+    var sent = writing.catch(function(){}).then(function(){ return settle(item, once); });
+    writing = sent.then(function(){ $("feedback-note").textContent = "Sent ✓ We’ll reply by email."; paintFeedback(); }, function(e){ if (e && e.code === "unknown") closed(); });
+    return { key: entry.key, sent: sent };
+  }
 
   // ---------- saving ----------
   // TOTAL's preview pane preflights every cross-origin fetch, and Google never answers a preflight. So the page reads
@@ -4535,6 +4552,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
 
   // ---------- load ----------
   function apply(saved) {
+    walkServer(saved);   // P2: what the server holds (every apply() is a server read)
     savedAt = saved.updatedAt || null;
     savedStatus = saved.status || null;
     state.status = saved.status || state.status;
@@ -4684,6 +4702,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var readAt = savedAt;
     read().then(function (r) {
       polling = false;
+      takeLog(r.form);   // P2: a reply shows even when nothing else on the form changed
       if (pendingTaps || readAt !== savedAt || edits !== savedEdits) return;
       var was = state.status;
       if (r.form && newer(r.form)) { refresh(r.form); if (r.saved) apply(r.saved); else if (!savedAt) apply({}); }   // his cleared boxes too; never saved: our latest calls
@@ -4694,6 +4713,411 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     }, function (e) { polling = false; if (e && e.code === "unknown") closed(); });
   }
   pollSoon();
+
+  // ---------- "Go through it with your agent" (P2, 2026-11-14; off unless the desk turns it on for the order) ----------
+  // Matt 2026-11-14: "I dont want to change or remove anything. I want to add the additional option for now to use the
+  // interacitve agent as well." One opt-in card at the top of a review round (signoff()), on an order the desk turned on
+  // (house_prompts.agent_form) for an office whose plan covers it (walkEntitled). Nothing else on the form moves or changes.
+  // The walk is a second pair of hands on this page's own controls: on the customer's own tap in the card it taps the
+  // option button, fills the box, or presses the section, Approve or Send button that he would press here, so every answer
+  // lands in the same answers.json key with the same receipt and gates. It never presses anything by itself. An item reads
+  // Saved only when verifyAction() matched a receipt whose payload carries its value at its current version (walkLanded) or
+  // the server already holds that value with nothing unsent; a local value, an option already selected or a confirm still
+  // writing stays pending. A question is done only for the version it was saved at; a Save or the page's button acts only
+  // for the item, review and action it was shown for (review fixes, 11-14). "Ask about this item" is his own q_fb_ message
+  // (sendFeedback) naming the item; replies are read from the form log (takeLog). Any error in here leaves the form as it
+  // was: every hook is wrapped.
+  var AGENT_JS = "/orders/agent.js?v=20261114p2";
+  var START_LANE = /^(partial(?:-conversion|-we-set)?|full(?:-conversion)?|self-service(?:-conversion)?)$/;   // Code.gs's own Start rule
+  var walk = { load: "", mounted: false, open: false, rev: null, cur: null, acked: {}, skipped: {}, pending: {}, saved: {},
+    server: {}, lines: [], n: 0, replies: {}, asks: {}, line: null, reader: null, curVersion: null };
+  // Entitlement (v3 §4, with the 11-14 recheck): a paid plan; or a trial still running, or one his own Start beat; never once
+  // delivered. His Start is his first READY submission on a Start lane or his GO, as Code.gs records them; never the desk's
+  // file check (accepted_at) and never a review submission. The server reads the same records the same way.
+  function walkStarted() {
+    var at = [];
+    (state.customer_submissions || []).concat(state.customer_submission || []).forEach(function (s) {
+      if (s && s.by !== "desk" && s.status === "READY" && s.quote && START_LANE.test(s.quote.lane || "")) at.push(Date.parse(s.at));
+    });
+    [state.go].concat((state.history || []).filter(function (h) { return h && h.event === "go"; })).forEach(function (g) {
+      if (g && g.by !== "desk") at.push(Date.parse(g.at));
+    });
+    at = at.filter(function (t) { return isFinite(t); });
+    return at.length ? Math.min.apply(null, at) : null;
+  }
+  function walkEntitled(now) {
+    var plan = (D.house_prompts || {}).plan, until, start;
+    if (!plan || typeof plan !== "object" || D.delivered_at) return false;
+    if (plan.kind === "paid") return true;
+    until = Date.parse(plan.until_at); start = walkStarted();
+    return plan.kind === "trial" && isFinite(until) && (now < until || start !== null && start < until);
+  }
+  function walkAllowed() { return !INLINE && online && !readOnly && !!state && signoff() && (D.house_prompts || {}).agent_form === true && walkEntitled(Date.now()); }
+  function walkLoad() {   // agent.js only for an order the card can show on; a build without host mode keeps the card hidden
+    walk.load = "loading";
+    var s = document.createElement("script");
+    s.src = AGENT_JS; s.async = true;
+    s.onload = function () { walk.load = window.AAPAgent && window.AAPAgent.hosts === true ? "ready" : "off"; walkPaint(); };
+    s.onerror = function () { walk.load = "off"; };
+    document.head.appendChild(s);
+  }
+  function walkShown(n) { return !!n && n.isConnected && n.getClientRects().length > 0; }
+  function walkText(v) { return v == null ? "" : String(v); }
+  // What this review asks of him, in the page's own order, from what the page rendered: the red box, the round's
+  // questions (the confirm and highlight questions stay in their places), then Your calls. Each is bound to this review.
+  function walkItems() {
+    var rev = (D.review || {}).id || "", items = [], c = D.proposed_calls;
+    var checks = D.stage === "returned" && Array.isArray(D.double_check) ? D.double_check.map(function (l) { return String(l || "").trim(); }).filter(Boolean) : [];
+    if (checks.length) items.push({ kind: "dc", id: "all", lines: checks, version: rev + "|dc|all|" + canon(checks) });
+    (D.questions || []).forEach(function (q) {
+      if (!q || q.kind === "confirm" || q.material === false || q.id === "client_permits" || q.highlight === true) return;
+      var key = "q_" + q.id, box = document.querySelector("#sections [data-call='" + CSS.escape(key) + "']");
+      if (box) items.push({ kind: "q", id: String(q.id), key: key, q: q, box: box, version: rev + "|q|" + q.id + "|" + canon([q.kind, q.text, q.choices, q.short, q.material]) });
+    });
+    if (proposalReview() && !factsOnlyReview() && c && Array.isArray(c.sections) && c.report_sha256 === (D.review || {}).report_sha256) {
+      var shown = c.sections.filter(function (s) { return proposalNode(s); });
+      shown.forEach(function (s, i) {
+        var version = rev + "|pc|" + s.id + "|" + s.fingerprint + "|" + c.report_sha256;
+        items.push({ kind: "pc", id: s.id, key: "q_pc_confirm_" + s.id, section: s, node: proposalNode(s), n: i + 1, of: shown.length, version: version, edited: proposalEdited(s),
+          calls: s.calls.map(function (call) { return { kind: "call", key: "q_pc_" + s.id + "_" + call.id, call: call, section: s, version: version + "|call|" + call.id, parent: version }; }) });
+      });
+    }
+    return items;
+  }
+  function walkUnsent() { return !!timer || edits !== savedEdits || outbox.some(function (i) { return answerAction(i.kind); }); }
+  function walkState(it) {   // "pending" until a receipt, then "done"; "skipped" passes without saving
+    var p = walk.pending[it.version];
+    if (p && p.kind !== "request" && walkText(state.answers[p.key]) !== walkText(p.value)) { delete walk.pending[it.version]; p = null; }   // he changed it on the form since
+    if (p) return "pending";
+    if (it.kind === "dc") return walk.acked[it.version] ? "done" : walk.skipped[it.version] ? "skipped" : "open";
+    if (it.kind === "q" && walkText(state.answers[it.key]).trim() && walk.saved[it.version] === walkText(state.answers[it.key])) return "done";   // only an answer saved at this version
+    if (it.kind === "pc" && !it.edited && proposalConfirmed(it.section) && it.key in walk.server && walk.server[it.key] === state.answers[it.key]) return "done";
+    return walk.skipped[it.version] ? "skipped" : "open";
+  }
+  function walkUnsaved(t) {   // his own change on the form (no walk tap) that the server does not hold yet, e.g. a refused save
+    if (t.kind === "pc") return proposalConfirmed(t.section) && walk.server[t.key] !== state.answers[t.key];
+    if (t.kind !== "q" && t.kind !== "call") return false;
+    var v = walkText(state.answers[t.key]);
+    return !!v.trim() && v !== walkText(walk.server[t.key]) && v !== walkText((D.prefill || {})[t.key]);
+  }
+  function walkLabel(it) {   // the closing's words; a proposal is never called his answer
+    var s = walkState(it), v = walkText(state.answers[it.key]);
+    if (s === "pending") return walk.pending[it.version].kind === "request" ? "your change, sending" : "saving";
+    if (it.kind === "q") return !v.trim() ? "not answered yet" : s === "done" ? "your answer" : "on your form";
+    if (it.edited) return (state.post_changes || []).length && !reviewReady() ? "your change, sent" : "your change, not sent";
+    return s === "done" ? "confirmed by you" : "proposed, not yet confirmed";
+  }
+  function walkPick(items) {   // the item on show: a line he is changing, else the first open one, else his edits, else the closing
+    if (!reviewReady() || signedOff() || roundsLocked() || postBusy) return { kind: "closing" };
+    if (walk.line) {
+      var owner = items.filter(function (it) { return it.version === walk.line.version; })[0];
+      if (owner) return walk.line.call ? owner.calls.filter(function (c) { return c.call.id === walk.line.call; })[0] || owner : owner;
+      walk.line = null;
+    }
+    var open = items.filter(function (it) { return !it.edited && ["pending", "open"].indexOf(walkState(it)) >= 0; })[0];
+    if (open) return open;
+    var edited = items.filter(function (it) { return it.edited; });
+    if (edited.length) return { kind: "edits", items: edited, version: walkEdits(items) };
+    return { kind: "closing" };
+  }
+  function walkEdits(items) {   // his changed sections, as one step before approval
+    var ids = items.filter(function (it) { return it.edited; }).map(function (it) { return it.id; });
+    return ids.length ? ((D.review || {}).id || "") + "|edits|" + ids.join(",") : "";
+  }
+  function walkVersions(items) {
+    var v = {};
+    items.forEach(function (it) { v[it.version] = true; (it.calls || []).forEach(function (c) { v[c.version] = true; }); });
+    if (walkEdits(items)) v[walkEdits(items)] = true;
+    return v;
+  }
+  function say(text, extra) { walk.lines.push(Object.assign({ who: "agent", text: text, key: "w" + (++walk.n) }, extra || {})); }
+  function you(text, extra) { walk.lines.push(Object.assign({ who: "you", text: text, key: "w" + (++walk.n) }, extra || {})); }
+  function walkAsked(t) {   // the words that open an item
+    if (t.kind === "dc") {
+      var head = t.lines.length === 1 ? "One thing to double check:" : t.lines.length + " things to double check:";
+      return head + "\n" + t.lines.slice(0, 4).map(function (l, i) { return (i + 1) + ". " + l; }).join("\n") + (t.lines.length > 4 ? "\nand " + (t.lines.length - 4) + " more in the red box." : "");
+    }
+    if (t.kind === "q") return (t.q.kind === "choice" ? "A question for you: " : "Please answer: ") + t.q.text;
+    if (t.kind === "pc") {
+      var values = proposalValues(t.section);
+      return "Your calls, section " + t.n + " of " + t.of + ": " + sectionTitle(t.section) + ". Proposed, not yet confirmed: " + t.section.calls.map(function (c) { return c.label + " " + values[c.key]; }).join(" · ") + ".";
+    }
+    if (t.kind === "call") return t.call.label + ". Proposed: " + t.call.value + "." + (Array.isArray(t.call.options) ? " Pick one." : " Type yours below.");
+    if (t.kind === "edits") return t.items.length === 1 ? "You changed " + sectionTitle(t.items[0].section) + ". Sending it uses a change round; we update the report and show it here again before delivery."
+      : "You changed " + t.items.length + " sections: " + names(t.items.map(function (it) { return it.section; })) + ". They go together in one change request.";
+    return "";
+  }
+  function walkClosing(items) {   // where it stands, the page's own words for Approve, and the page's own button
+    if (signedOff()) return { text: approvalNote() };
+    if (roundsLocked() || !reviewReady() || postBusy) return { text: $("returned-headline").textContent };
+    var lines = items.filter(function (it) { return it.kind !== "dc"; }).map(function (it) {
+      var name = it.kind === "q" ? it.q.text : sectionTitle(it.section), v = it.kind === "q" ? walkText(state.answers[it.key]).trim() : "";
+      return name + (v ? ": " + v : "") + " (" + walkLabel(it) + ")";
+    });
+    (D.questions || []).filter(function (q) { return q && q.highlight === true && q.kind !== "confirm"; }).forEach(function (q) { lines.push("Also on your form: " + q.text); });
+    if (agreeQ) lines.push("Approving also records: " + agreeQ.text);
+    var done = statusBtns.filter(function (b) { return b.getAttribute("data-s") === "DONE"; })[0], all = $("approve-all-btn"), go = walkShown(all) ? all : done;
+    var terms = Array.prototype.filter.call(document.querySelectorAll("[data-terms]"), walkShown).map(function (p) { return p.textContent.trim(); })[0] || "";
+    var text = (items.length ? "That's everything on the list. Here's where it stands:\n" + lines.join("\n") + (lines.length ? "\n" : "") : "Nothing open on this review. Ask me anything about it, or approve below.\n") +
+      "Change rounds used: " + roundsUsed() + " of 2." + (go === all && walkShown(all) ? "\n" + $("approve-all-note").textContent : "") + (terms ? "\n" + terms : "");
+    return { text: text, button: go, request: walkShown($("post-open")) && !$("post-open").disabled };
+  }
+  function walkPrompt(t, items) {   // the row under the thread: chips, a box, the page's own button
+    var p = { id: t.version || t.kind, chips: [] }, pend = t.version && walk.pending[t.version], held = outbox.some(function (i) { return i.error; });
+    var waiting = pend || walkUnsaved(t);   // a tap of his waiting on its receipt, or his change on the form the server does not hold
+    if (waiting) p.text = held ? "Not saved. Tap Retry on the form, near the bottom." : walkUnsent() || pend && pend.kind === "request" ? "Saving…" : "Not saved yet.";
+    if (t.kind === "dc") { p.chips.push({ label: "Got it", key: "got", version: t.version }); if (t.lines.length > 4) p.chips.push({ label: "Show me the red box", key: "redbox", version: t.version }); }
+    if (t.kind === "q" || t.kind === "call") {
+      var key = t.key, ctl = t.kind === "q" ? t.box : document.querySelector("[data-proposal='" + CSS.escape(t.section.id) + "'] [data-call='" + CSS.escape(key) + "']");
+      var options = t.kind === "q" ? (t.q.kind === "choice" ? t.q.choices || [] : null) : Array.isArray(t.call.options) ? t.call.options : null;
+      if (options) options.forEach(function (o) {
+        var b = ctl && Array.prototype.filter.call(ctl.querySelectorAll("button.tap"), function (x) { return x.value === o; })[0];
+        p.chips.push({ label: o, key: "opt", value: o, version: t.version, pressed: walkText(state.answers[key]) === o, disabled: !b || b.disabled });
+      });
+      else { var box = $("f-" + key); p.input = { placeholder: "Your answer", save: "Save this answer", value: walkText(state.answers[key]), disabled: !box || box.disabled, key: key, version: t.version }; }
+      if (t.kind === "call") p.chips.push({ label: "Back", key: "back", version: t.version });
+    }
+    if (t.kind === "pc") {
+      var mine = t.node.querySelector(".pc-row button.st"), change = t.node.querySelector(".pc-row .link-inline");
+      if (walk.line && walk.line.version === t.version) {
+        t.section.calls.forEach(function (c) { p.chips.push({ label: c.label + ": " + proposalValues(t.section)[c.key], key: "line", value: c.id, version: t.version }); });
+        p.chips.push({ label: "Back", key: "back", version: t.version });
+      } else {
+        p.chips.push({ label: mine ? mine.textContent : "Confirm this section", key: "confirm", version: t.version, disabled: !mine || mine.disabled });   // disabled exactly when his button is
+        p.chips.push({ label: "Change a line", key: "change", version: t.version, disabled: !change || change.hidden });
+        p.chips.push({ label: "Why these", key: "why", version: t.version });
+      }
+    }
+    if (t.kind === "edits") {
+      if (t.items.length === 1) { var own = t.items[0].node.querySelector(".pc-row button.st"); if (own) p.button = walkButton(own, t); }
+      else if (walkText($("post-text").value).indexOf("(review " + (D.review || {}).id + ")") < 0) p.chips.push({ label: "Put my changes in the request box", key: "fill", version: t.version });
+      else p.button = walkButton($("post-send"), t);
+    }
+    if (t.kind === "closing") {
+      var end = walkClosing(items);
+      p.id = "closing|" + (D.review || {}).id;
+      if (end.button) p.button = walkButton(end.button, t);
+      if (end.request) p.chips.push({ label: "Request a change instead", key: "request" });
+      else if (walkShown($("post-box")) && walkShown($("post-send"))) p.button = walkButton($("post-send"), t);
+    }
+    if (["dc", "q", "pc"].indexOf(t.kind) >= 0 && !(walk.line && walk.line.version === t.version)) p.chips.push({ label: "Skip for now", key: "skip", version: t.version });
+    if (held && waiting) p.chips.push({ label: "Retry", key: "retry" });
+    return p;
+  }
+  // The page's own button as the card shows it, bound to this review and to exactly this action (which button, its words, the
+  // step it closes): a tap of the card's copy acts only while the page still offers that same action on that same review.
+  function walkButton(el, t) {
+    var sec = el.closest("[data-proposal]");
+    return { label: el.textContent, el: el, disabled: el.disabled || !walkShown(el), review: (D.review || {}).id || "",
+      action: [t.version || t.kind, el.id || el.getAttribute("data-s") || (sec ? "pc:" + sec.getAttribute("data-proposal") : ""), el.textContent.trim()].join("|") };
+  }
+  function walkReplies() {
+    var out = {};
+    (F.log || []).concat(Object.keys(walk.replies).map(function (k) { return walk.replies[k]; })).forEach(function (e) {
+      if (e && e.what === "reply" && typeof e.text === "string" && e.re) out[e.id || e.re + "@" + e.at] = e;
+    });
+    return Object.keys(out).map(function (k) { return out[k]; }).sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); });
+  }
+  function walkThread(code) {
+    var out = [], replies = walkReplies();
+    walk.lines.forEach(function (l) {
+      out.push({ who: l.who, text: l.text, key: l.key, order: code });
+      if (!l.ask) return;
+      var mine = replies.filter(function (r) { return r.re === l.ask; }), a = walk.asks[l.ask];
+      mine.forEach(function (r, i) { out.push({ who: r.by === "agent" ? "agent" : "desk", text: r.text, key: "re-" + l.ask + "-" + i, order: code }); });
+      if (!mine.length && a && !a.failed) out.push({ who: "agent", pending: true, key: "wait-" + l.ask, order: code,
+        text: Date.now() - a.at < 90000 ? "Thinking…" : "Still waiting. The reply will show here and by email." });
+    });
+    return out;
+  }
+  function walkPaint() {
+    try {
+      if (!walk || !state) return;
+      var on = walkAllowed();
+      if (on && !walk.load) walkLoad();
+      $("agent-card").hidden = !(on && walk.load === "ready");
+      if ($("agent-card").hidden) return;
+      $("agent-open").textContent = walk.open ? "Close" : "Go through it with your agent";
+      $("agent-open").setAttribute("aria-expanded", String(walk.open));
+      $("agent-host").hidden = !walk.open;
+      if (!walk.open || !walk.mounted) return;
+      var rev = (D.review || {}).id || "", items = walkItems(), versions = walkVersions(items);
+      // A new review, new questions or a new red box changes the versions: nothing from before saves or advances.
+      var gone = Object.keys(walk.pending).filter(function (v) { return !versions[v]; });
+      gone.forEach(function (v) { delete walk.pending[v]; });
+      var lost = Object.keys(walk.saved).filter(function (v) { return !versions[v]; });   // e.g. a question he answered, since reworded
+      lost.forEach(function (v) { delete walk.saved[v]; });
+      var moved = walk.rev !== null && walk.rev !== rev || gone.length > 0 || lost.some(function (v) { return v.indexOf("|q|") >= 0; }) || !!walk.curVersion && !versions[walk.curVersion];
+      if (moved && walk.lines.length) { walk.line = null; walk.cur = null; walk.curVersion = null; say("Your form was updated. Starting from the new list."); }
+      walk.rev = rev;
+      if (!walk.lines.length) {
+        var left = items.filter(function (it) { return walkState(it) !== "done"; }).length, done = items.length - left;
+        say(!left ? "Nothing open on this review. Ask me anything about it, or approve below."
+          : done ? "Welcome back. " + done + " of " + items.length + " done. Next:"
+          : selfLane() ? "Before we deliver your report, we need a few things from you. I'll take them one at a time. Ask me about any item as we go."
+          : "Your report is ready for your review. A couple of things to look at first, then you approve.");
+      }
+      var t = walkPick(items), end = t.kind === "closing" ? walkClosing(items) : null;
+      var id = end ? "closing|" + rev + "|" + end.text : t.version + (walk.line && walk.line.version === t.version ? "|lines" : "");
+      if (id !== walk.cur) {   // a new item, or the closing's words changed (approving, approved, changes sent): one new line
+        walk.cur = id;
+        walk.curVersion = ["dc", "q", "pc", "call"].indexOf(t.kind) >= 0 ? t.version : null;
+        if (end) { if (end.text) say(end.text); }
+        else say(walk.line && walk.line.version === t.version ? "Which line?" : walkAsked(t));
+      }
+      var prompt = walkPrompt(t, items);
+      prompt.id = id;
+      var notes = (D.house_prompts || {}).agent_profile;   // the dedicated copy only when his office's saved notes reach the chat (as on the board)
+      AAPAgent.update({ route: "order", order: O.code || "", orders: [{ ap: O.code || "", street: O.property || "", status: "Review" }], plan: true,
+        profile: typeof notes === "string" && !!notes.trim() && notes.length <= 2000, thread: walkThread(O.code || ""), prompt: prompt });
+    } catch (e) { /* the walk never stops the form */ }
+  }
+  function walkCurrent() { var items = walkItems(), t = walkPick(items); return { items: items, t: t }; }
+  function walkStale() { walk.cur = null; walk.line = null; say("Your form was updated. Starting from the new list."); walkPaint(); }
+  // The card's chips: each is one tap of his on this page's own control, or words only.
+  function walkChoose(chip) {
+    try {
+      var cur = walkCurrent(), t = cur.t;
+      if (chip.version && chip.version !== t.version) return walkStale();
+      you(chip.label);
+      if (chip.key === "got") walk.acked[t.version] = true;
+      else if (chip.key === "skip") { walk.skipped[t.version] = true; walk.line = null; }
+      else if (chip.key === "back") walk.line = null;
+      else if (chip.key === "redbox") { $("dc-card").scrollIntoView({ block: "center", behavior: "smooth" }); }
+      else if (chip.key === "why") t.section.calls.forEach(function (c) { say(c.label + ": " + c.evidence); });
+      else if (chip.key === "change") {
+        var change = t.node.querySelector(".pc-row .link-inline");
+        if (change && !change.hidden && t.node.getAttribute("data-mode") !== "edit") change.click();   // opens the section's own edit box
+        walk.line = { version: t.version, call: null };
+      }
+      else if (chip.key === "line") walk.line = { version: walk.line ? walk.line.version : t.version, call: chip.value };
+      else if (chip.key === "opt") walkOption(t, chip.value);
+      else if (chip.key === "confirm") walkConfirm(t);
+      else if (chip.key === "fill") walkFill(t);
+      else if (chip.key === "request") { if (walkShown($("post-open")) && !$("post-open").disabled) { $("post-open").click(); say("Type your changes in the box below, then tap Send."); } }
+      else if (chip.key === "retry") { var r = document.querySelector("#sync-note button"); if (r) r.click(); }
+      walkPaint();
+    } catch (e) {}
+  }
+  function walkOption(t, option) {
+    var ctl = t.kind === "q" ? t.box : document.querySelector("[data-proposal='" + CSS.escape(t.section.id) + "'] [data-call='" + CSS.escape(t.key) + "']");
+    var b = ctl && Array.prototype.filter.call(ctl.querySelectorAll("button.tap"), function (x) { return x.value === option; })[0];
+    if (!b || b.disabled) { say("That choice isn't open on the form right now."); return; }
+    walk.pending[t.version] = { key: t.key, value: option, kind: "answer" };
+    if (state.answers[t.key] !== option) b.click();   // his button: put(), changed(), autosave. Already selected: no tap (a second tap clears it)
+    else if (walk.server[t.key] === option && !walkUnsent()) walkResolve(t.version, option);   // the server already holds it and nothing is unsent
+  }
+  function walkConfirm(t) {
+    var b = t.node.querySelector(".pc-row button.st");
+    if (!b || b.disabled) return;
+    walk.pending[t.version] = { key: t.key, value: proposalReceipt(t.section), kind: "confirm" };   // pending until its receipt, though the page reads it confirmed at once
+    b.click();   // his section's own Confirm
+  }
+  function walkFill(t) {   // several changed sections go out as one request, from his own request box and his own Send
+    if (walkShown($("post-open")) && !$("post-open").disabled) $("post-open").click();
+    $("post-text").value = t.items.map(function (it) { var v = proposalValues(it.section); return "Your calls — " + it.section.title + " (review " + D.review.id + ")\n" + it.section.calls.map(function (c) { return c.label + ": " + v[c.key]; }).join("\n"); }).join("\n\n");
+    $("post-text").dispatchEvent(new Event("input"));
+    say("Your changes are in the request box below. Check them, then tap Send.");
+  }
+  function walkSaveText(text, item) {   // "Save this answer": his words into the page's own box, through its own input listener
+    try {
+      var t = walkCurrent().t, box = t && t.key && $("f-" + t.key);
+      if (!item || item.key !== t.key || item.version !== t.version) return walkStale();   // a Save offered for an item since changed saves nothing
+      if (!box || box.disabled || !(t.kind === "q" || t.kind === "call")) { say("That box isn't open on the form right now."); walkPaint(); return; }
+      you(String(text));
+      box.value = String(text);
+      walk.pending[t.version] = { key: t.key, value: box.value, kind: "answer" };
+      box.dispatchEvent(new Event("input"));   // put(), grow(), changed(), autosave
+      walkPaint();
+    } catch (e) {}
+  }
+  function walkTapPage(el, shown) {   // the page's own Approve, Approve all, Send these changes or Send, on his tap of its copy
+    try {
+      var cur = walkCurrent(), t = cur.t, now = walkPrompt(t, cur.items).button;
+      // Only the action the card showed, on the review it showed it for: a new report or another button since is asked again
+      if (!shown || !now || now.el !== el || shown.review !== ((D.review || {}).id || "") || now.review !== shown.review || now.action !== shown.action) return walkStale();
+      if (!el || !el.isConnected || el.disabled || !walkShown(el)) return;
+      you(el.textContent.trim());
+      if (t.version && (el === $("post-send") || /^Send these changes$/.test(el.textContent.trim()))) walk.pending[t.version] = { kind: "request", key: "", value: "" };
+      el.click();
+      walkPaint();
+    } catch (e) {}
+  }
+  function walkResolve(version, value) {
+    var p = walk.pending[version];
+    delete walk.pending[version];
+    walk.saved[version] = walkText(value);
+    if (walk.line && walk.line.version + "|call|" + walk.line.call === version) walk.line = null;
+    say(p && p.kind === "confirm" ? "Saved ✓ (confirmed by you)." : p && p.kind === "request" ? "Sent ✓. We'll update your report and show it here again before delivery." : "Saved ✓");
+  }
+  // verifyAction: this exact payload has its committed receipt. A tap or Save is Saved only when the landed answers carry
+  // its value and its version is still current; a confirm is Saved only by its own receipt string.
+  function walkLanded(kind, doc) {
+    try {
+      if (!walk) return;
+      var answers = doc.answers || {}, before = walk.server;
+      if (answerAction(kind)) walk.server = Object.assign({}, answers);
+      else if (kind === "feedback") Object.assign(walk.server, answers);
+      // A question he answered on the form itself: this receipt changed its saved value while this version was on show
+      if (walk.load === "ready" && answerAction(kind)) walkItems().forEach(function (it) {
+        var v = walkText(answers[it.key]);
+        if (it.kind === "q" && v.trim() && v !== walkText(before[it.key]) && v !== walkText((D.prefill || {})[it.key])) walk.saved[it.version] = v;
+      });
+      if (!walk.mounted) return;
+      var versions = walkVersions(walkItems());
+      Object.keys(walk.pending).forEach(function (v) {
+        var p = walk.pending[v];
+        if (!versions[v]) return;
+        if (p.kind === "request" ? kind === "request" : answerAction(kind) && p.key in answers && walkText(answers[p.key]) === walkText(p.value)) walkResolve(v, p.value);
+      });
+      if (kind === "feedback") Object.keys(answers).forEach(function (k) { if (walk.asks[k]) walk.asks[k].sent = true; });
+      walkPaint();
+    } catch (e) {}
+  }
+  function walkServer(saved) { try { if (walk) walk.server = Object.assign({}, (saved && saved.answers) || {}); } catch (e) {} }
+  // Replies the server appended to this record's log (an agent answer, the desk's reply), whether or not the form changed.
+  function takeLog(f) {
+    try {
+      if (!walk || !f || !Array.isArray(f.log)) return;
+      var fresh = 0;
+      f.log.forEach(function (e) { if (e && e.what === "reply" && typeof e.text === "string" && e.re) { var k = e.id || e.re + "@" + e.at; if (!walk.replies[k]) { walk.replies[k] = e; fresh++; } } });
+      if (fresh && walk.open) walkPaint();
+    } catch (e) {}
+  }
+  function walkAsk(text) {   // "Ask about this item": his own message, naming the item and its version
+    text = String(text || "").trim();
+    if (!text) return Promise.reject(new Error("Type your question."));
+    if (text.length > 3000) return Promise.reject(new Error("Please shorten this message."));
+    if (feedbackBusy || readOnly || !online) return Promise.reject(new Error("Your last message is still sending."));
+    var t = walkCurrent().t, rev = (D.review || {}).id || "", item = t.kind === "call" ? { kind: "pc", id: t.section.id, sig: t.parent } : ["dc", "q", "pc"].indexOf(t.kind) >= 0 ? { kind: t.kind, id: t.id, sig: t.version } : { kind: "review", id: "", sig: rev + "|review" };
+    var sent = sendFeedback(text, { review_id: rev, kind: item.kind, id: item.id, sig: item.sig });
+    var a = walk.asks[sent.key] = { at: Date.now(), sent: false, failed: false };
+    you(text, { ask: sent.key });
+    walkRead(sent.key);
+    walkPaint();
+    return sent.sent.then(function () { a.sent = true; walkPaint(); return { ok: true, id: sent.key }; },
+      function (e) { a.failed = true; walkPaint(); throw new Error(e && e.code === "too_large" ? "Please shorten this message." : "Please try again."); });
+  }
+  function walkRead(key) {   // for 90 s after a question, a read every 2 s for its reply; reads only, so safe beside unsaved typing
+    clearTimeout(walk.reader);
+    var a = walk.asks[key];
+    (function tick() {
+      if (walkReplies().some(function (r) { return r.re === key; }) || Date.now() - a.at > 90000) { walkPaint(); return; }
+      walk.reader = setTimeout(function () { read().then(function (r) { takeLog(r.form); }, function () {}).then(tick); }, 2000);
+    })();
+  }
+  $("agent-open").addEventListener("click", function () {
+    try {
+      if (walk.load !== "ready" || !walkAllowed()) return;
+      if (!walk.mounted) {
+        AAPAgent.init({ host: $("agent-host"), send: function (m) { return walkAsk(m && m.text); }, choose: walkChoose, save: walkSaveText, tap: walkTapPage,
+          talk: function (ta) { return talkRow(ta, true); }, office: { name: O.client || "" } });
+        walk.mounted = true;
+      }
+      walk.open = !walk.open;
+      walkPaint();
+    } catch (e) { walk.load = "off"; $("agent-card").hidden = true; }
+  });
 
   // ---------- go ----------
   if (INLINE) {                       // a one-file copy (a report's Workfile): opens on the latest from the backend

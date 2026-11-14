@@ -7,6 +7,7 @@
   const SENT = "Sent. Your desk answers within a few minutes.";
   const LABEL = "Ask your agent";
   const GREETING = "Questions about an order? Ask here. Replies in minutes.";
+  const ASK = "Ask about this item";   // host mode (the order form's walk)
   let seenKey = "aap-agent-seen-";
   try { seenKey += new URLSearchParams(window.location.search).get("t") || ""; } catch (_) { /* No link code: one key. */ }
   const conversations = new Map();
@@ -22,6 +23,7 @@
   let mountedScope = null;
   let seenMemory = null;
   let opener = null;
+  let promptId = null;   // host mode: the prompt row on show; a new id clears the typed answer
 
   function element(tag, name, text) {
     const el = document.createElement(tag);
@@ -50,6 +52,8 @@
       { fill: "#96aac4", d: "M92 200V145.3L112 128.48V200ZM118.5 200V123.01L138.5 106.19V200ZM145 200V88.35L165 108.35V200Z" }
     ], "mark");
   }
+
+  function placeholder() { return config && config.host ? ASK : PLACEHOLDER; }
 
   function scope() {
     return data.route === "order" && data.order ? data.order : null;
@@ -159,15 +163,122 @@
     if (request) {
       if (sending) status = "Sending…";
       else if (request.status === "failed") status = request.error;
-      else if (!reply) status = SENT;
+      else if (!reply && !config.host) status = SENT;
     }
     ui.status.textContent = status;
     ui.status.hidden = !status;
     ui.status.classList.toggle("aap-agent-error", Boolean(request && request.status === "failed"));
-    ui.answer.hidden = !reply;
+    // Host mode shows the whole thread instead (renderThread): no "You asked" or single reply box.
+    ui.answer.hidden = !reply || Boolean(config.host);
     ui.reply.textContent = reply ? reply.text : "";
-    ui.question.hidden = !asked;
+    ui.question.hidden = !asked || Boolean(config.host);
     ui.question.textContent = asked ? "You asked: " + asked : "";
+  }
+
+  // Host mode: this order's conversation, oldest first, as the page gives it (its walk lines, the customer's words, replies).
+  // Lines are kept by key and only new or changed ones touch the page, so the live region announces only what is new.
+  function renderThread() {
+    const lines = data.thread.filter(message => sameScope(message, scope()));
+    const atEnd = ui.body.scrollHeight - ui.body.scrollTop - ui.body.clientHeight < 48, keep = new Set();
+    lines.forEach(function (message, i) {
+      const key = String(message.key || i), you = message.who === "you", who = you ? "You" : message.who === "desk" ? "Desk" : "Agent";
+      const text = String(message.text || ""), shape = [who, text, Boolean(message.pending)].join("\n");
+      let line = ui.lines.get(key);
+      if (!line || line.dataset.shape !== shape) {
+        const next = element("li", you ? "you" : "says");
+        if (message.pending) next.classList.add("aap-agent-pending");
+        next.append(element("b", "who", who), element("p", "words", text));
+        next.dataset.shape = shape;
+        if (line) line.replaceWith(next);
+        line = next;
+        ui.lines.set(key, line);
+      }
+      keep.add(key);
+      if (ui.thread.children[i] !== line) ui.thread.insertBefore(line, ui.thread.children[i] || null);
+    });
+    ui.lines.forEach(function (line, key) { if (!keep.has(key)) { line.remove(); ui.lines.delete(key); } });
+    ui.thread.hidden = !lines.length;
+    if (atEnd || lines.length !== ui.threadCount) ui.body.scrollTop = ui.body.scrollHeight;
+    ui.threadCount = lines.length;
+  }
+
+  // Host mode: what the page offers now. Every chip, Save and button goes back to the page (config.choose / save / tap);
+  // this panel never writes an answer or presses anything on its own. The typed answer survives repaints of the same prompt.
+  function renderPrompt() {
+    const prompt = data.prompt && typeof data.prompt === "object" ? data.prompt : null;
+    const id = prompt ? String(prompt.id || "") : null;
+    if (id !== promptId) {
+      promptId = id;
+      ui.answerBox.replaceChildren();
+      ui.answerInput = null;
+      const input = prompt && prompt.input;
+      if (input) {
+        const area = element("textarea", "answer-input");
+        area.rows = 2;
+        area.maxLength = 3000;
+        area.placeholder = input.placeholder || "";
+        area.setAttribute("aria-label", input.placeholder || "Your answer");
+        area.value = input.value || "";
+        const save = element("button", "save", input.save || "Save");
+        save.type = "button";
+        const wrap = element("div", "answer-field");
+        wrap.append(area);
+        ui.answerBox.append(wrap);
+        const talk = typeof config.talk === "function" ? config.talk(area) : null;   // the page's own mic
+        if (talk) ui.answerBox.append(talk);
+        ui.answerBox.append(save);
+        area.addEventListener("input", function () { save.disabled = !area.value.trim() || Boolean((data.prompt || {}).input && data.prompt.input.disabled); });
+        const item = { key: input.key, version: input.version };   // the item this box was offered for: the page saves nothing for another
+        save.addEventListener("click", function () { if (!save.disabled && area.value.trim()) config.save(area.value, item); });
+        ui.answerInput = { area: area, save: save };
+      }
+    }
+    ui.promptText.textContent = prompt && prompt.text ? prompt.text : "";
+    ui.promptText.hidden = !ui.promptText.textContent;
+    if (ui.answerInput) {
+      const off = Boolean(prompt.input && prompt.input.disabled);
+      ui.answerInput.area.disabled = off;
+      ui.answerInput.save.disabled = off || !ui.answerInput.area.value.trim();
+    }
+    ui.answerBox.hidden = !ui.answerInput;
+    // Chips and the page's button are rebuilt only when they change, so a repaint never takes focus from the one he is on.
+    const chips = prompt && Array.isArray(prompt.chips) ? prompt.chips : [];
+    const chipShape = JSON.stringify([promptId, chips.map(c => [c.label, c.key, c.value, c.version, Boolean(c.disabled), Boolean(c.pressed)])]);
+    if (chipShape !== ui.chipShape) {
+      const focused = ui.chips.contains(document.activeElement) ? document.activeElement.textContent : null;
+      ui.chipShape = chipShape;
+      ui.chips.replaceChildren();
+      chips.forEach(function (chip) {
+        const button = element("button", "chip", String(chip.label || ""));
+        button.type = "button";
+        button.disabled = Boolean(chip.disabled);
+        if (chip.pressed) button.setAttribute("aria-pressed", "true");
+        button.addEventListener("click", function () { if (!button.disabled) config.choose(chip); });
+        ui.chips.append(button);
+        if (focused !== null && button.textContent === focused && !button.disabled) button.focus({ preventScroll: true });
+      });
+    }
+    ui.chips.hidden = !ui.chips.childElementCount;
+    const page = prompt && prompt.button && prompt.button.el ? prompt.button : null;
+    const pageShape = page ? [String(page.label || page.el.textContent || "").trim(), Boolean(page.disabled), page.review, page.action].join("\n") : "";
+    if (pageShape !== ui.pageShape || (page && ui.pageEl !== page.el)) {   // a new review or action replaces the button, never retargets it
+      const had = ui.action.contains(document.activeElement);
+      ui.pageShape = pageShape;
+      ui.pageEl = page ? page.el : null;
+      ui.action.replaceChildren();
+      if (page) {
+        const button = element("button", "page-button", String(page.label || page.el.textContent || "").trim());
+        button.type = "button";
+        button.disabled = Boolean(page.disabled);
+        const shown = { review: page.review, action: page.action };   // what this button showed: the page acts only while that still holds
+        const el = page.el;
+        button.addEventListener("click", function () { if (!button.disabled) config.tap(el, shown); });
+        ui.action.append(button);
+        if (had && !button.disabled) button.focus({ preventScroll: true });
+      }
+    }
+    ui.action.hidden = !ui.action.childElementCount;
+    ui.prompt.hidden = ui.promptText.hidden && ui.answerBox.hidden && ui.chips.hidden && ui.action.hidden;
   }
 
   function stopSpeech() {
@@ -177,7 +288,7 @@
     if (ui) {
       ui.mic.setAttribute("aria-pressed", "false");
       ui.mic.setAttribute("aria-label", "Speak");
-      ui.input.placeholder = PLACEHOLDER;
+      ui.input.placeholder = placeholder();
     }
     if (active) {
       try { active.abort(); } catch (_) { /* Already stopped. */ }
@@ -201,6 +312,7 @@
       : "Ask about any order here, or anything else you need. Customers on a monthly plan get their own dedicated agent that remembers their orders, preferences and style.";
     renderContext();
     renderConversation();
+    if (config.host) { renderThread(); renderPrompt(); }
     unread();
   }
 
@@ -323,7 +435,7 @@
         listening = false;
         ui.mic.setAttribute("aria-pressed", "false");
         ui.mic.setAttribute("aria-label", "Speak");
-        ui.input.placeholder = PLACEHOLDER;
+        ui.input.placeholder = placeholder();
       };
       session.onerror = function () {
         if (recognition !== session) return;
@@ -419,6 +531,32 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
   .aap-agent-body { padding:20px; }
   .aap-agent-footer { padding:16px 20px calc(16px + env(safe-area-inset-bottom, 0px)); gap:12px; }
 }
+.aap-agent-root.aap-agent-hosted { position:static; display:block; z-index:auto; font-size:16px; }
+.aap-agent-hosted .aap-agent-panel { width:100%; max-width:none; max-height:none; border-radius:6px; border-bottom:1px solid #e3e3e3; box-shadow:none; grid-template-rows:auto auto auto; }
+.aap-agent-hosted h2 { display:flex; min-height:0; margin:0; padding:0; background:none; border-radius:0; color:inherit; justify-content:flex-start; }
+.aap-agent-hosted .aap-agent-header { padding:12px 20px; }
+.aap-agent-hosted .aap-agent-close { display:none; }
+.aap-agent-hosted .aap-agent-body { max-height:min(55vh, 520px); max-height:min(55dvh, 520px); padding:20px; gap:16px; }
+.aap-agent-hosted .aap-agent-footer { padding:16px 20px 20px; gap:12px; }
+.aap-agent-thread { list-style:none; margin:0; padding:0; display:grid; gap:12px; }
+.aap-agent-says, .aap-agent-you { display:grid; gap:2px; max-width:92%; padding:10px 14px; border-radius:6px; }
+.aap-agent-says { justify-self:start; background:#f4f5f5; border:1px solid #e3e3e3; }
+.aap-agent-you { justify-self:end; background:#eaf3fb; border:1px solid #d5e6f5; }
+.aap-agent-who { font-size:13px; font-weight:700; color:#5f5f5f; }
+.aap-agent-words { white-space:pre-wrap; overflow-wrap:anywhere; }
+.aap-agent-pending .aap-agent-words { color:#5f5f5f; font-style:italic; }
+.aap-agent-prompt { display:grid; gap:12px; }
+.aap-agent-prompt-text { font-weight:600; }
+.aap-agent-chips { display:flex; flex-wrap:wrap; gap:8px; }
+.aap-agent-chip { min-width:48px; min-height:48px; max-width:100%; padding:8px 16px; border:1px solid #005ea8; border-radius:4px; background:#fff; color:#005ea8; font-weight:600 !important; text-align:left; white-space:normal; overflow-wrap:anywhere; cursor:pointer; }
+.aap-agent-chip:hover:enabled, .aap-agent-chip[aria-pressed="true"] { background:#eaf3fb; }
+.aap-agent-answer-box { display:grid; gap:8px; }
+.aap-agent-answer-input { display:block; width:100%; min-height:72px; padding:10px 12px; border:1px solid #8a949f; border-radius:4px; background:#fff; color:#1c1c1c; resize:vertical; overflow:auto; }
+.aap-agent-hosted .talk-box > .aap-agent-answer-input { padding-right:46px; }
+.aap-agent-save, .aap-agent-page-button { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:8px 20px; border:1px solid #005ea8; border-radius:4px; background:#005ea8; color:#fff; font-weight:600 !important; cursor:pointer; }
+.aap-agent-save { justify-self:start; }
+.aap-agent-page-button { width:100%; }
+.aap-agent-save:hover:enabled, .aap-agent-page-button:hover:enabled { background:#004f8f; }
 `;
     const panel = element("section", "panel");
     panel.hidden = true;
@@ -447,14 +585,25 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     answer.append(element("b", "answer-heading", "Desk reply"), reply);
     conversation.append(question, status, answer);
     body.append(intro, context, suggestionBox, conversation);
+    const thread = element("ol", "thread");
+    thread.setAttribute("aria-live", "polite");
+    thread.hidden = true;
+    const promptRow = element("div", "prompt");
+    const promptText = element("p", "prompt-text");
+    const chips = element("div", "chips");
+    const answerBox = element("div", "answer-box");
+    const action = element("div", "action");
+    promptRow.append(promptText, answerBox, chips, action);
+    promptRow.hidden = true;
+    if (config.host) body.insertBefore(thread, conversation);
     const footer = element("div", "footer");
     const form = element("form", "form");
     form.autocomplete = "off";
     const field = element("div", "field");
     const input = element("input", "input");
     input.type = "text";
-    input.placeholder = PLACEHOLDER;
-    input.setAttribute("aria-label", PLACEHOLDER);
+    input.placeholder = placeholder();
+    input.setAttribute("aria-label", placeholder());
     const mic = element("button", "mic");
     mic.type = "button";
     mic.title = "Speak";
@@ -471,6 +620,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     speech.setAttribute("role", "status");
     form.append(field, sendRow, speech);
     footer.append(form, element("p", "disclosure", "AI agent"));
+    if (config.host) footer.prepend(promptRow);
     panel.append(header, body, footer);
     const launch = element("button", "launch");
     launch.type = "button";
@@ -482,17 +632,28 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     launch.setAttribute("aria-expanded", "false");
     launch.setAttribute("aria-controls", panel.id);
     launch.setAttribute("aria-haspopup", "dialog");
-    root.append(style, panel, launch);
-    ui = { root, panel, close, launch, title, intro, greeting: null, context, suggestions: suggestionBox, question, status, answer, reply, input, send, mic, form, speech };
+    ui = { root, panel, close, launch, title, intro, greeting: null, context, suggestions: suggestionBox, question, status, answer, reply, input, send, mic, form, speech,
+      body, thread, threadCount: 0, lines: new Map(), prompt: promptRow, promptText, chips, chipShape: "", answerBox, answerInput: null, action, pageShape: "", pageEl: null };
     mountedScope = scope();
+    input.addEventListener("input", function () { drafts.set(scope(), input.value); renderConversation(); });
+    form.addEventListener("submit", submit);
+    mic.addEventListener("click", startSpeech);
+    if (config.host) {   // the order form's card: open in place, no launcher, sheet, greeting or Escape; the card's own button closes it
+      root.classList.add("aap-agent-hosted", "aap-agent-open");
+      root.append(style, panel);
+      panel.hidden = false;
+      panel.setAttribute("role", "region");
+      opened = true;
+      config.host.append(root);
+      render();
+      return;
+    }
+    root.append(style, panel, launch);
     launch.addEventListener("click", () => open(!opened));
     close.addEventListener("click", () => open(false));
     root.addEventListener("keydown", function (event) {
       if (event.key === "Escape" && opened) { event.preventDefault(); open(false); }
     });
-    input.addEventListener("input", function () { drafts.set(scope(), input.value); renderConversation(); });
-    form.addEventListener("submit", submit);
-    mic.addEventListener("click", startSpeech);
     window.addEventListener("resize", viewport);
     if (window.visualViewport) {
       window.visualViewport.addEventListener("resize", viewport);
@@ -509,18 +670,25 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
       if (config) return;
       if (!options || typeof options.send !== "function") throw new TypeError("AAPAgent.init requires send.");
       config = { send: options.send, office: options.office || {} };
+      if (options.host) {   // P2: the order form's walk (host must be an element; choose, save and tap are the page's own)
+        if (!(options.host instanceof Element) || typeof options.choose !== "function" || typeof options.save !== "function" || typeof options.tap !== "function")
+          throw new TypeError("AAPAgent.init host mode requires host, choose, save and tap.");
+        Object.assign(config, { host: options.host, choose: options.choose, save: options.save, tap: options.tap, talk: options.talk });
+      }
       if (document.body) mount();
       else document.addEventListener("DOMContentLoaded", mount, { once: true });
     },
+    hosts: true,   // this build can mount into a page element (P2's order form checks it before showing its card)
     // The page's own "Ask your agent" buttons open this same panel.
-    open: function () { if (ui && !opened) open(true); },
+    open: function () { if (ui && !opened && !config.host) open(true); },
     update: function (next) {
       if (!next || typeof next !== "object") return;
       data = {
         route: next.route || "home", order: next.order || null,
         needs: Array.isArray(next.needs) ? next.needs : [],
         orders: Array.isArray(next.orders) ? next.orders : [],
-        thread: Array.isArray(next.thread) ? next.thread : [], plan: next.plan || null, profile: next.profile === true
+        thread: Array.isArray(next.thread) ? next.thread : [], plan: next.plan || null, profile: next.profile === true,
+        prompt: next.prompt && typeof next.prompt === "object" ? next.prompt : null
       };
       conversations.forEach((request, order) => recover(order, request));
       render();
