@@ -176,17 +176,27 @@
   }
 
   // Host mode: this order's conversation, oldest first, as the page gives it (its walk lines, the customer's words, replies).
+  // Lines are kept by key and only new or changed ones touch the page, so the live region announces only what is new.
   function renderThread() {
     const lines = data.thread.filter(message => sameScope(message, scope()));
-    const atEnd = ui.body.scrollHeight - ui.body.scrollTop - ui.body.clientHeight < 48;
-    ui.thread.replaceChildren();
-    lines.forEach(function (message) {
-      const you = message.who === "you";
-      const line = element("li", you ? "you" : "says");
-      if (message.pending) line.classList.add("aap-agent-pending");
-      line.append(element("b", "who", you ? "You" : message.who === "desk" ? "Desk" : "Agent"), element("p", "words", String(message.text || "")));
-      ui.thread.append(line);
+    const atEnd = ui.body.scrollHeight - ui.body.scrollTop - ui.body.clientHeight < 48, keep = new Set();
+    lines.forEach(function (message, i) {
+      const key = String(message.key || i), you = message.who === "you", who = you ? "You" : message.who === "desk" ? "Desk" : "Agent";
+      const text = String(message.text || ""), shape = [who, text, Boolean(message.pending)].join("\n");
+      let line = ui.lines.get(key);
+      if (!line || line.dataset.shape !== shape) {
+        const next = element("li", you ? "you" : "says");
+        if (message.pending) next.classList.add("aap-agent-pending");
+        next.append(element("b", "who", who), element("p", "words", text));
+        next.dataset.shape = shape;
+        if (line) line.replaceWith(next);
+        line = next;
+        ui.lines.set(key, line);
+      }
+      keep.add(key);
+      if (ui.thread.children[i] !== line) ui.thread.insertBefore(line, ui.thread.children[i] || null);
     });
+    ui.lines.forEach(function (line, key) { if (!keep.has(key)) { line.remove(); ui.lines.delete(key); } });
     ui.thread.hidden = !lines.length;
     if (atEnd || lines.length !== ui.threadCount) ui.body.scrollTop = ui.body.scrollHeight;
     ui.threadCount = lines.length;
@@ -230,24 +240,39 @@
       ui.answerInput.save.disabled = off || !ui.answerInput.area.value.trim();
     }
     ui.answerBox.hidden = !ui.answerInput;
-    ui.chips.replaceChildren();
-    (prompt && Array.isArray(prompt.chips) ? prompt.chips : []).forEach(function (chip) {
-      const button = element("button", "chip", String(chip.label || ""));
-      button.type = "button";
-      button.disabled = Boolean(chip.disabled);
-      if (chip.pressed) button.setAttribute("aria-pressed", "true");
-      button.addEventListener("click", function () { if (!button.disabled) config.choose(chip); });
-      ui.chips.append(button);
-    });
+    // Chips and the page's button are rebuilt only when they change, so a repaint never takes focus from the one he is on.
+    const chips = prompt && Array.isArray(prompt.chips) ? prompt.chips : [];
+    const chipShape = JSON.stringify([promptId, chips.map(c => [c.label, c.key, c.value, c.version, Boolean(c.disabled), Boolean(c.pressed)])]);
+    if (chipShape !== ui.chipShape) {
+      const focused = ui.chips.contains(document.activeElement) ? document.activeElement.textContent : null;
+      ui.chipShape = chipShape;
+      ui.chips.replaceChildren();
+      chips.forEach(function (chip) {
+        const button = element("button", "chip", String(chip.label || ""));
+        button.type = "button";
+        button.disabled = Boolean(chip.disabled);
+        if (chip.pressed) button.setAttribute("aria-pressed", "true");
+        button.addEventListener("click", function () { if (!button.disabled) config.choose(chip); });
+        ui.chips.append(button);
+        if (focused !== null && button.textContent === focused && !button.disabled) button.focus({ preventScroll: true });
+      });
+    }
     ui.chips.hidden = !ui.chips.childElementCount;
-    ui.action.replaceChildren();
-    const page = prompt && prompt.button;
-    if (page && page.el) {
-      const button = element("button", "page-button", String(page.label || page.el.textContent || "").trim());
-      button.type = "button";
-      button.disabled = Boolean(page.disabled);
-      button.addEventListener("click", function () { if (!button.disabled) config.tap(page.el); });
-      ui.action.append(button);
+    const page = prompt && prompt.button && prompt.button.el ? prompt.button : null;
+    const pageShape = page ? [String(page.label || page.el.textContent || "").trim(), Boolean(page.disabled)].join("\n") : "";
+    if (pageShape !== ui.pageShape || (page && ui.pageEl !== page.el)) {
+      const had = ui.action.contains(document.activeElement);
+      ui.pageShape = pageShape;
+      ui.pageEl = page ? page.el : null;
+      ui.action.replaceChildren();
+      if (page) {
+        const button = element("button", "page-button", String(page.label || page.el.textContent || "").trim());
+        button.type = "button";
+        button.disabled = Boolean(page.disabled);
+        button.addEventListener("click", function () { if (!button.disabled) config.tap(ui.pageEl); });
+        ui.action.append(button);
+        if (had && !button.disabled) button.focus({ preventScroll: true });
+      }
     }
     ui.action.hidden = !ui.action.childElementCount;
     ui.prompt.hidden = ui.promptText.hidden && ui.answerBox.hidden && ui.chips.hidden && ui.action.hidden;
@@ -605,7 +630,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     launch.setAttribute("aria-controls", panel.id);
     launch.setAttribute("aria-haspopup", "dialog");
     ui = { root, panel, close, launch, title, intro, greeting: null, context, suggestions: suggestionBox, question, status, answer, reply, input, send, mic, form, speech,
-      body, thread, threadCount: 0, prompt: promptRow, promptText, chips, answerBox, answerInput: null, action };
+      body, thread, threadCount: 0, lines: new Map(), prompt: promptRow, promptText, chips, chipShape: "", answerBox, answerInput: null, action, pageShape: "", pageEl: null };
     mountedScope = scope();
     input.addEventListener("input", function () { drafts.set(scope(), input.value); renderConversation(); });
     form.addEventListener("submit", submit);
