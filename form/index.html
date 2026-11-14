@@ -4959,8 +4959,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       }
       var prompt = walkPrompt(t, items);
       prompt.id = id;
+      var notes = (D.house_prompts || {}).agent_profile;   // the dedicated copy only when his office's saved notes reach the chat (as on the board)
       AAPAgent.update({ route: "order", order: O.code || "", orders: [{ ap: O.code || "", street: O.property || "", status: "Review" }], plan: true,
-        thread: walkThread(O.code || ""), prompt: prompt });
+        profile: typeof notes === "string" && !!notes.trim() && notes.length <= 2000, thread: walkThread(O.code || ""), prompt: prompt });
     } catch (e) { /* the walk never stops the form */ }
   }
   function walkCurrent() { var items = walkItems(), t = walkPick(items); return { items: items, t: t }; }
