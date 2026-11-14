@@ -895,6 +895,8 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 @media (forced-colors: active) { .dc-card { border-color: CanvasText; } }
 /* Matt 2026-11-14: the agent card names the agent that did the report; full-width solid button that wraps on phones */
 .agent-lead { margin: 0 0 var(--s-3); font: 700 18px/1.35 var(--display); color: var(--ink); }
+.new-badge { display: inline-block; margin-right: var(--s-2); padding: 2px 10px; border-radius: 999px; background: var(--success); color: #fff; font: 700 12px/1.5 var(--font); letter-spacing: .06em; text-transform: uppercase; vertical-align: 2px; }   /* Matt 2026-11-14: "Put New on the chat live with agent" */
+@media (forced-colors: active) { .new-badge { border: 1px solid CanvasText; } }
 #agent-open { width: 100%; white-space: normal; line-height: 1.3; padding: var(--s-3) var(--s-5); background: var(--primary); color: #fff; }
 #agent-open:hover { background: var(--primary-hover); border-color: var(--primary-hover); color: #fff; }
 #agent-open[aria-expanded="true"] { background: #fff; color: var(--primary); }
@@ -971,7 +973,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
        desk turned on (house_prompts.agent_form) for an office whose plan covers it; hidden otherwise (walkPaint). -->
   <!-- Matt 2026-11-14 11:0x: "question about this report? Want something changed? Talk to the AI-Agent that did your report here". -->
   <section class="card agent-card" id="agent-card" aria-labelledby="agent-lead" hidden>
-    <p class="agent-lead" id="agent-lead">Question about this report? Want something changed?</p>
+    <p class="agent-lead" id="agent-lead"><span class="new-badge">New</span> Question about this report? Want something changed?</p>
     <button type="button" class="st" id="agent-open" aria-expanded="false" aria-controls="agent-host">Talk to the AI agent that did your report</button>
     <div id="agent-host" hidden></div>
   </section>
