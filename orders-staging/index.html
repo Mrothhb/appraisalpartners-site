@@ -22,11 +22,11 @@
 :root {
   --font: "Open Sans", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --display: "Schibsted Grotesk", var(--font);
-  --ink: #1c1c1c; --ink-2: #444444; --canvas: #f4f5f5; --field-off: #f4f5f5; --line: #e3e3e3; --line-2: #cccccc;
-  --primary: #005ea8; --primary-hover: #004f8f; --primary-active: #004378; --tint: #eaf3fb; --tint-line: #d5e6f5;
+  --ink: #1c1c1c; --ink-2: #444444; --canvas: #f3f3f5; --field-off: #f4f5f5; --line: #e3e3e3; --line-2: #cccccc;
+  --primary: #0a6ec1; --primary-hover: #085ea6; --primary-active: #074f8c; --tint: #eaf3fb; --tint-line: #d5e6f5;
   --success-ink: #236b1f; --success-bg: #ecf6e8; --success-line: #cfe6c7; --success-edge: #50a81e;
   --warning-bg: #fdf3e1; --warning-edge: #e5a53a; --warning-ink: #7a4300; --warning-line: #f1dcb0;
-  --danger: #a72a2a; --danger-bg: #fdf3f3; --bar: #0d2a46; --bar-h: 64px; --focus: #005ea8;
+  --danger: #a72a2a; --danger-bg: #fdf3f3; --bar: #0d2a46; --bar-bg: linear-gradient(90deg, #016195, #006da5 50%, #016da6); --bar-h: 64px; --focus: #0a6ec1;
   --r-1: 2px; --r-2: 4px; --r-3: 6px; --r-full: 999px;
   --shadow-2: 0 24px 48px -28px rgba(13,42,70,.35), 0 1px 2px rgba(13,42,70,.10);
   --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px;
@@ -59,7 +59,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .link-btn { padding: 0; min-height: 48px; border: 0; background: none; color: var(--primary); font: 600 16px/1.5 var(--font); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 
 /* top bar */
-.appbar { background: var(--bar); color: #fff; min-height: var(--bar-h); }
+.appbar { background: var(--bar-bg); color: #fff; min-height: var(--bar-h); }
 .appbar .wrap { display: flex; align-items: center; gap: var(--s-4); min-height: var(--bar-h); }
 .brand { display: flex; align-items: center; gap: var(--s-3); color: #fff; text-decoration: none; min-height: 48px; flex: none; }
 .brand img { width: 52px; height: 30px; }
@@ -70,7 +70,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .nav a[aria-current], .tabs a[aria-current] { color: #fff; box-shadow: inset 0 -3px 0 #fff; }
 .appbar .right { margin-left: auto; display: flex; align-items: center; gap: var(--s-4); }
 .who { font: 700 16px/1.2 var(--font); white-space: nowrap; }
-.tabs { background: var(--bar); border-top: 1px solid rgba(255,255,255,.12); }
+.tabs { background: var(--bar-bg); border-top: 1px solid rgba(255,255,255,.12); }
 .tabs .wrap { display: flex; flex-wrap: wrap; }
 @media (min-width: 1200px) { .tabs { display: none; } }
 @media (max-width: 1199px) { .nav, .appbar .meter { display: none; } }
@@ -82,9 +82,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .meter[data-level="amber"] i b, .meter[data-level="full"] i b { background: var(--warning-edge); }
 .meter[data-level="amber"], .meter[data-level="full"] { color: #ffe3b0; }
 .meter-row { display: none; }
-@media (max-width: 1199px) { .meter-row { display: flex; background: var(--bar); padding: 0 var(--gutter) var(--s-2); } .meter-row .meter { padding-left: 0; white-space: normal; } }
+@media (max-width: 1199px) { .meter-row { display: flex; background: var(--bar-bg); padding: 0 var(--gutter) var(--s-2); } .meter-row .meter { padding-left: 0; white-space: normal; } }
 @media (min-width: 1200px) and (max-width: 1439px) {   /* with New order in the bar, the week meter takes its own row below it */
-  .appbar .meter { display: none; } .meter-row { display: flex; background: var(--bar); padding: 0 max(var(--gutter), calc((100% - 1200px) / 2 + var(--gutter))) var(--s-2); } }
+  .appbar .meter { display: none; } .meter-row { display: flex; background: var(--bar-bg); padding: 0 max(var(--gutter), calc((100% - 1200px) / 2 + var(--gutter))) var(--s-2); } }
 
 /* page parts */
 .gate { max-width: 720px; margin: var(--s-8) auto; padding: 0 var(--gutter); color: var(--ink-2); }
