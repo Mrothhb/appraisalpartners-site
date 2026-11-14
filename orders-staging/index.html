@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- A&AP orders: appraisalpartners.net/orders/?t=<code>. One person's private page: Home, Orders, Delivered, Plan & billing
-     (Billing for an office without a weekly plan) and Help; New order (#new) mounts neworder.js beside this file; Ask your agent opens the panel from agent.js beside this
+     (Billing for an office without a weekly plan) and Help; New order (#new) mounts neworder.js beside this file; Desk Agent opens the panel from agent.js beside this
      file, which this page hands its data and its one way to send. It reads one keyed record the way the order form reads an
      order, and sends messages exactly as the order form's Questions or feedback box sends them; each order opens its own
      order form. Files go straight to the order's own folder: the web app checks the order is on this page and opens a
@@ -83,7 +83,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .meter[data-level="amber"], .meter[data-level="full"] { color: #fff; }
 .meter-row { display: none; }
 @media (max-width: 1199px) { .meter-row { display: flex; background: var(--bar-bg); padding: 0 var(--gutter) var(--s-2); } .meter-row .meter { padding-left: 0; white-space: normal; } }
-@media (min-width: 1200px) {   /* with New order and Ask your agent in the bar, the week meter takes its own row below it */
+@media (min-width: 1200px) {   /* with New order and Desk Agent in the bar, the week meter takes its own row below it */
   .appbar .meter { display: none; } .meter-row { display: flex; background: var(--bar-bg); padding: 0 max(var(--gutter), calc((100% - 1200px) / 2 + var(--gutter))) var(--s-2); } }
 
 /* page parts */
@@ -166,20 +166,25 @@ footer.site a { color: var(--ink-2); }
 .nav a.newbtn, .tabs a.newbtn { background: #fff; color: var(--bar); border-radius: 4px; margin: 4px 0; min-height: 48px; font-weight: 700; }
 .nav a.newbtn:hover, .tabs a.newbtn:hover { background: #eaf3fb; color: var(--bar); }
 .nav a.newbtn[aria-current], .tabs a.newbtn[aria-current] { box-shadow: inset 0 -3px 0 #005ea8; }
-/* Ask your agent: in the header's right group on every page (the floating launcher on phones), and on Home */
-.talk { position: relative; display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-5); border: 0; border-radius: var(--r-full); background: #fff; color: var(--bar); font: 700 16px/1.2 var(--font); cursor: pointer; white-space: nowrap; align-self: center; }
-.talk:hover { background: var(--tint); }
+/* Desk Agent: a chip cut from the bar in the header's right group on every page (the floating launcher on phones), and on Home */
+.talk { position: relative; display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-4); border: 1px solid rgba(255,255,255,.35); border-radius: var(--r-2); background: rgba(0,0,0,.15); color: #fff; font: 700 16px/1.2 var(--font); cursor: pointer; white-space: nowrap; align-self: center; }
+.talk:hover { background: rgba(0,0,0,.25); }
 .talk svg, .talkline svg { width: 22px; height: 22px; flex: none; }
 .right .talk { margin-right: var(--s-2); }
 .right .talk:focus-visible { outline-color: #fff; }
 @media (min-width: 1200px) { .appbar { position: sticky; top: 0; z-index: 20; } }
 @media (max-width: 600px) { .appbar .talk { display: none; } }
-html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; background: var(--warning-edge); box-shadow: 0 0 0 2px var(--bar); }
+html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; background: var(--warning-edge); box-shadow: 0 0 0 2px #fff; }
 .talk[hidden], .talkline[hidden] { display: none; }
 .talkline { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); margin-top: var(--s-4); padding: var(--s-4) var(--s-5); border: 1px solid var(--tint-line); border-radius: var(--r-2); background: var(--tint); }
 .talkline p { font-weight: 600; color: var(--bar); }
 .talkline p { flex: 1 1 auto; min-width: 0; }
 .talkline .btn { flex: none; white-space: nowrap; }
+/* Order Agent: one quiet control per order row, to the order's own page (coming soon until the form's card is live) */
+.rowagent { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; color: #005ea8; font: 600 16px/1.2 var(--font); text-decoration: none; white-space: nowrap; }
+.rowagent svg { width: 18px; height: 18px; flex: none; } a.rowagent:hover { text-decoration: underline; text-underline-offset: 3px; }
+.rowagent.soon { color: var(--ink-2); cursor: default; }
+.orow > .rowagent { display: flex; width: max-content; margin: calc(-1 * var(--s-3)) 0 var(--s-2) auto; }
 /* files straight to the order: a drop zone, Choose files, one line per file with its progress */
 .up { display: grid; gap: var(--s-3); }
 .drop { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; padding: var(--s-3) var(--s-4); border: 2px dashed #7fb0dc; border-radius: var(--r-2); background: var(--tint); }
@@ -233,7 +238,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
 <main class="col" id="main" hidden></main>
 <footer class="site" id="foot" hidden><div class="wrap" id="foot-line"></div></footer>
 
-<script src="agent.js?v=20261114c" defer></script>
+<script src="agent.js?v=20261114d" defer></script>
 <script>
 (function () {
   "use strict";
@@ -303,6 +308,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
   function needsOf(code) { return (B.needs || []).filter(function (n) { return n.order === code; }); }
   function plan() { var u = B.usage || B.usage_bar; return u && typeof u === "object" ? u : null; }
   function billName() { return plan() ? "Plan & billing" : "Billing"; }
+  var ORDER_AGENT = false;   // true once the order form's agent card is live: each row's Order Agent then opens it
   function messaging() { return Array.isArray(B.messages); }   // a record that carries the conversation can send; Drew's older record cannot
   function filesHref(o) {   // the order's own folder: what he drops there gets today's file check
     var f = (o && o.files) || {};
@@ -355,12 +361,18 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     }
   }
 
-  // ---------- Ask your agent: every one opens the same panel (agent.js); hidden while there is no panel ----------
+  // ---------- Desk Agent: every one opens the same panel (agent.js); hidden while there is no panel ----------
   function talk(spec) {
-    var b = spec === "talk" ? h("button.talk", { type: "button", hidden: !agentReady }, svgUse("icon-talk"), "Ask your agent")
-                            : h("button.btn", { type: "button" }, svgUse("icon-talk"), "Ask your agent");   // its line shows or hides it
+    var b = spec === "talk" ? h("button.talk", { type: "button", hidden: !agentReady }, svgUse("icon-talk"), "Desk Agent")
+                            : h("button.btn", { type: "button" }, svgUse("icon-talk"), "Ask the Desk Agent");   // its line shows or hides it
     b.addEventListener("click", function () { var A = window.AAPAgent; if (A && typeof A.open === "function") A.open(); });
     return b;
+  }
+  function rowAgent(o) {   // the Order Agent lives on the order's own page; never a second panel here
+    var link = formOf(o);
+    if (!link) return null;
+    return ORDER_AGENT ? h("a.rowagent", { href: link + "#agent" }, svgUse("icon-talk"), "Order Agent")
+                       : h("span.rowagent.soon", { "aria-disabled": "true" }, svgUse("icon-talk"), "Order Agent · coming soon");
   }
   function showTalk() { document.querySelectorAll(".talk, .talkline").forEach(function (b) { b.hidden = !agentReady; }); }
 
@@ -494,8 +506,8 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     var state = you ? "Needs your attention" : o.due && o.due !== "after you start" ? "Ready " + o.due : o.due === "after you start" ? "Ready date set at Start" : o.next || "";
     var link = formOf(o), row = h(link ? "a.row" : "div.row", link ? { href: link, "data-tone": you ? "you" : "" } : { "data-tone": you ? "you" : "" },
       h("span.street", o.street || o.order), h("span.meta", meta), h("span.state", h("b", o.stage || ""), state));
-    if (!withFiles || !o.files) return row;
-    return h("div.orow", link ? { "data-go": link } : null, row, uploader(o));
+    if (!messaging() && (!withFiles || !o.files)) return row;
+    return h("div.orow", link ? { "data-go": link } : null, row, withFiles && o.files ? uploader(o) : null, messaging() ? rowAgent(o) : null);
   }
   function home() {
     var items = B.needs || [], needs = h("section.sec", h("h2", items.length ? "Needs your attention (" + items.length + ")" : "Needs your attention"));
@@ -507,7 +519,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     if (!items.length && !B.next_start) needs.appendChild(h("p.empty", "Nothing needs you right now."));
     if (newSent.length) needs.appendChild(h("div.todo", h("p", h("b", newSent.length === 1 ? "Your new order is with the desk." : newSent.length + " new orders are with the desk."),
       " It shows under Open orders when the desk opens it, within a few minutes.")));
-    if (messaging()) needs.appendChild(h("div.talkline", { hidden: !agentReady }, h("p", "Questions about an order or a file? Your agent answers here."), talk("btn")));
+    if (messaging()) needs.appendChild(h("div.talkline", { hidden: !agentReady }, h("p", "Your Desk Agent answers questions about orders, ready dates, pricing and new orders. Each order's page gets its own Order Agent."), talk("btn")));
     var list = h("div.rows");
     sorted().forEach(function (o) { list.appendChild(orderRow(o, true)); });
     return h("div", needs, h("section.sec", h("h2", "Open orders (" + rows().length + ")", h("a", { href: "#orders" }, "All orders")), rows().length ? list : h("p.empty", "No open orders.")));
@@ -576,6 +588,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
       acts.appendChild(rev);
     }
     if (link) acts.appendChild(h("a.btn.ghost", { href: link }, o.payment_due ? "Pay" : "Open order"));
+    if (link && messaging()) acts.appendChild(rowAgent(o));
     var more = h("div.more", h("span.meta", h("b", "Version " + latest.n + " · Latest · " + day(latest.at))), acts);
     if (open[o.order]) more.appendChild(revisionForm(o));
     var sent = statusLine("rev-" + o.order); if (sent) more.appendChild(sent);
@@ -629,7 +642,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     });
     return h("div", h("section.top", h("h1", "Help with reports and orders"),
         h("div.acts", { style: "margin-top:12px" }, out(h("a.btn", { href: "../total-file.html" }, "Where your TOTAL file goes"))),
-        h("p.meta", { style: "margin-top:12px" }, "Questions? Ask your agent, or email ", h("a", { href: "mailto:desk@aandap.com" }, "desk@aandap.com"), ".")),
+        h("p.meta", { style: "margin-top:12px" }, "Questions? Ask the Desk Agent, or email ", h("a", { href: "mailto:desk@aandap.com" }, "desk@aandap.com"), ".")),
       h("section.sec", list));
   }
   function notice() {   // a message not confirmed yet: kept and retried; he can send it again now or discard it
@@ -925,7 +938,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
   }).observe(document.querySelector(".appbar"));
   document.addEventListener("click", function (e) {   // a whole order row opens its form, as its Open order link does; its own buttons, links, files and revision box stay theirs
     var row = e.target.closest ? e.target.closest("[data-go]") : null;
-    if (!row || e.button !== 0 || e.defaultPrevented || e.target.closest("a, button, input, textarea, select, label, summary, details, .drop, .up, .rev")) return;
+    if (!row || e.button !== 0 || e.defaultPrevented || e.target.closest("a, button, input, textarea, select, label, summary, details, .drop, .up, .rev, .rowagent")) return;
     if (window.getSelection && String(window.getSelection())) return;   // he was selecting text, not opening the order
     if (e.metaKey || e.ctrlKey || e.shiftKey) window.open(row.getAttribute("data-go"), "_blank", "noopener"); else location.href = row.getAttribute("data-go");
   });

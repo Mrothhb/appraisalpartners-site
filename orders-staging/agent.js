@@ -5,8 +5,8 @@
 
   const PLACEHOLDER = "Ask about orders, files or billing";
   const SENT = "Sent. Your desk answers within a few minutes.";
-  const LABEL = "Ask your agent";
-  const GREETING = "Questions about an order? Ask here. Replies in minutes.";
+  const LABEL = "Desk Agent";
+  const GREETING = "Your Desk Agent: orders, ready dates, pricing. Ask here.";
   const ASK = "Ask about this item";   // host mode (the order form's walk)
   let seenKey = "aap-agent-seen-";
   try { seenKey += new URLSearchParams(window.location.search).get("t") || ""; } catch (_) { /* No link code: one key. */ }
@@ -305,11 +305,19 @@
       ui.input.value = drafts.get(order) || "";
     }
     // Dedicated only for a plan office whose saved profile reaches the chat, so the memory promise holds
-    const dedicated = !!(data.plan && data.profile);
-    ui.title.textContent = dedicated ? "Your dedicated agent" : "A&AP agent";
-    ui.intro.textContent = dedicated
-      ? "This agent works only for " + (config.office.name || "your office") + ". It remembers your orders, your preferences and the way you like things done, and it gets more helpful with every order. Think of it as your assistant at A&AP."
-      : "Ask about any order here, or anything else you need. Customers on a monthly plan get their own dedicated agent that remembers their orders, preferences and style.";
+    const dedicated = !!(data.plan && data.profile), office = String(config.office.name || "").trim();
+    if (config.host) {   // the order form's card: its copy is P2's, never the Desk Agent's
+      ui.title.textContent = dedicated ? "Your dedicated agent" : "A&AP agent";
+      ui.intro.textContent = dedicated
+        ? "This agent works only for " + (config.office.name || "your office") + ". It remembers your orders, your preferences and the way you like things done, and it gets more helpful with every order. Think of it as your assistant at A&AP."
+        : "Ask about any order here, or anything else you need. Customers on a monthly plan get their own dedicated agent that remembers their orders, preferences and style.";
+    } else {
+      ui.title.textContent = !dedicated ? "A&AP Desk Agent" : office && office.length <= 20 ? office + " Desk Agent" : "Your Desk Agent";   // a long name stays in the footer
+      ui.intro.textContent = dedicated
+        ? "This Desk Agent works only for " + (office || "your office") + ". It remembers your orders, your preferences and the way you like things done, and it gets more helpful with every order. Think of it as your assistant at A&AP."
+        : "Ask about any order, a ready date, pricing, your files or a new order. Customers on a monthly plan get their own Desk Agent that remembers their orders, preferences and style.";
+      ui.disclosure.textContent = dedicated ? "This is your " + (office ? office + " " : "") + "Desk Agent (AI)." : "This is the Appraisal Partners A&AP Desk Agent (AI).";
+    }
     renderContext();
     renderConversation();
     if (config.host) { renderThread(); renderPrompt(); }
@@ -565,7 +573,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     panel.setAttribute("aria-labelledby", "aap-agent-title");
     const header = element("div", "header");
     const heading = element("h2", "heading");
-    const title = element("span", "heading-text", "A&AP agent");
+    const title = element("span", "heading-text", config.host ? "A&AP agent" : "A&AP Desk Agent");
     title.id = "aap-agent-title";
     heading.append(mark(), title);
     const close = element("button", "close", "Close");
@@ -619,7 +627,8 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     const speech = element("p", "speech");
     speech.setAttribute("role", "status");
     form.append(field, sendRow, speech);
-    footer.append(form, element("p", "disclosure", "AI agent"));
+    const disclosure = element("p", "disclosure", config.host ? "AI agent" : "This is the Appraisal Partners A&AP Desk Agent (AI).");
+    footer.append(form, disclosure);
     if (config.host) footer.prepend(promptRow);
     panel.append(header, body, footer);
     const launch = element("button", "launch");
@@ -632,7 +641,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     launch.setAttribute("aria-expanded", "false");
     launch.setAttribute("aria-controls", panel.id);
     launch.setAttribute("aria-haspopup", "dialog");
-    ui = { root, panel, close, launch, title, intro, greeting: null, context, suggestions: suggestionBox, question, status, answer, reply, input, send, mic, form, speech,
+    ui = { root, panel, close, launch, title, intro, disclosure, greeting: null, context, suggestions: suggestionBox, question, status, answer, reply, input, send, mic, form, speech,
       body, thread, threadCount: 0, lines: new Map(), prompt: promptRow, promptText, chips, chipShape: "", answerBox, answerInput: null, action, pageShape: "", pageEl: null };
     mountedScope = scope();
     input.addEventListener("input", function () { drafts.set(scope(), input.value); renderConversation(); });
