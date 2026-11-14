@@ -815,7 +815,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
   function flush() {
     var pending = outbox().filter(function (i) { return !i.sent; });
     return pending.reduce(function (p, item) {
-      return p.then(function () { return deliver(item); }).catch(function () { failed(item); });
+      return p.then(function () { return deliver(item); }).then(function (r) { if (r && item.t === T) last = r; }, function () { failed(item); });   // a replay shows the answer too
     }, Promise.resolve()).then(function () {
       var all = outbox(), keys = {};
       entries(last).concat(B.messages || []).forEach(function (m) { if (m.key) keys[m.key] = true; });   // the record's own echo only, never this outbox
@@ -854,7 +854,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     return settled(item);
   }
   function settled(item) {
-    return deliver(item).then(function () { paintPage(); agentSync(); return { ok: true, id: item.key }; }, function (e) {
+    return deliver(item).then(function (r) { if (r && item.t === T) last = r; paintPage(); agentSync(); return { ok: true, id: item.key }; }, function (e) {   // the board's own read-back: an instant answer shows now
       failed(item); paintPage(); agentSync();
       return { ok: false, id: item.key, error: e && e.code === "unknown" ? "This order's page has closed. Send it as a general message." : "Not sent yet. " + kept() };
     });
