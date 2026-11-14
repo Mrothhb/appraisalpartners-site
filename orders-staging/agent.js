@@ -11,7 +11,7 @@
   try { seenKey += new URLSearchParams(window.location.search).get("t") || ""; } catch (_) { /* No link code: one key. */ }
   const conversations = new Map();
   const drafts = new Map();
-  let data = { route: "home", order: null, needs: [], orders: [], thread: [], plan: null };
+  let data = { route: "home", order: null, needs: [], orders: [], thread: [], plan: null, profile: false };
   let config = null;
   let ui = null;
   let recognition = null;
@@ -193,8 +193,10 @@
       mountedScope = order;
       ui.input.value = drafts.get(order) || "";
     }
-    ui.title.textContent = data.plan ? "Your dedicated agent" : "A&AP agent";
-    ui.intro.textContent = data.plan
+    // Dedicated only for a plan office whose saved profile reaches the chat, so the memory promise holds
+    const dedicated = !!(data.plan && data.profile);
+    ui.title.textContent = dedicated ? "Your dedicated agent" : "A&AP agent";
+    ui.intro.textContent = dedicated
       ? "This agent works only for " + (config.office.name || "your office") + ". It remembers your orders, your preferences and the way you like things done, and it gets more helpful with every order. Think of it as your assistant at A&AP."
       : "Ask about any order here, or anything else you need. Customers on a monthly plan get their own dedicated agent that remembers their orders, preferences and style.";
     renderContext();
@@ -518,7 +520,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
         route: next.route || "home", order: next.order || null,
         needs: Array.isArray(next.needs) ? next.needs : [],
         orders: Array.isArray(next.orders) ? next.orders : [],
-        thread: Array.isArray(next.thread) ? next.thread : [], plan: next.plan || null
+        thread: Array.isArray(next.thread) ? next.thread : [], plan: next.plan || null, profile: next.profile === true
       };
       conversations.forEach((request, order) => recover(order, request));
       render();

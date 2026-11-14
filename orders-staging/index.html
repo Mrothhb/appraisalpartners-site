@@ -233,7 +233,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
 <main class="col" id="main" hidden></main>
 <footer class="site" id="foot" hidden><div class="wrap" id="foot-line"></div></footer>
 
-<script src="agent.js?v=20261114b" defer></script>
+<script src="agent.js?v=20261114c" defer></script>
 <script>
 (function () {
   "use strict";
@@ -873,7 +873,9 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
                                                    label: n.kind === "files" ? filesLabel(o) : LABEL[n.kind] || "Open order", href: needHref(n, o) }; }).filter(function (n) { return n.href; }),
         orders: rows().map(function (o) { return { ap: o.order, street: o.street || o.order, status: o.stage || "", ready: o.due || "", due: o.client_due || "" }; }),
         thread: conversation().map(function (m) { return { at: m.at, who: m.who === "desk" ? "desk" : "you", order: m.order || null, text: m.text, id: m.key || "", re: m.re || "", pending: !!m.pending }; }),
-        plan: plan() ? { pct: Math.max(0, Math.round(Number(plan().pct) || 0)), resets: plan().resets_text || "", refill: messaging() } : null
+        plan: plan() && Number(plan().cap) > 0 ? { pct: Math.max(0, Math.round(Number(plan().pct) || 0)), resets: plan().resets_text || "", refill: messaging() } : null,
+        // the saved profile the instant-chat server puts in the prompt (Code.gs: a non-empty string of at most 2,000 characters)
+        profile: typeof B.profile === "string" && !!B.profile.trim() && B.profile.length <= 2000
       });
     } catch (e) {}   // the panel's trouble never stops this page
   }
