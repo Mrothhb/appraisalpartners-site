@@ -162,7 +162,8 @@
       const key = String(message.key || message.id || i), you = message.who === "you";
       const who = you ? "You" : !config.host ? LABEL : message.who === "desk" ? "Desk" : HOST_LABEL;
       const first = !you && (i === 0 || lines[i - 1].who === "you"), typing = Boolean(message.pending && message.typing);
-      const text = String(message.text || ""), shape = [who, text, Boolean(message.pending), first, typing].join("\n");
+      const note = typeof message.note === "string" ? message.note : "";
+      const text = String(message.text || ""), shape = [who, text, Boolean(message.pending), first, typing, note].join("\n");
       let line = ui.lines.get(key);
       if (!line || line.dataset.shape !== shape) {
         const next = element("li", you ? "you" : "says");
@@ -177,6 +178,7 @@
           dots.append(element("span", "dot"), element("span", "dot"), element("span", "dot"));
           next.append(name, dots);
         } else next.append(name, element("p", "words", text));
+        if (note) next.append(element("p", "note", note));   // e.g. "Sent": his message is saved, no reply yet
         if (first) next.prepend(avatar("bubble-avatar"));
         next.dataset.shape = shape;
         if (line) line.replaceWith(next);
@@ -598,6 +600,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
 .aap-agent-says .aap-agent-words, .aap-agent-intro .aap-agent-words { background:#fff; border:1px solid #e3e3e3; border-bottom-left-radius:4px; color:#1c1c1c; }
 .aap-agent-you .aap-agent-words { background:#0a6ec1; color:#fff; border-bottom-right-radius:4px; }
 .aap-agent-pending .aap-agent-words { color:#5f5f5f; }
+.aap-agent-note { padding:0 4px; font-size:12px; line-height:1.3; color:#5f5f5f; }
 .aap-agent-typing { display:flex; gap:4px; align-items:center; min-height:44px; }
 .aap-agent-dot { width:8px; height:8px; border-radius:50%; background:#5f5f5f; animation:aap-agent-bounce 1.2s infinite ease-in-out; }
 .aap-agent-dot:nth-child(2) { animation-delay:.15s; }

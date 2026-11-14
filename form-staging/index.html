@@ -4730,7 +4730,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // for the item, review and action it was shown for (review fixes, 11-14). "Ask about this item" is his own q_fb_ message
   // (sendFeedback) naming the item; replies are read from the form log (takeLog). Any error in here leaves the form as it
   // was: every hook is wrapped.
-  var AGENT_JS = "/orders-staging/agent.js?v=20261114ux3";
+  var AGENT_JS = "/orders-staging/agent.js?v=20261114ux4";
   var START_LANE = /^(partial(?:-conversion|-we-set)?|full(?:-conversion)?|self-service(?:-conversion)?)$/;   // Code.gs's own Start rule
   var walk = { load: "", mounted: false, open: false, rev: null, cur: null, acked: {}, skipped: {}, pending: {}, saved: {},
     server: {}, lines: [], n: 0, replies: {}, asks: {}, line: null, reader: null, curVersion: null, dcAt: {}, dcSkip: {} };
@@ -4956,12 +4956,14 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function walkThread(code) {
     var out = [], replies = walkReplies();
-    // After a reload: his saved messages that got a reply, oldest first, with their replies (this page's own sends follow below)
+    // After a reload: every saved message of his, oldest first, with its replies where there are any (this page's own sends
+    // follow below). No reply yet: a small "Sent" once the server holds it, "Sending…" while only this browser does; no fake reply.
     Object.keys(state.answers || {}).filter(function (k) { return /^q_fb_[a-z0-9_]+$/.test(k) && !walk.asks[k]; }).map(function (k) {
       try { var e = JSON.parse(state.answers[k]); return e && typeof e.text === "string" ? { key: k, at: e.at, text: e.text } : null; } catch (x) { return null; }
-    }).filter(function (m) { return m && replies.some(function (r) { return r.re === m.key; }); }).sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); }).forEach(function (m) {
-      out.push({ who: "you", text: m.text, key: "h-" + m.key, order: code, history: true });
-      replies.filter(function (r) { return r.re === m.key; }).forEach(function (r, i) { out.push({ who: r.by === "agent" ? "agent" : "desk", text: r.text, key: "re-" + m.key + "-" + i, order: code, history: true }); });
+    }).filter(Boolean).sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); }).forEach(function (m) {
+      var mine = replies.filter(function (r) { return r.re === m.key; });
+      out.push({ who: "you", text: m.text, key: "h-" + m.key, order: code, history: true, note: mine.length ? "" : m.key in walk.server ? "Sent" : "Sending…" });
+      mine.forEach(function (r, i) { out.push({ who: r.by === "agent" ? "agent" : "desk", text: r.text, key: "re-" + m.key + "-" + i, order: code, history: true }); });
     });
     walk.lines.forEach(function (l) {
       out.push({ who: l.who, text: l.text, key: l.key, order: code });
