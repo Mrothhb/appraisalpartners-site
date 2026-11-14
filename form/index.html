@@ -84,14 +84,14 @@
   --font: "Open Sans", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --display: "Schibsted Grotesk", var(--font);
   --ink: #1c1c1c; --ink-2: #5f5f5f;
-  --canvas: #f4f5f5; --card: #ffffff; --field-off: #f4f5f5;
+  --canvas: #f3f3f5; --card: #ffffff; --field-off: #f4f5f5;
   --line: #e3e3e3; --line-2: #cccccc; --edge: #8a949f;
-  --primary: #0b6fc1; --primary-hover: #00669b; --primary-active: #005380; --deep: #005c83; --tint: #eaf3fb; --tint-line: #d5e6f5;
+  --primary: #0a6ec1; --primary-hover: #085ea6; --primary-active: #074f8c; --deep: #005c83; --tint: #eaf3fb; --tint-line: #d5e6f5;
   --success: #2b7e26; --success-edge: #50a81e; --success-bg: #ecf6e8; --success-ink: #236b1f; --success-line: #cfe6c7;
   --warning-bg: #fdf3e1; --warning-edge: #e5a53a; --warning-ink: #7a4300; --warning-line: #f1dcb0;
   --danger: #a72a2a;
-  --bar: #0d2a46; --bar-h: 64px;
-  --focus: #0b6fc1; --focus-ring: rgba(11,111,193,.25);
+  --bar: #0d2a46; --bar-bg: linear-gradient(90deg, #016195, #0073ae 50%, #017dbd); --bar-h: 64px;
+  --focus: #0a6ec1; --focus-ring: rgba(10,110,193,.25);
   --r-1: 2px; --r-2: 4px; --r-3: 6px; --r-full: 999px;
   --shadow-1: 0 0 10px -6px rgba(0,0,0,.10);
   --shadow-2: 0 24px 48px -28px rgba(13,42,70,.35), 0 1px 2px rgba(13,42,70,.10);
@@ -112,7 +112,7 @@
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 html, body { margin: 0; background: var(--canvas); color: var(--ink); font: 400 16px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
-body { container-type: inline-size; background: var(--canvas) linear-gradient(var(--bar), var(--bar)) top / 100% var(--bar-h) no-repeat; }
+body { container-type: inline-size; background: var(--canvas) var(--bar-bg) top / 100% var(--bar-h) no-repeat; }
 p { margin: 0; }
 b, strong { font-weight: 600; }
 button, input, textarea { font: inherit; }
@@ -131,8 +131,8 @@ header svg { width: 52px; height: 30.5px; flex: none; }
 header svg path { fill: #e8eae6; } header svg path[fill^="url"] { fill: #96aac4; }
 header > div { display: flex; align-items: baseline; gap: var(--s-4); min-width: 0; }
 .brand { font: 700 20px/1.2 var(--font); color: #fff; letter-spacing: 0; white-space: nowrap; }
-.sub { color: rgba(255,255,255,.86); font-size: 15px; font-weight: 600; line-height: 1.3; white-space: nowrap; }
-.conn { margin-left: auto; max-width: 42%; font-size: 13px; font-weight: 600; line-height: 1.35; color: rgba(255,255,255,.86); text-align: right; font-variant-numeric: tabular-nums; }
+.sub { color: #fff; font-size: 15px; font-weight: 600; line-height: 1.3; white-space: nowrap; }
+.conn { margin-left: auto; max-width: 42%; font-size: 13px; font-weight: 600; line-height: 1.35; color: #fff; text-align: right; font-variant-numeric: tabular-nums; }
 header :focus-visible { outline-color: #fff; }
 
 /* ---------- cards: the site's .card, its blue .h as the section header ---------- */
