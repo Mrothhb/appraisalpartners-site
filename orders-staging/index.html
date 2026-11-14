@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- A&AP orders: appraisalpartners.net/orders/?t=<code>. One person's private page: Home, Orders, Delivered, Plan & billing
-     (Billing for an office without a weekly plan) and Help; New order (#new) mounts neworder.js beside this file; Talk to your agent opens the panel from agent.js beside this
+     (Billing for an office without a weekly plan) and Help; New order (#new) mounts neworder.js beside this file; Ask your agent opens the panel from agent.js beside this
      file, which this page hands its data and its one way to send. It reads one keyed record the way the order form reads an
      order, and sends messages exactly as the order form's Questions or feedback box sends them; each order opens its own
      order form. Files go straight to the order's own folder: the web app checks the order is on this page and opens a
@@ -83,7 +83,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .meter[data-level="amber"], .meter[data-level="full"] { color: #ffe3b0; }
 .meter-row { display: none; }
 @media (max-width: 1199px) { .meter-row { display: flex; background: var(--bar-bg); padding: 0 var(--gutter) var(--s-2); } .meter-row .meter { padding-left: 0; white-space: normal; } }
-@media (min-width: 1200px) and (max-width: 1439px) {   /* with New order in the bar, the week meter takes its own row below it */
+@media (min-width: 1200px) {   /* with New order and Ask your agent in the bar, the week meter takes its own row below it */
   .appbar .meter { display: none; } .meter-row { display: flex; background: var(--bar-bg); padding: 0 max(var(--gutter), calc((100% - 1200px) / 2 + var(--gutter))) var(--s-2); } }
 
 /* page parts */
@@ -165,12 +165,15 @@ footer.site a { color: var(--ink-2); }
 .nav a.newbtn, .tabs a.newbtn { background: #fff; color: var(--bar); border-radius: 4px; margin: 4px 0; min-height: 48px; font-weight: 700; }
 .nav a.newbtn:hover, .tabs a.newbtn:hover { background: #eaf3fb; color: var(--bar); }
 .nav a.newbtn[aria-current], .tabs a.newbtn[aria-current] { box-shadow: inset 0 -3px 0 #005ea8; }
-/* Talk to your agent: in the header on every page, and on Home */
-.talk { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-5); border: 0; border-radius: var(--r-full); background: #fff; color: var(--bar); font: 700 16px/1.2 var(--font); cursor: pointer; white-space: nowrap; align-self: center; }
+/* Ask your agent: in the header's right group on every page (the floating launcher on phones), and on Home */
+.talk { position: relative; display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-5); border: 0; border-radius: var(--r-full); background: #fff; color: var(--bar); font: 700 16px/1.2 var(--font); cursor: pointer; white-space: nowrap; align-self: center; }
 .talk:hover { background: var(--tint); }
 .talk svg, .talkline svg { width: 22px; height: 22px; flex: none; }
-.nav .talk { margin-left: var(--s-4); }
-.tabs .talk { margin: var(--s-2) 0 var(--s-2) var(--s-2); }
+.right .talk { margin-right: var(--s-2); }
+.right .talk:focus-visible { outline-color: #fff; }
+@media (min-width: 1200px) { .appbar { position: sticky; top: 0; z-index: 20; } }
+@media (max-width: 600px) { .appbar .talk { display: none; } }
+html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; background: var(--warning-edge); box-shadow: 0 0 0 2px var(--bar); }
 .talk[hidden], .talkline[hidden] { display: none; }
 .talkline { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); margin-top: var(--s-4); padding: var(--s-4) var(--s-5); border: 1px solid var(--tint-line); border-radius: var(--r-2); background: var(--tint); }
 .talkline p { font-weight: 600; color: var(--bar); }
@@ -229,7 +232,7 @@ footer.site a { color: var(--ink-2); }
 <main class="col" id="main" hidden></main>
 <footer class="site" id="foot" hidden><div class="wrap" id="foot-line"></div></footer>
 
-<script src="agent.js?v=20261113c" defer></script>
+<script src="agent.js?v=20261114a" defer></script>
 <script>
 (function () {
   "use strict";
@@ -339,8 +342,8 @@ footer.site a { color: var(--ink-2); }
       host.textContent = "";
       NAV.forEach(function (n) { var a = h("a", { href: n[0] }, n[1]); if (n[0] === "#" + page) a.setAttribute("aria-current", "page"); host.appendChild(a); });
       var nw = h("a.newbtn", { href: "#new" }, "New order"); if (page === "new") nw.setAttribute("aria-current", "page"); host.appendChild(nw);
-      host.appendChild(talk("talk"));
     });
+    if (!document.querySelector(".right .talk")) $("who").before(talk("talk"));   // once, left of the name; kept across repaints
     $("who").textContent = B.person || "";
     var m = meter(), top = $("meter"), row = $("meter-row");
     row.textContent = ""; top.hidden = !m;
@@ -351,10 +354,10 @@ footer.site a { color: var(--ink-2); }
     }
   }
 
-  // ---------- Talk to your agent: every one opens the same panel (agent.js); hidden while there is no panel ----------
+  // ---------- Ask your agent: every one opens the same panel (agent.js); hidden while there is no panel ----------
   function talk(spec) {
-    var b = spec === "talk" ? h("button.talk", { type: "button", hidden: !agentReady }, svgUse("icon-talk"), "Talk to your agent")
-                            : h("button.btn", { type: "button" }, svgUse("icon-talk"), "Talk to your agent");   // its line shows or hides it
+    var b = spec === "talk" ? h("button.talk", { type: "button", hidden: !agentReady }, svgUse("icon-talk"), "Ask your agent")
+                            : h("button.btn", { type: "button" }, svgUse("icon-talk"), "Ask your agent");   // its line shows or hides it
     b.addEventListener("click", function () { var A = window.AAPAgent; if (A && typeof A.open === "function") A.open(); });
     return b;
   }
@@ -914,6 +917,9 @@ footer.site a { color: var(--ink-2); }
     return true;
   }
   window.addEventListener("load", agentSync);   // the panel's script arrives after this one
+  if ("IntersectionObserver" in window) new IntersectionObserver(function (e) {   // the bar scrolled away (below 1200px): the launcher shows as a circle
+    document.documentElement.classList.toggle("aap-agent-scrolled", !e[0].isIntersecting);
+  }).observe(document.querySelector(".appbar"));
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") load().then(flush); });
   if (!T) { gate("Open this page from your link."); return; }
   load().then(function () { opened(); if (B && messaging()) flush(); }).then(soon);

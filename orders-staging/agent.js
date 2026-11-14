@@ -5,6 +5,10 @@
 
   const PLACEHOLDER = "Ask about orders, files or billing";
   const SENT = "Sent. Your desk answers within a few minutes.";
+  const LABEL = "Ask your agent";
+  const GREETING = "Questions about an order? Ask here. Replies in minutes.";
+  let seenKey = "aap-agent-seen-";
+  try { seenKey += new URLSearchParams(window.location.search).get("t") || ""; } catch (_) { /* No link code: one key. */ }
   const conversations = new Map();
   const drafts = new Map();
   let data = { route: "home", order: null, needs: [], orders: [], thread: [], plan: null };
@@ -16,6 +20,8 @@
   let speechDraft = "";
   let opened = false;
   let mountedScope = null;
+  let seenMemory = null;
+  let opener = null;
 
   function element(tag, name, text) {
     const el = document.createElement(tag);
@@ -187,18 +193,79 @@
       mountedScope = order;
       ui.input.value = drafts.get(order) || "";
     }
+    ui.title.textContent = data.plan ? "Your dedicated agent" : "A&AP agent";
+    ui.intro.textContent = data.plan
+      ? "This agent works only for " + (config.office.name || "your office") + ". It remembers your orders, your preferences and the way you like things done, and it gets more helpful with every order. Think of it as your assistant at A&AP."
+      : "Ask about any order here, or anything else you need. Customers on a monthly plan get their own dedicated agent that remembers their orders, preferences and style.";
     renderContext();
     renderConversation();
+    unread();
   }
 
+  // The last-opened mark per link code: the newest desk reply's time when the panel was last open (the desk's clock, so a
+  // phone's own clock never hides or invents a dot). Memory stands in when this browser cannot store it.
+  function seen(value) {
+    if (value !== undefined) seenMemory = value;
+    try {
+      if (value !== undefined) localStorage.setItem(seenKey, String(value));
+      else { const stored = localStorage.getItem(seenKey); if (stored !== null) return Number(stored) || 0; }
+    } catch (_) { /* Not stored; memory only. */ }
+    return seenMemory;
+  }
+
+  function unread() {
+    const newest = data.thread.reduce(function (most, message) {
+      return message.who === "desk" && sameScope(message, scope()) ? Math.max(most, Date.parse(message.at) || 0) : most;
+    }, 0);
+    if (opened) seen(newest);
+    const mark = seen();
+    const yes = !opened && newest > 0 && (mark === null || newest > mark);
+    document.documentElement.classList.toggle("aap-agent-unread", yes);
+    ui.launch.setAttribute("aria-label", yes ? LABEL + ", 1 new reply" : LABEL);
+    document.querySelectorAll(".talk").forEach(function (button) {
+      if (yes) button.setAttribute("aria-label", LABEL + ", 1 new reply"); else button.removeAttribute("aria-label");
+    });
+  }
+
+  function shown(el) { return Boolean(el && el !== document.body && el.isConnected && el.getClientRects().length); }
+
   function open(yes) {
+    if (yes) opener = document.activeElement;
     opened = yes;
     ui.root.classList.toggle("aap-agent-open", yes);
     ui.panel.hidden = !yes;
     ui.launch.setAttribute("aria-expanded", String(yes));
     if (!yes) stopSpeech();
-    // Focus a button, never the input: opening must not summon the phone keyboard.
-    (yes ? ui.close : ui.launch).focus({ preventScroll: true });
+    greet(false);
+    unread();
+    // Focus a button, never the input: opening must not summon the phone keyboard. Closing goes back to the button that
+    // opened it, else the launcher, else the page's own bar button (the launcher is hidden on wider screens).
+    const back = [opener, ui.launch].concat(Array.from(document.querySelectorAll(".talk"))).find(shown);
+    if (yes) ui.close.focus({ preventScroll: true });
+    else if (back) back.focus({ preventScroll: true });
+  }
+
+  // Once per browser, on phones only: a line above the launcher, gone after 8 seconds or the first tap.
+  function greet(yes) {
+    if (!yes) {
+      if (ui.greeting) ui.greeting.remove();
+      ui.greeting = null;
+      return;
+    }
+    try {
+      if (!window.matchMedia("(max-width:600px)").matches || localStorage.getItem("aap-agent-greeted")) return;
+      localStorage.setItem("aap-agent-greeted", "1");
+    } catch (_) { return; }
+    const bubble = element("div", "greeting");
+    bubble.setAttribute("role", "status");
+    const dismiss = element("button", "greeting-close", "Close");
+    dismiss.type = "button";
+    dismiss.addEventListener("click", () => greet(false));
+    bubble.append(element("p", "greeting-text", GREETING), dismiss);
+    ui.root.insertBefore(bubble, ui.launch);
+    ui.greeting = bubble;
+    setTimeout(() => greet(false), 8000);
+    document.addEventListener("pointerdown", () => setTimeout(() => greet(false), 0), { once: true, capture: true });
   }
 
   async function submit(event) {
@@ -288,7 +355,7 @@
     const root = element("div", "root");
     const style = element("style", "style");
     style.textContent = `
-.aap-agent-root { position:fixed; right:16px; bottom:calc(16px + var(--aap-agent-view-bottom, 0px)); z-index:1000; display:grid; justify-items:end; gap:12px; font:400 18px/1.5 "Open Sans","Segoe UI",system-ui,-apple-system,Arial,sans-serif; color:#1c1c1c; text-align:left; color-scheme:light; }
+.aap-agent-root { position:fixed; right:calc(16px + env(safe-area-inset-right, 0px)); bottom:calc(16px + env(safe-area-inset-bottom, 0px) + var(--aap-agent-view-bottom, 0px)); z-index:1000; display:grid; justify-items:end; gap:12px; font:400 18px/1.5 "Open Sans","Segoe UI",system-ui,-apple-system,Arial,sans-serif; color:#1c1c1c; text-align:left; color-scheme:light; }
 .aap-agent-root, .aap-agent-root * { box-sizing:border-box; }
 .aap-agent-root [hidden] { display:none !important; }
 .aap-agent-root button, .aap-agent-root input, .aap-agent-root a { font:inherit; letter-spacing:normal; text-transform:none; }
@@ -296,15 +363,25 @@
 .aap-agent-root :focus-visible { outline:3px solid #005ea8; outline-offset:3px; }
 .aap-agent-root p, .aap-agent-root h2 { margin:0; }
 .aap-agent-root button:disabled { cursor:default; opacity:.65; }
-.aap-agent-launch { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:56px; min-width:56px; padding:10px 24px 10px 20px; border-radius:999px; border:0; background:#0d2a46; color:#fff; font-size:18px; font-weight:700 !important; cursor:pointer; box-shadow:0 10px 28px -12px rgba(13,42,70,.6); }
-.aap-agent-launch:hover { background:#163a5e; }
+.aap-agent-launch { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:52px; min-width:56px; padding:0 20px 0 16px; border-radius:999px; border:0; background:#0a6ec1; color:#fff; font-size:16px; line-height:1.2; font-weight:700 !important; cursor:pointer; box-shadow:0 10px 28px -12px rgba(13,42,70,.6); }
+.aap-agent-launch:hover { background:#085ea6; }
+.aap-agent-launch-icon { display:block; width:22px; height:22px; flex:none; }
+html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; top:-2px; right:-2px; width:10px; height:10px; border-radius:50%; background:#e5a53a; box-shadow:0 0 0 2px #0d2a46; }
+@media (min-width:601px) {
+  .aap-agent-launch { display:none; }
+  html.aap-agent-scrolled .aap-agent-launch { display:inline-flex; width:56px; min-height:56px; padding:0; }
+  .aap-agent-launch-text { display:none; }
+}
+.aap-agent-greeting { display:flex; align-items:center; gap:4px; max-width:300px; padding:8px 4px 8px 16px; border:1px solid #e3e3e3; border-radius:6px; background:#fff; box-shadow:0 24px 48px -28px rgba(13,42,70,.35),0 1px 2px rgba(13,42,70,.1); font-size:16px; line-height:1.4; }
+.aap-agent-greeting-close { flex:none; min-width:48px; min-height:48px; padding:0 8px; border:0; border-radius:4px; background:none; color:#005ea8; font-weight:600 !important; cursor:pointer; }
 .aap-agent-mark { display:block; width:32px; height:19px; flex:none; }
 .aap-agent-panel { width:440px; max-width:calc(100vw - 32px); max-height:calc(100vh - 96px); max-height:min(calc(100dvh - 96px), calc(var(--aap-agent-view-height, 100dvh) - 96px)); background:#fff; border:1px solid #e3e3e3; border-radius:6px; box-shadow:0 24px 48px -28px rgba(13,42,70,.35),0 1px 2px rgba(13,42,70,.1); overflow:hidden; display:grid; grid-template-rows:auto minmax(0,1fr) auto; min-height:0; }
-.aap-agent-header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 12px 12px 24px; background:#0d2a46; color:#fff; }
+.aap-agent-header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 12px 12px 24px; background:linear-gradient(90deg, #016195, #006da5 50%, #016da6); color:#fff; }
 .aap-agent-heading { display:flex; align-items:center; gap:12px; font-size:18px; line-height:1.5; font-weight:700; }
-.aap-agent-close { flex:none; min-width:48px; min-height:48px; padding:8px 16px; border-radius:4px; border:0; background:rgba(255,255,255,.12); color:#fff; font-weight:600 !important; cursor:pointer; }
+.aap-agent-close { flex:none; min-width:48px; min-height:48px; padding:8px 16px; border-radius:4px; border:0; background:rgba(0,0,0,.15); color:#fff; font-weight:600 !important; cursor:pointer; }
 .aap-agent-header :focus-visible { outline-color:#fff; }
 .aap-agent-body { display:grid; align-content:start; gap:20px; padding:24px; min-height:0; overflow:auto; overscroll-behavior:contain; overflow-wrap:anywhere; }
+.aap-agent-intro { font-size:16px; color:#444; }
 .aap-agent-property { font-size:20px; font-weight:700; color:#0d2a46; }
 .aap-agent-suggestions { display:flex; flex-wrap:wrap; gap:8px; }
 .aap-agent-suggestion { display:inline-flex; justify-content:center; align-items:center; min-width:48px; min-height:48px; max-width:100%; padding:8px 16px; border:1px solid #ccc; border-radius:4px; background:#fff; color:#005ea8; font-weight:600 !important; text-align:left; text-decoration:none; white-space:normal; overflow-wrap:anywhere; cursor:pointer; }
@@ -345,14 +422,17 @@
     panel.hidden = true;
     panel.id = "aap-agent-panel";
     panel.setAttribute("role", "dialog");
-    panel.setAttribute("aria-label", "Your agent");
+    panel.setAttribute("aria-labelledby", "aap-agent-title");
     const header = element("div", "header");
     const heading = element("h2", "heading");
-    heading.append(mark(), element("span", "heading-text", "Your agent"));
+    const title = element("span", "heading-text", "A&AP agent");
+    title.id = "aap-agent-title";
+    heading.append(mark(), title);
     const close = element("button", "close", "Close");
     close.type = "button";
     header.append(heading, close);
     const body = element("div", "body");
+    const intro = element("p", "intro");
     const context = element("p", "context");
     const suggestionBox = element("div", "suggestions");
     const conversation = element("div", "conversation");
@@ -364,7 +444,7 @@
     const reply = element("p", "reply");
     answer.append(element("b", "answer-heading", "Desk reply"), reply);
     conversation.append(question, status, answer);
-    body.append(context, suggestionBox, conversation);
+    body.append(intro, context, suggestionBox, conversation);
     const footer = element("div", "footer");
     const form = element("form", "form");
     form.autocomplete = "off";
@@ -388,16 +468,20 @@
     const speech = element("p", "speech");
     speech.setAttribute("role", "status");
     form.append(field, sendRow, speech);
-    footer.append(form, element("p", "disclosure", "This is your A&AP agent (AI)."));
+    footer.append(form, element("p", "disclosure", "AI agent"));
     panel.append(header, body, footer);
     const launch = element("button", "launch");
     launch.type = "button";
-    launch.append(mark(), element("span", "launch-text", "Talk to your agent"));
+    launch.append(svg("0 0 24 24", [
+      { d: "M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linejoin": "round" },
+      { d: "M8 8.5h8M8 11.5h5", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round" }
+    ], "launch-icon"), element("span", "launch-text", LABEL));
+    launch.setAttribute("aria-label", LABEL);
     launch.setAttribute("aria-expanded", "false");
     launch.setAttribute("aria-controls", panel.id);
     launch.setAttribute("aria-haspopup", "dialog");
     root.append(style, panel, launch);
-    ui = { root, panel, close, launch, context, suggestions: suggestionBox, question, status, answer, reply, input, send, mic, form, speech };
+    ui = { root, panel, close, launch, title, intro, greeting: null, context, suggestions: suggestionBox, question, status, answer, reply, input, send, mic, form, speech };
     mountedScope = scope();
     launch.addEventListener("click", () => open(!opened));
     close.addEventListener("click", () => open(false));
@@ -415,6 +499,7 @@
     document.body.append(root);
     viewport();
     render();
+    greet(true);
   }
 
   window.AAPAgent = Object.freeze({
@@ -425,7 +510,7 @@
       if (document.body) mount();
       else document.addEventListener("DOMContentLoaded", mount, { once: true });
     },
-    // The page's own "Talk to your agent" buttons open this same panel.
+    // The page's own "Ask your agent" buttons open this same panel.
     open: function () { if (ui && !opened) open(true); },
     update: function (next) {
       if (!next || typeof next !== "object") return;
