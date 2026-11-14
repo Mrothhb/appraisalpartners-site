@@ -345,8 +345,10 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
   function rowAgent(o) {
     var link = formOf(o);
     if (!link) return null;
-    return ORDER_AGENT ? h("a.rowagent", { href: link + "#agent" }, svgUse("icon-talk"), "Order Agent")
-                       : h("span.rowagent.soon", { "aria-disabled": "true" }, svgUse("icon-talk"), "Order Agent · coming soon");
+    // Matt 11-14: the Report Agent lives on the report's review page (the form card), so the row offers it only while that
+    // order has a review waiting; no "coming soon" placeholder elsewhere.
+    if (!needsOf(o.order).some(function (n) { return n.kind === "review"; })) return null;
+    return h("a.rowagent", { href: link }, svgUse("icon-talk"), "Report Agent");
   }
   function showTalk() { document.querySelectorAll(".talk, .talkline").forEach(function (b) { b.hidden = !agentReady; }); }
 
@@ -489,7 +491,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     if (!items.length && !B.next_start) needs.appendChild(h("p.empty", "Nothing needs you right now."));
     if (newSent.length) needs.appendChild(h("div.todo", h("p", h("b", newSent.length === 1 ? "Your new order is with the desk." : newSent.length + " new orders are with the desk."),
       " It shows under Open orders when the desk opens it, within a few minutes.")));
-    if (messaging()) needs.appendChild(h("div.talkline", { hidden: !agentReady }, h("p", "Your Desk Agent answers questions about orders, ready dates, pricing and new orders. Each order's page gets its own Order Agent."), talk("btn")));
+    if (messaging()) needs.appendChild(h("div.talkline", { hidden: !agentReady }, h("p", "Your Desk Agent answers questions about orders, ready dates, pricing and new orders. When a report is ready for your review, talk with the AI agent that did it right on its page."), talk("btn")));
     var list = h("div.rows");
     sorted().forEach(function (o) { list.appendChild(orderRow(o, true)); });
     return h("div", needs, h("section.sec", h("h2", "Open orders (" + rows().length + ")", h("a", { href: "#orders" }, "All orders")), rows().length ? list : h("p.empty", "No open orders.")));
@@ -558,7 +560,8 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
       acts.appendChild(rev);
     }
     if (link) acts.appendChild(h("a.btn.ghost", { href: link }, o.payment_due ? "Pay" : "Open order"));
-    if (link && messaging()) acts.appendChild(rowAgent(o));
+    var ra = link && messaging() ? rowAgent(o) : null;   // null unless a review is waiting (11-14)
+    if (ra) acts.appendChild(ra);
     var more = h("div.more", h("span.meta", h("b", "Version " + latest.n + " · Latest · " + day(latest.at))), acts);
     if (open[o.order]) more.appendChild(revisionForm(o));
     var sent = statusLine("rev-" + o.order); if (sent) more.appendChild(sent);
