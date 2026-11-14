@@ -893,13 +893,10 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 .dc-list { margin: 0; padding: 0 0 0 var(--s-5); font-size: 16px; font-weight: 600; line-height: 1.5; color: var(--ink); overflow-wrap: anywhere; }
 .dc-list li + li { margin-top: var(--s-2); }
 @media (forced-colors: active) { .dc-card { border-color: CanvasText; } }
-/* Matt 2026-11-14: the agent card names the agent that did the report; full-width solid button that wraps on phones */
-.agent-lead { margin: 0 0 var(--s-3); font: 700 18px/1.35 var(--display); color: var(--ink); }
-.new-badge { display: inline-block; margin-right: var(--s-2); padding: 2px 10px; border-radius: 999px; background: var(--success); color: #fff; font: 700 12px/1.5 var(--font); letter-spacing: .06em; text-transform: uppercase; vertical-align: 2px; }   /* Matt 2026-11-14: "Put New on the chat live with agent" */
-@media (forced-colors: active) { .new-badge { border: 1px solid CanvasText; } }
-#agent-open { width: 100%; white-space: normal; line-height: 1.3; padding: var(--s-3) var(--s-5); background: var(--primary); color: #fff; }
-#agent-open:hover { background: var(--primary-hover); border-color: var(--primary-hover); color: #fff; }
-#agent-open[aria-expanded="true"] { background: #fff; color: var(--primary); }
+/* Chat UX 2026-11-14: the Report Agent floats (agent.js); two one-line hints reach it where the question comes up */
+#agent-open { display: block; margin-top: var(--s-3); min-height: 44px; text-align: left; }
+.agent-hint { margin: 0 0 var(--s-2); font-size: 15px; color: var(--ink-2, #5f5f5f); }
+.agent-hint .link-inline { min-height: 44px; }
 .comp-card { border: 2px solid #e8590c; border-left: 8px solid #e8590c; background: #fff0e0; color: #6b2400; padding: var(--s-5) var(--card-px); }
 .comp-head { display: flex; align-items: center; gap: var(--s-3); margin: 0 0 var(--s-3); }
 .comp-bang { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-full); background: #e8590c; color: #fff; font: 800 26px/1 var(--display); }
@@ -969,20 +966,16 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
   <section class="card" id="gate" aria-live="polite"><p id="gate-msg">Loading…</p></section>
 
   <div id="main" hidden>
-  <!-- P2 (Matt 2026-11-14): one opt-in card, "Go through it with your agent", shown only on a review round of an order the
-       desk turned on (house_prompts.agent_form) for an office whose plan covers it; hidden otherwise (walkPaint). -->
-  <!-- Matt 2026-11-14 11:0x: "question about this report? Want something changed? Talk to the AI-Agent that did your report here". -->
-  <section class="card agent-card" id="agent-card" aria-labelledby="agent-lead" hidden>
-    <p class="agent-lead" id="agent-lead"><span class="new-badge">New</span> Question about this report? Want something changed?</p>
-    <button type="button" class="st" id="agent-open" aria-expanded="false" aria-controls="agent-host">Talk to the AI agent that did your report</button>
-    <div id="agent-host" hidden></div>
-  </section>
+  <!-- Chat UX 2026-11-14: the Report Agent is a floating launcher + panel (agent.js float mode), shown only on a review round of an
+       order the desk turned on (house_prompts.agent_form) for an office whose plan covers it (walkPaint). Unused host kept. -->
+  <div id="agent-host" hidden></div>
   <!-- Matt 2026-11-04: "any items of high interest make it clear on the form colors, bold in its own box at the top 'double check these'".
        prefill double_check (review_round.py from the review note's double-check and highest-risk bullets; formlink.py --double-check):
        one line each, page numbers in the line, on a returned review. No items, no box. -->
   <section class="card dc-card" id="dc-card" role="note" aria-labelledby="dc-title" hidden>
     <p class="dc-title" id="dc-title" role="heading" aria-level="2">Double check these</p>
     <ul class="dc-list" id="dc-list"></ul>
+    <button type="button" class="link-inline" id="agent-open" aria-controls="aap-agent-panel" hidden>Ask your Report Agent about any of these.</button>
   </section>
   <section class="usage" id="usage" aria-label="AI usage this week" hidden>
     <div class="usage-track" id="usage-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-labelledby="usage-line"><i id="usage-fill"></i></div>
@@ -1091,6 +1084,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
       <div class="banner rounds" id="rounds-line" role="note" hidden></div>
       <div class="banner cover" id="errors-line" role="note" hidden></div>
       <p class="rounds-mini" id="rounds-mini" hidden></p>
+      <p class="agent-hint" id="agent-hint" hidden>Not sure how to word it? <button type="button" class="link-inline" id="agent-hint-open" aria-controls="aap-agent-panel">Ask the agent.</button></p>
       <button type="button" class="st" id="post-open">Request a change</button>
       <div id="post-box" hidden>
         <div class="line"><label class="lbl" for="post-text">What should change? Put everything in one message.</label>
@@ -4736,10 +4730,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // for the item, review and action it was shown for (review fixes, 11-14). "Ask about this item" is his own q_fb_ message
   // (sendFeedback) naming the item; replies are read from the form log (takeLog). Any error in here leaves the form as it
   // was: every hook is wrapped.
-  var AGENT_JS = "/orders/agent.js?v=20261114r";
+  var AGENT_JS = "/orders/agent.js?v=20261114live";
   var START_LANE = /^(partial(?:-conversion|-we-set)?|full(?:-conversion)?|self-service(?:-conversion)?)$/;   // Code.gs's own Start rule
   var walk = { load: "", mounted: false, open: false, rev: null, cur: null, acked: {}, skipped: {}, pending: {}, saved: {},
-    server: {}, lines: [], n: 0, replies: {}, asks: {}, line: null, reader: null, curVersion: null };
+    server: {}, lines: [], n: 0, replies: {}, asks: {}, line: null, reader: null, curVersion: null, dcAt: {}, dcSkip: {} };
   // Entitlement (v3 §4, with the 11-14 recheck): a paid plan; or a trial still running, or one his own Start beat; never once
   // delivered. His Start is his first READY submission on a Start lane or his GO, as Code.gs records them; never the desk's
   // file check (accepted_at) and never a review submission. The server reads the same records the same way.
@@ -4766,12 +4760,31 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     walk.load = "loading";
     var s = document.createElement("script");
     s.src = AGENT_JS; s.async = true;
-    s.onload = function () { walk.load = window.AAPAgent && window.AAPAgent.hosts === true ? "ready" : "off"; walkPaint(); };
+    s.onload = function () { walk.load = window.AAPAgent && window.AAPAgent.hosts === true && typeof window.AAPAgent.show === "function" ? "ready" : "off"; walkPaint(); };
     s.onerror = function () { walk.load = "off"; };
     document.head.appendChild(s);
   }
   function walkShown(n) { return !!n && n.isConnected && n.getClientRects().length > 0; }
   function walkText(v) { return v == null ? "" : String(v); }
+  function walkShort(v) { var w = walkText(v).trim().split(/\s+/); return w.length > 12 ? w.slice(0, 12).join(" ").replace(/[,;:.]$/, "") + "…" : w.join(" "); }   // Matt 11-14: 12 words a line
+  function walkSteps(items, t) {   // one step per red-box line and per other item: how many are left, and where t's card sits
+    var out = { total: 0, left: 0, at: 0, kinds: { dc: 0, q: 0, pc: 0 } };
+    items.forEach(function (it) {
+      var n = it.kind === "dc" ? it.lines.length : 1, s = walkState(it), seen = it.kind === "dc" ? Math.min(walk.dcAt[it.version] || 0, n) : 0;
+      var left = s === "done" ? 0 : s === "skipped" ? n : n - seen;
+      if (t && it.version === t.version) out.at = out.total + seen + 1;
+      out.total += n;
+      out.left += left;
+      out.kinds[it.kind] += left;
+    });
+    return out;
+  }
+  function walkCount(steps) {   // "4 checks and 5 questions": what the walk will show, by kind
+    var parts = [["dc", "check"], ["q", "question"], ["pc", "call section"]].filter(function (k) { return steps.kinds[k[0]]; })
+      .map(function (k) { var n = steps.kinds[k[0]]; return n + " " + k[1] + (n === 1 ? "" : "s"); });
+    return parts.length > 1 ? parts.slice(0, -1).join(", ") + " and " + parts[parts.length - 1] : parts[0] || "";
+  }
+  function walkCard(t) { return t.kind === "dc" ? t.lines[Math.min(walk.dcAt[t.version] || 0, t.lines.length - 1)] : t.kind === "q" ? t.q.text : ""; }
   // What this review asks of him, in the page's own order, from what the page rendered: the red box, the round's
   // questions (the confirm and highlight questions stay in their places), then Your calls. Each is bound to this review.
   function walkItems() {
@@ -4849,7 +4862,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (t.kind === "q") return (t.q.kind === "choice" ? "A question for you: " : "Please answer: ") + t.q.text;
     if (t.kind === "pc") {
       var values = proposalValues(t.section);
-      return "Your calls, section " + t.n + " of " + t.of + ": " + sectionTitle(t.section) + ". Proposed, not yet confirmed: " + t.section.calls.map(function (c) { return c.label + " " + values[c.key]; }).join(" · ") + ".";
+      return "Your calls: " + sectionTitle(t.section) + ". Proposed, not yet confirmed: " + t.section.calls.map(function (c) { return c.label + " " + values[c.key]; }).join(" · ") + ".";
     }
     if (t.kind === "call") return t.call.label + ". Proposed: " + t.call.value + "." + (Array.isArray(t.call.options) ? " Pick one." : " Type yours below.");
     if (t.kind === "edits") return t.items.length === 1 ? "You changed " + sectionTitle(t.items[0].section) + ". Sending it uses a change round; we update the report and show it here again before delivery."
@@ -4875,7 +4888,19 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var p = { id: t.version || t.kind, chips: [] }, pend = t.version && walk.pending[t.version], held = outbox.some(function (i) { return i.error; });
     var waiting = pend || walkUnsaved(t);   // a tap of his waiting on its receipt, or his change on the form the server does not hold
     if (waiting) p.text = held ? "Not saved. Tap Retry on the form, near the bottom." : walkUnsent() || pend && pend.kind === "request" ? "Saving…" : "Not saved yet.";
-    if (t.kind === "dc") { p.chips.push({ label: "Got it", key: "got", version: t.version }); if (t.lines.length > 4) p.chips.push({ label: "Show me the red box", key: "redbox", version: t.version }); }
+    if (t.kind === "dc") {   // one red-box line per card; Got it on the last line acknowledges the box, as before
+      var at = Math.min(walk.dcAt[t.version] || 0, t.lines.length - 1);
+      p.body = t.lines[at]; p.tone = "check";
+      p.chips.push({ label: "Got it", key: "got", version: t.version, at: at });
+    }
+    if (t.kind === "q") {
+      p.body = t.q.text; p.tone = "question";
+    }
+    if (["dc", "q", "pc"].indexOf(t.kind) >= 0) {   // one count across the whole walk: card kicker and status line say the same "k of N"
+      var st = walkSteps(items, t);
+      p.progress = st.at + " of " + st.total;
+      p.kicker = { dc: "Double check", q: "Question", pc: "Your calls" }[t.kind] + " · " + p.progress;
+    }
     if (t.kind === "q" || t.kind === "call") {
       var key = t.key, ctl = t.kind === "q" ? t.box : document.querySelector("[data-proposal='" + CSS.escape(t.section.id) + "'] [data-call='" + CSS.escape(key) + "']");
       var options = t.kind === "q" ? (t.q.kind === "choice" ? t.q.choices || [] : null) : Array.isArray(t.call.options) ? t.call.options : null;
@@ -4909,7 +4934,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (end.request) p.chips.push({ label: "Request a change instead", key: "request" });
       else if (walkShown($("post-box")) && walkShown($("post-send"))) p.button = walkButton($("post-send"), t);
     }
-    if (["dc", "q", "pc"].indexOf(t.kind) >= 0 && !(walk.line && walk.line.version === t.version)) p.chips.push({ label: "Skip for now", key: "skip", version: t.version });
+    if (["dc", "q", "pc"].indexOf(t.kind) >= 0 && !(walk.line && walk.line.version === t.version)) {
+      p.chips.push({ label: "Skip", key: "skip", version: t.version, at: t.kind === "dc" ? Math.min(walk.dcAt[t.version] || 0, t.lines.length - 1) : undefined });
+      p.chips.push({ label: "Ask", key: "ask" });   // agent.js: focuses the message box; the message names this item
+    }
     if (held && waiting) p.chips.push({ label: "Retry", key: "retry" });
     return p;
   }
@@ -4934,7 +4962,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (!l.ask) return;
       var mine = replies.filter(function (r) { return r.re === l.ask; }), a = walk.asks[l.ask];
       mine.forEach(function (r, i) { out.push({ who: r.by === "agent" ? "agent" : "desk", text: r.text, key: "re-" + l.ask + "-" + i, order: code }); });
-      if (!mine.length && a && !a.failed) out.push({ who: "agent", pending: true, key: "wait-" + l.ask, order: code,
+      if (!mine.length && a && !a.failed) out.push({ who: "agent", pending: true, key: "wait-" + l.ask, order: code, typing: Date.now() - a.at < 90000,
         text: Date.now() - a.at < 90000 ? "Thinking…" : "Still waiting. The reply will show here and by email." });
     });
     return out;
@@ -4942,14 +4970,16 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function walkPaint() {
     try {
       if (!walk || !state) return;
-      var on = walkAllowed();
+      var on = walkAllowed(), ready = on && walk.load === "ready";
       if (on && !walk.load) walkLoad();
-      $("agent-card").hidden = !(on && walk.load === "ready");
-      if ($("agent-card").hidden) return;
-      $("agent-open").textContent = walk.open ? "Close" : "Talk to the AI agent that did your report";
-      $("agent-open").setAttribute("aria-expanded", String(walk.open));
-      $("agent-host").hidden = !walk.open;
-      if (!walk.open || !walk.mounted) return;
+      if (ready && !walk.mounted) {   // float mode: launcher bottom-right, docked rail at >=1280px; never opens by itself
+        AAPAgent.init({ float: true, dock: true, host: $("agent-host"), send: function (m) { return walkAsk(m && m.text); }, choose: walkChoose, save: walkSaveText, tap: walkTapPage,
+          talk: function (ta) { return talkRow(ta, true); }, office: { name: O.client || "" } });
+        walk.mounted = walk.open = true;
+      }
+      if (walk.mounted) AAPAgent.show(ready);
+      $("agent-open").hidden = $("agent-hint").hidden = !ready;
+      if (!ready || !walk.open || !walk.mounted) return;
       var rev = (D.review || {}).id || "", items = walkItems(), versions = walkVersions(items);
       // A new review, new questions or a new red box changes the versions: nothing from before saves or advances.
       var gone = Object.keys(walk.pending).filter(function (v) { return !versions[v]; });
@@ -4959,12 +4989,12 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       var moved = walk.rev !== null && walk.rev !== rev || gone.length > 0 || lost.some(function (v) { return v.indexOf("|q|") >= 0; }) || !!walk.curVersion && !versions[walk.curVersion];
       if (moved && walk.lines.length) { walk.line = null; walk.cur = null; walk.curVersion = null; say("Your form was updated. Starting from the new list."); }
       walk.rev = rev;
-      if (!walk.lines.length) {
-        var left = items.filter(function (it) { return walkState(it) !== "done"; }).length, done = items.length - left;
-        say(!left ? "Nothing open on this review. Ask me anything about it, or approve below."
-          : done ? "Welcome back. " + done + " of " + items.length + " done. Next:"
-          : selfLane() ? "Before we deliver your report, we need a few things from you. I'll take them one at a time. Ask me about any item as we go."
-          : "Your report is ready for your review. A couple of things to look at first, then you approve.");
+      var steps = walkSteps(items), count = walkCount(steps), hi = count.split(" ").length > 5 ? "" : "Hi. I did this report. ";   // three kinds: the count alone keeps it to 12 words
+      if (!walk.lines.length) {   // Matt 11-14: fact + number, 12 words or fewer; the count is what the cards will show
+        var done = steps.total - steps.left;
+        say(!steps.left ? "Hi. I did this report. Nothing open; approve when ready."
+          : done ? "Welcome back. " + done + " of " + steps.total + " done."
+          : hi + count + (selfLane() ? " before delivery." : ", then you approve."));
       }
       var t = walkPick(items), end = t.kind === "closing" ? walkClosing(items) : null;
       var id = end ? "closing|" + rev + "|" + end.text : t.version + (walk.line && walk.line.version === t.version ? "|lines" : "");
@@ -4972,13 +5002,16 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
         walk.cur = id;
         walk.curVersion = ["dc", "q", "pc", "call"].indexOf(t.kind) >= 0 ? t.version : null;
         if (end) { if (end.text) say(end.text); }
-        else say(walk.line && walk.line.version === t.version ? "Which line?" : walkAsked(t));
+        else if (t.kind !== "dc" && t.kind !== "q") say(walk.line && walk.line.version === t.version ? "Which line?" : walkAsked(t));   // a check or question shows as its card
       }
       var prompt = walkPrompt(t, items);
-      prompt.id = id;
+      prompt.id = id + (t.kind === "dc" ? "|" + (walk.dcAt[t.version] || 0) : "");
       var notes = (D.house_prompts || {}).agent_profile;   // the dedicated copy only when his office's saved notes reach the chat (as on the board)
       AAPAgent.update({ route: "order", order: O.code || "", orders: [{ ap: O.code || "", street: O.property || "", status: "Review" }], plan: true,
-        profile: typeof notes === "string" && !!notes.trim() && notes.length <= 2000, thread: walkThread(O.code || ""), prompt: prompt });
+        profile: typeof notes === "string" && !!notes.trim() && notes.length <= 2000, thread: walkThread(O.code || ""), prompt: prompt,
+        starters: [{ label: steps.left ? (steps.left === 1 ? "Go through it" : "Go through them") : "What's left to do?", key: "walk" },
+          { label: "Explain the value" }, { label: "Why these comps?" }, { label: "Change something", key: "request" }],
+        nudge: steps.left && !selfLane() ? "I did this report. " + count + " before you approve." : null });
     } catch (e) { /* the walk never stops the form */ }
   }
   function walkCurrent() { var items = walkItems(), t = walkPick(items); return { items: items, t: t }; }
@@ -4988,11 +5021,19 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     try {
       var cur = walkCurrent(), t = cur.t;
       if (chip.version && chip.version !== t.version) return walkStale();
+      if (t.kind === "dc" && chip.at !== undefined && chip.at !== (walk.dcAt[t.version] || 0)) return walkPaint();   // a second tap on a card already moved on
+      if (["got", "skip", "opt"].indexOf(chip.key) >= 0 && walkCard(t)) say(walkShort(walkCard(t)));   // the card goes into the thread as one short line
       you(chip.label);
-      if (chip.key === "got") walk.acked[t.version] = true;
+      if (t.kind === "dc" && (chip.key === "got" || chip.key === "skip")) {   // next line; the box is acknowledged only when every line got Got it
+        if (chip.key === "skip") walk.dcSkip[t.version] = true;
+        walk.dcAt[t.version] = (walk.dcAt[t.version] || 0) + 1;
+        if (walk.dcAt[t.version] >= t.lines.length) { if (walk.dcSkip[t.version]) walk.skipped[t.version] = true; else walk.acked[t.version] = true; }
+      }
+      else if (chip.key === "got") walk.acked[t.version] = true;
       else if (chip.key === "skip") { walk.skipped[t.version] = true; walk.line = null; }
       else if (chip.key === "back") walk.line = null;
       else if (chip.key === "redbox") { $("dc-card").scrollIntoView({ block: "center", behavior: "smooth" }); }
+      else if (chip.key === "walk") {}   // the first card shows once he has said something
       else if (chip.key === "why") t.section.calls.forEach(function (c) { say(c.label + ": " + c.evidence); });
       else if (chip.key === "change") {
         var change = t.node.querySelector(".pc-row .link-inline");
@@ -5003,7 +5044,14 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       else if (chip.key === "opt") walkOption(t, chip.value);
       else if (chip.key === "confirm") walkConfirm(t);
       else if (chip.key === "fill") walkFill(t);
-      else if (chip.key === "request") { if (walkShown($("post-open")) && !$("post-open").disabled) { $("post-open").click(); say("Type your changes in the box below, then tap Send."); } }
+      else if (chip.key === "request") {   // the page's own Request a change box; a panel over the page steps aside so he sees it
+        if (walkShown($("post-open")) && !$("post-open").disabled) $("post-open").click();
+        if (walkShown($("post-text")) && !$("post-text").disabled) {
+          say("Type your changes in the Request a change box, then tap Send.");
+          if (!window.matchMedia("(min-width:1280px)").matches) AAPAgent.open(false);
+          $("post-box").scrollIntoView({ block: "center", behavior: "smooth" }); $("post-text").focus({ preventScroll: true });
+        } else say("Changes aren't open on this review.");
+      }
       else if (chip.key === "retry") { var r = document.querySelector("#sync-note button"); if (r) r.click(); }
       walkPaint();
     } catch (e) {}
@@ -5026,13 +5074,14 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (walkShown($("post-open")) && !$("post-open").disabled) $("post-open").click();
     $("post-text").value = t.items.map(function (it) { var v = proposalValues(it.section); return "Your calls — " + it.section.title + " (review " + D.review.id + ")\n" + it.section.calls.map(function (c) { return c.label + ": " + v[c.key]; }).join("\n"); }).join("\n\n");
     $("post-text").dispatchEvent(new Event("input"));
-    say("Your changes are in the request box below. Check them, then tap Send.");
+    say("Your changes are in the request box. Check, then tap Send.");
   }
   function walkSaveText(text, item) {   // "Save this answer": his words into the page's own box, through its own input listener
     try {
       var t = walkCurrent().t, box = t && t.key && $("f-" + t.key);
       if (!item || item.key !== t.key || item.version !== t.version) return walkStale();   // a Save offered for an item since changed saves nothing
       if (!box || box.disabled || !(t.kind === "q" || t.kind === "call")) { say("That box isn't open on the form right now."); walkPaint(); return; }
+      if (walkCard(t)) say(walkShort(walkCard(t)));
       you(String(text));
       box.value = String(text);
       walk.pending[t.version] = { key: t.key, value: box.value, kind: "answer" };
@@ -5057,7 +5106,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     delete walk.pending[version];
     walk.saved[version] = walkText(value);
     if (walk.line && walk.line.version + "|call|" + walk.line.call === version) walk.line = null;
-    say(p && p.kind === "confirm" ? "Saved ✓ (confirmed by you)." : p && p.kind === "request" ? "Sent ✓. We'll update your report and show it here again before delivery." : "Saved ✓");
+    say(p && p.kind === "confirm" ? "Saved ✓ (confirmed by you)." : p && p.kind === "request" ? "Sent ✓. We'll update the report and show it here again." : "Saved ✓");
   }
   // verifyAction: this exact payload has its committed receipt. A tap or Save is Saved only when the landed answers carry
   // its value and its version is still current; a confirm is Saved only by its own receipt string.
@@ -5115,17 +5164,11 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       walk.reader = setTimeout(function () { read().then(function (r) { takeLog(r.form); }, function () {}).then(tick); }, 2000);
     })();
   }
-  $("agent-open").addEventListener("click", function () {
-    try {
-      if (walk.load !== "ready" || !walkAllowed()) return;
-      if (!walk.mounted) {
-        AAPAgent.init({ host: $("agent-host"), send: function (m) { return walkAsk(m && m.text); }, choose: walkChoose, save: walkSaveText, tap: walkTapPage,
-          talk: function (ta) { return talkRow(ta, true); }, office: { name: O.client || "" } });
-        walk.mounted = true;
-      }
-      walk.open = !walk.open;
-      walkPaint();
-    } catch (e) { walk.load = "off"; $("agent-card").hidden = true; }
+  ["agent-open", "agent-hint-open"].forEach(function (id) {   // the two inline hints open the same floating panel
+    $(id).addEventListener("click", function () {
+      try { if (walk.mounted && walkAllowed()) AAPAgent.open(); }
+      catch (e) { walk.load = "off"; $("agent-open").hidden = $("agent-hint").hidden = true; }
+    });
   });
 
   // ---------- go ----------

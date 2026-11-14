@@ -158,10 +158,7 @@ footer.site a { color: var(--ink-2); }
 @media (max-width: 600px) { .appbar .talk { display: none; } }
 html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; background: var(--warning-edge); box-shadow: 0 0 0 2px #fff; }
 .talk[hidden], .talkline[hidden] { display: none; }
-.talkline { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); margin-top: var(--s-4); padding: var(--s-4) var(--s-5); border: 1px solid var(--tint-line); border-radius: var(--r-2); background: var(--tint); }
-.talkline p { font-weight: 600; color: var(--bar); }
-.talkline p { flex: 1 1 auto; min-width: 0; }
-.talkline .btn { flex: none; white-space: nowrap; }
+.talkline { margin: var(--s-4) 0 0; font-size: 16px; color: var(--ink-2); }   /* chat UX 11-14: one meta line, not a second launcher */
 .rowagent { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; color: #005ea8; font: 600 16px/1.2 var(--font); text-decoration: none; white-space: nowrap; }
 .rowagent svg { width: 18px; height: 18px; flex: none; } a.rowagent:hover { text-decoration: underline; text-underline-offset: 3px; }
 .rowagent.soon { color: var(--ink-2); cursor: default; }
@@ -183,8 +180,6 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
 .todo.files { flex-direction: column; align-items: stretch; }
 .orow .up { padding: 0 0 var(--s-4); }
 @media (max-width: 600px) {
-  .talkline { flex-direction: column; align-items: stretch; }
-  .talkline .btn { width: 100%; }
   .drop { border: 0; padding: 0; background: none; }
   .drop p { display: none; }
   .drop .btn { flex: 1 1 100%; }
@@ -218,7 +213,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
 <main class="col" id="main" hidden></main>
 <footer class="site" id="foot" hidden><div class="wrap" id="foot-line"></div></footer>
 
-<script src="agent.js?v=20261114q" defer></script>
+<script src="agent.js?v=20261114live" defer></script>
 <script>
 (function () {
   "use strict";
@@ -338,7 +333,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
 
   function talk(spec) {
     var b = spec === "talk" ? h("button.talk", { type: "button", hidden: !agentReady }, svgUse("icon-talk"), "Desk Agent")
-                            : h("button.btn", { type: "button" }, svgUse("icon-talk"), "Ask the Desk Agent");
+                            : h("button.link-btn", { type: "button" }, "ask the Desk Agent");
     b.addEventListener("click", function () { var A = window.AAPAgent; if (A && typeof A.open === "function") A.open(); });
     return b;
   }
@@ -491,7 +486,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     if (!items.length && !B.next_start) needs.appendChild(h("p.empty", "Nothing needs you right now."));
     if (newSent.length) needs.appendChild(h("div.todo", h("p", h("b", newSent.length === 1 ? "Your new order is with the desk." : newSent.length + " new orders are with the desk."),
       " It shows under Open orders when the desk opens it, within a few minutes.")));
-    if (messaging()) needs.appendChild(h("div.talkline", { hidden: !agentReady }, h("p", "Your Desk Agent answers questions about orders, ready dates, pricing and new orders. When a report is ready for your review, talk with the AI agent that did it right on its page."), talk("btn")));
+    if (messaging()) needs.appendChild(h("p.talkline", { hidden: !agentReady }, "Orders, ready dates, pricing: ", talk("link")));
     var list = h("div.rows");
     sorted().forEach(function (o) { list.appendChild(orderRow(o, true)); });
     return h("div", needs, h("section.sec", h("h2", "Open orders (" + rows().length + ")", h("a", { href: "#orders" }, "All orders")), rows().length ? list : h("p.empty", "No open orders.")));
@@ -831,6 +826,9 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     });
   }
 
+  function newest() {   // the newest open order, for the fourth starter chip
+    return rows().map(function (o) { return o.order || ""; }).sort(function (a, b) { return (Number(b.replace(/\D/g, "")) || 0) - (Number(a.replace(/\D/g, "")) || 0); })[0] || "";
+  }
   function agentSync() {
     var A = window.AAPAgent;
     if (!B || !messaging() || !A || typeof A.init !== "function" || typeof A.update !== "function") return;
@@ -843,7 +841,8 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
         orders: rows().map(function (o) { return { ap: o.order, street: o.street || o.order, status: o.stage || "", ready: o.due || "", due: o.client_due || "" }; }),
         thread: conversation().map(function (m) { return { at: m.at, who: m.who === "desk" ? "desk" : "you", order: m.order || null, text: m.text, id: m.key || "", re: m.re || "", pending: !!m.pending }; }),
         plan: plan() && Number(plan().cap) > 0 ? { pct: Math.max(0, Math.round(Number(plan().pct) || 0)), resets: plan().resets_text || "", refill: messaging() } : null,
-        profile: typeof B.profile === "string" && !!B.profile.trim() && B.profile.length <= 2000
+        profile: typeof B.profile === "string" && !!B.profile.trim() && B.profile.length <= 2000,
+        starters: [{ label: "What's waiting on me?" }, { label: "When is my next report ready?" }, { label: "Price a new order" }].concat(newest() ? [{ label: "Where is " + newest() + "?" }] : [])
       });
     } catch (e) {}
   }

@@ -4,8 +4,12 @@
 
   const PLACEHOLDER = "Message your Desk Agent";
   const LABEL = "Desk Agent";
-  const GREETING = "Your Desk Agent: orders, ready dates, pricing. Ask here.";
-  const ASK = "Ask about this item";
+  const HOST_LABEL = "Report Agent";
+  const GREETING = "Desk Agent, an AI: orders, dates, pricing.";
+  const ASK = "Ask about this report…";
+  const SUB = "AI agent · orders, ready dates, pricing · replies in seconds";
+  const HOST_SUB = "AI agent · did your report · replies in seconds";
+  const DISCLOSURE = "AI agent. The desk reviews every change request.";
   let seenKey = "aap-agent-seen-";
   try { seenKey += new URLSearchParams(window.location.search).get("t") || ""; } catch (_) {   }
   const conversations = new Map();
@@ -22,6 +26,8 @@
   let seenMemory = null;
   let opener = null;
   let promptId = null;
+  let live = null;
+  let nudged = false;
 
   function element(tag, name, text) {
     const el = document.createElement(tag);
@@ -52,6 +58,20 @@
   }
 
   function placeholder() { return config && config.host ? ASK : PLACEHOLDER; }
+  function label() { return config && config.host ? HOST_LABEL : LABEL; }
+
+  function avatar(name) {
+    const el = element("span", name);
+    el.append(mark());
+    return el;
+  }
+
+  function short(text) {
+    const words = String(text || "").trim().split(/\s+/);
+    return words.length > 12 ? words.slice(0, 12).join(" ").replace(/[,;:.]$/, "") + "…" : words.join(" ");
+  }
+
+  function you() { return data.thread.some(message => message.who === "you" && sameScope(message, scope())); }
 
   function scope() {
     return data.route === "order" && data.order ? data.order : null;
@@ -104,7 +124,7 @@
     const sending = Boolean(request && request.status === "sending");
     ui.input.disabled = sending;
     ui.send.disabled = sending || !ui.input.value.trim();
-    ui.send.textContent = sending ? "Sending…" : "Send";
+    ui.send.setAttribute("aria-label", sending ? "Sending" : "Send");
     ui.mic.disabled = sending;
     ui.form.setAttribute("aria-busy", String(sending));
     let status = "";
@@ -122,13 +142,24 @@
     const atEnd = ui.body.scrollHeight - ui.body.scrollTop - ui.body.clientHeight < 48, keep = new Set();
     lines.forEach(function (message, i) {
       const key = String(message.key || message.id || i), you = message.who === "you";
-      const who = you ? "You" : !config.host ? LABEL : message.who === "desk" ? "Desk" : "Agent";
-      const text = String(message.text || ""), shape = [who, text, Boolean(message.pending)].join("\n");
+      const who = you ? "You" : !config.host ? LABEL : message.who === "desk" ? "Desk" : HOST_LABEL;
+      const first = !you && (i === 0 || lines[i - 1].who === "you"), typing = Boolean(message.pending && message.typing);
+      const text = String(message.text || ""), shape = [who, text, Boolean(message.pending), first, typing].join("\n");
       let line = ui.lines.get(key);
       if (!line || line.dataset.shape !== shape) {
         const next = element("li", you ? "you" : "says");
         if (message.pending) next.classList.add("aap-agent-pending");
-        next.append(element("b", "who", who), element("p", "words", text));
+        if (first) next.classList.add("aap-agent-first");
+        const name = element("b", "who", who);
+        if (who === "Desk") name.classList.add("aap-agent-human");
+        if (typing) {
+          const dots = element("p", "words aap-agent-typing");
+          dots.setAttribute("role", "img");
+          dots.setAttribute("aria-label", label() + " is typing");
+          dots.append(element("span", "dot"), element("span", "dot"), element("span", "dot"));
+          next.append(name, dots);
+        } else next.append(name, element("p", "words", text));
+        if (first) next.prepend(avatar("bubble-avatar"));
         next.dataset.shape = shape;
         if (line) line.replaceWith(next);
         line = next;
@@ -174,6 +205,16 @@
     }
     ui.promptText.textContent = prompt && prompt.text ? prompt.text : "";
     ui.promptText.hidden = !ui.promptText.textContent;
+    ui.kicker.textContent = prompt && prompt.kicker ? prompt.kicker : "";
+    ui.kicker.hidden = !ui.kicker.textContent;
+    const body = prompt && prompt.body ? String(prompt.body) : "", cut = short(body);
+    if (ui.cardBody.dataset.full !== body) {
+      ui.cardBody.dataset.full = body;
+      ui.cardText.textContent = cut;
+      ui.more.hidden = cut === body.trim().split(/\s+/).join(" ");
+    }
+    ui.cardBody.hidden = !body;
+    ui.prompt.dataset.tone = prompt && prompt.tone ? prompt.tone : "";
     if (ui.answerInput) {
       const off = Boolean(prompt.input && prompt.input.disabled);
       ui.answerInput.area.disabled = off;
@@ -191,7 +232,11 @@
         button.type = "button";
         button.disabled = Boolean(chip.disabled);
         if (chip.pressed) button.setAttribute("aria-pressed", "true");
-        button.addEventListener("click", function () { if (!button.disabled) config.choose(chip); });
+        button.addEventListener("click", function () {
+          if (button.disabled) return;
+          if (chip.key === "ask") { ui.input.focus(); return; }
+          config.choose(chip);
+        });
         ui.chips.append(button);
         if (focused !== null && button.textContent === focused && !button.disabled) button.focus({ preventScroll: true });
       });
@@ -216,7 +261,40 @@
       }
     }
     ui.action.hidden = !ui.action.childElementCount;
-    ui.prompt.hidden = ui.promptText.hidden && ui.answerBox.hidden && ui.chips.hidden && ui.action.hidden;
+    ui.prompt.hidden = ui.starters.childElementCount > 0 || ui.promptText.hidden && ui.cardBody.hidden && ui.answerBox.hidden && ui.chips.hidden && ui.action.hidden;
+  }
+
+  function renderStarters() {
+    const list = !you() && Array.isArray(data.starters) ? data.starters.filter(s => s && s.label) : [];
+    const shape = JSON.stringify(list.map(s => [s.label, s.key]));
+    if (shape !== ui.starterShape) {
+      ui.starterShape = shape;
+      ui.starters.replaceChildren();
+      list.forEach(function (starter) {
+        const button = element("button", "chip", String(starter.label));
+        button.type = "button";
+        button.addEventListener("click", function () {
+          if (starter.key && config.choose) { config.choose({ label: starter.label, key: starter.key }); return; }
+          ui.input.value = String(starter.label);
+          ui.form.requestSubmit();
+        });
+        ui.starters.append(button);
+      });
+    }
+    ui.starters.hidden = !ui.starters.childElementCount;
+  }
+
+  function renderLive() {
+    const state = live && live.state, eta = live && live.eta || 60, late = state === "connecting" && Date.now() - live.at > 2 * eta * 1000;
+    const progress = data.prompt && data.prompt.progress && !ui.prompt.hidden ? "AI agent · " + data.prompt.progress : "";
+    ui.sub.textContent = late ? "Taking longer · replies also by email"
+      : state === "connecting" ? "Connecting your agent · about " + (eta < 90 ? "1 minute" : Math.round(eta / 60) + " minutes")
+      : state === "live" ? "Live · your agent is here" : progress || (config.host ? HOST_SUB : SUB);
+    ui.bar.hidden = state !== "connecting" || late;
+    ui.bar.style.setProperty("--aap-agent-eta", eta + "s");
+    ui.sys.textContent = late ? "Taking longer. Message sent; replies also by email."
+      : state === "connecting" ? "Agent joining. Keep typing; your message is kept." : state === "live" ? "Your agent joined." : "";
+    ui.sys.hidden = !ui.sys.textContent;
   }
 
   function stopSpeech() {
@@ -245,17 +323,21 @@
     const dedicated = !!(data.plan && data.profile), office = String(config.office.name || "").trim();
     const first = String(config.office.person || "").trim().split(/\s+/)[0], hi = first ? "Hi " + first + ". " : "Hi. ";
     if (config.host) {
-      ui.title.textContent = dedicated ? "Your dedicated Report Agent" : "Your Report Agent";
-      ui.intro.textContent = hi + "I did your report. Ask me anything about it, or tell me what you'd like changed.";
+      ui.title.textContent = HOST_LABEL;
+      ui.introText.textContent = hi + "I did this report. Ask me anything about it.";
     } else {
       ui.title.textContent = !dedicated ? "A&AP Desk Agent" : office && office.length <= 20 ? office + " Desk Agent" : "Your Desk Agent";
-      ui.intro.textContent = hi + "Ask me about any order, ready date, price or file.";
+      const count = new Set(data.needs.map(need => need.ap).filter(Boolean)).size;
+      ui.introText.textContent = hi + "Desk Agent here, an AI. " + (count ? count + (count === 1 ? " order needs you." : " orders need you.") : "Ask about any order.");
     }
     ui.intro.hidden = data.thread.some(message => sameScope(message, scope()));
     renderContext();
+    if (config.host || !scope() && !ui.intro.hidden) ui.context.hidden = true;   // the opener already says the count
     renderConversation();
     renderThread();
+    renderStarters();
     if (config.host) renderPrompt();
+    renderLive();
     unread();
   }
 
@@ -276,7 +358,7 @@
     const mark = seen();
     const yes = !opened && newest > 0 && (mark === null || newest > mark);
     document.documentElement.classList.toggle("aap-agent-unread", yes);
-    ui.launch.setAttribute("aria-label", yes ? LABEL + ", 1 new reply" : LABEL);
+    ui.launch.setAttribute("aria-label", "Open " + label() + " chat" + (yes ? ", 1 new reply" : ""));
     document.querySelectorAll(".talk").forEach(function (button) {
       if (yes) button.setAttribute("aria-label", LABEL + ", 1 new reply"); else button.removeAttribute("aria-label");
     });
@@ -290,6 +372,7 @@
     ui.root.classList.toggle("aap-agent-open", yes);
     ui.panel.hidden = !yes;
     ui.launch.setAttribute("aria-expanded", String(yes));
+    document.documentElement.classList.toggle("aap-agent-docked", yes && Boolean(config.dock));
     if (!yes) stopSpeech();
     greet(false);
     unread();
@@ -304,19 +387,21 @@
       ui.greeting = null;
       return;
     }
+    const nudge = config.float ? data.nudge : null, key = nudge ? "aap-agent-nudged-" + (data.order || "") : "aap-agent-greeted";
+    if (opened || ui.greeting || config.float && !nudge) return;
     try {
-      if (!window.matchMedia("(max-width:600px)").matches || localStorage.getItem("aap-agent-greeted")) return;
-      localStorage.setItem("aap-agent-greeted", "1");
+      if (!nudge && !window.matchMedia("(max-width:600px)").matches || localStorage.getItem(key)) return;
+      localStorage.setItem(key, "1");
     } catch (_) { return; }
     const bubble = element("div", "greeting");
     bubble.setAttribute("role", "status");
     const dismiss = element("button", "greeting-close", "Close");
     dismiss.type = "button";
     dismiss.addEventListener("click", () => greet(false));
-    bubble.append(element("p", "greeting-text", GREETING), dismiss);
+    bubble.append(element("p", "greeting-text", nudge || GREETING), dismiss);
     ui.root.insertBefore(bubble, ui.launch);
     ui.greeting = bubble;
-    setTimeout(() => greet(false), 8000);
+    setTimeout(() => greet(false), nudge ? 10000 : 8000);
     document.addEventListener("pointerdown", () => setTimeout(() => greet(false), 0), { once: true, capture: true });
   }
 
@@ -406,7 +491,7 @@
     const root = element("div", "root");
     const style = element("style", "style");
     style.textContent = `
-.aap-agent-root { position:fixed; right:calc(16px + env(safe-area-inset-right, 0px)); bottom:calc(16px + env(safe-area-inset-bottom, 0px) + var(--aap-agent-view-bottom, 0px)); z-index:1000; display:grid; justify-items:end; gap:12px; font:400 18px/1.5 "Open Sans","Segoe UI",system-ui,-apple-system,Arial,sans-serif; color:#1c1c1c; text-align:left; color-scheme:light; }
+.aap-agent-root { position:fixed; right:calc(16px + env(safe-area-inset-right, 0px)); bottom:calc(16px + env(safe-area-inset-bottom, 0px) + var(--aap-agent-view-bottom, 0px)); z-index:1000; display:grid; justify-items:end; gap:12px; font:400 16px/1.5 "Open Sans","Segoe UI",system-ui,-apple-system,Arial,sans-serif; color:#1c1c1c; text-align:left; color-scheme:light; }
 .aap-agent-root, .aap-agent-root * { box-sizing:border-box; }
 .aap-agent-root [hidden] { display:none !important; }
 .aap-agent-root button, .aap-agent-root input, .aap-agent-root a { font:inherit; letter-spacing:normal; text-transform:none; }
@@ -414,82 +499,107 @@
 .aap-agent-root :focus-visible { outline:3px solid #005ea8; outline-offset:3px; }
 .aap-agent-root p, .aap-agent-root h2 { margin:0; }
 .aap-agent-root button:disabled { cursor:default; opacity:.65; }
-.aap-agent-launch { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:52px; min-width:56px; padding:0 20px 0 16px; border-radius:999px; border:0; background:#0a6ec1; color:#fff; font-size:16px; line-height:1.2; font-weight:700 !important; cursor:pointer; box-shadow:0 10px 28px -12px rgba(13,42,70,.6); }
+.aap-agent-launch { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:56px; min-width:56px; padding:8px 22px 8px 16px; border-radius:999px; border:0; background:#0a6ec1; color:#fff; font-size:16px; line-height:1.2; font-weight:600 !important; text-align:left; cursor:pointer; box-shadow:0 10px 28px -12px rgba(13,42,70,.6); }
 .aap-agent-launch:hover { background:#085ea6; }
 .aap-agent-launch-icon { display:block; width:22px; height:22px; flex:none; }
+.aap-agent-launch .aap-agent-mark { width:28px; height:17px; }
+.aap-agent-launch-text { display:grid; justify-items:start; }
+.aap-agent-launch-sub { font-size:14px; line-height:1.2; font-weight:400 !important; color:rgba(255,255,255,.85); }   /* Matt 11-14: "add 'Talk now' under the Report Agent" */
 html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; top:-2px; right:-2px; width:10px; height:10px; border-radius:50%; background:#e5a53a; box-shadow:0 0 0 2px #0d2a46; }
 @media (min-width:601px) {
   .aap-agent-launch { display:none; }
-  html.aap-agent-scrolled .aap-agent-launch { display:inline-flex; width:56px; min-height:56px; padding:0; }
-  .aap-agent-launch-text { display:none; }
+  html.aap-agent-scrolled .aap-agent-launch, .aap-agent-float .aap-agent-launch { display:inline-flex; }
 }
-.aap-agent-greeting { display:flex; align-items:center; gap:4px; max-width:300px; padding:8px 4px 8px 16px; border:1px solid #e3e3e3; border-radius:6px; background:#fff; box-shadow:0 24px 48px -28px rgba(13,42,70,.35),0 1px 2px rgba(13,42,70,.1); font-size:16px; line-height:1.4; }
-.aap-agent-greeting-close { flex:none; min-width:48px; min-height:48px; padding:0 8px; border:0; border-radius:4px; background:none; color:#005ea8; font-weight:600 !important; cursor:pointer; }
+.aap-agent-float.aap-agent-open .aap-agent-launch { display:none; }
+.aap-agent-greeting { display:flex; align-items:center; gap:4px; max-width:300px; padding:8px 4px 8px 16px; border:1px solid #e3e3e3; border-radius:12px; background:#fff; box-shadow:0 24px 48px -28px rgba(13,42,70,.35),0 1px 2px rgba(13,42,70,.1); font-size:16px; line-height:1.4; }
+.aap-agent-greeting-close { flex:none; min-width:44px; min-height:44px; padding:0 8px; border:0; border-radius:4px; background:none; color:#005ea8; font-weight:600 !important; cursor:pointer; }
 .aap-agent-mark { display:block; width:32px; height:19px; flex:none; }
-.aap-agent-panel { width:440px; max-width:calc(100vw - 32px); max-height:calc(100vh - 96px); max-height:min(calc(100dvh - 96px), calc(var(--aap-agent-view-height, 100dvh) - 96px)); background:#fff; border:1px solid #e3e3e3; border-radius:6px; box-shadow:0 24px 48px -28px rgba(13,42,70,.35),0 1px 2px rgba(13,42,70,.1); overflow:hidden; display:grid; grid-template-rows:auto minmax(0,1fr) auto; min-height:0; }
-.aap-agent-header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 12px 12px 24px; background:linear-gradient(90deg, #016195, #0073ae 50%, #017dbd); color:#fff; }
-.aap-agent-heading { display:flex; align-items:center; gap:12px; font-size:18px; line-height:1.5; font-weight:700; }
-.aap-agent-close { flex:none; min-width:48px; min-height:48px; padding:8px 16px; border-radius:4px; border:0; background:rgba(0,0,0,.15); color:#fff; font-weight:600 !important; cursor:pointer; }
+.aap-agent-panel { width:400px; max-width:calc(100vw - 32px); height:min(680px, calc(100vh - 112px)); height:min(680px, calc(100dvh - 112px), calc(var(--aap-agent-view-height, 100dvh) - 112px)); background:#fff; border:1px solid #e3e3e3; border-radius:12px; box-shadow:0 24px 48px -28px rgba(13,42,70,.35),0 1px 2px rgba(13,42,70,.1); overflow:hidden; display:flex; flex-direction:column; min-height:0; }
+.aap-agent-header { flex:none; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:64px; padding:10px 8px 10px 16px; background:linear-gradient(90deg, #016195, #0073ae 50%, #017dbd); color:#fff; }
+.aap-agent-root h2.aap-agent-heading { display:flex; align-items:center; gap:12px; min-width:0; min-height:0; margin:0; padding:0; background:none; border:0; border-radius:0; color:inherit; font:inherit; }
+.aap-agent-avatar { display:grid; place-items:center; flex:none; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.18); }
+.aap-agent-avatar .aap-agent-mark { width:24px; height:14px; }
+.aap-agent-names { display:grid; min-width:0; }
+.aap-agent-heading-text { font-size:18px; line-height:1.3; font-weight:700; }
+.aap-agent-sub { font-size:13px; line-height:1.35; color:rgba(255,255,255,.85); }
+.aap-agent-close { display:inline-flex; align-items:center; gap:4px; flex:none; min-width:44px; min-height:44px; padding:8px 12px; border-radius:6px; border:0; background:none; color:#fff; font-weight:600 !important; cursor:pointer; }
+.aap-agent-close:hover { background:rgba(0,0,0,.15); }
+.aap-agent-close-icon { width:18px; height:18px; }
 .aap-agent-header :focus-visible { outline-color:#fff; }
-.aap-agent-body { display:grid; align-content:start; gap:16px; padding:20px 24px; min-height:0; overflow:auto; overscroll-behavior:contain; overflow-wrap:anywhere; }
-.aap-agent-intro { font-size:16px; color:#444; }
+.aap-agent-bar { flex:none; height:3px; background:#d5e6f5; overflow:hidden; }
+.aap-agent-bar::before { content:""; display:block; height:100%; width:100%; background:#0a6ec1; transform-origin:left; animation:aap-agent-fill var(--aap-agent-eta, 60s) linear forwards; }
+@keyframes aap-agent-fill { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+.aap-agent-body { flex:1 1 auto; display:grid; align-content:start; gap:12px; padding:16px; min-height:0; overflow:auto; overscroll-behavior:contain; overflow-wrap:anywhere; background:#f7f8fa; }
 .aap-agent-context { font-size:15px; color:#5f5f5f; }
-.aap-agent-view { min-height:32px; padding:0 2px; border:0; background:none; color:#005ea8; font-weight:600 !important; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
-.aap-agent-property { font-size:20px; font-weight:700; color:#0d2a46; }
+.aap-agent-view { min-height:44px; padding:0 2px; border:0; background:none; color:#005ea8; font-weight:600 !important; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.aap-agent-property { font-size:18px; font-weight:700; color:#0d2a46; }
 .aap-agent-conversation:not(:has(.aap-agent-status:not([hidden]))) { display:none; }
-.aap-agent-status { font-size:15px; color:#5f5f5f; white-space:pre-wrap; }
+.aap-agent-status, .aap-agent-sys { font-size:13px; color:#5f5f5f; white-space:pre-wrap; text-align:center; }
 .aap-agent-error { font-weight:600; color:#a72a2a; }
-.aap-agent-footer { padding:12px 24px 12px; border-top:1px solid #e3e3e3; background:#fff; display:grid; gap:8px; }
-.aap-agent-form { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; margin:0; }
-.aap-agent-form .aap-agent-speech { grid-column:1 / -1; }
-.aap-agent-field { display:flex; align-items:center; gap:4px; padding:0 4px 0 16px; border:1px solid #8a949f; border-radius:24px; background:#fff; }
-.aap-agent-field:focus-within { outline:2px solid #005ea8; outline-offset:2px; }
+.aap-agent-footer { flex:none; padding:12px 16px; border-top:1px solid #e3e3e3; background:#fff; display:grid; gap:8px; }
+.aap-agent-form { display:grid; gap:8px; margin:0; }
+.aap-agent-field { display:flex; align-items:center; gap:2px; padding:0 4px 0 16px; border:1px solid #8a949f; border-radius:24px; background:#fff; }
+.aap-agent-field:focus-within { border-color:#0a6ec1; box-shadow:0 0 0 1px #0a6ec1; }
 .aap-agent-input { flex:1; min-width:0; width:100%; min-height:48px; padding:8px 0; font-size:16px !important; border:0; border-radius:0; background:#fff; color:#1c1c1c; box-shadow:none; }
 .aap-agent-input:focus-visible { outline:none; }
-.aap-agent-input::placeholder { color:#444; opacity:1; }
-.aap-agent-mic { display:flex; align-items:center; justify-content:center; flex:none; width:48px; height:48px; padding:12px; border:0; border-radius:50%; background:#fff; color:#005ea8; cursor:pointer; }
+.aap-agent-input::placeholder { color:#5f5f5f; opacity:1; }
+.aap-agent-mic, .aap-agent-send { display:flex; align-items:center; justify-content:center; flex:none; width:44px; height:44px; padding:10px; border:0; border-radius:50%; cursor:pointer; }
+.aap-agent-mic { background:#fff; color:#005ea8; }
 .aap-agent-mic[aria-pressed="true"] { background:#eaf3fb; }
-.aap-agent-mic-icon { width:24px; height:24px; }
-.aap-agent-send-row { display:flex; justify-content:flex-end; }
-.aap-agent-send { display:inline-flex; align-items:center; justify-content:center; min-width:72px; min-height:48px; padding:8px 18px; border:1px solid #005ea8; border-radius:24px; background:#005ea8; color:#fff; font-weight:600 !important; cursor:pointer; }
-.aap-agent-send:hover:enabled { background:#004f8f; }
+.aap-agent-send { background:#0a6ec1; color:#fff; }
+.aap-agent-send:hover:enabled { background:#085ea6; }
+.aap-agent-send:disabled { background:#8a949f; }
+.aap-agent-mic-icon, .aap-agent-send-icon { width:24px; height:24px; }
 .aap-agent-disclosure { font-size:12px; line-height:1.4; color:#5f5f5f; text-align:center; }
-.aap-agent-speech { font-size:16px; color:#444; }
+.aap-agent-speech { font-size:15px; color:#444; }
 .aap-agent-speech:empty { display:none; }
+.aap-agent-hosted .aap-agent-close, .aap-agent-hosted .aap-agent-launch { display:none; }
+@media (min-width:1280px) {
+  html.aap-agent-docked body { padding-right:400px; }
+  .aap-agent-dock.aap-agent-open { top:0; right:0; bottom:0; }
+  .aap-agent-dock.aap-agent-open .aap-agent-panel { width:400px; max-width:none; height:100vh; height:100dvh; border:0; border-left:1px solid #e3e3e3; border-radius:0; box-shadow:none; }
+}
 @media (max-width:600px) {
   .aap-agent-root.aap-agent-open { left:0; right:0; bottom:var(--aap-agent-view-bottom, 0px); justify-items:stretch; gap:0; }
   .aap-agent-open .aap-agent-launch { display:none; }
-  .aap-agent-panel { width:100%; max-width:none; max-height:80vh; max-height:min(80dvh, var(--aap-agent-view-height, 80dvh)); border-radius:6px 6px 0 0; border-bottom:0; }
-  .aap-agent-header { padding-left:20px; }
-  .aap-agent-body { padding:16px 20px; }
+  .aap-agent-panel { width:100%; max-width:none; height:90vh; height:min(90dvh, var(--aap-agent-view-height, 90dvh)); border-radius:12px 12px 0 0; border-bottom:0; }
   .aap-agent-footer { padding:12px 16px calc(10px + env(safe-area-inset-bottom, 0px)); }
 }
-.aap-agent-root.aap-agent-hosted { position:static; display:block; z-index:auto; font-size:16px; }
-.aap-agent-hosted .aap-agent-panel { width:100%; max-width:none; max-height:none; border-radius:6px; border-bottom:1px solid #e3e3e3; box-shadow:none; grid-template-rows:auto auto auto; }
-.aap-agent-hosted h2 { display:flex; min-height:0; margin:0; padding:0; background:none; border-radius:0; color:inherit; justify-content:flex-start; }
-.aap-agent-hosted .aap-agent-header { padding:12px 20px; }
-.aap-agent-hosted .aap-agent-close { display:none; }
-.aap-agent-hosted .aap-agent-body { max-height:min(55vh, 520px); max-height:min(55dvh, 520px); padding:20px; gap:16px; }
-.aap-agent-hosted .aap-agent-footer { padding:12px 20px; gap:8px; }
-.aap-agent-thread { list-style:none; margin:0; padding:0; display:grid; gap:12px; }
-.aap-agent-says, .aap-agent-you { display:grid; gap:4px; max-width:85%; }
-.aap-agent-says { justify-self:start; justify-items:start; }
+.aap-agent-root.aap-agent-hosted { position:static; display:block; z-index:auto; }
+.aap-agent-hosted .aap-agent-panel { width:100%; max-width:none; height:auto; border-radius:6px; border-bottom:1px solid #e3e3e3; box-shadow:none; }
+.aap-agent-hosted .aap-agent-body { max-height:min(55vh, 520px); max-height:min(55dvh, 520px); }
+.aap-agent-thread { list-style:none; margin:0; padding:0; display:grid; gap:8px; }
+.aap-agent-says, .aap-agent-you, .aap-agent-intro { position:relative; display:grid; gap:4px; max-width:85%; }
+.aap-agent-says, .aap-agent-intro { justify-self:start; justify-items:start; margin-left:32px; }
 .aap-agent-you { justify-self:end; justify-items:end; }
-.aap-agent-who { padding:0 4px; font-size:12px; line-height:1.3; font-weight:600; color:#5f5f5f; }
-.aap-agent-you .aap-agent-who { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
-.aap-agent-words { padding:10px 14px; border-radius:18px; font-size:16px; line-height:1.45; white-space:pre-wrap; overflow-wrap:anywhere; }
-.aap-agent-says .aap-agent-words { background:#f1f3f4; border-bottom-left-radius:4px; }
-.aap-agent-you .aap-agent-words { background:#e3effa; border-bottom-right-radius:4px; }
-.aap-agent-pending .aap-agent-words { color:#5f5f5f; font-style:italic; }
-.aap-agent-prompt { display:grid; gap:12px; }
-.aap-agent-prompt-text { font-weight:600; }
-.aap-agent-chips { display:flex; flex-wrap:wrap; gap:8px; }
-.aap-agent-chip { min-width:48px; min-height:48px; max-width:100%; padding:8px 16px; border:1px solid #005ea8; border-radius:4px; background:#fff; color:#005ea8; font-weight:600 !important; text-align:left; white-space:normal; overflow-wrap:anywhere; cursor:pointer; }
+.aap-agent-bubble-avatar { position:absolute; left:-32px; top:0; display:grid; place-items:center; width:24px; height:24px; border-radius:50%; background:#0a6ec1; }
+.aap-agent-bubble-avatar .aap-agent-mark { width:16px; height:10px; }
+.aap-agent-who { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.aap-agent-who.aap-agent-human { position:static; width:auto; height:auto; overflow:visible; clip:auto; padding:0 4px; font-size:12px; line-height:1.3; font-weight:600; color:#5f5f5f; }
+.aap-agent-words { padding:10px 14px; border-radius:16px; font-size:16px; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; }
+.aap-agent-says .aap-agent-words, .aap-agent-intro .aap-agent-words { background:#fff; border:1px solid #e3e3e3; border-bottom-left-radius:4px; color:#1c1c1c; }
+.aap-agent-you .aap-agent-words { background:#0a6ec1; color:#fff; border-bottom-right-radius:4px; }
+.aap-agent-pending .aap-agent-words { color:#5f5f5f; }
+.aap-agent-typing { display:flex; gap:4px; align-items:center; min-height:44px; }
+.aap-agent-dot { width:8px; height:8px; border-radius:50%; background:#5f5f5f; animation:aap-agent-bounce 1.2s infinite ease-in-out; }
+.aap-agent-dot:nth-child(2) { animation-delay:.15s; }
+.aap-agent-dot:nth-child(3) { animation-delay:.3s; }
+@keyframes aap-agent-bounce { 0%, 60%, 100% { transform:translateY(0); } 30% { transform:translateY(-4px); } }
+@media (prefers-reduced-motion:reduce) { .aap-agent-dot { animation:none; } .aap-agent-bar { display:none; } }
+.aap-agent-prompt { display:grid; gap:10px; padding:12px 14px; border:1px solid #d5e6f5; border-left:4px solid #0a6ec1; border-radius:8px; background:#fff; }
+.aap-agent-prompt[data-tone="check"] { border-left-color:#c92a2a; }
+.aap-agent-kicker { font-size:13px; font-weight:600; color:#5f5f5f; }
+.aap-agent-card-body { font-size:16px; line-height:1.45; }
+.aap-agent-more { min-height:44px; margin-left:4px; padding:0 2px; border:0; background:none; color:#005ea8; font-weight:600 !important; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.aap-agent-prompt-text { font-size:14px; font-weight:600; color:#5f5f5f; }
+.aap-agent-chips, .aap-agent-starters { display:flex; flex-wrap:wrap; gap:8px; }
+.aap-agent-starters { margin-left:32px; }
+.aap-agent-chip { min-width:44px; min-height:44px; max-width:100%; padding:6px 16px; border:1px solid #0a6ec1; border-radius:999px; background:#fff; color:#005ea8; font-size:15px; line-height:1.3; font-weight:600 !important; text-align:left; white-space:normal; overflow-wrap:anywhere; cursor:pointer; }
 .aap-agent-chip:hover:enabled, .aap-agent-chip[aria-pressed="true"] { background:#eaf3fb; }
 .aap-agent-answer-box { display:grid; gap:8px; }
-.aap-agent-answer-input { display:block; width:100%; min-height:72px; padding:10px 12px; border:1px solid #8a949f; border-radius:4px; background:#fff; color:#1c1c1c; resize:vertical; overflow:auto; }
-.aap-agent-hosted .talk-box > .aap-agent-answer-input { padding-right:46px; }
-.aap-agent-save, .aap-agent-page-button { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:8px 20px; border:1px solid #005ea8; border-radius:4px; background:#005ea8; color:#fff; font-weight:600 !important; cursor:pointer; }
+.aap-agent-answer-input { display:block; width:100%; min-height:72px; padding:10px 12px; border:1px solid #8a949f; border-radius:8px; background:#fff; color:#1c1c1c; resize:vertical; overflow:auto; }
+.aap-agent-answer-box .talk-box > .aap-agent-answer-input { padding-right:46px; }
+.aap-agent-save, .aap-agent-page-button { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:8px 20px; border:1px solid #005ea8; border-radius:999px; background:#005ea8; color:#fff; font-weight:600 !important; cursor:pointer; }
 .aap-agent-save { justify-self:start; }
 .aap-agent-page-button { width:100%; }
 .aap-agent-save:hover:enabled, .aap-agent-page-button:hover:enabled { background:#004f8f; }
@@ -501,14 +611,23 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     panel.setAttribute("aria-labelledby", "aap-agent-title");
     const header = element("div", "header");
     const heading = element("h2", "heading");
-    const title = element("span", "heading-text", config.host ? "Your Report Agent" : "A&AP Desk Agent");
+    const title = element("span", "heading-text", label());
     title.id = "aap-agent-title";
-    heading.append(mark(), title);
+    const sub = element("span", "sub");
+    const names = element("span", "names");
+    names.append(title, sub);
+    heading.append(avatar("avatar"), names);
     const close = element("button", "close", "Close");
     close.type = "button";
+    close.setAttribute("aria-label", "Close chat, your conversation is kept");
+    close.append(svg("0 0 24 24", [{ d: "M6 9l6 6 6-6", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round" }], "close-icon"));
     header.append(heading, close);
+    const bar = element("div", "bar");
+    bar.hidden = true;
     const body = element("div", "body");
-    const intro = element("p", "intro");
+    const intro = element("div", "intro");
+    const introText = element("p", "words");
+    intro.append(avatar("bubble-avatar"), introText);
     const context = element("p", "context");
     const conversation = element("div", "conversation");
     conversation.setAttribute("aria-live", "polite");
@@ -517,16 +636,32 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     conversation.append(status);
     body.append(intro, context, conversation);
     const thread = element("ol", "thread");
+    thread.setAttribute("role", "log");
     thread.setAttribute("aria-live", "polite");
     thread.hidden = true;
     const promptRow = element("div", "prompt");
+    const kicker = element("p", "kicker");
+    const cardBody = element("p", "card-body");
+    const cardText = element("span", "card-text");
+    const more = element("button", "more", "More");
+    more.type = "button";
+    more.addEventListener("click", function () { cardText.textContent = cardBody.dataset.full || ""; more.hidden = true; });
+    cardBody.append(cardText, more);
     const promptText = element("p", "prompt-text");
     const chips = element("div", "chips");
     const answerBox = element("div", "answer-box");
     const action = element("div", "action");
-    promptRow.append(promptText, answerBox, chips, action);
+    promptRow.append(kicker, cardBody, promptText, answerBox, chips, action);
     promptRow.hidden = true;
+    const starters = element("div", "starters");
+    starters.hidden = true;
+    const sys = element("p", "sys");
+    sys.setAttribute("role", "status");
+    sys.hidden = true;
     body.insertBefore(thread, conversation);
+    body.insertBefore(starters, conversation);
+    body.insertBefore(sys, conversation);
+    if (config.host) body.insertBefore(promptRow, conversation);
     const footer = element("div", "footer");
     const form = element("form", "form");
     form.autocomplete = "off";
@@ -542,35 +677,38 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     mic.setAttribute("aria-pressed", "false");
     mic.hidden = !(window.SpeechRecognition || window.webkitSpeechRecognition);
     mic.append(svg("0 0 24 24", [{ d: "M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm-7-4v1a7 7 0 0 0 14 0v-1M12 19v3m-4 0h8", fill: "none", stroke: "currentColor", "stroke-width": "1.8", "stroke-linecap": "round" }], "mic-icon"));
-    field.append(input, mic);
-    const sendRow = element("div", "send-row");
-    const send = element("button", "send", "Send");
+    const send = element("button", "send");
     send.type = "submit";
-    sendRow.append(send);
+    send.setAttribute("aria-label", "Send");
+    send.append(svg("0 0 24 24", [{ d: "M12 19V5m-6 6l6-6 6 6", fill: "none", stroke: "currentColor", "stroke-width": "2.2", "stroke-linecap": "round", "stroke-linejoin": "round" }], "send-icon"));
+    field.append(input, mic, send);
     const speech = element("p", "speech");
     speech.setAttribute("role", "status");
-    form.append(field, sendRow, speech);
-    const disclosure = element("p", "disclosure", "AI agent");
+    form.append(field, speech);
+    const disclosure = element("p", "disclosure", DISCLOSURE);
     footer.append(form, disclosure);
-    if (config.host) footer.prepend(promptRow);
-    panel.append(header, body, footer);
+    panel.append(header, bar, body, footer);
     const launch = element("button", "launch");
     launch.type = "button";
-    launch.append(svg("0 0 24 24", [
+    launch.append(config.float ? mark() : svg("0 0 24 24", [
       { d: "M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linejoin": "round" },
       { d: "M8 8.5h8M8 11.5h5", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round" }
-    ], "launch-icon"), element("span", "launch-text", LABEL));
-    launch.setAttribute("aria-label", LABEL);
+    ], "launch-icon"));
+    const launchText = element("span", "launch-text");
+    launchText.append(element("span", "launch-name", label()), element("span", "launch-sub", "Talk now"));
+    launch.append(launchText);
+    launch.setAttribute("aria-label", "Open " + label() + " chat");
     launch.setAttribute("aria-expanded", "false");
     launch.setAttribute("aria-controls", panel.id);
     launch.setAttribute("aria-haspopup", "dialog");
-    ui = { root, panel, close, launch, title, intro, disclosure, greeting: null, context, status, input, send, mic, form, speech,
-      body, thread, threadCount: 0, lines: new Map(), prompt: promptRow, promptText, chips, chipShape: "", answerBox, answerInput: null, action, pageShape: "", pageEl: null };
+    ui = { root, panel, close, launch, title, sub, bar, sys, intro, introText, disclosure, greeting: null, context, status, input, send, mic, form, speech,
+      body, thread, threadCount: 0, lines: new Map(), prompt: promptRow, kicker, cardBody, cardText, more, promptText, chips, chipShape: "", answerBox, answerInput: null, action,
+      pageShape: "", pageEl: null, starters, starterShape: "" };
     mountedScope = scope();
     input.addEventListener("input", function () { drafts.set(scope(), input.value); renderConversation(); });
     form.addEventListener("submit", submit);
     mic.addEventListener("click", startSpeech);
-    if (config.host) {
+    if (config.host && !config.float) {
       root.classList.add("aap-agent-hosted", "aap-agent-open");
       root.append(style, panel);
       panel.hidden = false;
@@ -580,11 +718,14 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
       render();
       return;
     }
+    if (config.float) root.classList.add("aap-agent-float");
+    if (config.dock) root.classList.add("aap-agent-dock");
     root.append(style, panel, launch);
     launch.addEventListener("click", () => open(!opened));
     close.addEventListener("click", () => open(false));
-    root.addEventListener("keydown", function (event) {
-      if (event.key === "Escape" && opened) { event.preventDefault(); open(false); }
+    document.addEventListener("keydown", function (event) {   // non-modal: Escape closes while focus is in the panel or nowhere in particular
+      const at = document.activeElement;
+      if (event.key === "Escape" && opened && (root.contains(at) || !at || at === document.body)) { event.preventDefault(); open(false); }
     });
     window.addEventListener("resize", viewport);
     if (window.visualViewport) {
@@ -601,7 +742,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     init: function (options) {
       if (config) return;
       if (!options || typeof options.send !== "function") throw new TypeError("AAPAgent.init requires send.");
-      config = { send: options.send, office: options.office || {} };
+      config = { send: options.send, office: options.office || {}, float: options.float === true, dock: options.dock === true };
       if (options.host) {
         if (!(options.host instanceof Element) || typeof options.choose !== "function" || typeof options.save !== "function" || typeof options.tap !== "function")
           throw new TypeError("AAPAgent.init host mode requires host, choose, save and tap.");
@@ -611,7 +752,20 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
       else document.addEventListener("DOMContentLoaded", mount, { once: true });
     },
     hosts: true,
-    open: function () { if (ui && !opened && !config.host) open(true); },
+    open: function (yes) {
+      if (!ui || config.host && !config.float) return;
+      if (yes === false) { if (opened) open(false); } else if (!opened) open(true);
+    },
+    show: function (yes) {
+      if (!ui) return;
+      if (!yes && opened && config.float) open(false);
+      ui.root.style.display = yes ? "" : "none";
+    },
+    status: function (next) {
+      live = next && (next.state === "connecting" || next.state === "live") ? { state: next.state, eta: Math.max(1, Number(next.eta) || 60), at: Date.now() } : null;
+      if (live && live.state === "connecting") setTimeout(function () { if (ui) renderLive(); }, 2 * live.eta * 1000 + 50);
+      if (ui) renderLive();
+    },
     update: function (next) {
       if (!next || typeof next !== "object") return;
       data = {
@@ -619,10 +773,12 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
         needs: Array.isArray(next.needs) ? next.needs : [],
         orders: Array.isArray(next.orders) ? next.orders : [],
         thread: Array.isArray(next.thread) ? next.thread : [], plan: next.plan || null, profile: next.profile === true,
-        prompt: next.prompt && typeof next.prompt === "object" ? next.prompt : null
+        prompt: next.prompt && typeof next.prompt === "object" ? next.prompt : null,
+        starters: Array.isArray(next.starters) ? next.starters : [], nudge: typeof next.nudge === "string" ? next.nudge : null
       };
       conversations.forEach((request, order) => recover(order, request));
       render();
+      if (ui && config.float && data.nudge && !nudged) { nudged = true; setTimeout(() => greet(true), 2000); }
     }
   });
 })();
