@@ -358,7 +358,7 @@
     const mark = seen();
     const yes = !opened && newest > 0 && (mark === null || newest > mark);
     document.documentElement.classList.toggle("aap-agent-unread", yes);
-    ui.launch.setAttribute("aria-label", yes ? label() + ", 1 new reply" : label());
+    ui.launch.setAttribute("aria-label", "Open " + label() + " chat" + (yes ? ", 1 new reply" : ""));
     document.querySelectorAll(".talk").forEach(function (button) {
       if (yes) button.setAttribute("aria-label", LABEL + ", 1 new reply"); else button.removeAttribute("aria-label");
     });
@@ -499,17 +499,16 @@
 .aap-agent-root :focus-visible { outline:3px solid #005ea8; outline-offset:3px; }
 .aap-agent-root p, .aap-agent-root h2 { margin:0; }
 .aap-agent-root button:disabled { cursor:default; opacity:.65; }
-.aap-agent-launch { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:56px; min-width:56px; padding:0 20px 0 16px; border-radius:999px; border:0; background:#0a6ec1; color:#fff; font-size:16px; line-height:1.2; font-weight:600 !important; cursor:pointer; box-shadow:0 10px 28px -12px rgba(13,42,70,.6); }
+.aap-agent-launch { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:56px; min-width:56px; padding:8px 22px 8px 16px; border-radius:999px; border:0; background:#0a6ec1; color:#fff; font-size:16px; line-height:1.2; font-weight:600 !important; text-align:left; cursor:pointer; box-shadow:0 10px 28px -12px rgba(13,42,70,.6); }
 .aap-agent-launch:hover { background:#085ea6; }
 .aap-agent-launch-icon { display:block; width:22px; height:22px; flex:none; }
 .aap-agent-launch .aap-agent-mark { width:28px; height:17px; }
+.aap-agent-launch-text { display:grid; justify-items:start; }
+.aap-agent-launch-sub { font-size:14px; line-height:1.2; font-weight:400 !important; color:rgba(255,255,255,.85); }   /* Matt 11-14: "add 'Talk now' under the Report Agent" */
 html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; top:-2px; right:-2px; width:10px; height:10px; border-radius:50%; background:#e5a53a; box-shadow:0 0 0 2px #0d2a46; }
 @media (min-width:601px) {
   .aap-agent-launch { display:none; }
-  html.aap-agent-scrolled .aap-agent-launch { display:inline-flex; width:56px; min-height:56px; padding:0; }
-  .aap-agent-launch-text { display:none; }
-  .aap-agent-float .aap-agent-launch, html.aap-agent-scrolled .aap-agent-float .aap-agent-launch { display:inline-flex; width:auto; padding:0 20px 0 16px; }
-  .aap-agent-float .aap-agent-launch-text { display:inline; }
+  html.aap-agent-scrolled .aap-agent-launch, .aap-agent-float .aap-agent-launch { display:inline-flex; }
 }
 .aap-agent-float.aap-agent-open .aap-agent-launch { display:none; }
 .aap-agent-greeting { display:flex; align-items:center; gap:4px; max-width:300px; padding:8px 4px 8px 16px; border:1px solid #e3e3e3; border-radius:12px; background:#fff; box-shadow:0 24px 48px -28px rgba(13,42,70,.35),0 1px 2px rgba(13,42,70,.1); font-size:16px; line-height:1.4; }
@@ -694,8 +693,11 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     launch.append(config.float ? mark() : svg("0 0 24 24", [
       { d: "M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linejoin": "round" },
       { d: "M8 8.5h8M8 11.5h5", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round" }
-    ], "launch-icon"), element("span", "launch-text", label()));
-    launch.setAttribute("aria-label", label());
+    ], "launch-icon"));
+    const launchText = element("span", "launch-text");
+    launchText.append(element("span", "launch-name", label()), element("span", "launch-sub", "Talk now"));
+    launch.append(launchText);
+    launch.setAttribute("aria-label", "Open " + label() + " chat");
     launch.setAttribute("aria-expanded", "false");
     launch.setAttribute("aria-controls", panel.id);
     launch.setAttribute("aria-haspopup", "dialog");
