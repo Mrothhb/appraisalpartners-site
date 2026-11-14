@@ -4768,14 +4768,21 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function walkText(v) { return v == null ? "" : String(v); }
   function walkShort(v) { var w = walkText(v).trim().split(/\s+/); return w.length > 12 ? w.slice(0, 12).join(" ").replace(/[,;:.]$/, "") + "…" : w.join(" "); }   // Matt 11-14: 12 words a line
   function walkSteps(items, t) {   // one step per red-box line and per other item: how many are left, and where t's card sits
-    var out = { total: 0, left: 0, at: 0 };
+    var out = { total: 0, left: 0, at: 0, kinds: { dc: 0, q: 0, pc: 0 } };
     items.forEach(function (it) {
       var n = it.kind === "dc" ? it.lines.length : 1, s = walkState(it), seen = it.kind === "dc" ? Math.min(walk.dcAt[it.version] || 0, n) : 0;
+      var left = s === "done" ? 0 : s === "skipped" ? n : n - seen;
       if (t && it.version === t.version) out.at = out.total + seen + 1;
       out.total += n;
-      out.left += s === "done" ? 0 : s === "skipped" ? n : n - seen;
+      out.left += left;
+      out.kinds[it.kind] += left;
     });
     return out;
+  }
+  function walkCount(steps) {   // "4 checks and 5 questions": what the walk will show, by kind
+    var parts = [["dc", "check"], ["q", "question"], ["pc", "call section"]].filter(function (k) { return steps.kinds[k[0]]; })
+      .map(function (k) { var n = steps.kinds[k[0]]; return n + " " + k[1] + (n === 1 ? "" : "s"); });
+    return parts.length > 1 ? parts.slice(0, -1).join(", ") + " and " + parts[parts.length - 1] : parts[0] || "";
   }
   function walkCard(t) { return t.kind === "dc" ? t.lines[Math.min(walk.dcAt[t.version] || 0, t.lines.length - 1)] : t.kind === "q" ? t.q.text : ""; }
   // What this review asks of him, in the page's own order, from what the page rendered: the red box, the round's
@@ -4855,7 +4862,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (t.kind === "q") return (t.q.kind === "choice" ? "A question for you: " : "Please answer: ") + t.q.text;
     if (t.kind === "pc") {
       var values = proposalValues(t.section);
-      return "Your calls, section " + t.n + " of " + t.of + ": " + sectionTitle(t.section) + ". Proposed, not yet confirmed: " + t.section.calls.map(function (c) { return c.label + " " + values[c.key]; }).join(" · ") + ".";
+      return "Your calls: " + sectionTitle(t.section) + ". Proposed, not yet confirmed: " + t.section.calls.map(function (c) { return c.label + " " + values[c.key]; }).join(" · ") + ".";
     }
     if (t.kind === "call") return t.call.label + ". Proposed: " + t.call.value + "." + (Array.isArray(t.call.options) ? " Pick one." : " Type yours below.");
     if (t.kind === "edits") return t.items.length === 1 ? "You changed " + sectionTitle(t.items[0].section) + ". Sending it uses a change round; we update the report and show it here again before delivery."
@@ -4883,14 +4890,17 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (waiting) p.text = held ? "Not saved. Tap Retry on the form, near the bottom." : walkUnsent() || pend && pend.kind === "request" ? "Saving…" : "Not saved yet.";
     if (t.kind === "dc") {   // one red-box line per card; Got it on the last line acknowledges the box, as before
       var at = Math.min(walk.dcAt[t.version] || 0, t.lines.length - 1);
-      p.kicker = "Double check · " + (at + 1) + " of " + t.lines.length; p.body = t.lines[at]; p.tone = "check";
+      p.body = t.lines[at]; p.tone = "check";
       p.chips.push({ label: "Got it", key: "got", version: t.version, at: at });
     }
     if (t.kind === "q") {
-      var qs = items.filter(function (it) { return it.kind === "q"; });
-      p.kicker = "Question · " + (qs.indexOf(t) + 1) + " of " + qs.length; p.body = t.q.text; p.tone = "question";
+      p.body = t.q.text; p.tone = "question";
     }
-    if (["dc", "q"].indexOf(t.kind) >= 0) { var st = walkSteps(items, t); p.progress = "check " + st.at + " of " + st.total; }
+    if (["dc", "q", "pc"].indexOf(t.kind) >= 0) {   // one count across the whole walk: card kicker and status line say the same "k of N"
+      var st = walkSteps(items, t);
+      p.progress = st.at + " of " + st.total;
+      p.kicker = { dc: "Double check", q: "Question", pc: "Your calls" }[t.kind] + " · " + p.progress;
+    }
     if (t.kind === "q" || t.kind === "call") {
       var key = t.key, ctl = t.kind === "q" ? t.box : document.querySelector("[data-proposal='" + CSS.escape(t.section.id) + "'] [data-call='" + CSS.escape(key) + "']");
       var options = t.kind === "q" ? (t.q.kind === "choice" ? t.q.choices || [] : null) : Array.isArray(t.call.options) ? t.call.options : null;
@@ -4979,13 +4989,12 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       var moved = walk.rev !== null && walk.rev !== rev || gone.length > 0 || lost.some(function (v) { return v.indexOf("|q|") >= 0; }) || !!walk.curVersion && !versions[walk.curVersion];
       if (moved && walk.lines.length) { walk.line = null; walk.cur = null; walk.curVersion = null; say("Your form was updated. Starting from the new list."); }
       walk.rev = rev;
-      var steps = walkSteps(items), noun = selfLane() ? "item" : "check", nouns = steps.left === 1 ? noun : noun + "s";
-      if (!walk.lines.length) {   // Matt 11-14: fact + number, 12 words or fewer
+      var steps = walkSteps(items), count = walkCount(steps), hi = count.split(" ").length > 5 ? "" : "Hi. I did this report. ";   // three kinds: the count alone keeps it to 12 words
+      if (!walk.lines.length) {   // Matt 11-14: fact + number, 12 words or fewer; the count is what the cards will show
         var done = steps.total - steps.left;
         say(!steps.left ? "Hi. I did this report. Nothing open; approve when ready."
           : done ? "Welcome back. " + done + " of " + steps.total + " done."
-          : selfLane() ? "Hi. I did this report. " + steps.left + " " + nouns + " before delivery."
-          : "Hi. I did this report. " + steps.left + " " + nouns + ", then you approve.");
+          : hi + count + (selfLane() ? " before delivery." : ", then you approve."));
       }
       var t = walkPick(items), end = t.kind === "closing" ? walkClosing(items) : null;
       var id = end ? "closing|" + rev + "|" + end.text : t.version + (walk.line && walk.line.version === t.version ? "|lines" : "");
@@ -5000,9 +5009,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       var notes = (D.house_prompts || {}).agent_profile;   // the dedicated copy only when his office's saved notes reach the chat (as on the board)
       AAPAgent.update({ route: "order", order: O.code || "", orders: [{ ap: O.code || "", street: O.property || "", status: "Review" }], plan: true,
         profile: typeof notes === "string" && !!notes.trim() && notes.length <= 2000, thread: walkThread(O.code || ""), prompt: prompt,
-        starters: [{ label: steps.left ? "Go through the " + (steps.left === 1 ? noun : steps.left + " " + nouns) : "What's left to do?", key: "walk" },
+        starters: [{ label: steps.left ? (steps.left === 1 ? "Go through it" : "Go through them") : "What's left to do?", key: "walk" },
           { label: "Explain the value" }, { label: "Why these comps?" }, { label: "Change something", key: "request" }],
-        nudge: steps.left && !selfLane() ? "I did this report. " + steps.left + " " + nouns + " before you approve." : null });
+        nudge: steps.left && !selfLane() ? "I did this report. " + count + " before you approve." : null });
     } catch (e) { /* the walk never stops the form */ }
   }
   function walkCurrent() { var items = walkItems(), t = walkPick(items); return { items: items, t: t }; }
