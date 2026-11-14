@@ -4723,11 +4723,13 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // lands in the same answers.json key with the same receipt and gates. It never presses anything by itself. An item reads
   // Saved only when verifyAction() matched a receipt whose payload carries its value at its current version (walkLanded) or
   // the server already holds that value with nothing unsent; a local value, an option already selected or a confirm still
-  // writing stays pending. "Ask about this item" is his own q_fb_ message (sendFeedback) naming the item; replies are read
-  // from the form log (takeLog). Any error in here leaves the form as it was: every hook is wrapped.
+  // writing stays pending. A question is done only for the version it was saved at; a Save or the page's button acts only
+  // for the item, review and action it was shown for (review fixes, 11-14). "Ask about this item" is his own q_fb_ message
+  // (sendFeedback) naming the item; replies are read from the form log (takeLog). Any error in here leaves the form as it
+  // was: every hook is wrapped.
   var AGENT_JS = "/orders/agent.js?v=20261114p2";
   var START_LANE = /^(partial(?:-conversion|-we-set)?|full(?:-conversion)?|self-service(?:-conversion)?)$/;   // Code.gs's own Start rule
-  var walk = { load: "", mounted: false, open: false, rev: null, cur: null, acked: {}, skipped: {}, pending: {}, saved: {}, drove: {},
+  var walk = { load: "", mounted: false, open: false, rev: null, cur: null, acked: {}, skipped: {}, pending: {}, saved: {},
     server: {}, lines: [], n: 0, replies: {}, asks: {}, line: null, reader: null, curVersion: null };
   // Entitlement (v3 §4, with the 11-14 recheck): a paid plan; or a trial still running, or one his own Start beat; never once
   // delivered. His Start is his first READY submission on a Start lane or his GO, as Code.gs records them; never the desk's
@@ -4788,10 +4790,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (p && p.kind !== "request" && walkText(state.answers[p.key]) !== walkText(p.value)) { delete walk.pending[it.version]; p = null; }   // he changed it on the form since
     if (p) return "pending";
     if (it.kind === "dc") return walk.acked[it.version] ? "done" : walk.skipped[it.version] ? "skipped" : "open";
-    if (it.kind === "q") {
-      var v = walkText(state.answers[it.key]), held = walk.saved[it.version] === v || it.key in walk.server && walkText(walk.server[it.key]) === v;
-      if (v.trim() && held && (walk.saved[it.version] === v || walk.drove[it.key] || v !== walkText((D.prefill || {})[it.key]))) return "done";
-    }
+    if (it.kind === "q" && walkText(state.answers[it.key]).trim() && walk.saved[it.version] === walkText(state.answers[it.key])) return "done";   // only an answer saved at this version
     if (it.kind === "pc" && !it.edited && proposalConfirmed(it.section) && it.key in walk.server && walk.server[it.key] === state.answers[it.key]) return "done";
     return walk.skipped[it.version] ? "skipped" : "open";
   }
@@ -4804,7 +4803,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function walkLabel(it) {   // the closing's words; a proposal is never called his answer
     var s = walkState(it), v = walkText(state.answers[it.key]);
     if (s === "pending") return walk.pending[it.version].kind === "request" ? "your change, sending" : "saving";
-    if (it.kind === "q") return !v.trim() ? "not answered yet" : walk.drove[it.key] || v !== walkText((D.prefill || {})[it.key]) ? "your answer" : "on your form";
+    if (it.kind === "q") return !v.trim() ? "not answered yet" : s === "done" ? "your answer" : "on your form";
     if (it.edited) return (state.post_changes || []).length && !reviewReady() ? "your change, sent" : "your change, not sent";
     return s === "done" ? "confirmed by you" : "proposed, not yet confirmed";
   }
@@ -4875,7 +4874,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
         var b = ctl && Array.prototype.filter.call(ctl.querySelectorAll("button.tap"), function (x) { return x.value === o; })[0];
         p.chips.push({ label: o, key: "opt", value: o, version: t.version, pressed: walkText(state.answers[key]) === o, disabled: !b || b.disabled });
       });
-      else { var box = $("f-" + key); p.input = { placeholder: "Your answer", save: "Save this answer", value: walkText(state.answers[key]), disabled: !box || box.disabled }; }
+      else { var box = $("f-" + key); p.input = { placeholder: "Your answer", save: "Save this answer", value: walkText(state.answers[key]), disabled: !box || box.disabled, key: key, version: t.version }; }
       if (t.kind === "call") p.chips.push({ label: "Back", key: "back", version: t.version });
     }
     if (t.kind === "pc") {
@@ -4890,20 +4889,27 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       }
     }
     if (t.kind === "edits") {
-      if (t.items.length === 1) { var own = t.items[0].node.querySelector(".pc-row button.st"); if (own) p.button = { label: own.textContent, el: own, disabled: own.disabled || !walkShown(own) }; }
+      if (t.items.length === 1) { var own = t.items[0].node.querySelector(".pc-row button.st"); if (own) p.button = walkButton(own, t); }
       else if (walkText($("post-text").value).indexOf("(review " + (D.review || {}).id + ")") < 0) p.chips.push({ label: "Put my changes in the request box", key: "fill", version: t.version });
-      else p.button = { label: $("post-send").textContent, el: $("post-send"), disabled: $("post-send").disabled || !walkShown($("post-send")) };
+      else p.button = walkButton($("post-send"), t);
     }
     if (t.kind === "closing") {
       var end = walkClosing(items);
       p.id = "closing|" + (D.review || {}).id;
-      if (end.button) p.button = { label: end.button.textContent, el: end.button, disabled: end.button.disabled || !walkShown(end.button) };
+      if (end.button) p.button = walkButton(end.button, t);
       if (end.request) p.chips.push({ label: "Request a change instead", key: "request" });
-      else if (walkShown($("post-box")) && walkShown($("post-send"))) p.button = { label: $("post-send").textContent, el: $("post-send"), disabled: $("post-send").disabled };
+      else if (walkShown($("post-box")) && walkShown($("post-send"))) p.button = walkButton($("post-send"), t);
     }
     if (["dc", "q", "pc"].indexOf(t.kind) >= 0 && !(walk.line && walk.line.version === t.version)) p.chips.push({ label: "Skip for now", key: "skip", version: t.version });
     if (held && waiting) p.chips.push({ label: "Retry", key: "retry" });
     return p;
+  }
+  // The page's own button as the card shows it, bound to this review and to exactly this action (which button, its words, the
+  // step it closes): a tap of the card's copy acts only while the page still offers that same action on that same review.
+  function walkButton(el, t) {
+    var sec = el.closest("[data-proposal]");
+    return { label: el.textContent, el: el, disabled: el.disabled || !walkShown(el), review: (D.review || {}).id || "",
+      action: [t.version || t.kind, el.id || el.getAttribute("data-s") || (sec ? "pc:" + sec.getAttribute("data-proposal") : ""), el.textContent.trim()].join("|") };
   }
   function walkReplies() {
     var out = {};
@@ -4939,7 +4945,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       // A new review, new questions or a new red box changes the versions: nothing from before saves or advances.
       var gone = Object.keys(walk.pending).filter(function (v) { return !versions[v]; });
       gone.forEach(function (v) { delete walk.pending[v]; });
-      var moved = walk.rev !== null && walk.rev !== rev || gone.length > 0 || !!walk.curVersion && !versions[walk.curVersion];
+      var lost = Object.keys(walk.saved).filter(function (v) { return !versions[v]; });   // e.g. a question he answered, since reworded
+      lost.forEach(function (v) { delete walk.saved[v]; });
+      var moved = walk.rev !== null && walk.rev !== rev || gone.length > 0 || lost.some(function (v) { return v.indexOf("|q|") >= 0; }) || !!walk.curVersion && !versions[walk.curVersion];
       if (moved && walk.lines.length) { walk.line = null; walk.cur = null; walk.curVersion = null; say("Your form was updated. Starting from the new list."); }
       walk.rev = rev;
       if (!walk.lines.length) {
@@ -4995,7 +5003,6 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var ctl = t.kind === "q" ? t.box : document.querySelector("[data-proposal='" + CSS.escape(t.section.id) + "'] [data-call='" + CSS.escape(t.key) + "']");
     var b = ctl && Array.prototype.filter.call(ctl.querySelectorAll("button.tap"), function (x) { return x.value === option; })[0];
     if (!b || b.disabled) { say("That choice isn't open on the form right now."); return; }
-    walk.drove[t.key] = true;
     walk.pending[t.version] = { key: t.key, value: option, kind: "answer" };
     if (state.answers[t.key] !== option) b.click();   // his button: put(), changed(), autosave. Already selected: no tap (a second tap clears it)
     else if (walk.server[t.key] === option && !walkUnsent()) walkResolve(t.version, option);   // the server already holds it and nothing is unsent
@@ -5012,22 +5019,24 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     $("post-text").dispatchEvent(new Event("input"));
     say("Your changes are in the request box below. Check them, then tap Send.");
   }
-  function walkSaveText(text) {   // "Save this answer": his words into the page's own box, through its own input listener
+  function walkSaveText(text, item) {   // "Save this answer": his words into the page's own box, through its own input listener
     try {
       var t = walkCurrent().t, box = t && t.key && $("f-" + t.key);
+      if (!item || item.key !== t.key || item.version !== t.version) return walkStale();   // a Save offered for an item since changed saves nothing
       if (!box || box.disabled || !(t.kind === "q" || t.kind === "call")) { say("That box isn't open on the form right now."); walkPaint(); return; }
       you(String(text));
-      walk.drove[t.key] = true;
       box.value = String(text);
       walk.pending[t.version] = { key: t.key, value: box.value, kind: "answer" };
       box.dispatchEvent(new Event("input"));   // put(), grow(), changed(), autosave
       walkPaint();
     } catch (e) {}
   }
-  function walkTapPage(el) {   // the page's own Approve, Approve all, Send these changes or Send, on his tap of its copy
+  function walkTapPage(el, shown) {   // the page's own Approve, Approve all, Send these changes or Send, on his tap of its copy
     try {
+      var cur = walkCurrent(), t = cur.t, now = walkPrompt(t, cur.items).button;
+      // Only the action the card showed, on the review it showed it for: a new report or another button since is asked again
+      if (!shown || !now || now.el !== el || shown.review !== ((D.review || {}).id || "") || now.review !== shown.review || now.action !== shown.action) return walkStale();
       if (!el || !el.isConnected || el.disabled || !walkShown(el)) return;
-      var t = walkCurrent().t;
       you(el.textContent.trim());
       if (t.version && (el === $("post-send") || /^Send these changes$/.test(el.textContent.trim()))) walk.pending[t.version] = { kind: "request", key: "", value: "" };
       el.click();
@@ -5046,9 +5055,14 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function walkLanded(kind, doc) {
     try {
       if (!walk) return;
-      var answers = doc.answers || {};
+      var answers = doc.answers || {}, before = walk.server;
       if (answerAction(kind)) walk.server = Object.assign({}, answers);
       else if (kind === "feedback") Object.assign(walk.server, answers);
+      // A question he answered on the form itself: this receipt changed its saved value while this version was on show
+      if (walk.load === "ready" && answerAction(kind)) walkItems().forEach(function (it) {
+        var v = walkText(answers[it.key]);
+        if (it.kind === "q" && v.trim() && v !== walkText(before[it.key]) && v !== walkText((D.prefill || {})[it.key])) walk.saved[it.version] = v;
+      });
       if (!walk.mounted) return;
       var versions = walkVersions(walkItems());
       Object.keys(walk.pending).forEach(function (v) {

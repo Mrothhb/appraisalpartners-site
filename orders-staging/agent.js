@@ -228,7 +228,8 @@
         if (talk) ui.answerBox.append(talk);
         ui.answerBox.append(save);
         area.addEventListener("input", function () { save.disabled = !area.value.trim() || Boolean((data.prompt || {}).input && data.prompt.input.disabled); });
-        save.addEventListener("click", function () { if (!save.disabled && area.value.trim()) config.save(area.value); });
+        const item = { key: input.key, version: input.version };   // the item this box was offered for: the page saves nothing for another
+        save.addEventListener("click", function () { if (!save.disabled && area.value.trim()) config.save(area.value, item); });
         ui.answerInput = { area: area, save: save };
       }
     }
@@ -259,8 +260,8 @@
     }
     ui.chips.hidden = !ui.chips.childElementCount;
     const page = prompt && prompt.button && prompt.button.el ? prompt.button : null;
-    const pageShape = page ? [String(page.label || page.el.textContent || "").trim(), Boolean(page.disabled)].join("\n") : "";
-    if (pageShape !== ui.pageShape || (page && ui.pageEl !== page.el)) {
+    const pageShape = page ? [String(page.label || page.el.textContent || "").trim(), Boolean(page.disabled), page.review, page.action].join("\n") : "";
+    if (pageShape !== ui.pageShape || (page && ui.pageEl !== page.el)) {   // a new review or action replaces the button, never retargets it
       const had = ui.action.contains(document.activeElement);
       ui.pageShape = pageShape;
       ui.pageEl = page ? page.el : null;
@@ -269,7 +270,9 @@
         const button = element("button", "page-button", String(page.label || page.el.textContent || "").trim());
         button.type = "button";
         button.disabled = Boolean(page.disabled);
-        button.addEventListener("click", function () { if (!button.disabled) config.tap(ui.pageEl); });
+        const shown = { review: page.review, action: page.action };   // what this button showed: the page acts only while that still holds
+        const el = page.el;
+        button.addEventListener("click", function () { if (!button.disabled) config.tap(el, shown); });
         ui.action.append(button);
         if (had && !button.disabled) button.focus({ preventScroll: true });
       }
