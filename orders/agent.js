@@ -245,8 +245,8 @@
     const dedicated = !!(data.plan && data.profile), office = String(config.office.name || "").trim();
     const first = String(config.office.person || "").trim().split(/\s+/)[0], hi = first ? "Hi " + first + ". " : "Hi. ";
     if (config.host) {
-      ui.title.textContent = dedicated ? "Your dedicated agent" : "A&AP agent";
-      ui.intro.textContent = hi + "Ask me about this order.";
+      ui.title.textContent = dedicated ? "Your dedicated Report Agent" : "Your Report Agent";
+      ui.intro.textContent = hi + "I did your report. Ask me anything about it, or tell me what you'd like changed.";
     } else {
       ui.title.textContent = !dedicated ? "A&AP Desk Agent" : office && office.length <= 20 ? office + " Desk Agent" : "Your Desk Agent";
       ui.intro.textContent = hi + "Ask me about any order, ready date, price or file.";
@@ -501,7 +501,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     panel.setAttribute("aria-labelledby", "aap-agent-title");
     const header = element("div", "header");
     const heading = element("h2", "heading");
-    const title = element("span", "heading-text", config.host ? "A&AP agent" : "A&AP Desk Agent");
+    const title = element("span", "heading-text", config.host ? "Your Report Agent" : "A&AP Desk Agent");
     title.id = "aap-agent-title";
     heading.append(mark(), title);
     const close = element("button", "close", "Close");

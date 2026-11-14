@@ -893,6 +893,11 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 .dc-list { margin: 0; padding: 0 0 0 var(--s-5); font-size: 16px; font-weight: 600; line-height: 1.5; color: var(--ink); overflow-wrap: anywhere; }
 .dc-list li + li { margin-top: var(--s-2); }
 @media (forced-colors: active) { .dc-card { border-color: CanvasText; } }
+/* Matt 2026-11-14: the agent card names the agent that did the report; full-width solid button that wraps on phones */
+.agent-lead { margin: 0 0 var(--s-3); font: 700 18px/1.35 var(--display); color: var(--ink); }
+#agent-open { width: 100%; white-space: normal; line-height: 1.3; padding: var(--s-3) var(--s-5); background: var(--primary); color: #fff; }
+#agent-open:hover { background: var(--primary-hover); border-color: var(--primary-hover); color: #fff; }
+#agent-open[aria-expanded="true"] { background: #fff; color: var(--primary); }
 .comp-card { border: 2px solid #e8590c; border-left: 8px solid #e8590c; background: #fff0e0; color: #6b2400; padding: var(--s-5) var(--card-px); }
 .comp-head { display: flex; align-items: center; gap: var(--s-3); margin: 0 0 var(--s-3); }
 .comp-bang { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-full); background: #e8590c; color: #fff; font: 800 26px/1 var(--display); }
@@ -964,8 +969,10 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
   <div id="main" hidden>
   <!-- P2 (Matt 2026-11-14): one opt-in card, "Go through it with your agent", shown only on a review round of an order the
        desk turned on (house_prompts.agent_form) for an office whose plan covers it; hidden otherwise (walkPaint). -->
-  <section class="card" id="agent-card" aria-label="Go through it with your agent" hidden>
-    <button type="button" class="st" id="agent-open" aria-expanded="false" aria-controls="agent-host">Go through it with your agent</button>
+  <!-- Matt 2026-11-14 11:0x: "question about this report? Want something changed? Talk to the AI-Agent that did your report here". -->
+  <section class="card agent-card" id="agent-card" aria-labelledby="agent-lead" hidden>
+    <p class="agent-lead" id="agent-lead">Question about this report? Want something changed?</p>
+    <button type="button" class="st" id="agent-open" aria-expanded="false" aria-controls="agent-host">Talk to the AI agent that did your report</button>
     <div id="agent-host" hidden></div>
   </section>
   <!-- Matt 2026-11-04: "any items of high interest make it clear on the form colors, bold in its own box at the top 'double check these'".
@@ -4727,7 +4734,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // for the item, review and action it was shown for (review fixes, 11-14). "Ask about this item" is his own q_fb_ message
   // (sendFeedback) naming the item; replies are read from the form log (takeLog). Any error in here leaves the form as it
   // was: every hook is wrapped.
-  var AGENT_JS = "/orders/agent.js?v=20261114p2";
+  var AGENT_JS = "/orders/agent.js?v=20261114r";
   var START_LANE = /^(partial(?:-conversion|-we-set)?|full(?:-conversion)?|self-service(?:-conversion)?)$/;   // Code.gs's own Start rule
   var walk = { load: "", mounted: false, open: false, rev: null, cur: null, acked: {}, skipped: {}, pending: {}, saved: {},
     server: {}, lines: [], n: 0, replies: {}, asks: {}, line: null, reader: null, curVersion: null };
@@ -4937,7 +4944,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (on && !walk.load) walkLoad();
       $("agent-card").hidden = !(on && walk.load === "ready");
       if ($("agent-card").hidden) return;
-      $("agent-open").textContent = walk.open ? "Close" : "Go through it with your agent";
+      $("agent-open").textContent = walk.open ? "Close" : "Talk to the AI agent that did your report";
       $("agent-open").setAttribute("aria-expanded", String(walk.open));
       $("agent-host").hidden = !walk.open;
       if (!walk.open || !walk.mounted) return;
