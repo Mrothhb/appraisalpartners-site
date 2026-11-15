@@ -1,3 +1,114 @@
+/* Shared durable WebSocket client. No Google calls, credentials in URLs, or HTML rendering. */
+(function () {
+  "use strict";
+  window.AAPChatClient = function (options) {
+    const key = "aap-chat-v1|" + options.conversation_id;
+    const storage = options.storage || localStorage;
+    let saved = storage.getItem(key);
+    let state = saved ? JSON.parse(saved) : { sequence: 0, outbox: [], messages: [], draft: "" };
+    let socket, timer, watchdog, stopped = false, ready = false, connected = false, retry = 0;
+    let status = options.surface === "form"
+      ? "Connecting your A&AP report agent, with your report's full context."
+      : "Connecting your A&AP agent, who knows your office.";
+    const endpoint = new URL(options.endpoint || "wss://aap-chat.southcentralus.cloudapp.azure.com/v1/chat");
+    if (endpoint.protocol !== "wss:" && !(endpoint.protocol === "ws:" && ["localhost", "127.0.0.1", "[::1]"].includes(endpoint.hostname)))
+      throw new Error("A secure chat connection is required.");
+    if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash) throw new Error("Invalid chat address.");
+    function answering() { return state.messages.some(m => m.who === "you" && !state.messages.some(r => r.re === m.id && !r.pending)); }
+    function persist() { storage.setItem(key, JSON.stringify(state)); }
+    function view() { return { status, ready, sequence: state.sequence, outbox: state.outbox.slice(), messages: state.messages.slice(), draft: state.draft }; }
+    function notify() { if (options.onchange) options.onchange(view()); }
+    function wire(frame) { if (socket && socket.readyState === 1) socket.send(JSON.stringify(frame)); }
+    function flush() { if (ready) state.outbox.forEach(item => wire({ type: "send", ...item })); }
+    function reconnect() {
+      if (stopped) return;
+      ready = false; status = "Reconnecting..."; notify();
+      clearTimeout(timer); clearTimeout(watchdog);
+      timer = setTimeout(connect, Math.min(1500, 200 * 2 ** Math.min(retry++, 3)) + Math.random() * 100);
+    }
+    function connect() {
+      if (stopped) return;
+      const current = socket = new WebSocket(endpoint.href);
+      watchdog = setTimeout(() => current.close(), 4500);
+      current.onopen = function () {
+        wire({ type: "authenticate", grant: options.grant, conversation_id: options.conversation_id });
+        wire({ type: "resume", last_sequence: state.sequence });
+      };
+      current.onmessage = function (event) {
+        if (current !== socket || stopped) return;
+        const before = JSON.stringify(state);
+        try {
+          const f = JSON.parse(event.data);
+          if (f.type === "error") {
+            if (["expired_grant", "wrong_scope", "unauthorized", "context_changed"].includes(f.code)) {
+              stopped = true; ready = false; status = "Connection needs refreshing. Your messages are kept.";
+              clearTimeout(watchdog); current.close(); notify(); return;
+            }
+            current.close(); return;
+          }
+          if (f.type === "ready") {
+            clearTimeout(watchdog); retry = 0; connected = ready = true;
+            status = answering() ? "Typing..." : "Connected.";
+            flush(); notify(); return;
+          }
+          if (!["received", "typing", "text", "completed"].includes(f.type)) return;
+          if (!Number.isSafeInteger(f.sequence) || f.sequence < 1) throw new Error("Invalid sequence");
+          if (f.sequence <= state.sequence) return;
+          if (f.sequence !== state.sequence + 1) { current.close(); return; }
+          if (f.type === "received") {
+            state.outbox = state.outbox.filter(m => m.id !== f.id);
+            const ask = state.messages.find(m => m.id === f.id && m.who === "you");
+            if (ask) ask.pending = false;
+            status = "Typing...";
+          } else if (f.type === "typing") status = "Typing...";
+          else {
+            if (!f.reply_id || !f.re || typeof f.text !== "string") throw new Error("Invalid text");
+            let reply = state.messages.find(m => m.id === f.reply_id);
+            if (reply && (reply.re !== f.re || !f.text.startsWith(reply.text) || !reply.pending && (f.type !== "completed" || f.text !== reply.text))) throw new Error("Changed prefix");
+            if (!reply) {
+              const ask = state.messages.find(m => m.id === f.re && m.who === "you");
+              reply = { id: f.reply_id, re: f.re, who: "agent", text: "", order: ask ? ask.order : options.order || null };
+              state.messages.push(reply);
+            }
+            reply.text = f.text; reply.pending = f.type !== "completed";
+            status = answering() ? "Typing..." : "Connected.";
+          }
+          state.sequence = f.sequence;
+          persist(); notify();
+        } catch (_) {
+          // A failed local commit must replay from the last durable sequence.
+          state = JSON.parse(before);
+          current.close();
+        }
+      };
+      current.onerror = () => current.close();
+      current.onclose = function () { if (current === socket) reconnect(); };
+    }
+    const api = {
+      view,
+      regrant(grant) { options.grant = grant; if (socket && socket.readyState === 1) wire({ type: "authenticate", grant, conversation_id: options.conversation_id }); },
+      draft(text) { const old = state.draft; state.draft = String(text); try { persist(); } catch (e) { state.draft = old; throw e; } },
+      send(text, order, context) {
+        text = String(text || "").trim();
+        if (!text || text.length > 3000) throw new Error("Please enter a message up to 3000 characters.");
+        if (stopped) throw new Error("Refresh the page to reconnect. Your draft is kept.");
+        const item = { id: "q_fb_" + crypto.randomUUID().replaceAll("-", ""), text, order: order || null, context: context || null };
+        const before = JSON.stringify(state);
+        state.outbox.push(item);
+        state.messages.push({ id: item.id, who: "you", text, order: item.order, pending: true });
+        state.draft = "";
+        try { persist(); } catch (e) { state = JSON.parse(before); throw new Error("Could not save your message in this browser. Your draft is kept."); }
+        if (ready) { status = "Sending..."; wire({ type: "send", ...item }); }
+        notify(); return item.id;
+      },
+      disconnect() { stopped = true; ready = false; clearTimeout(timer); clearTimeout(watchdog); if (socket) socket.close(); },
+      reconnect() { if (socket) socket.close(); },
+      get connected() { return connected; }
+    };
+    notify(); connect(); return api;
+  };
+})();
+
 (function () {
   "use strict";
   if (window.AAPAgent) return;
@@ -29,6 +140,8 @@
   let promptId = null;
   let live = null;
   let nudged = false;
+  let chat = null;
+  let chatView = null;
 
   function element(tag, name, text) {
     const el = document.createElement(tag);
@@ -59,11 +172,13 @@
   }
 
   function setDraft(order, text) {
+    if (chat) chat.draft(text);
     drafts.set(order, text);
     try { if (text) localStorage.setItem(draftKey + (order || ""), text); else localStorage.removeItem(draftKey + (order || "")); } catch (_) {   }
   }
 
   function getDraft(order) {
+    if (chat) return chat.view().draft;
     if (drafts.has(order)) return drafts.get(order) || "";
     try { return localStorage.getItem(draftKey + (order || "")) || ""; } catch (_) { return ""; }
   }
@@ -88,7 +203,9 @@
     return words.length > 12 ? words.slice(0, 12).join(" ").replace(/[,;:.]$/, "") + "…" : words.join(" ");
   }
 
-  function you() { return data.thread.some(message => message.who === "you" && !message.history && sameScope(message, scope())); }   // this visit; a restored history line does not count
+  function thread() { return data.thread.concat(chatView ? chatView.messages : []); }
+
+  function you() { return thread().some(message => message.who === "you" && !message.history && sameScope(message, scope())); }   // this visit; a restored history line does not count
 
   function scope() {
     return data.route === "order" && data.order ? data.order : null;
@@ -138,7 +255,7 @@
 
   function renderConversation() {
     const request = conversations.get(scope());
-    const sending = Boolean(request && request.status === "sending");
+    const sending = !chat && Boolean(request && request.status === "sending");
     ui.input.disabled = sending;
     ui.send.disabled = sending || !ui.input.value.trim();
     grow();
@@ -156,7 +273,10 @@
   }
 
   function renderThread() {
-    const lines = data.thread.filter(message => sameScope(message, scope()));
+    const streamed = chatView ? chatView.messages : [];
+    const ids = new Set(streamed.flatMap(m => [m.id, "h-" + m.id]));
+    const lines = data.thread.filter(m => !ids.has(m.id || m.key) && !streamed.some(s => s.re && s.re === m.re && m.who === "agent"))
+      .concat(streamed).filter(message => sameScope(message, scope()));
     const atEnd = ui.body.scrollHeight - ui.body.scrollTop - ui.body.clientHeight < 48, keep = new Set();
     lines.forEach(function (message, i) {
       const key = String(message.key || message.id || i), you = message.who === "you";
@@ -305,6 +425,10 @@
   }
 
   function renderLive() {
+    if (chatView) {
+      ui.sub.textContent = ui.sys.textContent = chatView.status;
+      ui.sys.hidden = false; ui.bar.hidden = true; return;
+    }
     const state = live && live.state, eta = live && live.eta || 60, late = state === "connecting" && Date.now() - live.at > 2 * eta * 1000;
     const progress = data.prompt && data.prompt.progress && !ui.prompt.hidden ? "AI agent · " + data.prompt.progress : "";
     ui.sub.textContent = late ? "Taking longer · replies also by email"
@@ -350,7 +474,7 @@
       const count = new Set(data.needs.map(need => need.ap).filter(Boolean)).size;
       ui.introText.textContent = hi + "Desk Agent here, an AI. " + (count ? count + (count === 1 ? " order needs you." : " orders need you.") : "Ask about any order.");
     }
-    ui.intro.hidden = data.thread.some(message => sameScope(message, scope()));
+    ui.intro.hidden = thread().some(message => sameScope(message, scope()));
     renderContext();
     if (config.host || !scope() && !ui.intro.hidden) ui.context.hidden = true;   // the opener already says the count
     renderConversation();
@@ -429,6 +553,15 @@
     event.preventDefault();
     const order = scope();
     const text = ui.input.value.trim();
+    if (chat) {
+      if (!text) return;
+      stopSpeech();
+      try {
+        chat.send(text, order, config.chatContext ? config.chatContext() : null);
+        ui.input.value = ""; setDraft(order, ""); ui.speech.textContent = "";
+      } catch (e) { ui.speech.textContent = e.message; }
+      render(); return;
+    }
     const previous = conversations.get(order);
     if (!text || (previous || {}).status === "sending") return;
     stopSpeech();
@@ -708,7 +841,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     speech.setAttribute("role", "status");
     form.append(field, speech);
     const disclosure = element("p", "disclosure", DISCLOSURE);
-    footer.append(form, disclosure);
+    footer.append(form, disclosure, element("p", "disclosure", "This is the Desk AI agent."));
     panel.append(header, bar, body, footer);
     const launch = element("button", "launch");
     launch.type = "button";
@@ -728,7 +861,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
       pageShape: "", pageEl: null, starters, starterShape: "" };
     mountedScope = scope();
     input.value = getDraft(mountedScope);
-    input.addEventListener("input", function () { setDraft(scope(), input.value); renderConversation(); });
+    input.addEventListener("input", function () { try { setDraft(scope(), input.value); ui.speech.textContent = ""; } catch (_) { ui.speech.textContent = "Could not save your draft in this browser."; } renderConversation(); });
     input.addEventListener("keydown", function (event) {   // Enter sends; Shift+Enter is a new line; never mid-composition (IME)
       if (event.key !== "Enter" || event.shiftKey || event.isComposing || event.keyCode === 229) return;
       event.preventDefault();
@@ -769,12 +902,23 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
   window.AAPAgent = Object.freeze({
     init: function (options) {
       if (config) return;
-      if (!options || typeof options.send !== "function") throw new TypeError("AAPAgent.init requires send.");
+      if (!options || !options.chat && typeof options.send !== "function") throw new TypeError("AAPAgent.init requires send.");
       config = { send: options.send, office: options.office || {}, float: options.float === true, dock: options.dock === true };
       if (options.host) {
         if (!(options.host instanceof Element) || typeof options.choose !== "function" || typeof options.save !== "function" || typeof options.tap !== "function")
           throw new TypeError("AAPAgent.init host mode requires host, choose, save and tap.");
         Object.assign(config, { host: options.host, choose: options.choose, save: options.save, tap: options.tap, talk: options.talk });
+      }
+      config.chatContext = options.chatContext;
+      if (options.chat) {
+        try {
+          chat = window.AAPChatClient({ ...options.chat, surface: options.host ? "form" : "portal",
+            onchange: function (next) { chatView = next; if (ui) render(); } });
+        } catch (_) {
+          // Configured streaming never silently falls back to a second answer owner.
+          chatView = { status: "Connection unavailable. Your draft is kept.", messages: [] };
+          config.send = () => Promise.resolve({ ok: false, error: "Chat could not connect. Your draft is kept." });
+        }
       }
       if (document.body) mount();
       else document.addEventListener("DOMContentLoaded", mount, { once: true });
@@ -796,6 +940,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     },
     update: function (next) {
       if (!next || typeof next !== "object") return;
+      if (chat && next.chat && next.chat.grant) chat.regrant(next.chat.grant);
       data = {
         route: next.route || "home", order: next.order || null,
         needs: Array.isArray(next.needs) ? next.needs : [],

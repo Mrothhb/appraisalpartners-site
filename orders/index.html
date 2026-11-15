@@ -225,7 +225,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
 <main class="col" id="main" hidden></main>
 <footer class="site" id="foot" hidden><div class="wrap" id="foot-line"></div></footer>
 
-<script src="agent.js?v=20261114live" defer></script>
+<script src="agent.js?v=20261115stream1" defer></script>
 <script>
 (function () {
   "use strict";
@@ -282,7 +282,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     var d = /^\d{4}-\d{2}-\d{2}$/.test(iso || "") ? new Date(iso + "T12:00:00") : new Date(iso);
     return isNaN(d) ? "" : d.toLocaleDateString("en-US", { timeZone: "America/Chicago", month: "short", day: "numeric", year: "numeric" });
   }
-  var SENT = "Sent. Your desk answers within a few minutes.";
+  var SENT = "Sent.";
 
   function rows() { return (B.orders || []).slice(); }
   function delivered() { return (B.delivered || []).slice(); }
@@ -845,8 +845,9 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     var A = window.AAPAgent;
     if (!B || !messaging() || !A || typeof A.init !== "function" || typeof A.update !== "function") return;
     try {
-      if (!agentInit) { A.init({ send: send, office: { name: B.office || "", person: B.person || "" } }); agentInit = true; agentReady = typeof A.open === "function"; showTalk(); }
+      if (!agentInit) { A.init({ chat: last && last.chat, send: send, office: { name: B.office || "", person: B.person || "" } }); agentInit = true; agentReady = typeof A.open === "function"; showTalk(); }
       A.update({
+        chat: last && last.chat,
         route: route(), order: null,
         needs: (B.needs || []).map(function (n) { var o = byCode(n.order); return { ap: n.order, street: n.street || n.order, kind: n.kind === "start" ? "answer" : n.kind,
                                                    label: n.kind === "files" ? filesLabel(o) : LABEL[n.kind] || "Open order", href: needHref(n, o) }; }).filter(function (n) { return n.href; }),
