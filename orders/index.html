@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-build="v2026-11-15.4">
+<html lang="en" data-build="v2026-11-15.5">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -289,7 +289,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
   function byCode(code) { return rows().concat(delivered()).filter(function (o) { return o.order === code; })[0]; }
   function formOf(o) { return o && FORM.test(o.form || "") ? o.form : ""; }
   function needsOf(code) { return (B.needs || []).filter(function (n) { return n.order === code; }); }
-  function plan() { var u = B.usage || B.usage_bar; return u && typeof u === "object" ? u : null; }
+  function plan() { return null; }
   function billName() { return plan() ? "Plan & billing" : "Billing"; }
   var ORDER_AGENT = false;
   function messaging() { return Array.isArray(B.messages); }
@@ -301,7 +301,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
   function filesLabel(o) { return o && o.files && o.files.how === "drive" ? "Add files" : "Send files"; }
   function out(a) { if (!/^(mailto:|#)/.test(a.getAttribute("href") || "")) { a.target = "_blank"; a.rel = "noopener noreferrer"; } return a; }
   var LABEL = { review: "Review report", answer: "Answer questions", start: "Start", pay: "Pay" };
-  function needHref(n, o) { return n.kind === "files" ? (canUpload(o) ? "#orders/" + n.order : filesHref(o)) : formOf(o); }
+  function needHref(n, o) { return n.kind === "updating" ? "" : n.kind === "files" ? (canUpload(o) ? "#orders/" + n.order : filesHref(o)) : formOf(o); }
   function needAction(n, o) {
     var href = needHref(n, o); if (!href) return null;
     var a = h("a.btn", { href: href }, n.kind === "files" ? filesLabel(o) : LABEL[n.kind] || "Open order");
@@ -853,7 +853,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
                                                    label: n.kind === "files" ? filesLabel(o) : LABEL[n.kind] || "Open order", href: needHref(n, o) }; }).filter(function (n) { return n.href; }),
         orders: rows().map(function (o) { return { ap: o.order, street: o.street || o.order, status: o.stage || "", ready: o.due || "", due: o.client_due || "" }; }),
         thread: conversation().map(function (m) { return { at: m.at, who: m.who === "desk" ? "desk" : "you", order: m.order || null, text: m.text, id: m.key || "", re: m.re || "", pending: !!m.pending }; }),
-        plan: plan() && Number(plan().cap) > 0 ? { pct: Math.max(0, Math.round(Number(plan().pct) || 0)), resets: plan().resets_text || "", refill: messaging() } : null,
+        plan: B.usage || B.usage_bar ? {} : null,
         profile: typeof B.profile === "string" && !!B.profile.trim() && B.profile.length <= 2000,
         starters: [{ label: "What's waiting on me?" }, { label: "When is my next report ready?" }, { label: "Price a new order" }].concat(newest() ? [{ label: "Where is " + newest() + "?" }] : [])
       });
