@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-build="v2026-11-13.6">
+<html lang="en" data-build="v2026-11-15.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -48,6 +48,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .acts { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 .link-btn { padding: 0; min-height: 48px; border: 0; background: none; color: var(--primary); font: 600 16px/1.5 var(--font); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 
+.aap-banner { background: var(--tint); border-bottom: 1px solid var(--tint-line); color: var(--ink); }
+.aap-banner .wrap { display: flex; align-items: center; gap: var(--s-3); padding-top: var(--s-2); padding-bottom: var(--s-2); }
+.aap-banner p { margin: 0; flex: 1; font: 400 16px/1.4 var(--font); }
+.aap-banner button { flex: none; width: 44px; height: 44px; border: 0; border-radius: var(--r-2); background: transparent; color: var(--ink-2); font: 400 26px/1 var(--font); cursor: pointer; }
+.aap-banner button:hover { background: var(--tint-line); }
+@media (max-width: 600px) { .aap-banner .wrap { gap: var(--s-1); padding-top: var(--s-1); padding-bottom: var(--s-1); } .aap-banner p { font-size: 13px; line-height: 1.35; } .aap-banner button { width: 36px; height: 40px; } }
 .appbar { background: var(--bar-bg); color: #fff; min-height: var(--bar-h); }
 .appbar .wrap { display: flex; align-items: center; gap: var(--s-4); min-height: var(--bar-h); }
 .brand { display: flex; align-items: center; gap: var(--s-3); color: #fff; text-decoration: none; min-height: 48px; flex: none; }
@@ -200,6 +206,13 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
   <symbol id="icon-talk" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 8.5h8M8 11.5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
 </svg>
+<div class="aap-banner" id="aap-banner" role="note"><div class="wrap"><p>New: Your portal and its agents are free through November 30 while we keep improving them.</p><button type="button" id="aap-banner-x" aria-label="Dismiss">&times;</button></div></div>
+<script>(function () {
+  var b = document.getElementById("aap-banner"), k = "aap-portal-banner-20261130", left = Date.parse("2026-12-01T00:00:00-06:00") - Date.now();
+  try { if (left <= 0 || localStorage.getItem(k)) b.hidden = true; } catch (e) {}
+  if (left > 0 && left < 2147483647) setTimeout(function () { b.hidden = true; }, left);
+  document.getElementById("aap-banner-x").onclick = function () { b.hidden = true; try { localStorage.setItem(k, "1"); } catch (e) {} };
+})();</script>
 <header class="appbar">
   <div class="wrap">
     <a class="brand" href="#home"><img src="../assets/aap-mark-light.svg" alt="" width="52" height="30"><b>A&amp;AP</b></a>
