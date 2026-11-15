@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light">
+<title>Meet your agents · A&amp;AP</title>
+<link rel="icon" href="../../assets/aap-favicon.png">
+<style>
+@font-face { font-family: "Open Sans"; font-style: normal; font-weight: 300 800; font-display: swap; src: url("../../assets/open-sans.woff2") format("woff2"); }
+@font-face { font-family: "Schibsted Grotesk"; font-style: normal; font-weight: 700; font-display: swap; src: url("../../assets/schibsted-grotesk-700.ttf") format("truetype"); }
+:root {
+  --font: "Open Sans", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --display: "Schibsted Grotesk", var(--font);
+  --ink: #1c1c1c; --ink-2: #3a3a3a; --line: #e3e3e3;
+  --primary: #0a6ec1; --primary-hover: #085ea6; --tint: #eaf3fb; --tint-line: #d5e6f5;
+  --bar-bg: linear-gradient(90deg, #016195, #0073ae 50%, #017dbd);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: #fff; color: var(--ink); font: 400 19px/1.7 var(--font); }
+.wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+.bar { background: var(--bar-bg); }
+.bar .wrap { display: flex; align-items: center; min-height: 64px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
+.brand b { font: 700 22px/1 var(--display); }
+main { padding: 28px 0 72px; }
+a { color: var(--primary); }
+a:focus-visible, .back:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+.top-back { display: inline-block; margin: 0 0 28px; font-weight: 600; text-decoration: none; }
+.top-back:hover { text-decoration: underline; }
+h1 { margin: 0 0 16px; font: 700 38px/1.2 var(--display); letter-spacing: -0.01em; }
+h2 { margin: 60px 0 18px; font: 700 28px/1.25 var(--display); }
+p { margin: 0 0 20px; }
+.lead { font-size: 21px; color: var(--ink-2); }
+ul, ol { margin: 0 0 20px; padding: 0; list-style: none; }
+ul li { position: relative; margin: 0 0 16px; padding-left: 32px; }
+ul li::before { content: ""; position: absolute; left: 6px; top: 0.6em; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); }
+ol { counter-reset: step; }
+ol li { position: relative; min-height: 40px; margin: 0 0 22px; padding: 4px 0 0 58px; counter-increment: step; }
+ol li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: #fff; font: 700 19px/40px var(--font); text-align: center; }
+.agent { margin: 32px 0 0; padding: 30px 32px 14px; border: 1px solid var(--tint-line); border-radius: 12px; background: var(--tint); }
+.agent h2 { margin: 0 0 6px; }
+.find { margin: 0 0 18px; font-weight: 600; color: var(--ink-2); }
+.soon { font-size: 17px; color: var(--ink-2); }
+.ai { margin: 56px 0 32px; padding: 18px 22px; border-left: 4px solid var(--primary); background: #f6f8fa; color: var(--ink-2); }
+.back { display: inline-flex; align-items: center; justify-content: center; min-height: 54px; padding: 0 26px; border-radius: 6px; background: var(--primary); color: #fff; font: 600 19px/1 var(--font); text-decoration: none; }
+.back:hover { background: var(--primary-hover); }
+@media (max-width: 600px) {
+  body { font-size: 18px; }
+  .wrap { padding: 0 16px; }
+  h1 { font-size: 31px; }
+  h2 { margin-top: 48px; font-size: 25px; }
+  .lead { font-size: 19px; }
+  .agent { padding: 24px 20px 10px; }
+  .back { width: 100%; }
+}
+</style>
+</head>
+<body>
+<header class="bar"><div class="wrap"><a class="brand" href="../" data-back><img src="../../assets/aap-mark-light.svg" alt="" width="52" height="30"><b>A&amp;AP</b></a></div></header>
+<main><div class="wrap">
+  <a class="top-back" href="../" data-back>&larr; Back to your portal</a>
+
+  <h1>Meet your agents</h1>
+  <p class="lead">Your portal comes with two AI assistants we call agents. They answer your questions, usually in seconds, any time of day.</p>
+
+  <section class="agent" aria-labelledby="desk">
+    <h2 id="desk">Your Desk Agent</h2>
+    <p class="find">Find it: tap Desk Agent at the top of your portal.</p>
+    <p>Think of it as your assistant at our front desk. It knows your office and your orders.</p>
+    <ul>
+      <li>Tells you where each order stands and when it's due.</li>
+      <li>Answers questions about your orders, reports and files.</li>
+      <li>Takes your requests, and passes anything that needs a person to Matt and our team.</li>
+      <li>Gets to know your office and how you like things done.</li>
+    </ul>
+  </section>
+
+  <section class="agent" aria-labelledby="report">
+    <h2 id="report">Your Report Agent</h2>
+    <p class="find">Find it: on your report's review page, tap Report Agent.</p>
+    <p>Each order gets its own Report Agent. It knows that report inside and out: the comparables, the adjustments and the comments.</p>
+    <ul>
+      <li>Answers your questions while you review, right beside your report.</li>
+      <li>Explains any number, adjustment or comment in plain words.</li>
+      <li>Passes anything it can't answer to Matt and our team.</li>
+    </ul>
+    <p class="soon">We're turning it on for more orders every week.</p>
+  </section>
+
+  <h2>How it works</h2>
+  <ol>
+    <li>Open your portal, or your report's review page.</li>
+    <li>Tap the agent and type your question the way you'd say it to a person. On a phone, you can tap the microphone on your keyboard and just talk.</li>
+    <li>Your agent answers right there, usually in seconds. If something needs a person, it tells you and passes it along.</li>
+  </ol>
+
+  <h2>Why we built it</h2>
+  <p>Email is slow for quick questions. Something as simple as "Is my report done yet?" can take hours and several messages.</p>
+  <p>Your agents answer right away, day or night. Over time, your Desk Agent gets to know your office the way a good assistant does.</p>
+  <p>That gives Matt and our team more time for your reports, and less time on messages.</p>
+
+  <h2>What it means for your workday</h2>
+  <ul>
+    <li><b>Answers in seconds,</b> not hours.</li>
+    <li><b>Open any time:</b> early mornings, evenings and weekends.</li>
+    <li><b>Everything in one place:</b> your orders, due dates and reports.</li>
+    <li><b>Fewer emails</b> to write, read and keep track of.</li>
+    <li><b>Quicker reviews:</b> ask about your report while you're looking at it.</li>
+    <li><b>Less repeating yourself:</b> your agent remembers how your office works.</li>
+  </ul>
+
+  <h2>Getting the most from your agents</h2>
+  <ul>
+    <li><b>Ask your agent first.</b> Before you write an email or pick up the phone, try your Desk Agent.</li>
+    <li><b>Ask about a report on its review page.</b> Your Report Agent is right there with you.</li>
+    <li><b>Tell it once.</b> Share how your office likes things done, and it remembers.</li>
+    <li><b>Give it a week.</b> Like any new habit, it feels natural after a few days.</li>
+    <li><b>Email still works.</b> Your shared folder and <a href="mailto:desk@aandap.com">desk@aandap.com</a> work just like before. Use whatever is easiest.</li>
+  </ul>
+
+  <h2>Free through November 30</h2>
+  <p>Your portal and its agents are new, and we're still improving them. That's why they're free through November 30.</p>
+  <p>If something doesn't work the way you expect, tell your Desk Agent. Your feedback shapes what we build next.</p>
+
+  <p class="ai">Your agents are AI assistants. Anything that needs a person goes to Matt and our team.</p>
+
+  <a class="back" href="../" data-back>&larr; Back to your portal</a>
+</div></main>
+<script>
+// Back returns to the portal page the reader came from (its private link stays in that page's history); opened on its own, it goes to /orders/.
+Array.prototype.forEach.call(document.querySelectorAll("[data-back]"), function (a) {
+  a.addEventListener("click", function (e) { if (history.length > 1) { e.preventDefault(); history.back(); } });
+});
+</script>
+</body>
+</html>
