@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-build="v2026-11-15.2">
+<html lang="en" data-build="v2026-11-15.3">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -48,15 +48,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .acts { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 .link-btn { padding: 0; min-height: 48px; border: 0; background: none; color: var(--primary); font: 600 16px/1.5 var(--font); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 
-.aap-note-wrap { padding-top: var(--s-4); padding-bottom: 0; }
-.aap-note { display: flex; align-items: center; gap: var(--s-3); background: #fff; border: 1px solid var(--tint-line); border-radius: var(--r-3); padding: var(--s-3) var(--s-4); }
-.aap-note svg { flex: none; width: 22px; height: 22px; color: var(--primary); }
-.aap-note .t { flex: 1; min-width: 0; }
-.aap-note b { display: block; font: 600 15px/1.35 var(--font); color: var(--ink); }
-.aap-note .t span { display: block; font: 400 14px/1.4 var(--font); color: var(--ink-2); }
-.aap-note button { flex: none; min-height: 36px; padding: 6px 12px; border: 1px solid var(--line-2); border-radius: var(--r-2); background: #fff; color: var(--ink-2); font: 400 14px/1 var(--font); cursor: pointer; }
-.aap-note button:hover { background: var(--field-off); }
-@media (max-width: 600px) { .aap-note { align-items: flex-start; } .aap-note b { font-size: 14px; } .aap-note .t span { font-size: 13px; } }
+.trial-pill { flex: none; white-space: nowrap; background: var(--success-bg); color: var(--success-ink); font: 600 12px/1 var(--font); padding: 6px 11px; border-radius: var(--r-full); }
+.trial-line { margin: 0; padding: var(--s-2) var(--gutter); text-align: center; background: var(--canvas); color: var(--ink-2); font: 400 13px/1.4 var(--font); }
+.trial-line svg { width: 15px; height: 15px; color: var(--primary); vertical-align: -2px; margin-right: 4px; }
+@media (max-width: 600px) { .trial-pill { display: none; } }
 .appbar { background: var(--bar-bg); color: #fff; min-height: var(--bar-h); }
 .appbar .wrap { display: flex; align-items: center; gap: var(--s-4); min-height: var(--bar-h); }
 .brand { display: flex; align-items: center; gap: var(--s-3); color: #fff; text-decoration: none; min-height: 48px; flex: none; }
@@ -213,19 +208,21 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
   <div class="wrap">
     <a class="brand" href="#home"><img src="../assets/aap-mark-light.svg" alt="" width="52" height="30"><b>A&amp;AP</b></a>
     <nav class="nav" id="nav" aria-label="Orders pages"></nav>
-    <div class="right"><a class="meter" id="meter" href="#billing" hidden></a><span class="who" id="who"></span></div>
+    <div class="right"><span class="trial-pill" id="trial-pill" hidden></span><a class="meter" id="meter" href="#billing" hidden></a><span class="who" id="who"></span></div>
   </div>
 </header>
 <nav class="tabs" aria-label="Orders pages, phone"><div class="wrap" id="tabs"></div></nav>
+<p class="trial-line" id="trial-line" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2-2a2 2 0 0 1-2-2a2 2 0 0 1-2 2zm0-12a2 2 0 0 1 2 2a2 2 0 0 1 2-2a2 2 0 0 1-2-2a2 2 0 0 1-2 2zM9 18a6 6 0 0 1 6-6a6 6 0 0 1-6-6a6 6 0 0 1-6 6a6 6 0 0 1 6 6z"/></svg>Free through November 30 while we finish your portal and agents.</p>
+<script>(function () {
+  var left = Date.parse("2026-12-01T00:00:00-06:00") - Date.now(), pill = document.getElementById("trial-pill"), line = document.getElementById("trial-line");
+  if (left <= 0) return;
+  var days = Math.ceil(left / 86400000);
+  pill.textContent = days <= 1 ? "Free trial \u00b7 last day" : "Free trial \u00b7 " + days + " days left";
+  pill.hidden = false; line.hidden = false;
+  if (left < 2147483647) setTimeout(function () { pill.hidden = true; line.hidden = true; }, left);
+})();</script>
 <div class="meter-row" id="meter-row"></div>
 <p class="gate" id="gate" aria-live="polite">Loading…</p>
-<div class="col aap-note-wrap" id="aap-banner" role="note"><div class="aap-note"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg><div class="t"><b>Free through November 30</b><span>Your portal and its agents are free while we keep improving them.</span></div><button type="button" id="aap-banner-x">Got it</button></div></div>
-<script>(function () {
-  var b = document.getElementById("aap-banner"), k = "aap-portal-note-20261130", left = Date.parse("2026-12-01T00:00:00-06:00") - Date.now();
-  try { if (left <= 0 || localStorage.getItem(k)) b.hidden = true; } catch (e) {}
-  if (left > 0 && left < 2147483647) setTimeout(function () { b.hidden = true; }, left);
-  document.getElementById("aap-banner-x").onclick = function () { b.hidden = true; try { localStorage.setItem(k, "1"); } catch (e) {} };
-})();</script>
 <main class="col" id="main" hidden></main>
 <footer class="site" id="foot" hidden><div class="wrap" id="foot-line"></div></footer>
 
