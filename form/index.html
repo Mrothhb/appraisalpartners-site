@@ -41,7 +41,7 @@
      (answer marketability_comment), apart from the adjustments comment.
      formlink.py --html writes a one-file copy of this page with the order's data inlined (id="order") for a report's
      Workfile, where TOTAL's preview pane shows it. -->
-<html lang="en" data-build="v2026-11-13.1">
+<html lang="en" data-build="v2026-11-15.1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -940,6 +940,12 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 .stage-more:hover { color: var(--primary-hover); text-decoration-color: currentColor; }
 .stage-more svg { width: 16px; height: 16px; }
 @media (forced-colors: active) { #stage-list { border-color: ButtonText; } #stage-list li::before { background: ButtonText; } }
+/* MAIN 4008/4041/4089 (Matt 2026-11-15): the orders page's Download TOTAL file button, its look scoped to #total-dl. */
+#total-dl { display: flex; flex-wrap: wrap; gap: var(--s-3); margin: var(--s-4) 0 0; }
+#total-dl .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-5); border: 1px solid var(--primary); border-radius: var(--r-2); background: var(--primary); color: #fff; font: 600 18px/1.2 var(--font); text-decoration: none; text-align: center; cursor: pointer; transition: background var(--dur) var(--ease); }
+#total-dl .btn:hover { background: var(--primary-hover); border-color: var(--primary-hover); color: #fff; }
+#total-dl .btn:active { background: var(--primary-active); }
+@media (max-width: 600px) { #total-dl .btn { flex: 1 1 100%; } }
 </style>
 </head>
 <body>
@@ -1049,7 +1055,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
     <ol class="guide-steps" id="guide-steps"></ol>
     <p class="guide-note" id="guide-note" hidden></p>
   </section>
-  <div class="card" id="returned-intro" hidden><p id="returned-headline">Your report is in your TOTAL folder. Review and edit it there.</p><p class="note" id="delivered-at" hidden></p><p class="note" id="legacy-approved" hidden></p></div>
+  <div class="card" id="returned-intro" hidden><p id="returned-headline">Your report is in your TOTAL folder. Review and edit it there.</p><p class="note" id="delivered-at" hidden></p><span id="total-dl" hidden></span><p class="note" id="legacy-approved" hidden></p></div>
   <div class="banner" id="notready" role="status" hidden></div>
   <section class="card" id="calls" aria-label="Our calls" hidden></section>
 
@@ -3617,6 +3623,38 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     $("guide-note").textContent = g[2] || ""; $("guide-note").hidden = !g[2];
     box.classList.toggle("quiet", g[1].length < 3 && /^Nothing/.test(g[0]));
   }
+  // ---------- MAIN 4008/4041/4089 (Matt 2026-11-15): the orders page's Download TOTAL file, as-is ----------
+  // The row is the portal's own source for this order: the log "file" entry bound to the last delivery
+  // (customer_board.total_file). The link is Drive's direct download with confirm=t, because every TOTAL .zap is encrypted
+  // and uc?export=download stops on Drive's "can't scan this file for viruses" page (Yves, 10-14).
+  var FILES = (function () {
+    var ID = /^[A-Za-z0-9_-]{10,}$/;
+    function h(spec, props) {
+      var m = /^([a-z0-9]+)((?:\.[a-z0-9-]+)*)$/.exec(spec), n = document.createElement(m[1]);
+      if (m[2]) n.className = m[2].slice(1).replace(/\./g, " ");
+      var kids = Array.prototype.slice.call(arguments, 2);
+      if (props && (typeof props !== "object" || props.nodeType)) { kids.unshift(props); props = null; }
+      for (var k in props || {}) { if (props[k] == null || props[k] === false) continue; if (k === "text") n.textContent = props[k]; else n.setAttribute(k, props[k]); }
+      kids.forEach(function (c) { if (c != null && c !== false && c !== "") n.appendChild(c.nodeType ? c : document.createTextNode(String(c))); });
+      return n;
+    }
+    function out(a) { if (!/^(mailto:|#)/.test(a.getAttribute("href") || "")) { a.target = "_blank"; a.rel = "noopener noreferrer"; } return a; }
+    function download(label, id, ghost) { return out(h(ghost ? "a.btn.ghost" : "a.btn", { href: "https://drive.usercontent.google.com/download?id=" + id + "&export=download&confirm=t" }, label)); }
+    function sent(e, d) { return !!e && e.what === "file" && !!d.sha256 && e.sha256 === d.sha256 && (!e.delivery_at || e.delivery_at === d.at) &&
+      (!d.review_id || [undefined, null, "", d.review_id].indexOf(e.review_id) >= 0) && ID.test(String(e.id || "")); }
+    function totalFile(f) {
+      var ds = (f && f.deliveries) || [], last = ds[ds.length - 1] || {}, log = (f && f.log) || [];
+      for (var i = log.length - 1; i >= 0; i--) if (log[i] && log[i].what === "file") return sent(log[i], last) ? { name: String(log[i].name || ""), id: log[i].id } : null;
+      return null;
+    }
+    // The button once the delivered report is the current one and nothing is due.
+    function paint() {
+      var tf = delivered() && !String(O.payment_due || "").trim() ? totalFile(D) : null, box = $("total-dl"), key = tf ? tf.id : "";
+      if (box.getAttribute("data-shown") !== key) { box.textContent = ""; box.setAttribute("data-shown", key); if (tf) box.appendChild(download("Download TOTAL file", tf.id)); }
+      box.hidden = !tf;
+    }
+    return { paint: paint, totalFile: totalFile };
+  })();
   function paintStatus() {
     paintFeedback();
     paintChosen();
@@ -3802,6 +3840,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (!back) { if (popKind === "back") pop(false); }   // pops once per reason, once boot settles
     else if (popped !== D.public_note) setTimeout(function () { if (!$("notready").hidden && popped !== D.public_note) { popped = D.public_note; pop(D.public_note, "back"); } }, 0);
     walkPaint();   // P2: the opt-in card (hidden unless it applies)
+    FILES.paint();
   }
   var popped = "", popKind = "";
   function pop(text, kind) {   // the red pop-out: a DOM overlay, never alert() or a window
@@ -4590,7 +4629,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function gate(msg) { $("gate-msg").textContent = msg; }
   // A Workfile copy made before the run learns the questions and answers added since from the backend.
-  function newer(f) { return canon(f.delivery_status || null) !== canon(F.delivery_status || null) || f.questions_only !== F.questions_only || (f.start_reconfirm || "") !== (F.start_reconfirm || "") || canon(f.matt_hold || null) !== canon(F.matt_hold || null) || canon(f.start_missing || []) !== canon(F.start_missing || []) || canon(f.comp_check || null) !== canon(F.comp_check || null) || canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.start_scope || "") !== (F.start_scope || "") || (f.terms || "") !== (F.terms || "") || (f.change_rounds || 0) !== (F.change_rounds || 0) || canon(f.change_answer || null) !== canon(F.change_answer || null) || f.changes_closed !== F.changes_closed || (f.changes_closed_text || "") !== (F.changes_closed_text || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || canon(f.review_changes || null) !== canon(F.review_changes || null) || canon(f.double_check || []) !== canon(F.double_check || []) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F); }
+  function newer(f) { return canon(f.delivery_status || null) !== canon(F.delivery_status || null) || f.questions_only !== F.questions_only || (f.start_reconfirm || "") !== (F.start_reconfirm || "") || canon(f.matt_hold || null) !== canon(F.matt_hold || null) || canon(f.start_missing || []) !== canon(F.start_missing || []) || canon(f.comp_check || null) !== canon(F.comp_check || null) || canon(f.proposed_calls || null) !== canon(F.proposed_calls || null) || canon(f.file_calls || {}) !== canon(F.file_calls || {}) || canon(f.call_sections || []) !== canon(F.call_sections || []) || canon(f.adjustment_rows || []) !== canon(F.adjustment_rows || []) || canon(f.grid_missing || []) !== canon(F.grid_missing || []) || canon(f.standard_fees || []) !== canon(F.standard_fees || []) || f.minimal_start !== F.minimal_start || f.acceptance_actions !== F.acceptance_actions || f.recipient_attribution !== F.recipient_attribution || canon(f.lane_options || []) !== canon(F.lane_options || []) || canon(f.order || {}) !== canon(F.order || {}) || canon(f.house_prompts || {}) !== canon(F.house_prompts || {}) || (f.start_scope || "") !== (F.start_scope || "") || (f.terms || "") !== (F.terms || "") || (f.change_rounds || 0) !== (F.change_rounds || 0) || canon(f.change_answer || null) !== canon(F.change_answer || null) || f.changes_closed !== F.changes_closed || (f.changes_closed_text || "") !== (F.changes_closed_text || "") || (f.stage || "open") !== stage || f.signoff !== F.signoff || canon(f.review || null) !== canon(F.review || null) || canon(f.questions || []) !== canon(F.questions || []) || canon([f.comps, f.grid_comps, f.subject, f.prefill, f.our_calls]) !== canon([F.comps, F.grid_comps, F.subject, F.prefill, F.our_calls]) || (f.public_note || "") !== (F.public_note || "") || (f.note_kind || "") !== (F.note_kind || "") || canon(f.report_images || []) !== canon(F.report_images || []) || canon(f.review_changes || null) !== canon(F.review_changes || null) || canon(f.double_check || []) !== canon(F.double_check || []) || (f.report_pdf || "") !== (F.report_pdf || "") || (f.accepted_at || "") !== (F.accepted_at || "") || canon(f.accepted_quote || null) !== canon(F.accepted_quote || null) || (f.delivered_at || "") !== (F.delivered_at || "") || canon(f.deliveries || []) !== canon(F.deliveries || []) || askedAt(f) !== askedAt(F) || canon(FILES.totalFile(f)) !== canon(FILES.totalFile(F)); }
   function canon(v) { return JSON.stringify(v, function (k, x) { return x && typeof x === "object" && !Array.isArray(x) ? Object.keys(x).sort().reduce(function (o, j) { o[j] = x[j]; return o; }, {}) : x; }); }   // key order is never a change
   // A re-render keeps the reader's place (Chase 2026-10-20): the scroll, then the box or button in focus and its
   // selection; with nothing in focus it takes none.
