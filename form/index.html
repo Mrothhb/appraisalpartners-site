@@ -4606,7 +4606,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     state.customer_submissions = saved.customer_submissions || [];
     state.invalidated_check = saved.invalidated_check || null;
     approved = stage === "returned" && (D.house_prompts || {}).lane === "review" && state.status === "DONE";
-    conn(approved ? "Approved" : "Connected");
+    conn(approved ? "Approved" : "");
     if (approved) { clearTimeout(timer); timer = null; tapped = null; pop(false); }
     if (edits === savedEdits) {      // saved answers win over the prefill; never over unsent typing
       answerRevision = saved._revision || null;
@@ -4769,7 +4769,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
 
 
 
-  var AGENT_JS = "/orders/agent.js?v=20261116handoff2";
+  var AGENT_JS = "/orders/agent.js?v=20261116clean1";
   var START_LANE = /^(partial(?:-conversion|-we-set)?|full(?:-conversion)?|self-service(?:-conversion)?)$/;
   var walk = { load: "", mounted: false, open: false, rev: null, cur: null, acked: {}, skipped: {}, pending: {}, saved: {},
     server: {}, lines: [], n: 0, replies: {}, asks: {}, line: null, reader: null, curVersion: null, dcAt: {}, dcSkip: {} };
@@ -5245,8 +5245,8 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     read().then(function (r) {
       clearTimeout(fallback);
       connecting = false; online = true;
-      if (!booted) { booted = true; boot(r.form || INLINE.form, r.saved); conn("Connected"); return; }
-      conn("Connected");
+      if (!booted) { booted = true; boot(r.form || INLINE.form, r.saved); conn(""); return; }
+      conn("");
       if (r.form && newer(r.form) && edits === savedEdits && !tapped) refresh(r.form);
       if (r.form) setStage(r.form.stage); if (r.saved) apply(r.saved);
       if (tapped) { var s = tapped; tapped = null; setStatus(s); } else if (edits !== savedEdits) afterEdit();   // typing before it connected
@@ -5263,7 +5263,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   if (!T) { gate("Open this form from your link."); return; }
   if (!API) { gate("Not connected yet."); return; }
   replay().then(read).then(function (r) {
-    online = true; conn("Connected"); boot(r.form, r.saved);
+    online = true; conn(""); boot(r.form, r.saved);
     if (replayFailed && !startLost()) banner("Your earlier " + replayFailed + " isn’t confirmed. Tap Retry to review your draft.", "warn");
   }, function (e) {
     gate(e && e.code === "unknown" ? CLOSED

@@ -121,11 +121,8 @@
   const ASK = "Ask about this report…";
   const SUB = "AI agent · orders, ready dates, pricing · replies in seconds";
   const HOST_SUB = "AI agent · did your report · replies in seconds";
-  const DISCLOSURE = "AI agent. The desk reviews every change request.";
-  const HAND_WAIT = "Wait here";
-  const HAND_EMAIL = "Email me the answer";
+  const HAND_EMAIL = "Email me the answer too";
   const HAND_EMAIL_TEXT = "Please email me the answer too.";
-  const HAND_WAITING = "The answer shows here. A dot marks it if the chat is closed.";
   const HAND_EMAILED = "We'll email it to you too.";
   let seenKey = "aap-agent-seen-";
   try { seenKey += new URLSearchParams(window.location.search).get("t") || ""; } catch (_) {   }
@@ -354,25 +351,18 @@
 
   function handRow(hand) {
     if (hand.state === "wait" || hand.state === "email") {
-      const done = element("p", "note", hand.state === "wait" ? HAND_WAITING : HAND_EMAILED);
+      if (hand.state === "wait") return element("span", "handdone");
+      const done = element("p", "note", HAND_EMAILED);
       done.tabIndex = -1;
       return done;
     }
-    const row = element("div", "hand");
-    [[HAND_WAIT, handWait], [HAND_EMAIL, handEmail]].forEach(function (pair) {
-      const button = element("button", "chip", pair[0]);
-      button.type = "button";
-      if (hand.state === "busy") button.setAttribute("aria-disabled", "true");
-      button.addEventListener("click", () => pair[1](hand));
-      row.append(button);
-    });
+    const row = element("div", "hand");   // waiting here is the default; one light link offers email too
+    const button = element("button", "handlink", HAND_EMAIL);
+    button.type = "button";
+    if (hand.state === "busy") button.setAttribute("aria-disabled", "true");
+    button.addEventListener("click", () => handEmail(hand));
+    row.append(button);
     return row;
-  }
-
-  function handWait(hand) {
-    if (handBusy.has(hand.k) || handPick(hand.k)) return;
-    handPick(hand.k, "wait");
-    render();
   }
 
   async function handEmail(hand) {   // one ordinary message, through the same send path as the message box
@@ -516,8 +506,10 @@
 
   function renderLive() {
     if (chatView) {
-      ui.sub.textContent = ui.sys.textContent = chatView.status;
-      ui.sys.hidden = false; ui.bar.hidden = true; return;
+      const quiet = !chatView.status || chatView.status === "Connected.";   // only say something when it matters
+      ui.sub.textContent = quiet ? (config.host ? HOST_SUB : SUB) : chatView.status;
+      ui.sys.textContent = quiet ? "" : chatView.status;
+      ui.sys.hidden = quiet; ui.bar.hidden = true; return;
     }
     const state = live && live.state, eta = live && live.eta || 60, late = state === "connecting" && Date.now() - live.at > 2 * eta * 1000;
     const progress = data.prompt && data.prompt.progress && !ui.prompt.hidden ? "AI agent · " + data.prompt.progress : "";
@@ -837,6 +829,8 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
 .aap-agent-more { min-height:44px; margin-left:4px; padding:0 2px; border:0; background:none; color:#005ea8; font-weight:600 !important; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
 .aap-agent-prompt-text { font-size:14px; font-weight:600; color:#5f5f5f; }
 .aap-agent-chips, .aap-agent-starters, .aap-agent-hand { display:flex; flex-wrap:wrap; gap:8px; }
+.aap-agent-handlink { min-height:44px; padding:0 4px; border:0; background:none; color:#005ea8; font-size:14px; font-weight:600 !important; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.aap-agent-root .aap-agent-handlink[aria-disabled="true"] { cursor:default; opacity:.65; }
 .aap-agent-starters { margin-left:32px; }
 .aap-agent-chip { min-width:44px; min-height:44px; max-width:100%; padding:6px 16px; border:1px solid #0a6ec1; border-radius:999px; background:#fff; color:#005ea8; font-size:15px; line-height:1.3; font-weight:600 !important; text-align:left; white-space:normal; overflow-wrap:anywhere; cursor:pointer; }
 .aap-agent-chip:hover:enabled, .aap-agent-chip[aria-pressed="true"] { background:#eaf3fb; }
@@ -931,8 +925,8 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     const speech = element("p", "speech");
     speech.setAttribute("role", "status");
     form.append(field, speech);
-    const disclosure = element("p", "disclosure", DISCLOSURE);
-    footer.append(form, disclosure, element("p", "disclosure", "This is the Desk AI agent."));
+    const disclosure = element("p", "disclosure", "This is the Desk AI agent.");
+    footer.append(form, disclosure);
     panel.append(header, bar, body, footer);
     const launch = element("button", "launch");
     launch.type = "button";
