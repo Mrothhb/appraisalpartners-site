@@ -1,9 +1,3 @@
-/* A&AP New order, contract v1.7. No transport: only the supplied ctx functions.
- * Progress accepts a percentage (0–100), or {loaded, total}/{percent}.
- * ACH and card totals are quotes; the contract does not collect a payment method.
- * ctx.draft restores a kept draft (files come back as names to choose again); ctx.saveDraft gets every change;
- * ctx.startOver clears it for a different order.
- */
 (function () {
   'use strict';
   let current = null;
@@ -110,7 +104,7 @@
     const intro = node('p', 'intro', 'Charges, total, payment due and ready date show before you start.');
     const form = node('form', 'sheet');
     form.setAttribute('aria-label', 'New order');
-    form.noValidate = true;   // Start order checks the date itself (one plain line under it), then reportValidity() as before
+    form.noValidate = true;
     const fields = node('fieldset', 'fieldset');
     const drop = node('div', 'drop');
     drop.append(node('p', null, 'Drop the engagement letter and your TOTAL file here, or choose files'),
@@ -223,7 +217,6 @@
     }
     const due = field('When do you need it from us? (required)', 'input', 'date');
     due.min = isoDay(businessDate(0)); due.setAttribute('aria-required', 'true');
-    // Matt 11-14: the date is required. Start order without one (or with a past one) says so under the date and goes to it.
     const dueNeed = node('p', 'error', 'Pick the date you need it from us.'); dueNeed.id = id + 'due-need'; dueNeed.hidden = true;
     const dueHint = node('p', 'note'); dueHint.hidden = true; due.parentNode.append(dueNeed, dueHint);
     const dueOk = () => /^\d{4}-\d{2}-\d{2}$/.test(due.value) && due.value >= isoDay(businessDate(0));
@@ -232,7 +225,6 @@
       if (on) { due.setAttribute('aria-invalid', 'true'); due.setAttribute('aria-describedby', dueNeed.id); }
       else { due.removeAttribute('aria-invalid'); due.removeAttribute('aria-describedby'); }
     }
-    // Matt 11-13: their date from us picks the turn time; Next day only when the standard time misses it.
     function fitNeedBy() {
       dueHint.hidden = true;
       if (!due.value || !selected) return;
@@ -241,7 +233,7 @@
       const box = addonInputs['next-day'];
       if (box) {
         const fast = businessDate(Math.min(1, Number(selected.ready_days) || 1));
-        const need = standard > want && fast < standard;   // only when Next day actually gets it there sooner
+        const need = standard > want && fast < standard;
         if (box.checked !== need) { box.checked = need; if (need) chosen.add('next-day'); else chosen.delete('next-day'); }
       }
       const earliest = businessDate(box && box.checked ? Math.min(1, Number(selected.ready_days) || 1) : selected.ready_days);
@@ -292,13 +284,11 @@
       const cents = items.reduce((sum, item) => sum + Number(item.price_cents), 0);
       const cardPct = Number(payment.card_fee_pct) || 0;
       const cardFee = Math.round(cents * cardPct / 100);
-      // ach_fee is in cents, like the prices (currently 0).
       const achFee = Math.round(Number(payment.ach_fee) || 0);
       detail.replaceChildren(...items.map(item => node('li', null, item.label + ': ' + money(item.price_cents))),
         node('li', null, money(cents)));
       fees.textContent = 'ACH ' + money(achFee) + ' / card +' + cardPct + '% (' + money(cardFee) + ')';
       total.textContent = money(cents + achFee) + ' by ACH / ' + money(cents + cardFee) + ' by card';
-      // Next day: ready in 1 business day, whatever the lane's own days.
       const days = selected ? (chosen.has('next-day') ? Math.min(1, Number(selected.ready_days) || 1) : selected.ready_days) : 0;
       const readyDate = businessDate(days);
       ready.textContent = selected ? dateText(readyDate) : 'Choose a service';
@@ -349,7 +339,6 @@
             client_due: due.value ? 'needed from us by ' + due.value : '', files: files.map(({file}) => ({name: file.name, size: file.size, type: file.type}))
           });
           if (!response || response.ok !== true) throw new Error(response && response.error || 'The order could not be received. Try again.');
-          // Keep a successful request even if its upload sessions are incomplete: never create a duplicate on retry.
           created = response;
         }
         if (!created.request_id) throw new Error('The desk did not return an order number. Contact the desk before trying again.');
@@ -385,7 +374,6 @@
           warning.hidden = true; actions.hidden = true; status.textContent = '';
           receipt.textContent = 'Order received. Your desk will confirm within a few minutes.';
           receipt.hidden = false;
-          // A navigation callback failure must not turn a received order into a failed submission.
           try { if (typeof ctx.afterCreate === 'function') await ctx.afterCreate(created.request_id); }
           catch (_) { status.textContent = 'Open Orders to see your request when the desk opens it.'; }
         }
@@ -409,7 +397,7 @@
       const names = files.map(({file}) => ({name: file.name, size: file.size})).concat(again.map(({name, size}) => ({name, size})));
       try {
         ctx.saveDraft({lane: selected ? selected.id : '', addons: Array.from(chosen), due: due.value, notes: notes.value, files: names});
-      } catch (_) { /* the form still works without a kept draft */ }
+      } catch (_) {   }
     }
     if (draft) {
       const lane = laneInputs[draft.lane];

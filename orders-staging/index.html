@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-build="v2026-11-13.6">
+<html lang="en" data-build="v2026-11-15.7">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -48,6 +48,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .acts { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 .link-btn { padding: 0; min-height: 48px; border: 0; background: none; color: var(--primary); font: 600 16px/1.5 var(--font); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 
+.trial-line { margin: 0; padding: var(--s-2) var(--gutter); text-align: center; background: var(--canvas); color: var(--ink-2); font: 400 14px/1.6 var(--font); }
+.trial-more { display: inline-block; margin-left: var(--s-2); padding: 1px 12px; border: 1px solid var(--primary); border-radius: var(--r-full); color: var(--primary); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.trial-more:hover { background: var(--tint); color: var(--primary-hover); }
+.trial-more:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.trial-line svg { width: 15px; height: 15px; color: var(--primary); vertical-align: -2px; margin-right: 4px; }
 .appbar { background: var(--bar-bg); color: #fff; min-height: var(--bar-h); }
 .appbar .wrap { display: flex; align-items: center; gap: var(--s-4); min-height: var(--bar-h); }
 .brand { display: flex; align-items: center; gap: var(--s-3); color: #fff; text-decoration: none; min-height: 48px; flex: none; }
@@ -208,17 +213,24 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
   </div>
 </header>
 <nav class="tabs" aria-label="Orders pages, phone"><div class="wrap" id="tabs"></div></nav>
+<p class="trial-line" id="trial-line" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2-2a2 2 0 0 1-2-2a2 2 0 0 1-2 2zm0-12a2 2 0 0 1 2 2a2 2 0 0 1 2-2a2 2 0 0 1-2-2a2 2 0 0 1-2 2zM9 18a6 6 0 0 1 6-6a6 6 0 0 1-6-6a6 6 0 0 1-6 6a6 6 0 0 1 6 6z"/></svg>This portal is free through November 30 while we continue improving it and your agents. <a class="trial-more" href="../orders/agents/">Learn more</a></p>
+<script>(function () {
+  var left = Date.parse("2026-12-01T00:00:00-06:00") - Date.now(), line = document.getElementById("trial-line");
+  if (left <= 0) return;
+  line.hidden = false;
+  if (left < 2147483647) setTimeout(function () { line.hidden = true; }, left);
+})();</script>
 <div class="meter-row" id="meter-row"></div>
 <p class="gate" id="gate" aria-live="polite">Loading…</p>
 <main class="col" id="main" hidden></main>
 <footer class="site" id="foot" hidden><div class="wrap" id="foot-line"></div></footer>
 
-<script src="agent.js?v=20261114ux4" defer></script>
+<script src="agent.js?v=20261116btn1" defer></script>
 <script>
 (function () {
   "use strict";
   var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPwO_MB0iqsrAarETBMjLEdV5GfyFd_tgh_PiEA4z_w/exec";
-  var Q = new URLSearchParams(location.search), T = Q.get("t") || "", DESK = Q.has("desk"), viaScript = false, timer = null;
+  var Q = new URLSearchParams(location.search), T = Q.get("t") || "", DESK = Q.has("desk") || (function () { try { return localStorage.getItem("aap-desk-device") === "1"; } catch (e) { return false; } })(), viaScript = false, timer = null;
   var FORM = /^https:\/\/appraisalpartners\.net\/form\/\?t=([A-Za-z0-9_-]{32,64})(?:&r=([a-f0-9]{64}))?$/, ID = /^[A-Za-z0-9_-]{10,}$/;
   var B = null, last = null, sentAt = 0, find = {}, status = {}, open = {}, drafts = {}, boxKey = "aap-board-outbox-" + T, agentInit = false, agentReady = false;
   function $(id) { return document.getElementById(id); }
@@ -270,14 +282,14 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     var d = /^\d{4}-\d{2}-\d{2}$/.test(iso || "") ? new Date(iso + "T12:00:00") : new Date(iso);
     return isNaN(d) ? "" : d.toLocaleDateString("en-US", { timeZone: "America/Chicago", month: "short", day: "numeric", year: "numeric" });
   }
-  var SENT = "Sent. Your desk answers within a few minutes.";
+  var SENT = "Sent.";
 
   function rows() { return (B.orders || []).slice(); }
   function delivered() { return (B.delivered || []).slice(); }
   function byCode(code) { return rows().concat(delivered()).filter(function (o) { return o.order === code; })[0]; }
   function formOf(o) { return o && FORM.test(o.form || "") ? o.form : ""; }
   function needsOf(code) { return (B.needs || []).filter(function (n) { return n.order === code; }); }
-  function plan() { var u = B.usage || B.usage_bar; return u && typeof u === "object" ? u : null; }
+  function plan() { return null; }
   function billName() { return plan() ? "Plan & billing" : "Billing"; }
   var ORDER_AGENT = false;
   function messaging() { return Array.isArray(B.messages); }
@@ -289,7 +301,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
   function filesLabel(o) { return o && o.files && o.files.how === "drive" ? "Add files" : "Send files"; }
   function out(a) { if (!/^(mailto:|#)/.test(a.getAttribute("href") || "")) { a.target = "_blank"; a.rel = "noopener noreferrer"; } return a; }
   var LABEL = { review: "Review report", answer: "Answer questions", start: "Start", pay: "Pay" };
-  function needHref(n, o) { return n.kind === "files" ? (canUpload(o) ? "#orders/" + n.order : filesHref(o)) : formOf(o); }
+  function needHref(n, o) { return n.kind === "updating" ? "" : n.kind === "files" ? (canUpload(o) ? "#orders/" + n.order : filesHref(o)) : formOf(o); }
   function needAction(n, o) {
     var href = needHref(n, o); if (!href) return null;
     var a = h("a.btn", { href: href }, n.kind === "files" ? filesLabel(o) : LABEL[n.kind] || "Open order");
@@ -754,7 +766,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
       try { var e = JSON.parse(answers[k]); if (e && e.text) all.push({ at: e.at, who: "customer", text: e.text, key: k, order: "" }); } catch (x) {}
     });
     ((r.form && r.form.log) || []).forEach(function (e) {
-      if (e && e.what === "reply" && e.text) all.push({ at: e.at, who: "desk", text: e.text, order: "", re: e.re || "" });
+      if (e && e.what === "reply" && e.text) all.push({ at: e.at, who: "desk", text: e.text, order: "", re: e.re || "", handoff: !!e.handoff });
     });
     return all;
   }
@@ -833,14 +845,15 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
     var A = window.AAPAgent;
     if (!B || !messaging() || !A || typeof A.init !== "function" || typeof A.update !== "function") return;
     try {
-      if (!agentInit) { A.init({ send: send, office: { name: B.office || "", person: B.person || "" } }); agentInit = true; agentReady = typeof A.open === "function"; showTalk(); }
+      if (!agentInit) { A.init({ chat: last && last.chat, send: send, office: { name: B.office || "", person: B.person || "" } }); agentInit = true; agentReady = typeof A.open === "function"; showTalk(); }
       A.update({
+        chat: last && last.chat,
         route: route(), order: null,
         needs: (B.needs || []).map(function (n) { var o = byCode(n.order); return { ap: n.order, street: n.street || n.order, kind: n.kind === "start" ? "answer" : n.kind,
                                                    label: n.kind === "files" ? filesLabel(o) : LABEL[n.kind] || "Open order", href: needHref(n, o) }; }).filter(function (n) { return n.href; }),
         orders: rows().map(function (o) { return { ap: o.order, street: o.street || o.order, status: o.stage || "", ready: o.due || "", due: o.client_due || "" }; }),
-        thread: conversation().map(function (m) { return { at: m.at, who: m.who === "desk" ? "desk" : "you", order: m.order || null, text: m.text, id: m.key || "", re: m.re || "", pending: !!m.pending }; }),
-        plan: plan() && Number(plan().cap) > 0 ? { pct: Math.max(0, Math.round(Number(plan().pct) || 0)), resets: plan().resets_text || "", refill: messaging() } : null,
+        thread: conversation().map(function (m) { return { at: m.at, who: m.who === "desk" ? "desk" : "you", order: m.order || null, text: m.text, id: m.key || "", re: m.re || "", pending: !!m.pending, handoff: !!m.handoff }; }),
+        plan: B.usage || B.usage_bar ? {} : null,
         profile: typeof B.profile === "string" && !!B.profile.trim() && B.profile.length <= 2000,
         starters: [{ label: "What's waiting on me?" }, { label: "When is my next report ready?" }, { label: "Price a new order" }].concat(newest() ? [{ label: "Where is " + newest() + "?" }] : [])
       });

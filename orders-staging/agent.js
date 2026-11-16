@@ -1,3 +1,115 @@
+/* Shared durable WebSocket client. No Google calls, credentials in URLs, or HTML rendering. */
+(function () {
+  "use strict";
+  window.AAPChatClient = function (options) {
+    const key = "aap-chat-v1|" + options.conversation_id;
+    const storage = options.storage || localStorage;
+    let saved = storage.getItem(key);
+    let state = saved ? JSON.parse(saved) : { sequence: 0, outbox: [], messages: [], draft: "" };
+    let socket, timer, watchdog, stopped = false, ready = false, connected = false, retry = 0;
+    let status = options.surface === "form"
+      ? "Connecting your A&AP report agent, with your report's full context."
+      : "Connecting your A&AP agent, who knows your office.";
+    const endpoint = new URL(options.endpoint || "wss://aap-chat.southcentralus.cloudapp.azure.com/v1/chat");
+    if (endpoint.protocol !== "wss:" && !(endpoint.protocol === "ws:" && ["localhost", "127.0.0.1", "[::1]"].includes(endpoint.hostname)))
+      throw new Error("A secure chat connection is required.");
+    if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash) throw new Error("Invalid chat address.");
+    function answering() { return state.messages.some(m => m.who === "you" && !state.messages.some(r => r.re === m.id && !r.pending)); }
+    function persist() { storage.setItem(key, JSON.stringify(state)); }
+    function view() { return { status, ready, sequence: state.sequence, outbox: state.outbox.slice(), messages: state.messages.slice(), draft: state.draft }; }
+    function notify() { if (options.onchange) options.onchange(view()); }
+    function wire(frame) { if (socket && socket.readyState === 1) socket.send(JSON.stringify(frame)); }
+    function flush() { if (ready) state.outbox.forEach(item => wire({ type: "send", ...item })); }
+    function reconnect() {
+      if (stopped) return;
+      ready = false; status = "Reconnecting..."; notify();
+      clearTimeout(timer); clearTimeout(watchdog);
+      timer = setTimeout(connect, Math.min(1500, 200 * 2 ** Math.min(retry++, 3)) + Math.random() * 100);
+    }
+    function connect() {
+      if (stopped) return;
+      const current = socket = new WebSocket(endpoint.href);
+      watchdog = setTimeout(() => current.close(), 4500);
+      current.onopen = function () {
+        wire({ type: "authenticate", grant: options.grant, conversation_id: options.conversation_id });
+        wire({ type: "resume", last_sequence: state.sequence });
+      };
+      current.onmessage = function (event) {
+        if (current !== socket || stopped) return;
+        const before = JSON.stringify(state);
+        try {
+          const f = JSON.parse(event.data);
+          if (f.type === "error") {
+            if (["expired_grant", "wrong_scope", "unauthorized", "context_changed"].includes(f.code)) {
+              stopped = true; ready = false; status = "Connection needs refreshing. Your messages are kept.";
+              clearTimeout(watchdog); current.close(); notify(); return;
+            }
+            current.close(); return;
+          }
+          if (f.type === "ready") {
+            clearTimeout(watchdog); retry = 0; connected = ready = true;
+            status = answering() ? "Typing..." : "Connected.";
+            flush(); notify(); return;
+          }
+          if (!["received", "typing", "text", "completed"].includes(f.type)) return;
+          if (!Number.isSafeInteger(f.sequence) || f.sequence < 1) throw new Error("Invalid sequence");
+          if (f.sequence <= state.sequence) return;
+          if (f.sequence !== state.sequence + 1) { current.close(); return; }
+          if (f.type === "received") {
+            state.outbox = state.outbox.filter(m => m.id !== f.id);
+            const ask = state.messages.find(m => m.id === f.id && m.who === "you");
+            if (ask) ask.pending = false;
+            status = "Typing...";
+          } else if (f.type === "typing") status = "Typing...";
+          else {
+            if (!f.reply_id || !f.re || typeof f.text !== "string") throw new Error("Invalid text");
+            let reply = state.messages.find(m => m.id === f.reply_id);
+            if (reply && (reply.re !== f.re || !f.text.startsWith(reply.text) || !reply.pending && (f.type !== "completed" || f.text !== reply.text))) throw new Error("Changed prefix");
+            if (!reply) {
+              const ask = state.messages.find(m => m.id === f.re && m.who === "you");
+              reply = { id: f.reply_id, re: f.re, who: "agent", text: "", order: ask ? ask.order : options.order || null };
+              state.messages.push(reply);
+            }
+            reply.text = f.text; reply.pending = f.type !== "completed";
+            if (f.type === "completed" && f.handoff === true) reply.handoff = true;
+            status = answering() ? "Typing..." : "Connected.";
+          }
+          state.sequence = f.sequence;
+          persist(); notify();
+        } catch (_) {
+          // A failed local commit must replay from the last durable sequence.
+          state = JSON.parse(before);
+          current.close();
+        }
+      };
+      current.onerror = () => current.close();
+      current.onclose = function () { if (current === socket) reconnect(); };
+    }
+    const api = {
+      view,
+      regrant(grant) { options.grant = grant; if (socket && socket.readyState === 1) wire({ type: "authenticate", grant, conversation_id: options.conversation_id }); },
+      draft(text) { const old = state.draft; state.draft = String(text); try { persist(); } catch (e) { state.draft = old; throw e; } },
+      send(text, order, context) {
+        text = String(text || "").trim();
+        if (!text || text.length > 3000) throw new Error("Please enter a message up to 3000 characters.");
+        if (stopped) throw new Error("Refresh the page to reconnect. Your draft is kept.");
+        const item = { id: "q_fb_" + crypto.randomUUID().replaceAll("-", ""), text, order: order || null, context: context || null };
+        const before = JSON.stringify(state);
+        state.outbox.push(item);
+        state.messages.push({ id: item.id, who: "you", text, order: item.order, pending: true });
+        state.draft = "";
+        try { persist(); } catch (e) { state = JSON.parse(before); throw new Error("Could not save your message in this browser. Your draft is kept."); }
+        if (ready) { status = "Sending..."; wire({ type: "send", ...item }); }
+        notify(); return item.id;
+      },
+      disconnect() { stopped = true; ready = false; clearTimeout(timer); clearTimeout(watchdog); if (socket) socket.close(); },
+      reconnect() { if (socket) socket.close(); },
+      get connected() { return connected; }
+    };
+    notify(); connect(); return api;
+  };
+})();
+
 (function () {
   "use strict";
   if (window.AAPAgent) return;
@@ -9,12 +121,17 @@
   const ASK = "Ask about this report…";
   const SUB = "AI agent · orders, ready dates, pricing · replies in seconds";
   const HOST_SUB = "AI agent · did your report · replies in seconds";
-  const DISCLOSURE = "AI agent. The desk reviews every change request.";
+  const HAND_EMAIL = "Email me the answer too";
+  const HAND_EMAIL_TEXT = "Please email me the answer too.";
+  const HAND_EMAILED = "We'll email it to you too.";
   let seenKey = "aap-agent-seen-";
   try { seenKey += new URLSearchParams(window.location.search).get("t") || ""; } catch (_) {   }
   const conversations = new Map();
   const drafts = new Map();
   const draftKey = seenKey.replace("aap-agent-seen-", "aap-agent-draft-") + "|";   // per link and order; survives a reload
+  const handKey = seenKey.replace("aap-agent-seen-", "aap-agent-handoff-") + "|";   // per link, order and question
+  const handChoices = new Map();
+  const handBusy = new Set();
   let data = { route: "home", order: null, needs: [], orders: [], thread: [], plan: null, profile: false };
   let config = null;
   let ui = null;
@@ -29,6 +146,8 @@
   let promptId = null;
   let live = null;
   let nudged = false;
+  let chat = null;
+  let chatView = null;
 
   function element(tag, name, text) {
     const el = document.createElement(tag);
@@ -59,11 +178,13 @@
   }
 
   function setDraft(order, text) {
+    if (chat) chat.draft(text);
     drafts.set(order, text);
     try { if (text) localStorage.setItem(draftKey + (order || ""), text); else localStorage.removeItem(draftKey + (order || "")); } catch (_) {   }
   }
 
   function getDraft(order) {
+    if (chat) return chat.view().draft;
     if (drafts.has(order)) return drafts.get(order) || "";
     try { return localStorage.getItem(draftKey + (order || "")) || ""; } catch (_) { return ""; }
   }
@@ -88,7 +209,9 @@
     return words.length > 12 ? words.slice(0, 12).join(" ").replace(/[,;:.]$/, "") + "…" : words.join(" ");
   }
 
-  function you() { return data.thread.some(message => message.who === "you" && !message.history && sameScope(message, scope())); }   // this visit; a restored history line does not count
+  function thread() { return data.thread.concat(chatView ? chatView.messages : []); }
+
+  function you() { return thread().some(message => message.who === "you" && !message.history && sameScope(message, scope())); }   // this visit; a restored history line does not count
 
   function scope() {
     return data.route === "order" && data.order ? data.order : null;
@@ -138,7 +261,7 @@
 
   function renderConversation() {
     const request = conversations.get(scope());
-    const sending = Boolean(request && request.status === "sending");
+    const sending = !chat && Boolean(request && request.status === "sending");
     ui.input.disabled = sending;
     ui.send.disabled = sending || !ui.input.value.trim();
     grow();
@@ -156,16 +279,20 @@
   }
 
   function renderThread() {
-    const lines = data.thread.filter(message => sameScope(message, scope()));
-    const atEnd = ui.body.scrollHeight - ui.body.scrollTop - ui.body.clientHeight < 48, keep = new Set();
+    const streamed = chatView ? chatView.messages : [];
+    const ids = new Set(streamed.flatMap(m => [m.id, "h-" + m.id]));
+    const lines = data.thread.filter(m => !ids.has(m.id || m.key) && !streamed.some(s => s.re && s.re === m.re && m.who === "agent"))
+      .concat(streamed).filter(message => sameScope(message, scope()));
+    const atEnd = ui.body.scrollHeight - ui.body.scrollTop - ui.body.clientHeight < 48, keep = new Set(), hand = handoff(lines);
     lines.forEach(function (message, i) {
       const key = String(message.key || message.id || i), you = message.who === "you";
       const who = you ? "You" : !config.host ? LABEL : message.who === "desk" ? "Desk" : HOST_LABEL;
       const first = !you && (i === 0 || lines[i - 1].who === "you"), typing = Boolean(message.pending && message.typing);
-      const note = typeof message.note === "string" ? message.note : "";
-      const text = String(message.text || ""), shape = [who, text, Boolean(message.pending), first, typing, note].join("\n");
+      const note = typeof message.note === "string" ? message.note : "", held = hand && hand.i === i ? hand.state : "";
+      const text = String(message.text || ""), shape = [who, text, Boolean(message.pending), first, typing, note, held].join("\n");
       let line = ui.lines.get(key);
       if (!line || line.dataset.shape !== shape) {
+        const focus = line && line.contains(document.activeElement) ? document.activeElement.textContent : null;
         const next = element("li", you ? "you" : "says");
         if (message.pending) next.classList.add("aap-agent-pending");
         if (first) next.classList.add("aap-agent-first");
@@ -179,11 +306,16 @@
           next.append(name, dots);
         } else next.append(name, element("p", "words", text));
         if (note) next.append(element("p", "note", note));   // e.g. "Sent": his message is saved, no reply yet
+        if (held) next.append(handRow(hand));
         if (first) next.prepend(avatar("bubble-avatar"));
         next.dataset.shape = shape;
         if (line) line.replaceWith(next);
         line = next;
         ui.lines.set(key, line);
+        if (focus !== null) {
+          const to = Array.from(next.querySelectorAll("button")).find(b => b.textContent === focus) || next.querySelector("[tabindex]");
+          if (to) to.focus({ preventScroll: true });
+        }
       }
       keep.add(key);
       if (ui.thread.children[i] !== line) ui.thread.insertBefore(line, ui.thread.children[i] || null);
@@ -192,6 +324,74 @@
     ui.thread.hidden = !lines.length;
     if (atEnd || lines.length !== ui.threadCount) ui.body.scrollTop = ui.body.scrollHeight;
     ui.threadCount = lines.length;
+  }
+
+  function handoff(lines) {   // the newest hand-off in scope, while no desk answer to it follows
+    const flagged = new Set(data.thread.filter(m => m.handoff && m.re).map(m => m.re));
+    const handed = m => !m.pending && m.who !== "you" && Boolean(m.handoff || m.who === "agent" && m.re && flagged.has(m.re));
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const m = lines[i];
+      if (!handed(m)) continue;
+      if (lines.some((r, j) => r.who === "desk" && !r.pending && !handed(r) && (m.re && r.re ? r.re === m.re : j > i))) return null;
+      const k = handKey + (m.order || "") + "|" + (m.re || m.id || m.key || m.at || "");
+      return { i, k, order: m.order || null, state: handBusy.has(k) ? "busy" : handPick(k) || "ask" };
+    }
+    return null;
+  }
+
+  function handPick(k, value) {
+    if (value) {
+      handChoices.set(k, value);
+      try { localStorage.setItem(k, value); } catch (_) {   }
+      return value;
+    }
+    if (handChoices.has(k)) return handChoices.get(k);
+    try { const stored = localStorage.getItem(k); return stored === "wait" || stored === "email" ? stored : ""; } catch (_) { return ""; }
+  }
+
+  function handRow(hand) {
+    if (hand.state === "wait" || hand.state === "email") {
+      if (hand.state === "wait") return element("span", "handdone");
+      const done = element("p", "note", HAND_EMAILED);
+      done.tabIndex = -1;
+      return done;
+    }
+    const row = element("div", "hand");   // waiting here is the default; one light link offers email too
+    const button = element("button", "handlink", HAND_EMAIL);
+    button.type = "button";
+    if (hand.state === "busy") button.setAttribute("aria-disabled", "true");
+    button.addEventListener("click", () => handEmail(hand));
+    row.append(button);
+    return row;
+  }
+
+  async function handEmail(hand) {   // one ordinary message, through the same send path as the message box
+    if (handBusy.has(hand.k) || handPick(hand.k)) return;
+    const order = hand.order, text = HAND_EMAIL_TEXT;
+    if (chat) {
+      try { chat.send(text, order, config.chatContext ? config.chatContext() : null); handPick(hand.k, "email"); ui.speech.textContent = ""; }
+      catch (e) { ui.speech.textContent = e.message; }
+      render(); return;
+    }
+    const previous = conversations.get(order);
+    if ((previous || {}).status === "sending") return;
+    const retry = previous && previous.status === "failed" && previous.id && previous.text === text ? previous.id : null;
+    const request = { text: text, status: "sending", id: retry };
+    conversations.set(order, request);
+    handBusy.add(hand.k);
+    render();
+    try {
+      const result = await config.send(retry ? { order: order, text: text, id: retry } : { order: order, text: text });
+      if (result && typeof result.id === "string" && result.id) request.id = result.id;
+      if (!result || result.ok !== true) throw new Error(result && result.error || "Please try again.");
+      request.status = "sent";
+      handPick(hand.k, "email");
+    } catch (error) {
+      request.status = "failed";
+      request.error = "Could not send. " + (error && error.message || "Please try again.");
+    }
+    handBusy.delete(hand.k);
+    render();
   }
 
   function renderPrompt() {
@@ -305,6 +505,12 @@
   }
 
   function renderLive() {
+    if (chatView) {
+      const quiet = !chatView.status || chatView.status === "Connected.";   // only say something when it matters
+      ui.sub.textContent = quiet ? (config.host ? HOST_SUB : SUB) : chatView.status;
+      ui.sys.textContent = quiet ? "" : chatView.status;
+      ui.sys.hidden = quiet; ui.bar.hidden = true; return;
+    }
     const state = live && live.state, eta = live && live.eta || 60, late = state === "connecting" && Date.now() - live.at > 2 * eta * 1000;
     const progress = data.prompt && data.prompt.progress && !ui.prompt.hidden ? "AI agent · " + data.prompt.progress : "";
     ui.sub.textContent = late ? "Taking longer · replies also by email"
@@ -350,7 +556,7 @@
       const count = new Set(data.needs.map(need => need.ap).filter(Boolean)).size;
       ui.introText.textContent = hi + "Desk Agent here, an AI. " + (count ? count + (count === 1 ? " order needs you." : " orders need you.") : "Ask about any order.");
     }
-    ui.intro.hidden = data.thread.some(message => sameScope(message, scope()));
+    ui.intro.hidden = thread().some(message => sameScope(message, scope()));
     renderContext();
     if (config.host || !scope() && !ui.intro.hidden) ui.context.hidden = true;   // the opener already says the count
     renderConversation();
@@ -378,7 +584,7 @@
     const mark = seen();
     const yes = !opened && newest > 0 && (mark === null || newest > mark);
     document.documentElement.classList.toggle("aap-agent-unread", yes);
-    ui.launch.setAttribute("aria-label", "Open " + label() + " chat" + (yes ? ", 1 new reply" : ""));
+    ui.launch.setAttribute("aria-label", "Open the agent chat" + (yes ? ", 1 new reply" : ""));
     document.querySelectorAll(".talk").forEach(function (button) {
       if (yes) button.setAttribute("aria-label", LABEL + ", 1 new reply"); else button.removeAttribute("aria-label");
     });
@@ -429,6 +635,15 @@
     event.preventDefault();
     const order = scope();
     const text = ui.input.value.trim();
+    if (chat) {
+      if (!text) return;
+      stopSpeech();
+      try {
+        chat.send(text, order, config.chatContext ? config.chatContext() : null);
+        ui.input.value = ""; setDraft(order, ""); ui.speech.textContent = "";
+      } catch (e) { ui.speech.textContent = e.message; }
+      render(); return;
+    }
     const previous = conversations.get(order);
     if (!text || (previous || {}).status === "sending") return;
     stopSpeech();
@@ -519,16 +734,72 @@
 .aap-agent-root :focus-visible { outline:3px solid #005ea8; outline-offset:3px; }
 .aap-agent-root p, .aap-agent-root h2 { margin:0; }
 .aap-agent-root button:disabled { cursor:default; opacity:.65; }
-.aap-agent-launch { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:56px; min-width:56px; padding:8px 22px 8px 16px; border-radius:999px; border:0; background:#0a6ec1; color:#fff; font-size:16px; line-height:1.2; font-weight:600 !important; text-align:left; cursor:pointer; box-shadow:0 10px 28px -12px rgba(13,42,70,.6); }
-.aap-agent-launch:hover { background:#085ea6; }
-.aap-agent-launch-icon { display:block; width:22px; height:22px; flex:none; }
-.aap-agent-launch .aap-agent-mark { width:28px; height:17px; }
-.aap-agent-launch-text { display:grid; justify-items:start; }
-.aap-agent-launch-sub { font-size:14px; line-height:1.2; font-weight:400 !important; color:rgba(255,255,255,.85); }   /* Matt 11-14: "add 'Talk now' under the Report Agent" */
-html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; top:-2px; right:-2px; width:10px; height:10px; border-radius:50%; background:#e5a53a; box-shadow:0 0 0 2px #0d2a46; }
+/* Launcher: raised cap on a wider base, glossy top. --aap-u scales the edges and shadows with the size. */
+.aap-agent-launch {
+  --aap-btn:76px; --aap-cap:58px; --aap-lift:7px; --aap-cap-font:16.5px; --aap-u:1px;
+  --aap-wall:#075a9e; --aap-rim:#0d2a46; --aap-shade:rgba(13,42,70,.5);
+  position:relative; display:inline-flex; align-items:flex-start; justify-content:center; flex:none;
+  width:var(--aap-btn); height:var(--aap-btn); padding:0; margin:0; border:0; border-radius:50%;
+  background:none; color:#fff; cursor:pointer; overflow:visible; -webkit-user-select:none; user-select:none;
+  -webkit-tap-highlight-color:transparent; box-shadow:none;
+}
+.aap-agent-launch-base {
+  position:absolute; inset:0; border-radius:50%;
+  background:radial-gradient(circle at 50% 30%, #1c80d2 0%, #0a6ec1 55%, #0b5ea4 100%);
+  box-shadow:
+    inset 0 0 0 var(--aap-u) rgba(13,42,70,.3),
+    inset 0 calc(var(--aap-u) * -3) calc(var(--aap-u) * 5) rgba(255,255,255,.22),
+    0 calc(var(--aap-u) * 3) 0 #0b4f85, 0 calc(var(--aap-u) * 4) 0 var(--aap-rim),
+    0 calc(var(--aap-u) * 12) calc(var(--aap-u) * 18) calc(var(--aap-u) * -4) var(--aap-shade);
+}
+.aap-agent-launch-cap {
+  position:absolute; left:50%; top:calc((var(--aap-btn) - var(--aap-cap)) / 2 - var(--aap-lift));
+  width:var(--aap-cap); height:var(--aap-cap); border-radius:50%;
+  display:grid; place-items:center; transform:translateX(-50%);
+  font:inherit; font-size:var(--aap-cap-font); line-height:1; font-weight:700 !important; letter-spacing:.01em;
+  color:#fff;
+  text-shadow:0 0 var(--aap-u) #0d2a46, 0 var(--aap-u) 0 #0d2a46, 0 calc(var(--aap-u) * -1) 0 #0d2a46, var(--aap-u) 0 0 #0d2a46, calc(var(--aap-u) * -1) 0 0 #0d2a46, 0 calc(var(--aap-u) * 2) calc(var(--aap-u) * 3) rgba(13,42,70,.5);
+  background:
+    radial-gradient(60% 34% at 50% 24%, rgba(255,255,255,.9) 0%, rgba(255,255,255,.5) 45%, rgba(255,255,255,0) 100%),
+    radial-gradient(circle at 50% 35%, #4ea6ed 0%, #1b84d8 45%, #0a6ec1 72%, #085ea6 100%);
+  box-shadow:
+    inset 0 0 0 calc(var(--aap-u) * 1.5) rgba(13,42,70,.4),
+    inset 0 calc(var(--aap-u) * -4) calc(var(--aap-u) * 8) rgba(8,70,130,.45),
+    0 var(--aap-lift) 0 var(--aap-wall),
+    0 calc(var(--aap-lift) + var(--aap-u)) 0 var(--aap-rim),
+    0 calc(var(--aap-lift) + var(--aap-u) * 5) calc(var(--aap-u) * 8) calc(var(--aap-u) * -2) var(--aap-shade);
+  transition:transform 80ms ease-out, box-shadow 80ms ease-out, filter 80ms ease-out;
+}
+.aap-agent-launch:hover .aap-agent-launch-cap { filter:brightness(1.08); }
+.aap-agent-launch:active .aap-agent-launch-cap {
+  transform:translate(-50%, calc(var(--aap-lift) * .57)); filter:brightness(.97);
+  box-shadow:
+    inset 0 0 0 calc(var(--aap-u) * 1.5) rgba(13,42,70,.4),
+    inset 0 calc(var(--aap-u) * -4) calc(var(--aap-u) * 8) rgba(8,70,130,.45),
+    0 calc(var(--aap-lift) * .43) 0 var(--aap-wall),
+    0 calc(var(--aap-lift) * .43 + var(--aap-u)) 0 var(--aap-rim),
+    0 calc(var(--aap-lift) * .43 + var(--aap-u) * 2) calc(var(--aap-u) * 4) calc(var(--aap-u) * -2) var(--aap-shade);
+}
+.aap-agent-launch:focus-visible { outline:3px solid #0a6ec1; outline-offset:4px; }
+html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; top:4px; right:8px; width:10px; height:10px; border-radius:50%; background:#e5a53a; box-shadow:0 0 0 2px #0d2a46; }
+.aap-agent-launch.aap-agent-launch--giant { --aap-btn:240px; --aap-cap:184px; --aap-lift:14px; --aap-cap-font:46px; --aap-u:3px; }
+html.aap-agent-unread .aap-agent-launch--giant::after { top:31px; right:45px; width:20px; height:20px; box-shadow:0 0 0 3px #0d2a46; }
+@media (max-width:600px) {
+  .aap-agent-launch { --aap-btn:64px; --aap-cap:48px; --aap-lift:6px; --aap-cap-font:14px; }
+  .aap-agent-launch.aap-agent-launch--giant { --aap-btn:190px; --aap-cap:146px; --aap-lift:11px; --aap-cap-font:38px; --aap-u:2.5px; }
+  html.aap-agent-unread .aap-agent-launch--giant::after { top:24px; right:35px; width:16px; height:16px; }
+}
+@media (prefers-color-scheme: dark) {
+  .aap-agent-launch { --aap-wall:#0b4f85; --aap-rim:#1b3f66; --aap-shade:rgba(0,0,0,.6); }
+  .aap-agent-launch-base { box-shadow:inset 0 0 0 var(--aap-u) rgba(255,255,255,.14), inset 0 calc(var(--aap-u) * -3) calc(var(--aap-u) * 5) rgba(255,255,255,.18), 0 calc(var(--aap-u) * 3) 0 #0b4f85, 0 calc(var(--aap-u) * 4) 0 var(--aap-rim), 0 calc(var(--aap-u) * 12) calc(var(--aap-u) * 18) calc(var(--aap-u) * -4) var(--aap-shade); }
+  html.aap-agent-unread .aap-agent-launch::after { box-shadow:0 0 0 2px #f4f4f4; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aap-agent-launch-cap { transition:none; }
+}
 @media (min-width:601px) {
   .aap-agent-launch { display:none; }
-  html.aap-agent-scrolled .aap-agent-launch, .aap-agent-float .aap-agent-launch { display:inline-flex; }
+  html.aap-agent-scrolled .aap-agent-launch, .aap-agent-float .aap-agent-launch, .aap-agent-launch.aap-agent-launch--giant { display:inline-flex; }
 }
 .aap-agent-float.aap-agent-open .aap-agent-launch { display:none; }
 .aap-agent-greeting { display:flex; align-items:center; gap:4px; max-width:300px; padding:8px 4px 8px 16px; border:1px solid #e3e3e3; border-radius:12px; background:#fff; box-shadow:0 24px 48px -28px rgba(13,42,70,.35),0 1px 2px rgba(13,42,70,.1); font-size:16px; line-height:1.4; }
@@ -613,10 +884,13 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
 .aap-agent-card-body { font-size:16px; line-height:1.45; }
 .aap-agent-more { min-height:44px; margin-left:4px; padding:0 2px; border:0; background:none; color:#005ea8; font-weight:600 !important; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
 .aap-agent-prompt-text { font-size:14px; font-weight:600; color:#5f5f5f; }
-.aap-agent-chips, .aap-agent-starters { display:flex; flex-wrap:wrap; gap:8px; }
+.aap-agent-chips, .aap-agent-starters, .aap-agent-hand { display:flex; flex-wrap:wrap; gap:8px; }
+.aap-agent-handlink { min-height:44px; padding:0 4px; border:0; background:none; color:#005ea8; font-size:14px; font-weight:600 !important; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.aap-agent-root .aap-agent-handlink[aria-disabled="true"] { cursor:default; opacity:.65; }
 .aap-agent-starters { margin-left:32px; }
 .aap-agent-chip { min-width:44px; min-height:44px; max-width:100%; padding:6px 16px; border:1px solid #0a6ec1; border-radius:999px; background:#fff; color:#005ea8; font-size:15px; line-height:1.3; font-weight:600 !important; text-align:left; white-space:normal; overflow-wrap:anywhere; cursor:pointer; }
 .aap-agent-chip:hover:enabled, .aap-agent-chip[aria-pressed="true"] { background:#eaf3fb; }
+.aap-agent-root .aap-agent-chip[aria-disabled="true"] { cursor:default; opacity:.65; background:#fff; }
 .aap-agent-answer-box { display:grid; gap:8px; }
 .aap-agent-answer-input { display:block; width:100%; min-height:72px; padding:10px 12px; border:1px solid #8a949f; border-radius:8px; background:#fff; color:#1c1c1c; resize:vertical; overflow:auto; }
 .aap-agent-answer-box .talk-box > .aap-agent-answer-input { padding-right:46px; }
@@ -707,19 +981,15 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     const speech = element("p", "speech");
     speech.setAttribute("role", "status");
     form.append(field, speech);
-    const disclosure = element("p", "disclosure", DISCLOSURE);
+    const disclosure = element("p", "disclosure", "This is the Desk AI agent.");
     footer.append(form, disclosure);
     panel.append(header, bar, body, footer);
     const launch = element("button", "launch");
     launch.type = "button";
-    launch.append(config.float ? mark() : svg("0 0 24 24", [
-      { d: "M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linejoin": "round" },
-      { d: "M8 8.5h8M8 11.5h5", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round" }
-    ], "launch-icon"));
-    const launchText = element("span", "launch-text");
-    launchText.append(element("span", "launch-name", label()), element("span", "launch-sub", "Talk now"));
-    launch.append(launchText);
-    launch.setAttribute("aria-label", "Open " + label() + " chat");
+    const launchBase = element("span", "launch-base");
+    launchBase.setAttribute("aria-hidden", "true");
+    launch.append(launchBase, element("span", "launch-cap", "Agent"));
+    launch.setAttribute("aria-label", "Open the agent chat");
     launch.setAttribute("aria-expanded", "false");
     launch.setAttribute("aria-controls", panel.id);
     launch.setAttribute("aria-haspopup", "dialog");
@@ -728,7 +998,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
       pageShape: "", pageEl: null, starters, starterShape: "" };
     mountedScope = scope();
     input.value = getDraft(mountedScope);
-    input.addEventListener("input", function () { setDraft(scope(), input.value); renderConversation(); });
+    input.addEventListener("input", function () { try { setDraft(scope(), input.value); ui.speech.textContent = ""; } catch (_) { ui.speech.textContent = "Could not save your draft in this browser."; } renderConversation(); });
     input.addEventListener("keydown", function (event) {   // Enter sends; Shift+Enter is a new line; never mid-composition (IME)
       if (event.key !== "Enter" || event.shiftKey || event.isComposing || event.keyCode === 229) return;
       event.preventDefault();
@@ -769,12 +1039,23 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
   window.AAPAgent = Object.freeze({
     init: function (options) {
       if (config) return;
-      if (!options || typeof options.send !== "function") throw new TypeError("AAPAgent.init requires send.");
+      if (!options || !options.chat && typeof options.send !== "function") throw new TypeError("AAPAgent.init requires send.");
       config = { send: options.send, office: options.office || {}, float: options.float === true, dock: options.dock === true };
       if (options.host) {
         if (!(options.host instanceof Element) || typeof options.choose !== "function" || typeof options.save !== "function" || typeof options.tap !== "function")
           throw new TypeError("AAPAgent.init host mode requires host, choose, save and tap.");
         Object.assign(config, { host: options.host, choose: options.choose, save: options.save, tap: options.tap, talk: options.talk });
+      }
+      config.chatContext = options.chatContext;
+      if (options.chat) {
+        try {
+          chat = window.AAPChatClient({ ...options.chat, surface: options.host ? "form" : "portal",
+            onchange: function (next) { chatView = next; if (ui) render(); } });
+        } catch (_) {
+          // Configured streaming never silently falls back to a second answer owner.
+          chatView = { status: "Connection unavailable. Your draft is kept.", messages: [] };
+          config.send = () => Promise.resolve({ ok: false, error: "Chat could not connect. Your draft is kept." });
+        }
       }
       if (document.body) mount();
       else document.addEventListener("DOMContentLoaded", mount, { once: true });
@@ -796,6 +1077,7 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
     },
     update: function (next) {
       if (!next || typeof next !== "object") return;
+      if (chat && next.chat && next.chat.grant) chat.regrant(next.chat.grant);
       data = {
         route: next.route || "home", order: next.order || null,
         needs: Array.isArray(next.needs) ? next.needs : [],
