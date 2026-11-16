@@ -23,6 +23,7 @@
   // tidied, a base name and one of these extensions, 1 byte to 500 MB.
   const KINDS = /^(zap|zip|pdf|jpe?g|png|heic|xml|csv|xlsx|docx|txt|eml)$/;
   const MAX_BYTES = 500 * 1024 * 1024;
+  const MAX_FILES = 30;   // the server takes up to 30 files with one order
   const WAIT_MS = 10000;
   const lastPart = name => String(name || '').split(/[\\/]/).pop();
   const tidy = name => lastPart(String(name || '').slice(0, 300)).replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim();
@@ -35,6 +36,7 @@
   const emptyText = name => '“' + lastPart(name) + '” is empty. Choose the full file.';
   const folderText = name => '“' + lastPart(name) + '” is a folder. Choose the files inside it.';
   const readText = name => 'Couldn\'t read “' + lastPart(name) + '”. Choose it again from your device.';
+  const TOO_MANY = 'You can send up to 30 files with one order. Send the rest by email to desk@aandap.com or add them to the order after it\'s created.';
   const within = (promise, fallback) => Promise.race([promise, new Promise(resolve => setTimeout(() => resolve(fallback), WAIT_MS))]);
   function node(tag, cls, text) {
     const el = document.createElement(tag);
@@ -158,6 +160,7 @@
     function addFiles(incoming) {
       if (busy || created || done) return;
       fileError.hidden = true;
+      let tooMany = false;
       for (const file of incoming) {
         if (!file) continue;
         const kept = again.find(entry => entry.name === file.name);
@@ -173,6 +176,7 @@
           }
           continue;
         }
+        if (files.length >= MAX_FILES) { tooMany = true; continue; }   // the first 30 stay
         const row = node('li', 'file');
         const copy = node('div', 'file-copy');
         copy.append(node('span', null, file.name));
@@ -190,6 +194,7 @@
         });
         row.append(copy, remove, progress); fileList.append(row); files.push(entry);
       }
+      if (tooMany) { fileError.textContent = (fileError.hidden ? '' : fileError.textContent + ' ') + TOO_MANY; fileError.hidden = false; }
       save();
     }
     function addAgain(name, size) {
