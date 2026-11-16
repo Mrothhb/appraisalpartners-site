@@ -124,7 +124,7 @@
   const HAND_EMAIL = "Email me the answer too";
   const HAND_EMAIL_TEXT = "Please email me the answer too.";
   const HAND_EMAILED = "We'll email it to you too.";
-  const MODE = (function () { try { return new URLSearchParams(window.location.search).get("chat") === "modal" ? "modal" : "drag"; } catch (_) { return "drag"; } })();
+  const MODE = (function () { try { return new URLSearchParams(window.location.search).get("chat") === "drag" ? "drag" : "modal"; } catch (_) { return "modal"; } })();
   const PHONE = window.matchMedia("(max-width:600px)");
   const SPOT_KEY = "aap-agent-window";
   let seenKey = "aap-agent-seen-";
@@ -593,7 +593,7 @@
     ui.launch.setAttribute("aria-label", "Open the agent chat" + (yes ? ", 1 new reply" : ""));
     ui.minimize.setAttribute("aria-label", collapsed ? "Restore chat" + (yes ? ", 1 new reply" : "") : "Minimize chat");
     document.querySelectorAll(".talk").forEach(function (button) {
-      if (yes) button.setAttribute("aria-label", LABEL + ", 1 new reply"); else button.removeAttribute("aria-label");
+      button.setAttribute("aria-label", "Open the agent chat" + (yes ? ", 1 new reply" : ""));
     });
   }
 
@@ -626,7 +626,7 @@
     if (!yes) ui.body.scrollTop = ui.body.scrollHeight;
   }
 
-  // The chat window: a window that drags by its header (default), or a centred window over a curtain (?chat=modal).
+  // The chat window: a centred window over a curtain (default), or a window that drags by its header (?chat=drag).
   // Phones get the whole screen with the curtain behind it in both. The root is the only fixed box: it becomes the
   // curtain or the window, and the panel stays in its flow.
   function frame() {
