@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<title>Device setting · A&amp;AP</title>
+<link rel="icon" href="../assets/aap-favicon.png">
+<style>
+:root { --ink: #1c1c1c; --ink-2: #3a3a3a; --line: #e3e3e3; --primary: #0a6ec1; --primary-hover: #085ea6; --ok: #286c4c; --ok-bg: #edf6f0; --off-bg: #f6f8fa; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #fff; color: var(--ink); font: 400 18px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 560px; margin: 0 auto; padding: 48px 16px; }
+h1 { margin: 0 0 12px; font-size: 28px; line-height: 1.25; }
+p { margin: 0 0 18px; color: var(--ink-2); }
+.state { padding: 16px 18px; border-radius: 10px; background: var(--off-bg); font-weight: 600; }
+.state.on { background: var(--ok-bg); color: var(--ok); }
+.acts { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+button { min-height: 52px; padding: 0 22px; border-radius: 8px; font: 600 17px/1 inherit; cursor: pointer; }
+.primary { border: 0; background: var(--primary); color: #fff; }
+.primary:hover { background: var(--primary-hover); }
+.quiet { border: 1px solid var(--line); background: #fff; color: var(--primary); }
+button:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+@media (max-width: 480px) { button { width: 100%; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Device setting</h1>
+  <p>For A&amp;AP staff only. On a staff device, opening a portal or a report form is not counted as the customer's visit.</p>
+  <p class="state" id="state" role="status">Checking this device…</p>
+  <div class="acts">
+    <button class="primary" id="on" type="button">This is a staff device</button>
+    <button class="quiet" id="off" type="button">Count this device again</button>
+  </div>
+  <p style="margin-top:24px;font-size:15px">Each browser and app keeps its own setting. Set it once in every browser you use, including the browser inside your email app.</p>
+</main>
+<script>
+(function () {
+  var KEY = "aap-desk-device", state = document.getElementById("state");
+  function read() { try { return localStorage.getItem(KEY) === "1"; } catch (e) { return null; } }
+  function show() {
+    var v = read();
+    state.className = "state" + (v ? " on" : "");
+    state.textContent = v === null ? "This browser can't save the setting (private browsing?). Visits from it will count." : v ? "Staff device: your visits from this browser are not counted." : "Not a staff device: visits from this browser count as the customer's.";
+  }
+  document.getElementById("on").addEventListener("click", function () { try { localStorage.setItem(KEY, "1"); } catch (e) {} show(); });
+  document.getElementById("off").addEventListener("click", function () { try { localStorage.removeItem(KEY); } catch (e) {} show(); });
+  show();
+})();
+</script>
+</body>
+</html>

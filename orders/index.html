@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-build="v2026-11-15.5">
+<html lang="en" data-build="v2026-11-15.6">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -230,7 +230,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
 (function () {
   "use strict";
   var API = "https://script.google.com/macros/s/AKfycbxyxyutBsWhDBuoghbN-ybCXooZPwO_MB0iqsrAarETBMjLEdV5GfyFd_tgh_PiEA4z_w/exec";
-  var Q = new URLSearchParams(location.search), T = Q.get("t") || "", DESK = Q.has("desk"), viaScript = false, timer = null;
+  var Q = new URLSearchParams(location.search), T = Q.get("t") || "", DESK = Q.has("desk") || (function () { try { return localStorage.getItem("aap-desk-device") === "1"; } catch (e) { return false; } })(), viaScript = false, timer = null;
   var FORM = /^https:\/\/appraisalpartners\.net\/form\/\?t=([A-Za-z0-9_-]{32,64})(?:&r=([a-f0-9]{64}))?$/, ID = /^[A-Za-z0-9_-]{10,}$/;
   var B = null, last = null, sentAt = 0, find = {}, status = {}, open = {}, drafts = {}, boxKey = "aap-board-outbox-" + T, agentInit = false, agentReady = false;
   function $(id) { return document.getElementById(id); }

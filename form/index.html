@@ -1484,7 +1484,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
 
   var T = (INLINE && INLINE.t) || new URLSearchParams(location.search).get("t") || "";
   var R = INLINE ? "" : (new URLSearchParams(location.search).get("r") || "");
-  var ACTOR = new URLSearchParams(location.search).has("desk") ? "desk" : "";
+  var ACTOR = new URLSearchParams(location.search).has("desk") || (function () { try { return localStorage.getItem("aap-desk-device") === "1"; } catch (e) { return false; } })() ? "desk" : "";
   var F = {}, D = {}, O = {}, state = null, stage = "open", chatBootstrap = null;
   var controls = {};      // name -> {set}
   var online = false, readOnly = false, edits = 0, savedEdits = 0, timer = null, writing = Promise.resolve();
@@ -4255,7 +4255,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
   var openedSent = false;
   function noteOpened() {
-    if (openedSent || !T || !API || new URLSearchParams(location.search).has("desk")) return;
+    if (openedSent || !T || !API || new URLSearchParams(location.search).has("desk") || (function () { try { return localStorage.getItem("aap-desk-device") === "1"; } catch (e) { return false; } })()) return;
     openedSent = true;
     // Same simple POST as saves, no confirmation or UI. Old backends safely reject it.
     setTimeout(function () {
