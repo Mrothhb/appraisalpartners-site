@@ -897,9 +897,6 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 #agent-open { display: block; margin-top: var(--s-3); min-height: 44px; text-align: left; }
 .agent-hint { margin: 0 0 var(--s-2); font-size: 15px; color: var(--ink-2, #5f5f5f); }
 .agent-hint .link-inline { min-height: 44px; }
-.agent-big { display: flex; flex-direction: column; align-items: center; gap: var(--s-4); margin: 0 0 var(--gap); padding: var(--s-2) 0 var(--s-4); text-align: center; }
-.agent-big-line { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.3; color: #0a6ec1; }
-@media (max-width: 600px) { .agent-big-line { font-size: 17px; } }
 .comp-card { border: 2px solid #e8590c; border-left: 8px solid #e8590c; background: #fff0e0; color: #6b2400; padding: var(--s-5) var(--card-px); }
 .comp-head { display: flex; align-items: center; gap: var(--s-3); margin: 0 0 var(--s-3); }
 .comp-bang { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-full); background: #e8590c; color: #fff; font: 800 26px/1 var(--display); }
@@ -986,10 +983,6 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
     <ul class="dc-list" id="dc-list"></ul>
     <button type="button" class="link-inline" id="agent-open" aria-controls="aap-agent-panel" hidden>Ask your Report Agent about any of these.</button>
   </section>
-  <div class="agent-big" id="agent-big" hidden>
-    <button type="button" class="aap-agent-launch aap-agent-launch--giant" id="agent-big-open" aria-controls="aap-agent-panel" aria-label="Open the agent chat"><span class="aap-agent-launch-base" aria-hidden="true"></span><span class="aap-agent-launch-hl aap-agent-launch-hl-l" aria-hidden="true"></span><span class="aap-agent-launch-hl aap-agent-launch-hl-r" aria-hidden="true"></span><span class="aap-agent-launch-cap"><span class="aap-agent-launch-txt">AGENT</span></span></button>
-    <p class="agent-big-line">Talk now</p>
-  </div>
   <section class="usage" id="usage" aria-label="AI usage this week" hidden>
     <div class="usage-track" id="usage-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-labelledby="usage-line"><i id="usage-fill"></i></div>
     <p class="usage-line" id="usage-line"></p>
@@ -4776,7 +4769,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
 
 
 
-  var AGENT_JS = "/orders-staging/agent.js?v=20261116modal1";
+  var AGENT_JS = "/orders-staging/agent.js?v=20261116modal2";
   var START_LANE = /^(partial(?:-conversion|-we-set)?|full(?:-conversion)?|self-service(?:-conversion)?)$/;
   var walk = { load: "", mounted: false, open: false, rev: null, cur: null, acked: {}, skipped: {}, pending: {}, saved: {},
     server: {}, lines: [], n: 0, replies: {}, asks: {}, line: null, reader: null, curVersion: null, dcAt: {}, dcSkip: {} };
@@ -5033,7 +5026,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
         walk.mounted = walk.open = true;
       }
       if (walk.mounted) AAPAgent.show(ready);
-      $("agent-open").hidden = $("agent-hint").hidden = $("agent-big").hidden = !ready;
+      $("agent-open").hidden = $("agent-hint").hidden = !ready;
       if (!ready || !walk.open || !walk.mounted) return;
       if (!walkAllowed()) {
         AAPAgent.update({ chat: chatBootstrap, route: "order", order: O.code || "", orders: [{ ap: O.code || "", street: O.property || "" }],
@@ -5233,10 +5226,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       walk.reader = setTimeout(function () { read().then(function (r) { takeLog(r.form); }, function () {}).then(tick); }, 2000);
     })();
   }
-  ["agent-open", "agent-hint-open", "agent-big-open"].forEach(function (id) {   // the inline hints and the big button open the same floating panel
+  ["agent-open", "agent-hint-open"].forEach(function (id) {   // the two inline hints open the same floating panel
     $(id).addEventListener("click", function () {
       try { if (walk.mounted && (walkAllowed() || chatAllowed())) AAPAgent.open(); }
-      catch (e) { walk.load = "off"; $("agent-open").hidden = $("agent-hint").hidden = $("agent-big").hidden = true; }
+      catch (e) { walk.load = "off"; $("agent-open").hidden = $("agent-hint").hidden = true; }
     });
   });
 

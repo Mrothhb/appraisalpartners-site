@@ -799,14 +799,11 @@
 .aap-agent-launch-cap { position:absolute; left:1.5em; top:.2em; width:10em; height:7.4em; border-radius:50%; display:grid; place-items:center; background:radial-gradient(80% 60% at 35% 25%, rgba(255,255,255,.2), rgba(255,255,255,0) 60%), linear-gradient(165deg, #2a8ad8 0%, #1279c9 40%, #0a6ec1 70%, #0966b5 100%); box-shadow:inset 0 .1em 0 rgba(255,255,255,.35), 0 1.3em 0 #0858a0, 0 1.45em 0 #0d2a46, 0 1.6em .3em rgba(13,42,70,.35); transition:transform 80ms, box-shadow 80ms; }
 .aap-agent-launch:active .aap-agent-launch-cap { transform:translateY(.8em); box-shadow:inset 0 .1em 0 rgba(255,255,255,.35), 0 .5em 0 #0858a0, 0 .65em 0 #0d2a46, 0 .8em .2em rgba(13,42,70,.35); }
 .aap-agent-launch-txt { font-size:2em; font-weight:800 !important; line-height:1; letter-spacing:.06em; color:#fff; text-shadow:0 .06em .08em rgba(13,42,70,.7); transform:scaleY(.86); }
-.aap-agent-launch--giant .aap-agent-launch-txt { font-size:2.4em; }
 .aap-agent-launch:hover .aap-agent-launch-base, .aap-agent-launch:hover .aap-agent-launch-cap { filter:brightness(1.06); }
 .aap-agent-launch:focus-visible, .aap-agent-root .aap-agent-launch:focus-visible { outline:3px solid #0a6ec1; outline-offset:4px; border-radius:50%; }
 html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; top:.48em; right:2.16em; width:1.6em; height:1.6em; border-radius:50%; background:#e5a53a; box-shadow:0 0 0 .3em #0d2a46; }
-.aap-agent-launch.aap-agent-launch--giant { font-size:18px; }
 @media (max-width:600px) {
   .aap-agent-launch, .aap-agent-root .aap-agent-launch { font-size:6.2px; }
-  .aap-agent-launch.aap-agent-launch--giant { font-size:14px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .aap-agent-launch-cap { transition:none; }
