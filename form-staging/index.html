@@ -898,7 +898,8 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
 .agent-hint { margin: 0 0 var(--s-2); font-size: 15px; color: var(--ink-2, #5f5f5f); }
 .agent-hint .link-inline { min-height: 44px; }
 .agent-big { display: flex; flex-direction: column; align-items: center; gap: var(--s-4); margin: 0 0 var(--gap); padding: var(--s-2) 0 var(--s-4); text-align: center; }
-.agent-big-line { margin: 0; font-size: 16px; color: var(--ink-2); }
+.agent-big-line { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.3; color: #0a6ec1; }
+@media (max-width: 600px) { .agent-big-line { font-size: 17px; } }
 .comp-card { border: 2px solid #e8590c; border-left: 8px solid #e8590c; background: #fff0e0; color: #6b2400; padding: var(--s-5) var(--card-px); }
 .comp-head { display: flex; align-items: center; gap: var(--s-3); margin: 0 0 var(--s-3); }
 .comp-bang { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-full); background: #e8590c; color: #fff; font: 800 26px/1 var(--display); }
@@ -986,8 +987,8 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
     <button type="button" class="link-inline" id="agent-open" aria-controls="aap-agent-panel" hidden>Ask your Report Agent about any of these.</button>
   </section>
   <div class="agent-big" id="agent-big" hidden>
-    <button type="button" class="aap-agent-launch aap-agent-launch--giant" id="agent-big-open" aria-controls="aap-agent-panel" aria-label="Open the agent chat"><span class="aap-agent-launch-base" aria-hidden="true"></span><span class="aap-agent-launch-cap">Agent</span></button>
-    <p class="agent-big-line">Ask about your report</p>
+    <button type="button" class="aap-agent-launch aap-agent-launch--giant" id="agent-big-open" aria-controls="aap-agent-panel" aria-label="Open the agent chat"><span class="aap-agent-launch-base" aria-hidden="true"></span><span class="aap-agent-launch-hl aap-agent-launch-hl-l" aria-hidden="true"></span><span class="aap-agent-launch-hl aap-agent-launch-hl-r" aria-hidden="true"></span><span class="aap-agent-launch-cap"><span class="aap-agent-launch-txt">AGENT</span></span></button>
+    <p class="agent-big-line">Talk now</p>
   </div>
   <section class="usage" id="usage" aria-label="AI usage this week" hidden>
     <div class="usage-track" id="usage-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-labelledby="usage-line"><i id="usage-fill"></i></div>
@@ -4775,7 +4776,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
 
 
 
-  var AGENT_JS = "/orders-staging/agent.js?v=20261116btn1";
+  var AGENT_JS = "/orders-staging/agent.js?v=20261116btn2";
   var START_LANE = /^(partial(?:-conversion|-we-set)?|full(?:-conversion)?|self-service(?:-conversion)?)$/;
   var walk = { load: "", mounted: false, open: false, rev: null, cur: null, acked: {}, skipped: {}, pending: {}, saved: {},
     server: {}, lines: [], n: 0, replies: {}, asks: {}, line: null, reader: null, curVersion: null, dcAt: {}, dcSkip: {} };
@@ -5026,7 +5027,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (!walk || !state) return;
       var on = walkAllowed() || chatAllowed(), ready = on && walk.load === "ready";
       if (on && !walk.load) walkLoad();
-      if (ready && !walk.mounted) {   // float mode: launcher bottom-right, docked rail at >=1280px; never opens by itself
+      if (ready && !walk.mounted) {   // float mode: launcher bottom-right; the chat opens as a window; never opens by itself
         AAPAgent.init({ chat: chatBootstrap && Object.assign({}, chatBootstrap, { order: O.code || "" }), chatContext: function () { if (!walkAllowed()) return { review_id: (D.review || {}).id || "" }; var t = walkCurrent().t; return { review_id: (D.review || {}).id || "", kind: t.kind, item_id: t.id || "", item_version: t.version || "" }; }, float: true, dock: true, host: $("agent-host"), send: function (m) { return walkAsk(m && m.text); }, choose: function () { if (walkAllowed()) return walkChoose.apply(null, arguments); }, save: function () { if (walkAllowed()) return walkSaveText.apply(null, arguments); }, tap: function () { if (walkAllowed()) return walkTapPage.apply(null, arguments); },
           talk: function (ta) { return talkRow(ta, true); }, office: { name: O.client || "" } });
         walk.mounted = walk.open = true;
@@ -5134,7 +5135,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     walkHandoff();
   }
   function walkHandoff() {
-    if (!window.matchMedia("(min-width:1280px)").matches) AAPAgent.open(false);
+    if (AAPAgent.mode === "modal" || !window.matchMedia("(min-width:1280px)").matches) AAPAgent.open(false);   // a curtained or narrow chat steps aside for the request box
     $("post-box").scrollIntoView({ block: "center", behavior: "smooth" }); $("post-text").focus({ preventScroll: true });
   }
   function walkSaveText(text, item) {
