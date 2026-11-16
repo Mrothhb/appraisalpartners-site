@@ -19,6 +19,14 @@
     return date;
   }
   const isoDay = date => date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+  // The kinds the desk takes: a base name and one of these extensions (the server applies the same rule).
+  const KINDS = /^(zap|zip|pdf|jpe?g|png|heic|xml|csv|xlsx|docx|txt|eml)$/;
+  const MAX_BYTES = 500 * 1024 * 1024;
+  const lastPart = name => String(name || '').split(/[\\/]/).pop();
+  const extension = name => { const last = lastPart(name), dot = last.lastIndexOf('.'); return dot > 0 && dot < last.length - 1 ? last.slice(dot + 1).toLowerCase() : ''; };
+  const kindText = name => '“' + lastPart(name) + '” is a kind we can\'t take. Send ZAP, ZIP, PDF, photos (JPG, PNG, HEIC), XML, CSV, Excel, Word, text or email files.';
+  const sizeText = name => '“' + lastPart(name) + '” is over 500 MB. Email it to desk@aandap.com and we\'ll help.';
+  const folderText = name => '“' + lastPart(name) + '” is a folder. Choose the files inside it.';
   function node(tag, cls, text) {
     const el = document.createElement(tag);
     if (cls) el.className = 'aap-new-' + cls;
@@ -126,10 +134,25 @@
       const b = node('button', secondary ? 'button aap-new-secondary' : 'button', text);
       b.type = 'button'; return b;
     }
+    const refused = new Map();
+    function refuse(name, text) {   // shown in the list and never sent; the rest of the files stay
+      if (refused.has(name) || busy || created || done) return;
+      const row = node('li', 'file');
+      const copy = node('div', 'file-copy');
+      const note = node('span', 'error', text); note.setAttribute('role', 'alert');
+      copy.append(note);
+      const remove = button('Remove', true);
+      remove.setAttribute('aria-label', 'Remove ' + lastPart(name));
+      remove.addEventListener('click', () => { row.remove(); refused.delete(name); });
+      row.append(copy, remove); fileList.append(row); refused.set(name, row);
+    }
     function addFiles(incoming) {
       if (busy || created || done) return;
       fileError.hidden = true;
       for (const file of incoming) {
+        if (!file || lastPart(file.name).charAt(0) === '.') continue;   // hidden files (.DS_Store and the like) are skipped
+        if (!KINDS.test(extension(file.name))) { refuse(file.name, kindText(file.name)); continue; }
+        if (file.size > MAX_BYTES) { refuse(file.name, sizeText(file.name)); continue; }
         const kept = again.find(entry => entry.name === file.name);
         if (kept) dropAgain(kept);
         const same = files.find(entry => entry.file.name === file.name);
@@ -179,9 +202,44 @@
       event.preventDefault(); if (!busy && !created && !done) drop.classList.add('aap-new-drag');
     });
     drop.addEventListener('dragleave', () => drop.classList.remove('aap-new-drag'));
+    // A dropped folder adds the files directly inside it (folders within it are skipped). A browser that can't list a
+    // folder's files gets a note to choose them instead.
+    const fileOf = entry => new Promise(resolve => entry.file(resolve, () => resolve(null)));
+    async function inside(folder) {
+      const reader = folder.createReader(), found = [];
+      for (;;) {
+        const batch = await new Promise(resolve => reader.readEntries(resolve, () => resolve([])));
+        if (!batch.length) break;
+        found.push(...batch);
+      }
+      const files = [];
+      for (const entry of found) if (entry.isFile) { const file = await fileOf(entry); if (file) files.push(file); }
+      return files;
+    }
+    async function fromEntries(entries) {
+      const files = [];
+      for (const entry of entries) {
+        if (entry.isFile) { const file = await fileOf(entry); if (file) files.push(file); }
+        else if (entry.isDirectory) {
+          const found = await inside(entry);
+          if (found.some(file => lastPart(file.name).charAt(0) !== '.')) files.push(...found); else refuse(entry.name, folderText(entry.name));
+        }
+      }
+      return files;
+    }
     drop.addEventListener('drop', event => {
       event.preventDefault(); drop.classList.remove('aap-new-drag');
-      addFiles(Array.from(event.dataTransfer.files));
+      const data = event.dataTransfer;
+      if (!data || busy || created || done) return;
+      const plain = Array.from(data.files || []);   // read during the event: the list empties afterwards
+      const entries = Array.from(data.items || []).filter(item => item.kind === 'file')
+        .map(item => typeof item.webkitGetAsEntry === 'function' ? item.webkitGetAsEntry() : null);
+      if (entries.length && entries.every(Boolean)) { fromEntries(entries).then(addFiles, () => addFiles(plain)); return; }
+      addFiles(plain.filter(file => {   // no folder listing here: an entry with no extension and no type is a folder
+        const folder = !extension(file.name) && !file.type && file.size % 4096 === 0;
+        if (folder) refuse(file.name, folderText(file.name));
+        return !folder;
+      }));
     });
     const addonInputs = {}, laneInputs = {};
     function options(title, list, isLane) {

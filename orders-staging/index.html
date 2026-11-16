@@ -155,12 +155,12 @@ footer.site a { color: var(--ink-2); }
 .nav a.newbtn:hover, .tabs a.newbtn:hover { background: #eaf3fb; color: var(--bar); }
 .nav a.newbtn[aria-current], .tabs a.newbtn[aria-current] { box-shadow: inset 0 -3px 0 #005ea8; }
 .talk { position: relative; display: inline-block; flex: none; width: 120px; height: 44px; margin: 0; padding: 0; border: 0; border-radius: 999px; background: none; color: #fff; cursor: pointer; align-self: center; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
-.talk-base { position: absolute; left: 0; top: 7px; width: 120px; height: 31px; border-radius: 999px; background: radial-gradient(ellipse at 50% 38%, #0a5fa8 0%, #0a6ec1 52%, #1d83d4 80%, #0d72c4 100%); box-shadow: 0 0 0 1px rgba(255,255,255,.22), inset 0 2px 4px rgba(13,42,70,.35), 0 3px 0 #08599e, 0 8px 8px -4px rgba(13,42,70,.55); }
-.talk-hl { position: absolute; bottom: 8px; width: 12px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.4); }
+.talk-base { position: absolute; left: 0; top: 12px; width: 120px; height: 29px; border-radius: 999px; background: radial-gradient(ellipse at 50% 38%, #0a5fa8 0%, #0a6ec1 52%, #1d83d4 80%, #0d72c4 100%); box-shadow: 0 0 0 1px rgba(255,255,255,.22), inset 0 2px 4px rgba(13,42,70,.35), 0 3px 0 #08599e, 0 6px 6px -4px rgba(13,42,70,.55); }
+.talk-hl { position: absolute; bottom: 4px; width: 12px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.4); }
 .talk-hl-l { left: 10px; transform: rotate(28deg); }
 .talk-hl-r { right: 10px; transform: rotate(-28deg); }
-.talk-cap { position: absolute; left: 8px; top: 0; width: 104px; height: 27px; border-radius: 999px; display: grid; place-items: center; background: radial-gradient(80% 60% at 35% 25%, rgba(255,255,255,.2), rgba(255,255,255,0) 60%), linear-gradient(165deg, #2a8ad8 0%, #1279c9 40%, #0a6ec1 70%, #0966b5 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 5px 0 #0858a0, 0 6px 0 #0d2a46, 0 7px 2px rgba(13,42,70,.35); transition: transform 80ms, box-shadow 80ms; }
-.talk:active .talk-cap { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 2px 0 #0858a0, 0 3px 0 #0d2a46, 0 4px 1px rgba(13,42,70,.35); }
+.talk-cap { position: absolute; left: 8px; top: 8px; width: 104px; height: 25px; border-radius: 999px; display: grid; place-items: center; background: radial-gradient(80% 60% at 35% 25%, rgba(255,255,255,.2), rgba(255,255,255,0) 60%), linear-gradient(165deg, #2a8ad8 0%, #1279c9 40%, #0a6ec1 70%, #0966b5 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 4px 0 #0858a0, 0 5px 0 #0d2a46, 0 6px 2px rgba(13,42,70,.35); transition: transform 80ms, box-shadow 80ms; }
+.talk:active .talk-cap { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 1px 0 #0858a0, 0 2px 0 #0d2a46, 0 3px 1px rgba(13,42,70,.35); }
 .talk-txt { font: 800 15px/1 var(--font); letter-spacing: .06em; color: #fff; text-shadow: 0 1px 1px rgba(13,42,70,.7); transform: translateY(1px) scaleY(.86); }
 .talk:hover .talk-base, .talk:hover .talk-cap { filter: brightness(1.06); }
 @media (prefers-reduced-motion: reduce) { .talk-cap { transition: none; } }
@@ -169,7 +169,7 @@ footer.site a { color: var(--ink-2); }
 .right .talk:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 @media (min-width: 1200px) { .appbar { position: sticky; top: 0; z-index: 20; } }
 @media (max-width: 600px) { .appbar .talk { display: none; } }
-html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -3px; right: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--warning-edge); box-shadow: 0 0 0 2px #fff; }
+html.aap-agent-unread .talk::after { content: ""; position: absolute; top: 4px; right: 10px; width: 10px; height: 10px; border-radius: 50%; background: var(--warning-edge); box-shadow: 0 0 0 2px #fff; }
 .talk[hidden], .talkline[hidden] { display: none; }
 .talkline { margin: var(--s-4) 0 0; font-size: 16px; color: var(--ink-2); }   /* chat UX 11-14: one meta line, not a second launcher */
 .rowagent { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 48px; color: #005ea8; font: 600 16px/1.2 var(--font); text-decoration: none; white-space: nowrap; }
@@ -233,7 +233,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -3px;
 <main class="col" id="main" hidden></main>
 <footer class="site" id="foot" hidden><div class="wrap" id="foot-line"></div></footer>
 
-<script src="agent.js?v=20261116modal2" defer></script>
+<script src="agent.js?v=20261116modal3" defer></script>
 <script>
 (function () {
   "use strict";
@@ -679,7 +679,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -3px;
     if (window.AAPNewOrder) return done(true);
     if (newState === "failed") return done(false);
     if (!newScript) {
-      newScript = document.createElement("script"); newScript.src = "neworder.js?v=20261114a"; newScript.defer = true; newState = "loading";
+      newScript = document.createElement("script"); newScript.src = "neworder.js?v=20261116modal3"; newScript.defer = true; newState = "loading";
       newScript.addEventListener("load", function () { newState = "loaded"; });
       newScript.addEventListener("error", function () { newState = "failed"; });
       document.head.appendChild(newScript);
@@ -745,6 +745,9 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -3px;
       .then(function (r) { return r.json(); })
       .then(function (r) {
         if (r && r.ok && r.request_id === rid && Array.isArray(r.uploads)) return { ok: true, request_id: rid, uploads: r.uploads };
+        var name = r && typeof r.name === "string" ? r.name.split(/[\\/]/).pop() : "";   // the file the server refused, by name
+        if (name && r.error === "type") return { ok: false, error: "“" + name + "” is a kind we can't take. Send ZAP, ZIP, PDF, photos (JPG, PNG, HEIC), XML, CSV, Excel, Word, text or email files." };
+        if (name && r.error === "size") return { ok: false, error: "“" + name + "” is over 500 MB. Email it to desk@aandap.com and we'll help." };
         return { ok: false, error: NEW_ERR[r && r.error] || "Your order wasn't received. Try again, or email desk@aandap.com." };
       }, function () { return { ok: false, error: "Couldn't reach us. Check your connection and try again." }; });
   }
