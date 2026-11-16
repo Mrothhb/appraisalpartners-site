@@ -121,11 +121,19 @@
   const SUB = "AI agent · orders, ready dates, pricing · replies in seconds";
   const HOST_SUB = "AI agent · did your report · replies in seconds";
   const DISCLOSURE = "AI agent. The desk reviews every change request.";
+  const HAND_WAIT = "Wait here";
+  const HAND_EMAIL = "Email me the answer";
+  const HAND_EMAIL_TEXT = "Please email me the answer too.";
+  const HAND_WAITING = "The answer shows here. A dot marks it if the chat is closed.";
+  const HAND_EMAILED = "We'll email it to you too.";
   let seenKey = "aap-agent-seen-";
   try { seenKey += new URLSearchParams(window.location.search).get("t") || ""; } catch (_) {   }
   const conversations = new Map();
   const drafts = new Map();
   const draftKey = seenKey.replace("aap-agent-seen-", "aap-agent-draft-") + "|";   // per link and order; survives a reload
+  const handKey = seenKey.replace("aap-agent-seen-", "aap-agent-handoff-") + "|";   // per link, order and question
+  const handChoices = new Map();
+  const handBusy = new Set();
   let data = { route: "home", order: null, needs: [], orders: [], thread: [], plan: null, profile: false };
   let config = null;
   let ui = null;
@@ -277,15 +285,16 @@
     const ids = new Set(streamed.flatMap(m => [m.id, "h-" + m.id]));
     const lines = data.thread.filter(m => !ids.has(m.id || m.key) && !streamed.some(s => s.re && s.re === m.re && m.who === "agent"))
       .concat(streamed).filter(message => sameScope(message, scope()));
-    const atEnd = ui.body.scrollHeight - ui.body.scrollTop - ui.body.clientHeight < 48, keep = new Set();
+    const atEnd = ui.body.scrollHeight - ui.body.scrollTop - ui.body.clientHeight < 48, keep = new Set(), hand = handoff(lines);
     lines.forEach(function (message, i) {
       const key = String(message.key || message.id || i), you = message.who === "you";
       const who = you ? "You" : !config.host ? LABEL : message.who === "desk" ? "Desk" : HOST_LABEL;
       const first = !you && (i === 0 || lines[i - 1].who === "you"), typing = Boolean(message.pending && message.typing);
-      const note = typeof message.note === "string" ? message.note : "";
-      const text = String(message.text || ""), shape = [who, text, Boolean(message.pending), first, typing, note].join("\n");
+      const note = typeof message.note === "string" ? message.note : "", held = hand && hand.i === i ? hand.state : "";
+      const text = String(message.text || ""), shape = [who, text, Boolean(message.pending), first, typing, note, held].join("\n");
       let line = ui.lines.get(key);
       if (!line || line.dataset.shape !== shape) {
+        const focus = line && line.contains(document.activeElement) ? document.activeElement.textContent : null;
         const next = element("li", you ? "you" : "says");
         if (message.pending) next.classList.add("aap-agent-pending");
         if (first) next.classList.add("aap-agent-first");
@@ -299,11 +308,16 @@
           next.append(name, dots);
         } else next.append(name, element("p", "words", text));
         if (note) next.append(element("p", "note", note));   // e.g. "Sent": his message is saved, no reply yet
+        if (held) next.append(handRow(hand));
         if (first) next.prepend(avatar("bubble-avatar"));
         next.dataset.shape = shape;
         if (line) line.replaceWith(next);
         line = next;
         ui.lines.set(key, line);
+        if (focus !== null) {
+          const to = Array.from(next.querySelectorAll("button")).find(b => b.textContent === focus) || next.querySelector("[tabindex]");
+          if (to) to.focus({ preventScroll: true });
+        }
       }
       keep.add(key);
       if (ui.thread.children[i] !== line) ui.thread.insertBefore(line, ui.thread.children[i] || null);
@@ -312,6 +326,81 @@
     ui.thread.hidden = !lines.length;
     if (atEnd || lines.length !== ui.threadCount) ui.body.scrollTop = ui.body.scrollHeight;
     ui.threadCount = lines.length;
+  }
+
+  function handoff(lines) {   // the newest hand-off in scope, while no desk answer to it follows
+    const flagged = new Set(data.thread.filter(m => m.handoff && m.re).map(m => m.re));
+    const handed = m => !m.pending && m.who !== "you" && Boolean(m.handoff || m.who === "agent" && m.re && flagged.has(m.re));
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const m = lines[i];
+      if (!handed(m)) continue;
+      if (lines.some((r, j) => r.who === "desk" && !r.pending && !handed(r) && (m.re && r.re ? r.re === m.re : j > i))) return null;
+      const k = handKey + (m.order || "") + "|" + (m.re || m.id || m.key || m.at || "");
+      return { i, k, order: m.order || null, state: handBusy.has(k) ? "busy" : handPick(k) || "ask" };
+    }
+    return null;
+  }
+
+  function handPick(k, value) {
+    if (value) {
+      handChoices.set(k, value);
+      try { localStorage.setItem(k, value); } catch (_) {   }
+      return value;
+    }
+    if (handChoices.has(k)) return handChoices.get(k);
+    try { const stored = localStorage.getItem(k); return stored === "wait" || stored === "email" ? stored : ""; } catch (_) { return ""; }
+  }
+
+  function handRow(hand) {
+    if (hand.state === "wait" || hand.state === "email") {
+      const done = element("p", "note", hand.state === "wait" ? HAND_WAITING : HAND_EMAILED);
+      done.tabIndex = -1;
+      return done;
+    }
+    const row = element("div", "hand");
+    [[HAND_WAIT, handWait], [HAND_EMAIL, handEmail]].forEach(function (pair) {
+      const button = element("button", "chip", pair[0]);
+      button.type = "button";
+      if (hand.state === "busy") button.setAttribute("aria-disabled", "true");
+      button.addEventListener("click", () => pair[1](hand));
+      row.append(button);
+    });
+    return row;
+  }
+
+  function handWait(hand) {
+    if (handBusy.has(hand.k) || handPick(hand.k)) return;
+    handPick(hand.k, "wait");
+    render();
+  }
+
+  async function handEmail(hand) {   // one ordinary message, through the same send path as the message box
+    if (handBusy.has(hand.k) || handPick(hand.k)) return;
+    const order = hand.order, text = HAND_EMAIL_TEXT;
+    if (chat) {
+      try { chat.send(text, order, config.chatContext ? config.chatContext() : null); handPick(hand.k, "email"); ui.speech.textContent = ""; }
+      catch (e) { ui.speech.textContent = e.message; }
+      render(); return;
+    }
+    const previous = conversations.get(order);
+    if ((previous || {}).status === "sending") return;
+    const retry = previous && previous.status === "failed" && previous.id && previous.text === text ? previous.id : null;
+    const request = { text: text, status: "sending", id: retry };
+    conversations.set(order, request);
+    handBusy.add(hand.k);
+    render();
+    try {
+      const result = await config.send(retry ? { order: order, text: text, id: retry } : { order: order, text: text });
+      if (result && typeof result.id === "string" && result.id) request.id = result.id;
+      if (!result || result.ok !== true) throw new Error(result && result.error || "Please try again.");
+      request.status = "sent";
+      handPick(hand.k, "email");
+    } catch (error) {
+      request.status = "failed";
+      request.error = "Could not send. " + (error && error.message || "Please try again.");
+    }
+    handBusy.delete(hand.k);
+    render();
   }
 
   function renderPrompt() {
@@ -746,10 +835,11 @@ html.aap-agent-unread .aap-agent-launch::after { content:""; position:absolute; 
 .aap-agent-card-body { font-size:16px; line-height:1.45; }
 .aap-agent-more { min-height:44px; margin-left:4px; padding:0 2px; border:0; background:none; color:#005ea8; font-weight:600 !important; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
 .aap-agent-prompt-text { font-size:14px; font-weight:600; color:#5f5f5f; }
-.aap-agent-chips, .aap-agent-starters { display:flex; flex-wrap:wrap; gap:8px; }
+.aap-agent-chips, .aap-agent-starters, .aap-agent-hand { display:flex; flex-wrap:wrap; gap:8px; }
 .aap-agent-starters { margin-left:32px; }
 .aap-agent-chip { min-width:44px; min-height:44px; max-width:100%; padding:6px 16px; border:1px solid #0a6ec1; border-radius:999px; background:#fff; color:#005ea8; font-size:15px; line-height:1.3; font-weight:600 !important; text-align:left; white-space:normal; overflow-wrap:anywhere; cursor:pointer; }
 .aap-agent-chip:hover:enabled, .aap-agent-chip[aria-pressed="true"] { background:#eaf3fb; }
+.aap-agent-root .aap-agent-chip[aria-disabled="true"] { cursor:default; opacity:.65; background:#fff; }
 .aap-agent-answer-box { display:grid; gap:8px; }
 .aap-agent-answer-input { display:block; width:100%; min-height:72px; padding:10px 12px; border:1px solid #8a949f; border-radius:8px; background:#fff; color:#1c1c1c; resize:vertical; overflow:auto; }
 .aap-agent-answer-box .talk-box > .aap-agent-answer-input { padding-right:46px; }

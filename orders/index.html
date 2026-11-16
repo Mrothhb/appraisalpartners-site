@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-build="v2026-11-15.6">
+<html lang="en" data-build="v2026-11-15.7">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -225,7 +225,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
 <main class="col" id="main" hidden></main>
 <footer class="site" id="foot" hidden><div class="wrap" id="foot-line"></div></footer>
 
-<script src="agent.js?v=20261115stream1" defer></script>
+<script src="agent.js?v=20261115handoff1" defer></script>
 <script>
 (function () {
   "use strict";
@@ -766,7 +766,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
       try { var e = JSON.parse(answers[k]); if (e && e.text) all.push({ at: e.at, who: "customer", text: e.text, key: k, order: "" }); } catch (x) {}
     });
     ((r.form && r.form.log) || []).forEach(function (e) {
-      if (e && e.what === "reply" && e.text) all.push({ at: e.at, who: "desk", text: e.text, order: "", re: e.re || "" });
+      if (e && e.what === "reply" && e.text) all.push({ at: e.at, who: "desk", text: e.text, order: "", re: e.re || "", handoff: !!e.handoff });
     });
     return all;
   }
@@ -852,7 +852,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: -2px;
         needs: (B.needs || []).map(function (n) { var o = byCode(n.order); return { ap: n.order, street: n.street || n.order, kind: n.kind === "start" ? "answer" : n.kind,
                                                    label: n.kind === "files" ? filesLabel(o) : LABEL[n.kind] || "Open order", href: needHref(n, o) }; }).filter(function (n) { return n.href; }),
         orders: rows().map(function (o) { return { ap: o.order, street: o.street || o.order, status: o.stage || "", ready: o.due || "", due: o.client_due || "" }; }),
-        thread: conversation().map(function (m) { return { at: m.at, who: m.who === "desk" ? "desk" : "you", order: m.order || null, text: m.text, id: m.key || "", re: m.re || "", pending: !!m.pending }; }),
+        thread: conversation().map(function (m) { return { at: m.at, who: m.who === "desk" ? "desk" : "you", order: m.order || null, text: m.text, id: m.key || "", re: m.re || "", pending: !!m.pending, handoff: !!m.handoff }; }),
         plan: B.usage || B.usage_bar ? {} : null,
         profile: typeof B.profile === "string" && !!B.profile.trim() && B.profile.length <= 2000,
         starters: [{ label: "What's waiting on me?" }, { label: "When is my next report ready?" }, { label: "Price a new order" }].concat(newest() ? [{ label: "Where is " + newest() + "?" }] : [])

@@ -4769,7 +4769,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
 
 
 
-  var AGENT_JS = "/orders/agent.js?v=20261115stream1";
+  var AGENT_JS = "/orders/agent.js?v=20261115handoff1";
   var START_LANE = /^(partial(?:-conversion|-we-set)?|full(?:-conversion)?|self-service(?:-conversion)?)$/;
   var walk = { load: "", mounted: false, open: false, rev: null, cur: null, acked: {}, skipped: {}, pending: {}, saved: {},
     server: {}, lines: [], n: 0, replies: {}, asks: {}, line: null, reader: null, curVersion: null, dcAt: {}, dcSkip: {} };
@@ -5003,13 +5003,13 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     }).filter(Boolean).sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); }).forEach(function (m) {
       var mine = replies.filter(function (r) { return r.re === m.key; });
       out.push({ who: "you", text: m.text, key: "h-" + m.key, order: code, history: true, note: mine.length ? "" : m.key in walk.server ? "Sent" : "Sending…" });
-      mine.forEach(function (r, i) { out.push({ who: r.by === "agent" ? "agent" : "desk", text: r.text, id: r.id || "agent-" + m.key, re: m.key, key: "re-" + m.key + "-" + i, order: code, history: true }); });
+      mine.forEach(function (r, i) { out.push({ who: r.by === "agent" ? "agent" : "desk", text: r.text, id: r.id || "agent-" + m.key, re: m.key, key: "re-" + m.key + "-" + i, order: code, history: true, handoff: !!r.handoff }); });
     });
     walk.lines.forEach(function (l) {
       out.push({ who: l.who, text: l.text, key: l.key, order: code });
       if (!l.ask) return;
       var mine = replies.filter(function (r) { return r.re === l.ask; }), a = walk.asks[l.ask];
-      mine.forEach(function (r, i) { out.push({ who: r.by === "agent" ? "agent" : "desk", text: r.text, id: r.id || "agent-" + l.ask, re: l.ask, key: "re-" + l.ask + "-" + i, order: code }); });
+      mine.forEach(function (r, i) { out.push({ who: r.by === "agent" ? "agent" : "desk", text: r.text, id: r.id || "agent-" + l.ask, re: l.ask, key: "re-" + l.ask + "-" + i, order: code, handoff: !!r.handoff }); });
       if (!mine.length && a && !a.failed) out.push({ who: "agent", pending: true, key: "wait-" + l.ask, order: code, typing: chatAllowed() || Date.now() - a.at < 90000,
         text: chatAllowed() ? "Typing..." : Date.now() - a.at < 90000 ? "Thinking…" : "Still waiting. The reply will show here and by email." });
     });
