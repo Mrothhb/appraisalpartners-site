@@ -746,7 +746,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: 4px; 
       .then(function (r) {
         if (r && r.ok && r.request_id === rid && Array.isArray(r.uploads)) return { ok: true, request_id: rid, uploads: r.uploads };
         var name = r && typeof r.name === "string" ? r.name.split(/[\\/]/).pop() : "";   // the file the server refused, by name
-        if (name && r.error === "type") return { ok: false, error: "“" + name + "” is a kind we can't take. Send ZAP, ZIP, PDF, photos (JPG, PNG, HEIC), XML, CSV, Excel, Word, text or email files." };
+        if (name && r.error === "type") return { ok: false, error: "“" + name + "” is a kind we can't take. Send ZAP, ZIP, PDF, photos (JPG, PNG, HEIC), XML, CSV, Excel (.xlsx), Word (.docx), text or email files." };
         if (name && r.error === "size") return { ok: false, error: "“" + name + "” is over 500 MB. Email it to desk@aandap.com and we'll help." };
         return { ok: false, error: NEW_ERR[r && r.error] || "Your order wasn't received. Try again, or email desk@aandap.com." };
       }, function () { return { ok: false, error: "Couldn't reach us. Check your connection and try again." }; });

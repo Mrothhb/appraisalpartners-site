@@ -19,14 +19,23 @@
     return date;
   }
   const isoDay = date => date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
-  // The kinds the desk takes: a base name and one of these extensions (the server applies the same rule).
+  // The desk's file rule, as the server applies it: the last part of the name with control characters out and spaces
+  // tidied, a base name and one of these extensions, 1 byte to 500 MB.
   const KINDS = /^(zap|zip|pdf|jpe?g|png|heic|xml|csv|xlsx|docx|txt|eml)$/;
   const MAX_BYTES = 500 * 1024 * 1024;
+  const WAIT_MS = 10000;
   const lastPart = name => String(name || '').split(/[\\/]/).pop();
-  const extension = name => { const last = lastPart(name), dot = last.lastIndexOf('.'); return dot > 0 && dot < last.length - 1 ? last.slice(dot + 1).toLowerCase() : ''; };
-  const kindText = name => '“' + lastPart(name) + '” is a kind we can\'t take. Send ZAP, ZIP, PDF, photos (JPG, PNG, HEIC), XML, CSV, Excel, Word, text or email files.';
+  const tidy = name => lastPart(String(name || '').slice(0, 300)).replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim();
+  const parts = name => /^(.*?)\.([A-Za-z0-9]{1,5})$/.exec(tidy(name));
+  const kindOk = name => { const m = parts(name); return !!m && !!m[1].trim() && KINDS.test(m[2].toLowerCase()); };
+  const filedAs = name => { const m = parts(name); return m ? m[1].trim().slice(0, 140) + '.' + m[2].toLowerCase() : tidy(name); };   // the name the desk files it under
+  const skipped = name => /^(\.ds_store|thumbs\.db|desktop\.ini|\._.*)$/i.test(lastPart(name));   // system files, skipped without a note
+  const kindText = name => '“' + lastPart(name) + '” is a kind we can\'t take. Send ZAP, ZIP, PDF, photos (JPG, PNG, HEIC), XML, CSV, Excel (.xlsx), Word (.docx), text or email files.';
   const sizeText = name => '“' + lastPart(name) + '” is over 500 MB. Email it to desk@aandap.com and we\'ll help.';
+  const emptyText = name => '“' + lastPart(name) + '” is empty. Choose the full file.';
   const folderText = name => '“' + lastPart(name) + '” is a folder. Choose the files inside it.';
+  const readText = name => 'Couldn\'t read “' + lastPart(name) + '”. Choose it again from your device.';
+  const within = (promise, fallback) => Promise.race([promise, new Promise(resolve => setTimeout(() => resolve(fallback), WAIT_MS))]);
   function node(tag, cls, text) {
     const el = document.createElement(tag);
     if (cls) el.className = 'aap-new-' + cls;
@@ -41,7 +50,7 @@
     const addons = Array.isArray(ctx.addons) ? ctx.addons : [];
     const payment = ctx.payment || {};
     const plan = ctx.plan;
-    let alive = true, busy = false, done = false, created = null, waiting = false;
+    let alive = true, busy = false, done = false, created = null, waiting = false, reading = 0;
     let selected = lanes[0] || null;
     const chosen = new Set();
     const files = [];
@@ -150,12 +159,13 @@
       if (busy || created || done) return;
       fileError.hidden = true;
       for (const file of incoming) {
-        if (!file || lastPart(file.name).charAt(0) === '.') continue;   // hidden files (.DS_Store and the like) are skipped
-        if (!KINDS.test(extension(file.name))) { refuse(file.name, kindText(file.name)); continue; }
-        if (file.size > MAX_BYTES) { refuse(file.name, sizeText(file.name)); continue; }
+        if (!file) continue;
         const kept = again.find(entry => entry.name === file.name);
         if (kept) dropAgain(kept);
-        const same = files.find(entry => entry.file.name === file.name);
+        const problem = skipped(file.name) ? '' : !kindOk(file.name) ? kindText(file.name) : !(file.size >= 1) ? emptyText(file.name)
+          : file.size > MAX_BYTES ? sizeText(file.name) : null;
+        if (problem !== null) { if (problem) refuse(file.name, problem); continue; }   // system files go quietly; the rest are named
+        const same = files.find(entry => filedAs(entry.file.name) === filedAs(file.name));
         if (same) {
           if (same.file.size !== file.size || same.file.lastModified !== file.lastModified) {
             fileError.textContent = 'Two files have the name “' + file.name + '”. Rename one before adding it.';
@@ -204,28 +214,41 @@
     drop.addEventListener('dragleave', () => drop.classList.remove('aap-new-drag'));
     // A dropped folder adds the files directly inside it (folders within it are skipped). A browser that can't list a
     // folder's files gets a note to choose them instead.
-    const fileOf = entry => new Promise(resolve => entry.file(resolve, () => resolve(null)));
-    async function inside(folder) {
+    // Each read waits at most WAIT_MS; a file the browser won't hand over is named, never dropped quietly.
+    const fileOf = entry => within(new Promise(resolve => entry.file(resolve, () => resolve(null))), null);
+    async function inside(folder) {   // the files directly inside a folder, or null when it can't be listed in time
       const reader = folder.createReader(), found = [];
       for (;;) {
-        const batch = await new Promise(resolve => reader.readEntries(resolve, () => resolve([])));
+        const batch = await within(new Promise(resolve => reader.readEntries(resolve, () => resolve(null))), null);
+        if (batch === null) return null;
         if (!batch.length) break;
         found.push(...batch);
       }
-      const files = [];
-      for (const entry of found) if (entry.isFile) { const file = await fileOf(entry); if (file) files.push(file); }
-      return files;
+      return found.filter(entry => entry.isFile);
     }
-    async function fromEntries(entries) {
+    async function fromEntries(entries, plain) {
       const files = [];
       for (const entry of entries) {
-        if (entry.isFile) { const file = await fileOf(entry); if (file) files.push(file); }
-        else if (entry.isDirectory) {
+        if (entry.isFile) {
+          const file = await fileOf(entry) || plain.find(given => given.name === entry.name);   // else the drop's own copy
+          if (file) files.push(file); else refuse(entry.name, readText(entry.name));
+        } else if (entry.isDirectory) {
           const found = await inside(entry);
-          if (found.some(file => lastPart(file.name).charAt(0) !== '.')) files.push(...found); else refuse(entry.name, folderText(entry.name));
+          if (!found || !found.some(kid => !skipped(kid.name))) { refuse(entry.name, folderText(entry.name)); continue; }
+          for (const kid of found) {
+            if (skipped(kid.name)) continue;
+            const file = await fileOf(kid);
+            if (file) files.push(file); else refuse(kid.name, readText(kid.name));
+          }
         }
       }
       return files;
+    }
+    function readingDrop(on) {   // Start order waits while a drop is being read
+      reading = Math.max(0, reading + (on ? 1 : -1));
+      if (reading) { start.disabled = true; status.textContent = 'Adding files…'; return; }
+      if (status.textContent === 'Adding files…') status.textContent = '';
+      update();
     }
     drop.addEventListener('drop', event => {
       event.preventDefault(); drop.classList.remove('aap-new-drag');
@@ -234,9 +257,13 @@
       const plain = Array.from(data.files || []);   // read during the event: the list empties afterwards
       const entries = Array.from(data.items || []).filter(item => item.kind === 'file')
         .map(item => typeof item.webkitGetAsEntry === 'function' ? item.webkitGetAsEntry() : null);
-      if (entries.length && entries.every(Boolean)) { fromEntries(entries).then(addFiles, () => addFiles(plain)); return; }
+      if (entries.length && entries.every(Boolean)) {
+        readingDrop(true);
+        fromEntries(entries, plain).then(addFiles, () => addFiles(plain)).finally(() => readingDrop(false));
+        return;
+      }
       addFiles(plain.filter(file => {   // no folder listing here: an entry with no extension and no type is a folder
-        const folder = !extension(file.name) && !file.type && file.size % 4096 === 0;
+        const folder = !parts(file.name) && !file.type && file.size % 4096 === 0;
         if (folder) refuse(file.name, folderText(file.name));
         return !folder;
       }));
@@ -363,7 +390,7 @@
         plan.pct + '% used. Resets ' + plan.resets + '.';
       warning.hidden = !selected || !runsOut() || waiting || !!created || done;
       actions.hidden = !warning.hidden || done;
-      start.disabled = !selected || busy || done;
+      start.disabled = !selected || busy || done || reading > 0;
       over.disabled = busy || done;
       if (!selected) {
         status.textContent = 'No services are on file for your office. Contact the desk before starting an order.';
@@ -378,11 +405,15 @@
     form.addEventListener('submit', event => { event.preventDefault(); submit(false); });
 
     async function submit(accepted) {
-      if (busy || done || !selected || !alive) return;
+      if (busy || done || !selected || !alive || reading) return;
       if (!created && !dueOk()) { needDate(true); due.focus(); return; }
       if (!form.reportValidity()) return;
       if (again.length) {
         error.textContent = 'Choose these files again, or remove them: ' + again.map(entry => entry.name).join(', ') + '.';
+        error.hidden = false; return;
+      }
+      if (!created && !files.length && refused.size) {   // every file picked was refused: no order without its files
+        error.textContent = 'None of these files can be sent. Remove them, or choose files we can take.';
         error.hidden = false; return;
       }
       if (!created && runsOut() && !accepted) {
@@ -466,8 +497,9 @@
       if (/^\d{4}-\d{2}-\d{2}$/.test(draft.due || '')) due.value = draft.due;
       if (typeof draft.notes === 'string') notes.value = draft.notes;
       fitNeedBy();
-      for (const file of Array.isArray(draft.files) ? draft.files.slice(0, 30) : []) {
-        if (file && typeof file.name === 'string') addAgain(file.name, Number(file.size) || 0);
+      for (const file of Array.isArray(draft.files) ? draft.files.slice(0, 30) : []) {   // a name that can't be sent again isn't asked for
+        if (file && typeof file.name === 'string' && !skipped(file.name) && kindOk(file.name) && Number(file.size) !== 0 && !(Number(file.size) > MAX_BYTES))
+          addAgain(file.name, Number(file.size) || 0);
       }
       againNote.hidden = !again.length;
     }
