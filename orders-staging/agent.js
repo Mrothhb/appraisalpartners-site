@@ -627,17 +627,18 @@
   }
 
   // The chat window: a window that drags by its header (default), or a centred window over a curtain (?chat=modal).
-  // Phones get the whole screen with the curtain behind it in both.
+  // Phones get the whole screen with the curtain behind it in both. The root is the only fixed box: it becomes the
+  // curtain or the window, and the panel stays in its flow.
   function frame() {
     if (!ui || config.host && !config.float) return;
-    const curtained = opened && (MODE === "modal" || PHONE.matches);
+    const curtained = opened && (MODE === "modal" || PHONE.matches), windowed = opened && !curtained;
     ui.root.classList.toggle("aap-agent-curtained", curtained);
-    ui.curtain.hidden = !curtained;
+    ui.root.classList.toggle("aap-agent-windowed", windowed);
     if (curtained) ui.panel.setAttribute("aria-modal", "true"); else ui.panel.removeAttribute("aria-modal");
-    if (!opened || MODE !== "drag" || PHONE.matches) { ui.panel.style.left = ui.panel.style.top = ""; return; }
+    if (!windowed) { ui.root.style.left = ui.root.style.top = ""; return; }
     spot = fit(spot || stored() || corner());
-    ui.panel.style.left = spot.x + "px";
-    ui.panel.style.top = spot.y + "px";
+    ui.root.style.left = spot.x + "px";
+    ui.root.style.top = spot.y + "px";
   }
 
   function fit(at) {   // the whole window stays on screen
@@ -770,8 +771,8 @@
   function viewport() {
     if (!ui) return;
     const view = window.visualViewport;
-    const height = view ? view.height : window.innerHeight;
-    const bottom = view ? Math.max(0, window.innerHeight - view.height - view.offsetTop) : 0;
+    const height = view && view.height > 0 ? view.height : window.innerHeight;
+    const bottom = view && view.height > 0 ? Math.max(0, window.innerHeight - view.height - (view.offsetTop || 0)) : 0;
     ui.root.style.setProperty("--aap-agent-view-height", height + "px");
     ui.root.style.setProperty("--aap-agent-view-bottom", bottom + "px");
   }
@@ -858,18 +859,18 @@ html.aap-agent-unread .aap-agent-collapsed .aap-agent-minimize::after { content:
 .aap-agent-speech { font-size:15px; color:#444; }
 .aap-agent-speech:empty { display:none; }
 .aap-agent-hosted .aap-agent-close, .aap-agent-hosted .aap-agent-launch { display:none; }
-.aap-agent-curtain { position:fixed; inset:0; background:rgba(13,42,70,.5); }
-.aap-agent-mode-drag .aap-agent-panel, .aap-agent-mode-modal .aap-agent-panel { position:fixed; max-width:calc(100vw - 32px); }
-.aap-agent-mode-drag .aap-agent-panel { right:calc(16px + env(safe-area-inset-right, 0px)); bottom:calc(16px + env(safe-area-inset-bottom, 0px)); width:380px; height:min(560px, calc(100vh - 32px)); height:min(560px, calc(100dvh - 32px)); }
-.aap-agent-mode-modal .aap-agent-panel { left:50%; top:50%; transform:translate(-50%, -50%); width:440px; height:min(640px, calc(100vh - 64px)); height:min(640px, calc(100dvh - 64px)); box-shadow:0 32px 64px -24px rgba(13,42,70,.55), 0 1px 2px rgba(13,42,70,.1); }
-.aap-agent-root .aap-agent-panel.aap-agent-collapsed { height:auto; bottom:auto; }
+.aap-agent-root.aap-agent-curtained { top:0; left:0; right:0; bottom:var(--aap-agent-view-bottom, 0px); grid-template-columns:100%; grid-template-rows:100%; place-items:center; gap:0; background:rgba(13,42,70,.5); }
+.aap-agent-root.aap-agent-windowed { right:auto; bottom:auto; }
+.aap-agent-mode-drag .aap-agent-panel { width:380px; max-width:calc(100vw - 32px); height:min(560px, calc(100vh - 32px)); height:min(560px, calc(100dvh - 32px)); }
+.aap-agent-mode-modal .aap-agent-panel { width:440px; max-width:calc(100vw - 32px); height:min(640px, calc(100vh - 64px)); height:min(640px, calc(100dvh - 64px)); box-shadow:0 32px 64px -24px rgba(13,42,70,.55), 0 1px 2px rgba(13,42,70,.1); }
+.aap-agent-root .aap-agent-panel.aap-agent-collapsed { height:auto; }
 .aap-agent-collapsed .aap-agent-bar, .aap-agent-collapsed .aap-agent-body, .aap-agent-collapsed .aap-agent-footer { display:none; }
 @media (min-width:601px) {
   .aap-agent-mode-drag .aap-agent-header { cursor:move; touch-action:none; -webkit-user-select:none; user-select:none; }
   .aap-agent-mode-drag .aap-agent-minimize { display:inline-flex; }
 }
 @media (max-width:600px) {
-  .aap-agent-mode-drag .aap-agent-panel, .aap-agent-mode-modal .aap-agent-panel { left:0; right:0; top:auto; bottom:var(--aap-agent-view-bottom, 0px); width:100%; max-width:none; height:100vh; height:var(--aap-agent-view-height, 100dvh); transform:none; border:0; border-radius:0; box-shadow:none; }
+  .aap-agent-mode-drag .aap-agent-panel, .aap-agent-mode-modal .aap-agent-panel { width:100%; max-width:none; height:100%; border:0; border-radius:0; box-shadow:none; }
   .aap-agent-mode-drag .aap-agent-header, .aap-agent-mode-modal .aap-agent-header { padding-top:calc(10px + env(safe-area-inset-top, 0px)); }
   .aap-agent-footer { padding:12px 16px calc(10px + env(safe-area-inset-bottom, 0px)); }
 }
@@ -1022,10 +1023,7 @@ html.aap-agent-unread .aap-agent-collapsed .aap-agent-minimize::after { content:
     launch.setAttribute("aria-expanded", "false");
     launch.setAttribute("aria-controls", panel.id);
     launch.setAttribute("aria-haspopup", "dialog");
-    const curtain = element("div", "curtain");
-    curtain.hidden = true;
-    curtain.setAttribute("aria-hidden", "true");
-    ui = { root, panel, close, minimize, curtain, launch, title, sub, bar, sys, intro, introText, disclosure, greeting: null, context, status, input, send, mic, form, speech,
+    ui = { root, panel, close, minimize, launch, title, sub, bar, sys, intro, introText, disclosure, greeting: null, context, status, input, send, mic, form, speech,
       body, thread, threadCount: 0, lines: new Map(), prompt: promptRow, kicker, cardBody, cardText, more, promptText, chips, chipShape: "", answerBox, answerInput: null, action,
       pageShape: "", pageEl: null, starters, starterShape: "" };
     mountedScope = scope();
@@ -1050,17 +1048,17 @@ html.aap-agent-unread .aap-agent-collapsed .aap-agent-minimize::after { content:
     }
     if (config.float) root.classList.add("aap-agent-float");
     root.classList.add("aap-agent-mode-" + MODE);
-    root.append(style, curtain, panel, launch);
+    root.append(style, panel, launch);
     launch.addEventListener("click", () => open(!opened));
     close.addEventListener("click", () => open(false));
     minimize.addEventListener("click", () => collapse(!collapsed));
-    curtain.addEventListener("click", () => open(false));
+    root.addEventListener("click", function (event) { if (event.target === root && root.classList.contains("aap-agent-curtained")) open(false); });
     header.addEventListener("pointerdown", function (event) {   // the window drags by its header
       if (MODE !== "drag" || PHONE.matches || !opened || event.button !== 0 || event.target.closest("button, a, input, textarea, select")) return;
-      const box = panel.getBoundingClientRect(), grab = { x: event.clientX - box.left, y: event.clientY - box.top };
+      const box = root.getBoundingClientRect(), grab = { x: event.clientX - box.left, y: event.clientY - box.top };
       event.preventDefault();
       try { header.setPointerCapture(event.pointerId); } catch (_) {   }
-      const move = function (e) { spot = fit({ x: e.clientX - grab.x, y: e.clientY - grab.y }); panel.style.left = spot.x + "px"; panel.style.top = spot.y + "px"; };
+      const move = function (e) { spot = fit({ x: e.clientX - grab.x, y: e.clientY - grab.y }); root.style.left = spot.x + "px"; root.style.top = spot.y + "px"; };
       const done = function () { header.removeEventListener("pointermove", move); header.removeEventListener("pointerup", done); header.removeEventListener("pointercancel", done); store(spot); };
       header.addEventListener("pointermove", move);
       header.addEventListener("pointerup", done);
