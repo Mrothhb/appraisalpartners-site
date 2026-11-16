@@ -71,6 +71,7 @@
               state.messages.push(reply);
             }
             reply.text = f.text; reply.pending = f.type !== "completed";
+            if (f.type === "completed" && f.handoff === true) reply.handoff = true;
             status = answering() ? "Typing..." : "Connected.";
           }
           state.sequence = f.sequence;
