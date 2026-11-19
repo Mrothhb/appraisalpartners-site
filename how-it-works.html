@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Forward, upload, approve, review. A simple handoff for an editable UAD 3.6 report, with scope, fee, format, and return time agreed before production.">
+<meta name="description" content="Request, upload, approve, review. A simple handoff for an editable UAD 3.6 report, with scope, fee, format, and return time agreed before production.">
 <link rel="canonical" href="https://appraisalpartners.net/how-it-works.html">
 <meta property="og:title" content="How the Production Desk Works | Appraisal Partners">
-<meta property="og:description" content="See the simple handoff from a forwarded order to an editable UAD 3.6 report ready for the signing appraiser's review.">
+<meta property="og:description" content="Test the desk on an authorized past assignment, then track accepted UAD 3.6 reports stage by stage.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://appraisalpartners.net/how-it-works.html">
 <meta property="og:image" content="https://appraisalpartners.net/og-image.jpg">
@@ -48,18 +48,13 @@
   .steps li { display:grid; grid-template-columns:42px 1fr; gap:16px; padding:19px 0; border-bottom:1px solid var(--rule); }
   .steps .n { color:var(--accent); font-family:"IBM Plex Mono",monospace; font-size:14px; padding-top:3px; }
   .steps p { margin:0; color:var(--muted); font-size:16px; }
-  .steps.day li { grid-template-columns:76px 1fr; }
-  .scopes { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-top:4px; }
-  .scopes article { border:1px solid var(--rule); border-top:3px solid var(--accent); padding:16px 16px; }
-  .scopes .lane { font-family:"IBM Plex Mono","Courier New",monospace; font-size:11.5px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
-  .scopes h3 { font-size:18px; margin:0 0 6px; }
-  .price { font-family:"IBM Plex Mono","Courier New",monospace; font-size:13.5px; color:var(--accent-deep); margin:0 0 10px; }
-  .scopes p { font-size:15.5px; margin:0; }
-  .scopes .note { color:var(--muted); font-size:13.5px; margin:12px 0; }
-  .both { border-left:3px solid var(--accent); margin:18px 0 14px; padding:2px 0 2px 16px; }
-  .both p { font-size:15.5px; margin:0 0 7px; }
-  .both p:last-child { margin-bottom:0; color:var(--muted); }
-  .both strong { color:var(--accent-deep); }
+  .scopes { display:grid; grid-template-columns:1fr; gap:28px; }
+  .scopes article { padding:20px 0 0; border-top:3px solid var(--accent); }
+  .scopes .guar { color:var(--ink); font-size:15px; margin-top:10px; }
+  .scopes .guar strong { color:var(--accent-deep); }
+  .scopes .lane { font-family:"IBM Plex Mono","Courier New",monospace; font-size:11.5px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin:0 0 8px; }
+  .price { display:block; color:var(--accent); font-size:32px; margin-bottom:12px; }
+  .scopes p { color:var(--muted); font-size:16px; }
   .fineprint { color:var(--muted); font-size:14px; }
   .delivery { background:var(--wash); padding:26px; }
   .delivery ul { padding-left:20px; margin:0 0 16px; }
@@ -76,7 +71,6 @@
   .skip:focus { left:8px; }
   @media(max-width:560px) { body { padding:0 20px; } .sheet { padding-top:24px; } .scopes { grid-template-columns:1fr; gap:12px; } .cred { display:none; } .delivery { padding:22px; } }
   @media(prefers-reduced-motion:reduce) { .technology-link .arrow { transition:none; } }
-  @media (max-width:600px) { .scopes { grid-template-columns:1fr; } }
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-pNkpzZuFyeVpLVvH7hc8w.js"></script>
@@ -109,51 +103,26 @@
   <main id="main" tabindex="-1">
     <p class="eyebrow">How it works</p>
     <h1>Your assignment.<br><span>A lighter workload.</span></h1>
-    <p class="lede">Forward the order. We create the folder and prepare the editable UAD 3.6 appraisal. You review it, make the final decisions, and sign.</p>
+    <p class="lede">Send the materials. We prepare the editable UAD 3.6 report. You review it, make the final decisions, and sign.</p>
     <a class="technology-link" href="technology.html"><span><strong>Curious what happens behind our desk?</strong><span>See the technology &amp; human review.</span></span><span class="arrow" aria-hidden="true">&rarr;</span></a>
 
     <section id="process">
-      <h2>Here&rsquo;s how it works.</h2>
-      <p>When a new assignment arrives, forward the client&rsquo;s order email to Matt. He replies in that thread with the partial-desk and full-desk rates and the return time.</p>
-      <p>Say it works and which one you want. Matt sends the link to that assignment&rsquo;s private shared folder. After the inspection, add your photos, sketch, notes, mobile report file and other agreed materials there, and we start.</p>
-      <p>We complete the agreed desk work and Matt personally reviews the report. The finished unsigned appraisal file lands in the same shared folder, ready to open in TOTAL. You review it, make any edits, sign it and send it to your client. Revisions within the agreed assignment go to the front of the line.</p>
-    </section>
-
-    <section id="day">
-      <h2>An example of what your day looks like.</h2>
-      <p>You have three inspections today. You forwarded the client orders as they arrived, Matt replied to each with the rates and return time, you said yes to all three, and each got its own AP folder.</p>
-      <ol class="steps day">
-        <li><span class="n">9:00 AM</span><div><h3>First inspection.</h3><p>When you&rsquo;re done, add the photos, sketch, notes and mobile file to its AP folder. We start.</p></div></li>
-        <li><span class="n">10:30 AM</span><div><h3>Second inspection.</h3><p>Add that packet to its own folder. The first one is already in research.</p></div></li>
-        <li><span class="n">1:00 PM</span><div><h3>Third inspection.</h3><p>Add the last packet and head home.</p></div></li>
-        <li><span class="n">Later</span><div><h3>We handle the desk.</h3><p>Track each report while we research, build and review it. The finished unsigned appraisal file returns to the same AP folder at the agreed return time.</p></div></li>
-        <li><span class="n">Review</span><div><h3>You stay in control.</h3><p>Open the file in TOTAL, independently review it, make any edits, sign and deliver it to your client.</p></div></li>
+      <h2>Four simple steps.</h2>
+      <ol class="steps">
+        <li><span class="n">01</span><div><h3>Send a request.</h3><p>Tell us what you need. No confidential assignment files in the opening form.</p></div></li>
+        <li><span class="n">02</span><div><h3>Upload privately.</h3><p>After we confirm fit, we send your upload link and checklist. We check the packet and flag anything missing.</p></div></li>
+        <li><span class="n">03</span><div><h3>Approve the handoff.</h3><p>Scope, fixed fee, file format, and return time are agreed in writing. Uploading alone never starts production.</p></div></li>
+        <li><span class="n">04</span><div><h3>Review your report.</h3><p>We prepare and check the draft; Matt reads it before it comes back. You keep the final appraisal decisions.</p></div></li>
       </ol>
-      <p class="fineprint" id="tracking">Follow progress through your private tracker, with optional email or text updates. <a href="tracking.html">See how tracking works &rarr;</a></p>
+      <p class="fineprint" id="tracking">Follow progress through your private tracker, with optional email or text updates. <a href="status.html#v1.l9PPZzbtmScG8iP6ch64ng.l6H5EsjQ2qPYGuai4s-4m_LYGjjK3rGZU4pJl8zNJTA">See a sample tracker &rarr;</a></p>
     </section>
 
     <section id="pricing">
-      <h2>Two things we do. One price each.</h2>
+      <h2>What it costs.</h2>
       <div class="scopes">
-        <article>
-          <p class="lane">Full report</p>
-          <h3>$89 &middot; We handle the full report.</h3>
-          <p class="price">You inspect, review, and sign.</p>
-          <p>We research, pick the comps and prepare the editable report. You inspect, review, sign, and deliver.</p>
-        </article>
-        <article>
-          <p class="lane">Conversion</p>
-          <h3>$59 &middot; Your 2.6 comes back as a 3.6.</h3>
-          <p class="price">Send the finished 2.6. Review and sign the 3.6.</p>
-          <p>Your software won&rsquo;t carry it over. We will. It comes back as a native UAD 3.6 &mdash; your data, your comps, your adjustments &mdash; for you to review and sign. <a href="convert.html">How conversion works &rarr;</a></p>
-        </article>
+        <article><p class="lane">Partial desk</p><span class="price">$89</span><h3>You send the comps</h3><p>Send your inspection packet, subject data, selected comps, supporting market data, and direction. We prepare the report.</p><p class="guar"><strong>Revisions included, however many it takes.</strong> No extra charge.</p></article>
       </div>
-      <div class="both">
-        <p><strong>Revisions to the agreed assignment are included and take priority.</strong></p>
-        <p>We read every line before it goes back. Before your first report, we confirm we can cover your market and how soon we can be ready.</p>
-      </div>
-      <p class="fineprint"><strong>These are desk fees</strong> you pay separately from the appraisal fee you charge your client. No subscription or minimum.</p>
-      <p>Have a deadline? Text or call <a href="tel:+14692968726">(469) 296-8726</a> or email <a href="mailto:mrr@appraisalpartners.net?subject=Deadline">mrr@appraisalpartners.net</a> and we will tell you what we can do.</p>
+      <p class="fineprint">Per accepted report. These are desk fees, separate from your appraisal fee. Market fit and the exact return time are confirmed before acceptance.</p>
     </section>
 
     <section class="delivery" id="return">
@@ -165,7 +134,7 @@
 
     <section aria-label="A few practical details">
       <details id="comps"><summary>Can I steer the comps?</summary><p>Yes. Send your set, ask to see candidates, or request changes in the order thread. You make the final selection. We do not work toward a predetermined value.</p></details>
-      <details id="revisions"><summary>What if a revision comes back?</summary><p>Forward it to us. Revisions within the report as delivered are included, with one additional comparable each time a revision comes back. Materially new scope is quoted before work begins. <a href="terms.html">Full revision terms &rarr;</a></p></details>
+      <details id="revisions"><summary>What if a revision comes back?</summary><p>Forward it to us. Revisions within the report as delivered are included, with one additional comparable per revision event. Materially new scope is quoted before work begins. <a href="terms.html">Full revision terms &rarr;</a></p></details>
       <details id="boundaries"><summary>Which assignments fit?</summary><p>UAD 3.6 production only. Dallas&ndash;Fort Worth research is established; other markets and packet-based work are checked individually for access, competence, and client and state requirements. No FHA/VA panel or Georgia assignments under current desk policy. Have a legacy report? <a href="convert.html">See conversion &rarr;</a></p><p>Your authority to share materials and the approved data-provider route are confirmed before production. Required assistance disclosures remain part of the handoff. <a href="terms.html">Read the terms &rarr;</a></p></details>
     </section>
 
