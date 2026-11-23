@@ -1082,7 +1082,7 @@ details.pc-fold > .card:last-child {margin-bottom:var(--s-3);}
     <p class="note" id="selfservice-timing" hidden>A report takes about 2–3 hours to build, plus your review and any fixes. Best way: line up several orders, tap Start on each, and step away.</p>
     <p id="usage-lock" role="status" hidden></p>
     <p class="start-lock" id="start-missing" role="status" hidden></p>
-    <p class="optional-line" id="optional-line" hidden>Everything else is optional. Leave it blank and we’ll propose every call for you to approve.</p>
+    <p class="optional-line" id="optional-line" hidden>Everything else is optional.</p>
     <p class="agree-value" id="agree-value" hidden></p>
     <div id="post-request" hidden>
       <h2 id="post-title" hidden>Request a change</h2>
@@ -3028,7 +3028,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     musts = []; filed = []; highlighted = []; proposalPainters=[]; sgView = null;
     $("start-calls").hidden=true; $("start-calls").textContent=""; callLines=[];
     if (minimalCalls()) { minimalSections(host); renderStartScope(host); return; }
-    if (proposalReview()) { $("report").after($("form")); if (!factsOnlyReview()) renderProposals(host); return; }
+    if (proposalReview()) { $("report").after($("form")); if (!factsOnlyReview() && (D.house_prompts || {}).their_calls !== true) renderProposals(host); return; }
     $("report").before($("form"));
     renderStartScope(host);
     if (simpleStart()) return;
@@ -3595,6 +3595,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       var asks = readyRows().filter(function (r) { return r.key !== "q_service_option" && r.key !== "files"; }).length;
       return ["What to do now", ["Finish your work file in TOTAL: inspection, sketch and photos all in. Save it.",
                                  "Answer the " + (asks || "few") + " quick questions below.", "Tap Start."],
+              (D.house_prompts || {}).their_calls === true ? "Make your calls now or when your report is ready." :
               plainStart() ? "" : "Everything else is optional. Leave it blank and we’ll propose every call for you to approve at review."];
     }
     if (!customerReturned()) return null;
@@ -3796,6 +3797,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       $("start-missing").hidden = !gaps.length || inProduction();
       $("start-missing").textContent = gaps.join(" ");
       $("optional-line").hidden = plainStart() || inProduction() || stage !== "open";
+      $("optional-line").textContent = (D.house_prompts || {}).their_calls === true ?
+        "Make your calls now or when your report is ready." :
+        "Everything else is optional. Leave it blank and we’ll propose every call for you to approve.";
       $("help").hidden = $("help").hidden || !$("start-missing").hidden;
       $("help").textContent = "Save to come back, or Start your report.";
       $("start-production").hidden = true;
