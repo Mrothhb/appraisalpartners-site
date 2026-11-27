@@ -268,6 +268,8 @@ h2 { display: flex; align-items: center; justify-content: space-between; gap: va
 #post-request .talk-row, #feedback .talk-row { margin-top: var(--s-2); }
 #post-sent, #post-error { margin: 0 0 var(--s-3); }
 #post-error { color: var(--danger); }
+.len-note { font-size: 14px; color: var(--ink-2); margin: 4px 0 0; text-align: right; }
+.len-note.over { color: var(--danger); font-weight: 600; }
 #post-error.calm { color: var(--ink-2); }   /* the no-change line is a hint, not an error */
 .build { margin: var(--s-3) 0 0; text-align: center; font-size: 11px; color: var(--ink-2); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
 
@@ -1167,7 +1169,7 @@ html.checking-start .wrap, body.got-start .wrap, body.got-start > :is(dialog, [r
       <div id="post-box" hidden>
         <div class="line"><label class="lbl" for="post-text">What should change? Put everything in one message.</label>
           <p class="note" id="post-how">Say what to change and where. Example: “Page 2, comp 2: bath adjustment should be $4,000, not $6,000.”</p>
-          <textarea id="post-text" rows="8" maxlength="4000" placeholder="Type or talk your changes"></textarea></div>
+          <textarea id="post-text" rows="8" placeholder="Type or talk your changes"></textarea></div>
         <button type="button" class="st" id="post-send">Send</button>
       </div>
       <p class="note" id="post-error" role="status" hidden></p>
@@ -1204,7 +1206,7 @@ html.checking-start .wrap, body.got-start .wrap, body.got-start > :is(dialog, [r
   <details class="card fold" id="feedback" hidden>
     <summary id="feedback-title">Questions or feedback</summary>
     <div class="fold-body">
-      <div class="line"><textarea id="feedback-text" rows="2" maxlength="3000" aria-label="Questions or feedback"></textarea></div>
+      <div class="line"><textarea id="feedback-text" rows="2" aria-label="Questions or feedback"></textarea></div>
       <button type="button" class="st" id="feedback-send">Send</button>
       <p class="note" id="feedback-note" role="status"></p>
       <ul id="feedback-list"></ul>
@@ -1572,6 +1574,35 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function optionSent() { return customerReady(); }
   function readyNote() { if (stage === "open" && (D.questions_only || asked() && !isStartForm(F, D))) return answered() ? "Answers sent." : ""; if (quoteMoved()) return MOVED; if (startReceived()) return "Start received"; return inProduction() ? goNote() : "We begin as soon as your saved file checks out. Later changes are revisions."; }
   var NCHANGES = 5;
+  // A box never cuts text silently (2026-11-26): no maxlength; near and past
+  // the limit it shows the count, and Send/Save refuse with the text kept.
+  var POST_MAX = 20000, ANSWER_MAX = 20000, FEEDBACK_MAX = 3000;   // Code.gs: MAX_TEXT for a change request and one answer
+  var TEXTAREA_VALUE = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value");
+  function lengthNote(ta, max, trim) {   // trim: counted as Send counts it
+    var note = document.createElement("p");
+    note.className = "len-note"; note.hidden = true;
+    function paint() {
+      var v = TEXTAREA_VALUE.get.call(ta), n = (trim ? v.trim() : v).length;
+      if (n < max * 0.8) { note.hidden = true; return; }
+      if (!note.isConnected) {
+        var line = ta.closest(".line"), after = ta.closest(".talk-box") || ta;
+        if (line) line.appendChild(note); else if (after.parentNode) after.parentNode.insertBefore(note, after.nextSibling);
+      }
+      note.textContent = n.toLocaleString("en-US") + " of " + max.toLocaleString("en-US") + " characters";
+      note.classList.toggle("over", n > max); note.hidden = false;
+    }
+    ta.addEventListener("input", paint);
+    Object.defineProperty(ta, "value", { configurable: true, get: function () { return TEXTAREA_VALUE.get.call(this); },
+      set: function (v) { TEXTAREA_VALUE.set.call(this, v); paint(); } });   // restored drafts, the agent's fill and Send's clear count too
+    paint();
+    return ta;
+  }
+  // A save the backend would refuse for size never enters the outbox (it would retry forever and hold up the corrected text).
+  function tooLong(p) {
+    var a = p.answers || {}, c = p.changes || [];
+    return Object.keys(a).some(function (k) { return typeof a[k] === "string" && a[k].length > ANSWER_MAX; }) ||
+      c.some(function (v) { return typeof v === "string" && v.length > ANSWER_MAX; }) || JSON.stringify(p).length > MAX_BODY;
+  }
   var MAX_BODY = 100000;
   var CHECKLIST = JSON.parse($("checklist").textContent);
   var INLINE = $("order-data") ? JSON.parse($("order-data").textContent) : null;
@@ -1678,7 +1709,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function text(name, label, opts) {
     opts = opts || {};
     var id = "f-" + name;
-    var input = opts.multi ? el("textarea", { id: id, rows: opts.rows || "3", "data-call": name }) : el("input", { id: id, type: "text", autocomplete: "off", "data-call": name });
+    var input = opts.multi ? lengthNote(el("textarea", { id: id, rows: opts.rows || "3", "data-call": name }), ANSWER_MAX) : el("input", { id: id, type: "text", autocomplete: "off", "data-call": name });
     if (opts.short) input.className = "short";
     input.addEventListener("input", function () { put(name, input.value); grow(input); changed(); });
     controls[name] = { set: function (v) { v = v == null ? "" : String(v); if (input.value !== v) input.value = v; grow(input); } };
@@ -2635,7 +2666,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     view.sum = box.appendChild(el("div", { cls: "sg-sum", hidden: true }));
     view.sum.appendChild(el("label", { "for": "f-grid_comment", text: "Comment on adjustments over 10%" }));
     view.why = view.sum.appendChild(el("p", { cls: "sg-why" }));
-    view.comment = view.sum.appendChild(el("textarea", { id: "f-grid_comment", rows: "2", maxlength: "4000", "data-call": "grid_comment" }));
+    view.comment = view.sum.appendChild(lengthNote(el("textarea", { id: "f-grid_comment", rows: "2", "data-call": "grid_comment" }), ANSWER_MAX));
     view.comment.addEventListener("input", function () { put("grid_comment", view.comment.value); grow(view.comment); changed(); });
     controls.grid_comment = { set: function (v) { v = v == null ? "" : String(v); if (view.comment.value !== v) view.comment.value = v; grow(view.comment); } };
     if (minimal || !(D.questions || []).some(function (q) { return q.id === "value" || q.id === "value_confirm"; })) {
@@ -2655,7 +2686,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       view.mkt = box.appendChild(el("div", { cls: "sg-sum sg-mkt" }));
       view.mkt.appendChild(el("label", { "for": "f-marketability_comment", text: "Marketability comment, if your value is more than 10% from about " + money(median) + " (the area's typical sale price)" }));
       view.mktWhy = view.mkt.appendChild(el("p", { cls: "sg-why" }));
-      view.mktBox = view.mkt.appendChild(el("textarea", { id: "f-marketability_comment", rows: "2", maxlength: "4000", "data-call": "marketability_comment" }));
+      view.mktBox = view.mkt.appendChild(lengthNote(el("textarea", { id: "f-marketability_comment", rows: "2", "data-call": "marketability_comment" }), ANSWER_MAX));
       view.mktBox.addEventListener("input", function () { put("marketability_comment", view.mktBox.value); grow(view.mktBox); changed(); });
       controls.marketability_comment = { set: function (v) { v = v == null ? "" : String(v); if (view.mktBox.value !== v) view.mktBox.value = v; grow(view.mktBox); } };
     }
@@ -3081,7 +3112,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       more.hidden = shown >= count;
     }
     for (var n = 0; n < count; n++) (function (n) {
-      var input = el("textarea", { rows: "1", "aria-label": "Change or question " + (n + 1) });
+      var input = lengthNote(el("textarea", { rows: "1", "aria-label": "Change or question " + (n + 1) }), ANSWER_MAX);
       input.addEventListener("input", function () { state.changes[n] = input.value; grow(input); changed(); });
       controls["change" + (n + 1)] = { set: function () { var v = state.changes[n] || ""; if (input.value !== v) { input.value = v; grow(input); } fit(); } };
       var talk = talkRow(input, true);
@@ -4485,13 +4516,14 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   $("feedback-text").addEventListener("input", function(){grow(this);});
   function unfoldFeedback() { if (location.hash === "#feedback") $("feedback").open = true; }   // the tracker's "waiting on you" link points here
   window.addEventListener("hashchange", unfoldFeedback); unfoldFeedback();
+  lengthNote($("feedback-text"), FEEDBACK_MAX, true);
   var feedbackTalk = talkRow($("feedback-text"), true);
   if (feedbackTalk) $("feedback-text").closest(".line").appendChild(feedbackTalk);
   $("feedback-send").addEventListener("click", function(){
     if (feedbackBusy || readOnly || !online) return;
     var text = $("feedback-text").value.trim();
     if (!text) { $("feedback-text").focus(); return; }
-    if (text.length > 3000) { $("feedback-note").textContent = "Please shorten this message. Your text is still here."; return; }
+    if (text.length > FEEDBACK_MAX) { $("feedback-note").textContent = "Please shorten this message. Your text is still here."; return; }
     sendFeedback(text);
   });
 
@@ -4571,6 +4603,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     grow($("post-text")); $("post-text").focus();
   });
   $("post-text").addEventListener("input", function () { grow(this); $("post-error").hidden = true; });
+  lengthNote($("post-text"), POST_MAX, true);
   var postTalk = talkRow($("post-text"));
   $("post-text").closest(".line").appendChild(postTalk);
 
@@ -4579,13 +4612,14 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   $("post-send").addEventListener("click", function () {
     if ((!customerReturned() && !approved) || postBusy || readOnly || !online || roundsLocked()) return;
     var text = $("post-text").value.trim(), none = NO_CHANGES.test((text.toLowerCase().match(/\w+/g) || []).join(" "));
-    if (text.length > 4000) { $("post-error").textContent = "Please shorten this request. Your text is still here."; $("post-error").hidden = false; return; }
+    if (text.length > POST_MAX) { $("post-error").textContent = "Please shorten this request. Your text is still here."; $("post-error").hidden = false; return; }
     $("post-error").classList.toggle("calm", none);
     if (!text || none) { $("post-error").textContent = !none ? "Tell us what should change." : signedOff() ? "No changes needed. Your approval stands." : "No changes? Just tap " + approveLabel() + "."; $("post-error").hidden = false; $("post-text").focus(); return; }
     var request = { id: "pc_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2) + "_" + Math.random().toString(36).slice(2), text: text }, payload = { t: T, post_change: request };
     if (D.recipient_attribution) { payload.r = R; payload.actor = ACTOR; }
     if (D.acceptance_actions) payload.quote = body(false).quote;
     payload.request_id = request.id;
+    if (JSON.stringify(payload).length > MAX_BODY) { $("post-error").textContent = "Please shorten this request. Your text is still here."; $("post-error").hidden = false; return; }
     var doc = JSON.stringify(payload), stand = { id: request.id, text: request.text, at: new Date().toISOString(), pending: true };
     // The pending request keeps its text and stable ID; only its receipt confirms delivery.
     state.post_changes = (state.post_changes || []).concat(stand);
@@ -4675,6 +4709,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function write(send, keepalive) {
     var at = edits, s = state.status, payload = body(send), before, checkedForm;
     payload.request_id = newId();   // one id per action; a retry repeats the same document
+    if (tooLong(payload)) { failed({ code: "too_large" }); return Promise.reject({ code: "too_large" }); }
     var doc = JSON.stringify(payload), item = outboxAdd(send ? (s === "DONE" ? "approve" : "start") : "save", doc, payload.request_id);
     if (send) pendingTaps++;
     function confirm(tries) {

@@ -544,7 +544,7 @@ html.aap-agent-unread .talk::after { content: ""; position: absolute; top: 4px; 
   }
   function revisionForm(o) {
     var d = drafts[o.order] || (drafts[o.order] = { text: "", due: "" });
-    var text = h("textarea", { rows: "4", maxlength: "2800", "aria-label": "What the lender or client asks for" }), due = h("input", { type: "text", maxlength: "100", placeholder: "Optional", "aria-label": "Client due date" });
+    var text = h("textarea", { rows: "4", "aria-label": "What the lender or client asks for" }), due = h("input", { type: "text", maxlength: "100", placeholder: "Optional", "aria-label": "Client due date" });
     text.value = d.text; due.value = d.due;
     text.addEventListener("input", function () { d.text = text.value; });
     due.addEventListener("input", function () { d.due = due.value; });

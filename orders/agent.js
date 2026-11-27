@@ -410,7 +410,6 @@
       if (input) {
         const area = element("textarea", "answer-input");
         area.rows = 2;
-        area.maxLength = 3000;
         area.placeholder = input.placeholder || "";
         area.setAttribute("aria-label", input.placeholder || "Your answer");
         area.value = input.value || "";
@@ -987,7 +986,6 @@ html.aap-agent-unread .aap-agent-collapsed .aap-agent-minimize::after { content:
     const field = element("div", "field");
     const input = element("textarea", "input");
     input.rows = 1;
-    input.maxLength = 3000;
     input.placeholder = placeholder();
     input.setAttribute("aria-label", placeholder());
     const mic = element("button", "mic");
