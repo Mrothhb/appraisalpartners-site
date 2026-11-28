@@ -974,6 +974,22 @@ body.start-page .wrap { max-width: 640px; margin-inline: auto; padding-inline: 1
 .start-page :is(#sections,#lane-picker) .tap { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; width:100%; min-height:72px; padding:10px 12px 10px 48px; position:relative; font-size:20px; line-height:1.2; font-weight:700; text-align:left; background:white; border:2px solid #646464; color:#1c1c1c; box-shadow:none; }
 .start-page :is(#sections,#lane-picker) .tap::before { content:""; position:absolute; top:50%; left:14px; transform:translateY(-50%); width:20px; height:20px; border:2px solid #343434; border-radius:50%; background:white; }
 .start-page :is(#sections,#lane-picker) .tap::after { content:none; position:static; width:auto; height:auto; border:0; }
+.calls-hero .calls-hero-line { margin: 0 0 var(--s-4); font-size: 16px; line-height: 1.45; }
+.calls-hero-picks { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 599px) { .calls-hero-picks { grid-template-columns: 1fr; } }
+.calls-hero-btn { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 76px; padding: 14px 52px 14px 16px; border: 2px solid var(--primary); border-radius: var(--r-2); background: #fff; color: var(--primary); text-align: left; cursor: pointer; font: inherit; }
+.calls-hero-btn .calls-hero-main { font-size: 18px; font-weight: 700; line-height: 1.25; }
+.calls-hero-btn .calls-hero-small { font-size: 14px; font-weight: 400; line-height: 1.35; color: var(--ink-2); }
+.calls-hero-btn::after { content: ""; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border: 2px solid currentColor; border-radius: var(--r-2); text-align: center; line-height: 20px; font-weight: 700; }
+.calls-hero-btn:hover { border-color: var(--primary-hover); }
+.calls-hero-btn[aria-pressed="true"] { background: var(--primary); color: #fff; }
+.calls-hero-btn[aria-pressed="true"] .calls-hero-small { color: #fff; }
+.calls-hero-btn[aria-pressed="true"]::after { background: #fff; border-color: #fff; }
+.calls-hero-btn[aria-pressed="true"]::before { content: ""; position: absolute; right: 24px; top: 50%; width: 7px; height: 13px; border: solid var(--primary); border-width: 0 3px 3px 0; transform: translateY(-65%) rotate(45deg); z-index: 1; }
+.start-page #sections .call-compact .taps, .call-compact .line.wide .taps { display:flex; flex-direction:row; flex-wrap:wrap; gap:8px; align-items:center; }
+.start-page #sections .call-compact .tap, .call-compact .line.wide .tap { display:inline-flex; flex-direction:row; align-items:center; justify-content:center; width:auto; min-height:44px; padding:0 16px; }
+.start-page #sections .call-compact .tap::before { content:none; }
+.start-page #sections .call-compact .tap[aria-pressed=true] { background:var(--primary); border:1px solid var(--primary); color:#fff; }
 .start-page :is(#sections,#lane-picker) .tap[aria-pressed=true] { background:#edf4f7; color:#1c1c1c; border:3px solid #262626; }
 .start-page :is(#sections,#lane-picker) .tap[aria-pressed=true]::before { background:#262626; box-shadow:inset 0 0 0 3px white; }
 .start-page :is(#sections,#lane-picker) .tap[aria-pressed=true]::after { content:"Selected"; content:"Selected" / "✓ Selected"; padding-left:20px;
@@ -2139,6 +2155,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if(lbl)lbl.after(help);
       var wrap=card.appendChild(el("div",{cls:"call-line"+(label.length>60?" long":""),"data-call-line":line.key},[input,lbl?null:help]));
       if (line.optional === true) wrap.setAttribute("data-optional", "1");   // optional: never counted, never required
+      if (line.map_row && ssLane() && Array.isArray(options) && options.length && options.every(function (o) { return String(o).length <= 22; })) wrap.classList.add("call-compact");   // short choices side by side
       var source=(D.file_calls||{})[line.key], summary=null, opened=plainStart() && line.key === "il_amc_fee";
       if(source && source.source && line.kind !== "check") {
         summary=el("p",{cls:"file-call"},[el("span",{text:line.map_row ? "From your file: "+source.value+" " : callLabel(line)+": "+source.value+" — from your file "}),el("button",{type:"button",cls:"change-call",text:"Change","aria-label":"Change "+callLabel(line)})]);
@@ -2146,13 +2163,14 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       }
       function active(){ if (!line.map_row) return callActive(section.when)&&callActive(line.when);
         if (line.at === "review" && stage === "open") return false;
+        if (callHiddenUnder(line)) return false;   // listed under his usual line: shown only after "No, I'll pick"
         var ctl = callCoveredBy(line); return ctl ? String(callEffective(line.key)) !== String(callFills(ctl)[callKeyN(line.key)]) : callCond(line.cond); }
       function paint(){wrap.hidden=!active(); if(summary){var filed=!opened && (ans(line.key)===source.value || ssLane() && !callFilledPage(ans(line.key)));summary.hidden=!filed;input.hidden=filed;}}
       callLines.push(paint);
       if(line.required)musts.push({key:line.key,call:true,node:wrap,label:line.need || line.label,when:active,valid:function(v){return callValid(line,v);}});
       if(line.key === "value" && !line.map_row) {input.classList.add("minimal-value");wrap.appendChild(el("p",{cls:"grid-range","data-range":""}));}
     });
-    callLines.push(function(){card.hidden=!!section.when&&!callActive(section.when);});
+    callLines.push(function(){card.hidden=!!section.when&&!callActive(section.when) || ssLane() && !target && section.slot !== "start" && ![].some.call(card.querySelectorAll(".call-line"), function (w) { return !w.hidden; });});   // no row to show: no card
   }
   function paintCallLines(){callLines.forEach(function(f){f();});}
   function callDate(line, label) {   // a date picker: taps, no typing
@@ -2177,9 +2195,19 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     callLines.push(paint); paint();
   }
   var callFilledBy = {};
+  var CALLS_SHORT = { approaches: "Approaches", economic_life: "Economic life", cost_source: "Cost source", cost_age: "Effective age", inside_outside: "Inside and outside",
+    site_method: "Site value method", rate_support: "Adjustment support", weight_listings: "Listings weight", approach_weight_cost: "Cost approach weight", inspected_by: "Inspected by",
+    helper: "Helper", price_trend: "Price trend", supply: "Supply", marketing_time: "Marketing time", exposure: "Exposure", concessions: "Seller-paid costs",
+    rate_living_area: "Living area", rate_garage: "Garage stall", rate_bath: "Full bath", rate_half_bath: "Half bath", rate_basement: "Basement", rate_pool: "Pool", rate_lot_size: "Lot size", rate_age: "Age" };
+  function callShortName(k, l) { return CALLS_SHORT[callKeyN(k)] || String((l && l.label) || k).replace(/\?\s*$/, ""); }
+  function callShortValue(v) { v = String(v == null ? "" : v); return /^[A-Z](?=[a-z ])/.test(v) && !/^I(?![a-z])/.test(v) ? v.charAt(0).toLowerCase() + v.slice(1) : v; }   // "add cost", "a cost service"; "I did", "Q4", "$20" as they are
+  function callFromWords(o) {
+    var d = /^(\d{4})-(\d{2})-(\d{2})/.exec(String((o || {}).date || "")), md = d ? d[2] + "/" + d[3] + " " : "";
+    return o.kind === "report" ? " (from your " + md + "report)" : o.kind === "tap" ? " (from your " + md + "order)" : o.kind === "card" ? " (from your saved card)" : o.kind === "profile" ? " (from your profile)" : "";
+  }
   function callFillControl(line, input) {   // one tap answers every row it names; usual shows exactly what it fills
     var fills = callFills(line), keys = Object.keys(fills);   // qualified, never over his file
-    if (line.fill_sources && keys.length) input.appendChild(el("ul", { cls: "call-help fill-preview" }, keys.map(function (k) { var l = callLineFound(k) || {}, o = line.fill_sources[k] || {}; return el("li", { text: (l.label || k) + ": " + fills[k] + (o.date ? " (" + o.date + ")" : "") }); })));
+    if (line.fill_sources && keys.length) input.appendChild(el("ul", { cls: "call-help fill-preview" }, keys.map(function (k) { var l = callLineFound(k) || {}, o = line.fill_sources[k] || {}; return el("li", { text: ssLane() ? callShortName(k, l) + ": " + callShortValue(fills[k]) + callFromWords(o) : (l.label || k) + ": " + fills[k] + (o.date ? " (" + o.date + ")" : "") }); })));
     input.addEventListener("click", function (e) {
       if (!e.target.closest || !e.target.closest("button.tap")) return;
       setTimeout(function () {
@@ -3399,8 +3427,19 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     sendHead: "Your calls — {title} (review {id}).",
     questionsHead: "Questions for you (review {id}).",
     lockRule: "Then the form locks until you approve.",
-    lead: "Not answered yet:"
+    lead: "Not answered yet:",
+    heroHead: "Your calls",
+    heroLine: "Every call in this report is yours. Your report is not delivered without them. Up front or at the end, we need them every time.",
+    nowSmall: "A few minutes, then we build with your answers.",
+    readySmall: "We build it first. You answer before it is delivered.",
+    mustPick: "Your calls: now or later"
   };
+  var CALLS_PICK_REQUIRED = true;   // the one switch: Start waits until he picks now or later; false turns it off (the order's data can also turn it on)
+  function callsWordsFromData() {   // the five hero lines can be swapped from the order's data without a page rebuild (the button words stay locked)
+    var o = (D.house_prompts || {}).calls_words;
+    if (o && typeof o === "object") ["heroHead", "heroLine", "nowSmall", "readySmall", "mustPick"].forEach(function (k) { if (typeof o[k] === "string" && o[k].trim()) CALLS_WORDS[k] = o[k].trim(); });
+  }
+  function callsPickRequired() { return CALLS_PICK_REQUIRED === true || (D.house_prompts || {}).calls_pick_required === true; }
   var CALLS_SKIP = ["comps_roster", "search_net"], CALLS_OPTIONAL = ["notes"], reviewCallsPaint = null;
   function ssLane() {   // his own latest choice decides; the root lane only when none exists
     var lane = D.selected_lane || (((ssSubmission || {}).quote || {}).lane) || ((D.accepted_quote || {}).lane) || "";
@@ -3623,7 +3662,19 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (!rec) return !(c.file && f && String(v) === String(f.value));
     return !(["tap", "file", "usual"].indexOf(rec.source) >= 0 && rec.by !== "desk" && rec.signer === signer);   // only his own record, by this signer
   }
+  function callListParent(l) {   // the usual-type line (it shows what it fills) whose qualified fills name this row
+    var found = null; if (!l) return null;
+    (D.call_sections || []).forEach(function (s) { (s && s.lines || []).forEach(function (c) { if (!found && c && c.fill_button && c.fill_sources && c.key !== l.key && callAnswerablePage(c) && callFills(c).hasOwnProperty(callKeyN(l.key))) found = c; }); });
+    return found;
+  }
+  function callHiddenUnder(l) {   // only a row the control actually fills, only while the control stands on its fill button
+    if (!ssLane() || !l) return false;
+    var p = callListParent(l), k = callKeyN(l.key); if (!p || !(p.fill_sources || {})[k]) return false;
+    return String(callEffective(p.key)) === String(p.fill_button) && String(callEffective(l.key)) === String(callFills(p)[k]);   // and the row really holds its fill: a missing answer stays visible
+  }
   function callsBlankPage() { return callsAllPage().filter(function (c) {
+    if (ssLane() && c.out.charAt(0) !== "?") { var lp = callLineFound(c.k), pp = callListParent(lp);
+      if (pp && !callFilledPage(callEffective(pp.key)) && callKeysPage().indexOf(callKeyN(pp.key)) >= 0) return false; }   // only when the control is one of this review's call rows   // the usual line itself is the open call
     var v = callValueIn(state.answers, c.k), eff = c.out.charAt(0) === "?" ? v : callEffective(c.k), l = callLineFound(c.k) || {};
     if (!callFilledPage(eff)) return true;
     if (c.out.charAt(0) === "?") return false;
@@ -3636,11 +3687,20 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function callsMissingPage() { return !callListed() || callKeysPage().some(function (k) { return !callAnswerablePage(callLineFound(k)); }); }   // no list, or a list error: the desk republishes
   function callsOpenPage() { if (!reviewCallsTime()) return []; if (callsMissingPage()) return ["calls_list_missing"]; var a = callsBlankPage().filter(function (k) { return k.charAt(0) === "?" || callAnswerablePage(callLineFound(k)); }); callsUnsentPage().forEach(function (k) { if (a.indexOf(k) < 0) a.push(k); }); return a; }
   // The Start line as a recorded tap (default: when the report is ready). No new question, no forced pick.
-  function renderCallsWhen(host) {
-    var card = host.appendChild(el("section", { cls: "card calls-when", id: "calls-when" }));
-    card.appendChild(el("div", { cls: "line choice" }, [taps("calls_when", CALLS_WORDS.line, [CALLS_WORDS.now, CALLS_WORDS.ready])]));
-    controls.calls_when.set(state.answers.calls_when);
-    card.addEventListener("click", function (e) { if (e.target.closest && e.target.closest("button.tap")) setTimeout(function () { refresh(F); }, 0); });
+  function renderCallsWhen(host) {   // the hero: its own card, first, header bar, two large picks with one small line each
+    callsWordsFromData();
+    var card = host.insertBefore(el("section", { cls: "card calls-when calls-hero", id: "calls-when" }, [el("h2", { text: CALLS_WORDS.heroHead })]), host.firstChild);   // first on the form
+    card.appendChild(el("p", { cls: "calls-hero-line", text: CALLS_WORDS.heroLine }));
+    var row = card.appendChild(el("div", { cls: "calls-hero-picks", role: "group", "aria-label": CALLS_WORDS.heroHead }));
+    var btns = [[CALLS_WORDS.now, CALLS_WORDS.nowSmall], [CALLS_WORDS.ready, CALLS_WORDS.readySmall]].map(function (p) {
+      var b = row.appendChild(el("button", { type: "button", cls: "calls-hero-btn", value: p[0], "aria-pressed": "false" }, [el("span", { cls: "calls-hero-main", text: p[0] }), el("span", { cls: "calls-hero-small", text: p[1] })]));
+      b.addEventListener("click", function () { if (state.answers.calls_when === p[0]) return; put("calls_when", p[0]); paint(); changed(); setTimeout(function () { refresh(F); }, 0); });
+      return b;
+    });
+    function paint(v) { v = v === undefined ? state.answers.calls_when : v; btns.forEach(function (b) { b.setAttribute("aria-pressed", String(b.value === String(v == null ? "" : v))); }); }
+    controls.calls_when = { set: function (v) { paint(v == null ? "" : String(v)); } };
+    paint();
+    if (callsPickRequired()) musts.push({ key: "calls_when", node: card, label: CALLS_WORDS.mustPick, when: function () { return true; }, valid: function (v) { return v === CALLS_WORDS.now || v === CALLS_WORDS.ready; } });
   }
   // At review: every open call row, in its own words and order, value last, after everything else on the form.
   function callsSendId(t) {   // the same answers text (it names the review) gives the same request id from any tab
