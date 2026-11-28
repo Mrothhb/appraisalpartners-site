@@ -1654,7 +1654,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     (kids || []).forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
     return n;
   }
-  function changed() { edits++; $("saved").hidden = true; paintGrid(); if(minimalCalls() || proposalReview() || compOrderLane()) { paintCallLines(); paintStatus(); } else paintNow(); afterEdit(); }
+  function changed() { edits++; $("saved").hidden = true; paintGrid(); if(minimalCalls() || proposalReview() || compOrderLane()) { paintCallLines(); paintStatus(); if (reviewCallsPaint) reviewCallsPaint(); } else paintNow(); afterEdit(); }
 
 
   function twin(k) { return k.indexOf("q_") === 0 ? k.slice(2) : "q_" + k; }
@@ -1662,6 +1662,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   function put(name, v) {
     var before=state.answers[name];
     state.answers[name] = v; own[name] = true;
+    if (ssLane() && !/^q_/.test(name) && state.answers["q_" + name] != null && String(state.answers["q_" + name]).trim()) { state.answers["q_" + name] = v; own["q_" + name] = true; }
     if(minimalCalls()) {
       var key=name.replace(/^q_/,""), match=/^comp(\d+)_(quality|condition)$/.exec(key);
       if(match) {var binding="comp"+match[1]+"_mls";state.answers[binding]=String((D.comps[+match[1]-1]||{}).mls||"");own[binding]=true;}
@@ -2092,10 +2093,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     exposure: { label: "Exposure time (how long it would have taken to sell)" },
     value_why: { label: "Your value is outside your adjusted sales range. Why?" }
   };
-  function callWords(line) { return minimalCalls() && CALL_WORDS[line.key] || {}; }
+  function callWords(line) { return !line.map_row && minimalCalls() && CALL_WORDS[line.key] || {}; }
   function callLabel(line) { return callWords(line).label || line.label; }
   function callHelp(line) { var h = callWords(line).help; return Array.isArray(h) && h.length ? el("ul", { cls: "call-help" }, h.map(function (t) { return el("li", { text: t }); })) : null; }
-  function sectionTitle(section) { return minimalCalls() && SECTION_WORDS[section.title] || section.title; }
+  function sectionTitle(section) { return !mapForm() && minimalCalls() && SECTION_WORDS[section.title] || section.title; }
   function sectionNote(section) { return minimalCalls() && SECTION_NOTES[section.title] || section.note; }
   function callActive(condition) {
     var hp = D.house_prompts || {};
@@ -2124,27 +2125,83 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     card.hidden=false;
     if(sectionNote(section))card.appendChild(el("p",{cls:"note",text:sectionNote(section)}));
     section.lines.forEach(function(line){
+      if (ssStart() && callListed() && section !== (D.call_sections || [])[0] && callListed().indexOf(line.key) < 0 && line.optional !== true) return;   // only the listed rows (optional rows show too)
       if (["comps_roster", "search_net"].indexOf(line.key) >= 0 || line.key === "value" && sgOn()) return;   // his one value line sits under his grid
-      var options=callOptions(line), context=(D.house_prompts||{})[line.context], label=callLabel(line)+((typeof context === "string" && context.trim()) || typeof context === "number" ? " · "+context : "");   // "contract": true is the line's switch, never its context
-      var input=line.kind === "check" ? check(line.key,label) : options ? choice(line.key,label,options) : text(line.key,label,{multi:line.kind === "multi",short:!!line.numeric});
+      if (line.map_row && line.fill_button && line.min_fills && Object.keys(callFills(line)).length < Number(line.min_fills)) return;   // too few qualified fills: no control
+      var options=callOptions(line), context=(D.house_prompts||{})[line.context], label=callLabel(line)+(line.map_row && line.first_order_only === true ? " · first order only" : "")+(line.map_row && line.optional === true ? " (optional)" : "")+((typeof context === "string" && context.trim()) || typeof context === "number" ? " · "+context : "");   // "contract": true is the line's switch, never its context
+      if (line.map_row && line.range_calc) { var vv = callValueView(line); label = vv.label; options = vv.options; line = vv.line; }   // his range, only after his calls
+      if (line.map_row && Array.isArray(options) && !line.stepper && CALLS_OTHER_OK.indexOf(line.map_row || line.key) < 0) options = options.filter(function (o) { return o !== "Other"; });   // no stepper: no "Other" (it is never an amount)
+      var input=line.kind === "check" ? check(line.key,label) : line.kind === "date" ? callDate(line,label) : options ? choice(line.key,label,options) : text(line.key,label,{multi:line.kind === "multi",short:!!line.numeric});
+      if (line.map_row && line.stepper && options && options.length) callStepper(line, input);   // no buttons yet: no stepper either
+      if (line.map_row && line.fill_button) callFillControl(line, input);
       if(line.key === "calls_ok") {var original=controls.calls_ok.set;controls.calls_ok.set=function(v){original(v === true && ans("calls_checked_at") === (D.accepted_at||""));};}
       var help=callHelp(line), lbl=help && line.kind !== "check" && input.querySelector(".lbl");
       if(lbl)lbl.after(help);
       var wrap=card.appendChild(el("div",{cls:"call-line"+(label.length>60?" long":""),"data-call-line":line.key},[input,lbl?null:help]));
+      if (line.optional === true) wrap.setAttribute("data-optional", "1");   // optional: never counted, never required
       var source=(D.file_calls||{})[line.key], summary=null, opened=plainStart() && line.key === "il_amc_fee";
       if(source && source.source && line.kind !== "check") {
-        summary=el("p",{cls:"file-call"},[el("span",{text:callLabel(line)+": "+source.value+" — from your file "}),el("button",{type:"button",cls:"change-call",text:"Change","aria-label":"Change "+callLabel(line)})]);
+        summary=el("p",{cls:"file-call"},[el("span",{text:line.map_row ? "From your file: "+source.value+" " : callLabel(line)+": "+source.value+" — from your file "}),el("button",{type:"button",cls:"change-call",text:"Change","aria-label":"Change "+callLabel(line)})]);
         wrap.insertBefore(summary,input);summary.querySelector("button").addEventListener("click",function(){opened=true;paint();input.querySelector("input,textarea,button")?.focus({preventScroll:true});});
       }
-      function active(){return callActive(section.when)&&callActive(line.when);}
-      function paint(){wrap.hidden=!active(); if(summary){var filed=!opened && ans(line.key)===source.value;summary.hidden=!filed;input.hidden=filed;}}
+      function active(){ if (!line.map_row) return callActive(section.when)&&callActive(line.when);
+        if (line.at === "review" && stage === "open") return false;
+        var ctl = callCoveredBy(line); return ctl ? String(callEffective(line.key)) !== String(callFills(ctl)[callKeyN(line.key)]) : callCond(line.cond); }
+      function paint(){wrap.hidden=!active(); if(summary){var filed=!opened && (ans(line.key)===source.value || ssLane() && !callFilledPage(ans(line.key)));summary.hidden=!filed;input.hidden=filed;}}
       callLines.push(paint);
       if(line.required)musts.push({key:line.key,call:true,node:wrap,label:line.need || line.label,when:active,valid:function(v){return callValid(line,v);}});
-      if(line.key === "value") {input.classList.add("minimal-value");wrap.appendChild(el("p",{cls:"grid-range","data-range":""}));}
+      if(line.key === "value" && !line.map_row) {input.classList.add("minimal-value");wrap.appendChild(el("p",{cls:"grid-range","data-range":""}));}
     });
     callLines.push(function(){card.hidden=!!section.when&&!callActive(section.when);});
   }
   function paintCallLines(){callLines.forEach(function(f){f();});}
+  function callDate(line, label) {   // a date picker: taps, no typing
+    var box = el("div", { cls: "line date" }, [el("label", { cls: "lbl", "for": "f-" + line.key, text: label })]);
+    var input = box.appendChild(el("input", { id: "f-" + line.key, type: "date", "data-call": line.key }));
+    input.value = String(callValueIn(state.answers, line.key) || "");
+    controls[line.key] = { set: function (v) { input.value = v == null ? "" : String(v); } };
+    input.addEventListener("change", function () { put(line.key, input.value); changed(); });
+    return box;
+  }
+  function callStepper(line, input) {   // "Other": a stepper inside his range, no typing; the stepped amount is his answer
+    var st = line.stepper, row = input.appendChild(el("div", { cls: "stepper", hidden: "" }));
+    var minus = row.appendChild(el("button", { type: "button", cls: "tap step", text: "−", "aria-label": "−" }));
+    var shown = row.appendChild(el("span", { cls: "step-v", text: "—" }));
+    var plus = row.appendChild(el("button", { type: "button", cls: "tap step", text: "+", "aria-label": "+" }));
+    function cur() { var m = /^\$?([0-9][0-9,]*)/.exec(String(callValueIn(state.answers, line.key) || "")); return m && callStepOk(st, callValueIn(state.answers, line.key)) ? Number(m[1].replace(/,/g, "")) : null; }
+    function paint() { var n = cur(); shown.textContent = n == null ? "—" : callStepFmt(st, n); row.hidden = !(n != null || row.dataset.open === "1"); }
+    function go(d) { var n = cur(), step = Number(st.step) || 1; n = n == null ? (d > 0 ? Number(st.low) : Number(st.high)) : Math.min(Number(st.high), Math.max(Number(st.low), n + d * step)); put(line.key, callStepFmt(st, n)); if (controls[line.key]) controls[line.key].set(""); paint(); changed(); }
+    minus.addEventListener("click", function () { go(-1); }); plus.addEventListener("click", function () { go(1); });
+    input.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("button.tap:not(.step)"); if (!b) return;
+      if (b.value === "Other") { setTimeout(function () { put(line.key, ""); row.dataset.open = "1"; paint(); changed(); }, 0); } else { row.dataset.open = ""; setTimeout(paint, 0); } });
+    callLines.push(paint); paint();
+  }
+  var callFilledBy = {};
+  function callFillControl(line, input) {   // one tap answers every row it names; usual shows exactly what it fills
+    var fills = callFills(line), keys = Object.keys(fills);   // qualified, never over his file
+    if (line.fill_sources && keys.length) input.appendChild(el("ul", { cls: "call-help fill-preview" }, keys.map(function (k) { var l = callLineFound(k) || {}, o = line.fill_sources[k] || {}; return el("li", { text: (l.label || k) + ": " + fills[k] + (o.date ? " (" + o.date + ")" : "") }); })));
+    input.addEventListener("click", function (e) {
+      if (!e.target.closest || !e.target.closest("button.tap")) return;
+      setTimeout(function () {
+        var now = String(callEffective(line.key) || "");
+        if (now === String(line.fill_button)) keys.forEach(function (k) { put(k, fills[k]); callFilledBy[k] = line.key; if (controls[k]) controls[k].set(fills[k]); });
+        else keys.forEach(function (k) {   // only what this control put in: never his own tap
+          var rec = (state.calls || {})[k] || {}, ours = callFilledBy[k] === line.key || rec.via === line.key;   // filled by this control (this visit or a saved record via it)
+          if (ours && String(callValueIn(state.answers, k)) === String(fills[k])) { put(k, ""); if (controls[k]) controls[k].set(""); }
+          delete callFilledBy[k];
+        });
+        changed();
+      }, 0);
+    });
+  }
+  document.addEventListener("click", function (e) {   // a tap that opens or closes rows redraws what he can answer
+    if (!mapForm() || !e.target.closest || !e.target.closest("button.tap")) return;
+    var before = ssStart() ? String(callsWhenAsk()) : "";
+    setTimeout(function () {
+      if (ssStart() && String(callsWhenAsk()) !== before) { refresh(F); return; }
+      paintCallLines();
+    }, 30);
+  }, true);   // capture: read the state before his tap is applied
   var minimalView = null, moreOpen = null;
   function minimalDelta(r, i) {
     if (r.fact === "quality" || r.fact === "condition") {
@@ -2165,13 +2222,18 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (!permitsOff() && (D.house_prompts || {}).client_permits_text) startPermission(first);
       if (callsWhenAsk()) {
         renderCallsWhen(host);
-        if (state.answers.calls_when === CALLS_WORDS.now) sections.slice(1).forEach(function (sec) { if (sec.slot !== "adjustments") callSection(sec, host); });
+        if (state.answers.calls_when === CALLS_WORDS.now) sections.slice(1).forEach(function (sec) { if (sec.slot !== "adjustments" || mapForm()) callSection(sec, host); });
       }
       paintCallLines();
       return;
     }
     if (!permitsOff() && (D.house_prompts || {}).client_permits_text) startPermission(first);
     if (callsWhenAsk()) renderCallsWhen(host);
+    if (mapForm()) {
+      if (callsWhenAsk() && state.answers.calls_when === CALLS_WORDS.now) sections.slice(1).forEach(function (sec) { callSection(sec, host); });
+      paintCallLines();
+      return;
+    }
 
     var optionalKeys = [].concat.apply([], sections.slice(1).map(function(sec){return sec.lines.map(function(l){return l.key;});})).concat((D.adjustment_rows || []).map(function(r){return r.key;}), ["adjustments_by"], sgOn() ? sgKeys() : []);
     var some = function(k){var v=ans(k);return v === true || typeof v === "number" || typeof v === "string" && !!v.trim();};
@@ -2187,11 +2249,13 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     more.dataset.filled = anyFilled;
     more.addEventListener("toggle", function(){moreOpen = more.open;});
     host = more;
+    if (ssStart() && callListed()) { sections.slice(1).forEach(function (sec) { callSection(sec, host); }); paintCallLines(); return; }   // only the listed rows
     sections.slice(1,split).forEach(function(sec){callSection(sec,host);});
     var comps = D.comps || [], rows = D.adjustment_rows || [];
     var mode = host.appendChild(el("section", {cls:"card"}, [el("h2", {text:"Your adjustments"}), el("p", {cls:"note", text:"Who fills in your adjustment rates? Pick one."})]));
     var picker=mode.appendChild(el("div",{cls:"line choice"})), modeButtons=[];
-    [["customer","I'll enter my adjustments"],["archer_profile","Fill from my usual rates — I approve at review"]].forEach(function(option){
+    if (ssLane()) { picker.hidden = true; mode.querySelector(".note").hidden = true; }   // self-service: his own adjustments, no usual-rates preset
+    [["customer","I'll enter my adjustments"],["archer_profile","Fill from my usual rates — I approve at review"]].filter(function (o) { return !ssLane() || o[0] === "customer"; }).forEach(function(option){
       var button=picker.appendChild(el("button",{type:"button",cls:"tap",text:option[1],"aria-pressed":"false","data-adjustments-by":option[0]}));
       button.addEventListener("click",function(){put("adjustments_by",option[0]);controls.adjustments_by.set(option[0]);changed();paintStatus();});
       modeButtons.push(button);
@@ -2524,6 +2588,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var tools = card.appendChild(el("div", { cls: "sg-tools" }));
     if (minimal) {
       var fill = tools.appendChild(el("button", { type: "button", cls: "tap", "aria-pressed": String(sgRates), "aria-expanded": String(sgRates), text: "Fill from my usual rates" }));
+      if (ssLane()) fill.hidden = true;   // self-service: never a usual-rates fill
       fill.addEventListener("click", function () {
         sgRates = !sgRates; fill.setAttribute("aria-pressed", String(sgRates)); fill.setAttribute("aria-expanded", String(sgRates));
         if (view.rates) { view.rates.hidden = !sgRates; if (sgRates) { view.rates.scrollIntoView({ block: "nearest", behavior: "smooth" }); regrow(); } }
@@ -3192,12 +3257,12 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
 
 
   function autoDelivers() { var t = roundTerms(); return /^software-/.test(t) ? t >= "software-2026-11-02b" : /^service-/.test(t) && t >= "service-2026-11-02b"; }
-  function roundsLocked() { return D.stage === "returned" && !D.delivered_at && roundsApply() && autoDelivers() && (+D.change_rounds || 0) >= 2; }
+  function roundsLocked() { return D.stage === "returned" && !D.delivered_at && roundsApply() && autoDelivers() && (+D.change_rounds || 0) >= 2 && !ssLane(); }
   function delivered() { return customerReturned() && !!D.delivered_at && !signoff(); }   // the delivered report is the current one
   function roundsText(where) {
     var price = roundsPriced() ? " ($15 a round)" : "";
     if (changesClosed()) return ["Maximum change requests used (2 of 2).", (D.changes_closed_text || "Tap " + (proposalReview() && !factsOnlyReview() ? approveLabel().replace("Approve", "Approve all") : approveLabel()) + " below to get your report. To buy more change requests, email desk@aandap.com" + price + ". Or edit your TOTAL report yourself.").replace(/\bbelow\b/, where)];
-    return ["2 change rounds per order.", "Round 1: review everything and send all your changes at once. Round 2 is a grace round. Then the form locks and " + (autoDelivers() ? "we deliver your report." : "only Deliver remains.")];
+    return ["2 change rounds per order.", "Round 1: review everything and send all your changes at once. Round 2 is a grace round. " + (ssLane() ? CALLS_WORDS.lockRule : "Then the form locks and " + (autoDelivers() ? "we deliver your report." : "only Deliver remains."))];
   }
 
 
@@ -3322,7 +3387,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       proposalPainters.push(paint);
     });
   }
-  // Self-service calls: the recorded Start choice; at review the open calls; Approve waits for them.
+  // Self-service calls: his calls, his taps, one list. Every customer line this adds is in this table (one swap).
   var CALLS_WORDS = {
     line: "Make your calls now · Make them when the report is ready.",
     now: "Make your calls now",
@@ -3330,17 +3395,26 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     left: "{n} calls left. Answer them, then Approve.",
     leftOne: "1 call left. Answer it, then Approve.",
     first: "Answer your open calls first.",
+    send: "Send answers",
+    sendHead: "Your calls — {title} (review {id}).",
+    questionsHead: "Questions for you (review {id}).",
+    lockRule: "Then the form locks until you approve.",
     lead: "Not answered yet:"
   };
-  var CALLS_SKIP = ["comps_roster", "search_net"], CALLS_OPTIONAL = ["notes"], reviewCallsPaint = null, ssSubmission = null, ssDrawn = null;
+  var CALLS_SKIP = ["comps_roster", "search_net"], CALLS_OPTIONAL = ["notes"], reviewCallsPaint = null;
   function ssLane() {   // his own latest choice decides; the root lane only when none exists
     var lane = D.selected_lane || (((ssSubmission || {}).quote || {}).lane) || ((D.accepted_quote || {}).lane) || "";
     return lane ? /^self-service/.test(lane) : (D.house_prompts || {}).lane === "self-service";
   }
+  var ssSubmission = null, ssDrawn = null, callsTyping = {};
+  // A self-service Start: the picked offer is self-service (a partial or full offer never is).
   function ssStart() { return stage === "open" && (D.stage || "open") === "open" && !inProduction() && !startReceived() && (D.house_prompts || {}).lane !== "review" && ssLane(); }
+  function callStartKey(k) { var s0 = (D.call_sections || [])[0]; return !!(s0 && (s0.lines || []).some(function (l) { return l && l.key === k; })); }
+  function callsWhenAsk() { return ssStart() && callKeysPage().some(function (k) { return !callStartKey(k) && !callFromFilePage(k) && (callLineFound(k) || {}).at !== "review"; }); }   // a carry with no open call row (Start questions aside): no choice
   function callFilledPage(v) { return v === true || typeof v === "number" || typeof v === "string" && !!v.trim(); }
-  function callKeyN(k) { return String(k || "").replace(/^(q_)+/, ""); }
+  function callKeyN(k) { return String(k || "").replace(/^(q_)+/, ""); }   // one key rule (as the backend)
   function callLineFound(k) { var f = null; (D.call_sections || []).forEach(function (s) { (s && s.lines || []).forEach(function (l) { if (!f && l && callKeyN(l.key) === callKeyN(k)) f = l; }); }); return f; }
+  // One rule with the backend: the conditions it can judge from the form and his answers.
   function callWhenPage(c) {
     var hp = D.house_prompts || {};
     if (!c) return true;
@@ -3351,43 +3425,216 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (c === "il_amc") return hp.state === "IL" && !!hp.il_amc;
     return !!hp[c];
   }
+  // Calls: one shape, the effective answer, covered rows, origins: the backend's rules, mirrored.
+  function mapForm() { return ssLane() && (D.call_sections || []).some(function (s) { return (s && s.lines || []).some(function (l) { return l && l.map_row; }); }); }   // lane-gated
+  function callFileCalls() {   // the selected self-service offer's file answers, else the form's (as the backend's callView_)
+    var chosen = D.selected_lane || ((D.accepted_quote || {}).lane) || "", pick = (D.lane_options || []).filter(function (o) { return o && o.id === chosen && /^self-service/.test(o.id); })[0];
+    return (pick && Object.prototype.hasOwnProperty.call(pick, "file_calls") ? pick.file_calls : D.file_calls) || {};
+  }
+  function callEffective(k) { var v = callValueIn(state.answers, k), f = callFileCalls()[k]; if (callFilledPage(v)) return v; if (f && f.source && callFilledPage(f.value)) return f.value; var cf = callCarriedFill(k); return cf !== undefined ? cf : v; }
+  function callCarriedFill(k) {   // a control standing on its fill button from his own file (untouched) fills its rows
+    var files = callFileCalls(), out;
+    (D.call_sections || []).forEach(function (s) { (s && s.lines || []).forEach(function (l) {
+      var m = l && l.fill_button && l.fills && l.fills[l.fill_button], f = l && files[l.key], mine = callValueIn(state.answers, l.key);
+      if (out !== undefined || !m || !Object.prototype.hasOwnProperty.call(m, k) || !callFills(l).hasOwnProperty(k)) return;
+      if (!callFilledPage(mine) && f && f.source && String(f.value) === String(l.fill_button)) out = m[k];   // the control stands on its fill from his own untouched file
+    }); });
+    return out;
+  }
+  function callCondOk(c) {
+    if (!c || typeof c !== "object") return false;
+    if (Array.isArray(c.all)) return c.all.length > 0 && c.all.every(callCondOk);
+    if (Array.isArray(c.any)) return c.any.length > 0 && c.any.every(callCondOk);
+    return typeof c.k === "string" && !!c.k && (Array.isArray(c.in) || Array.isArray(c.not_in) || c.filled === true || c.other === true);
+  }
+  function callCond(c) {
+    if (!c) return true;
+    if (Array.isArray(c.all)) return c.all.every(callCond);
+    if (Array.isArray(c.any)) return c.any.some(callCond);
+    var ref = callLineFound(c.k);
+    if (ref && ref.fill_button && !callAnswerablePage(ref)) return true;   // its control does not apply: the row is asked on its own
+    var v = callEffective(String(c.k || ""));
+    if (!callFilledPage(v)) return false;
+    if (c.filled) return true;
+    if (c.other) { var l = callLineFound(c.k) || {}; return (l.options || []).filter(function (o) { return o !== "Other"; }).map(String).indexOf(String(v)) < 0; }
+    if (Array.isArray(c.in)) return c.in.map(String).indexOf(String(v)) >= 0;
+    if (Array.isArray(c.not_in)) return c.not_in.map(String).indexOf(String(v)) < 0;
+    return false;
+  }
+  var CALLS_OURS = /\b(a&ap|appraisal partners|archer|the desk|we built|our (report|build|draft))\b/i, CALLS_ORIGIN_CONTROLS = ["usual_answers", "market_repeat", "use_card"];
+  function callOrigin(o, ctl) {
+    if (!o || typeof o !== "object" || typeof o.ref !== "string" || !o.ref.trim() || typeof o.date !== "string" || !/^\d{4}-\d{2}-\d{2}/.test(o.date)) return false;
+    if (CALLS_OURS.test(o.ref) || CALLS_OURS.test(String(o.quote || ""))) return false;
+    if (ctl && ctl.map_row === "market_repeat" && (o.kind !== "tap" || Date.now() - Date.parse(o.date.slice(0, 10)) > 60 * 864e5)) return false;
+    if (ctl && ctl.map_row === "use_card" && o.kind !== "card") return false;
+    if (o.kind === "tap") return true;
+    if (o.kind === "report") return o.made_by === "him";
+    if (o.kind === "card") return o.saved_by == null || o.saved_by === "him";
+    if (o.kind === "profile") return typeof o.quote === "string" && !!o.quote.trim();
+    return false;
+  }
+  function callNeedsOrigin(l) { return !!l.fill_sources || CALLS_ORIGIN_CONTROLS.indexOf(l.map_row) >= 0; }
+  function callFills(l) {
+    var m = l && l.fill_button && l.fills && l.fills[l.fill_button], out = {}, need = l && callNeedsOrigin(l);
+    if (!m || typeof m !== "object") return out;
+    Object.keys(m).forEach(function (k) { var key = callKeyN(k); if ((!need || callOrigin((l.fill_sources || {})[k], l)) && !callFromFilePage(key)) out[key] = m[k]; });
+    return out;
+  }
+  function callFillMin(l) { var m = Number(l.min_fills) || 0; return l.map_row === "use_card" ? Math.max(1, m) : l.map_row === "market_repeat" ? Math.max(4, m) : l.map_row === "location_fold" ? Math.max(2, m) : CALLS_ORIGIN_CONTROLS.indexOf(l.map_row) >= 0 ? Math.max(2, m) : m; }
+  function callCoveredBy(l, depth) {
+    if (!l || (depth || 0) > 8) return null;
+    var cover = l.covered_by || l.usual_of;
+    if (!cover) (D.call_sections || []).forEach(function (s) { (s && s.lines || []).forEach(function (c) { var m = c && c.fill_button && c.fills && c.fills[c.fill_button]; if (!cover && m && Object.keys(m).map(callKeyN).indexOf(callKeyN(l.key)) >= 0 && c.key !== l.key) cover = c.key; }); });
+    if (!cover) return null;
+    var ctl = callLineFound(cover);
+    if (!ctl || !callAnswerablePage(ctl) || !callLive(ctl, (depth || 0) + 1) || String(callEffective(ctl.key)) !== String(ctl.fill_button)) return null;
+    return callFills(ctl).hasOwnProperty(callKeyN(l.key)) ? ctl : null;
+  }
+  function callLive(l, depth) { return !!l && (depth || 0) <= 8 && callCond(l.cond) && !callCoveredBy(l, depth); }
+  function callStepFmt(st, n) {
+    var neg = n < 0, a = Math.abs(n), r = Math.round(a * 100) / 100, parts = String(r).split(".");
+    var g = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
+    return (neg ? "-" : "") + (st.format === "usd" ? "$" + g : st.format === "pct" ? g + "%" : st.format === "years" ? g + " years" : g);
+  }
+  function callStepOk(st, v) {
+    if (!st || typeof st !== "object") return false;
+    var m = /^(-?)\$?([0-9][0-9,]*(?:\.[0-9]+)?)(%| years)?$/.exec(String(v)); if (!m) return false;
+    var n = (m[1] ? -1 : 1) * Number(m[2].replace(/,/g, "")), low = Number(st.low), high = Number(st.high), step = Number(st.step), i = (n - low) / step;
+    return n >= low - 1e-9 && n <= high + 1e-9 && Math.abs(i - Math.round(i)) < 1e-9 && callStepFmt(st, n) === String(v);
+  }
+  function callDateOk(v) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v)); if (!m) return false; var d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])); return d.getUTCFullYear() === +m[1] && d.getUTCMonth() === +m[2] - 1 && d.getUTCDate() === +m[3]; }
+  function callValueRangePage(l) {
+    var rc = l && l.range_calc; if (!rc || !Array.isArray(rc.comps) || !rc.comps.length) return null;
+    function rateOf(row) { var rl = callLineFound(row); if (rl && rl.cond && !callCond(rl.cond)) return 0;   // not asked: no such adjustment, even with a leftover amount
+      var a = callEffective(row), t = (rc.rates || {})[row] || {}; if (t.hasOwnProperty(String(a))) return Number(t[String(a)]);
+      var m = /^(-?)\$?([0-9][0-9,]*(?:\.[0-9]+)?)/.exec(String(a == null ? "" : a)); return m ? (m[1] ? -1 : 1) * Number(m[2].replace(/,/g, "")) : null; }
+    var adj = [];
+    for (var i = 0; i < rc.comps.length; i++) { var c = rc.comps[i], p = Number(c.price) + (Number(c.fixed) || 0), rows = Object.keys(c.units || {});
+      for (var j = 0; j < rows.length; j++) { var r = rateOf(rows[j]); if (r == null || !isFinite(r)) return null; p += r * Number(c.units[rows[j]]); }
+      if (!isFinite(p)) return null; adj.push(p); }
+    var round = Number(rc.round) || 1000, low = Math.ceil(Math.min.apply(null, adj) / round) * round, high = Math.max(low, Math.floor(Math.max.apply(null, adj) / round) * round), seen = {};
+    var amounts = [0, 1, 2, 3].map(function (k) { return Math.round((low + (high - low) * k / 3) / round) * round; }).filter(function (n) { return seen[n] ? false : (seen[n] = true); });
+    return { low: low, high: high, round: round, amounts: amounts };
+  }
+  // The value row: no range and no buttons until every call before it on this review is answered; then HIS range.
+  function callValueSig() { var s = ""; (D.call_sections || []).forEach(function (x) { (x && x.lines || []).forEach(function (l) { if (l && l.map_row && l.range_calc) s += callValueView(l).sig; }); }); return s; }
+  function callValueView(l) {
+    var keys = callKeysPage(), at = keys.indexOf(callKeyN(l.key)), blank = callsBlankPage();
+    var before = keys.slice(0, at < 0 ? keys.length : at).some(function (k) { return blank.indexOf(k) >= 0; });
+    var r = before ? null : callValueRangePage(l);
+    if (!r) return { label: String(l.label || "").replace(/[^.?!]*\{low\}[^.?!]*\{high\}[^.?!]*[.?!]\s*/, "").trim() || l.label, options: [], line: l, sig: "wait" };
+    var st = { low: r.low, high: r.high, step: r.round, format: "usd" }, f = function (n) { return callStepFmt(st, n); };
+    return { label: String(l.label || "").replace("{low}", f(r.low)).replace("{high}", f(r.high)), options: r.amounts.map(f).concat(["Other"]),
+      line: Object.assign({}, l, { stepper: st }), sig: r.low + "-" + r.high };
+  }
+  function callStartOpenPage() {   // after "Make your calls now": the listed calls asked at Start still open
+    if (!ssStart() || state.answers.calls_when !== CALLS_WORDS.now) return [];
+    return callKeysPage().filter(function (k) {
+      var l = callLineFound(k); if (!l || l.at !== "start" || l.optional === true) return false;
+      if (l.cond && !callCond(l.cond)) return false;
+      var eff = callEffective(k); return !callFilledPage(eff) || !callValidPage(l, eff);
+    });
+  }
+  function callValidPage(l, v) {
+    if (l && l.range_calc) { var r = callValueRangePage(l); if (!r) return false; var st = { low: r.low, high: r.high, step: r.round, format: "usd" };
+      return r.amounts.map(function (n) { return callStepFmt(st, n); }).indexOf(String(v)) >= 0 || callStepOk(st, v); }
+    if (!l) return true;
+    if (l.kind === "date") return callDateOk(v);
+    if (l.kind === "check") return v === true;
+    if (Array.isArray(l.options)) return l.options.filter(function (o) { return !(o === "Other" && CALLS_OTHER_OK.indexOf(l.map_row || l.key) < 0); }).map(String).indexOf(String(v)) >= 0 || callStepOk(l.stepper, v);
+    return true;
+  }
+  var CALLS_OTHER_OK = ["cost_source", "site_method"];
+  function callShapeError(l) {
+    if (!l) return "no row";
+    if (l.fills && !l.fill_button) return "fills without fill_button";
+    if (l.fill_button && !(Array.isArray(l.options) && l.options.indexOf(l.fill_button) >= 0)) return "fill_button is not a button";
+    if (/_other$/.test(String(l.key)) && l.map_row !== l.key || l.range) return "Other companion";
+    if ((l.map_row || l.key) === "value" && !l.range_calc) return "value without range_calc";
+    if (l.cond && !callCondOk(l.cond)) return "cond grammar";
+    if (l.optional !== true && l.kind !== "check" && l.kind !== "date" && !Array.isArray(l.options) && l.options !== "comps") return "typing";
+    if (Array.isArray(l.options) && !l.options.length) return "no buttons";
+    if (l.stepper && !(isFinite(Number(l.stepper.low)) && isFinite(Number(l.stepper.high)) && Number(l.stepper.step) > 0 && Number(l.stepper.low) < Number(l.stepper.high))) return "stepper";
+    return "";
+  }
   function callAnswerablePage(l) {
     if (!l || typeof l.key !== "string" || CALLS_SKIP.indexOf(l.key) >= 0) return false;
     if (l.options === "comps") return (callOptions(l) || []).length > 0;
+    if (callShapeError(l)) return false;   // a list error
+    if (l.fill_button && Object.keys(callFills(l)).length < callFillMin(l)) return false;
+    if (l.map_row === "location_fold" && (callListed() || []).map(callKeyN).some(function (k) { return /^comp\d+_location$/.test(k) && !callFills(l).hasOwnProperty(k); })) return false;
     if (Array.isArray(l.options)) return l.options.length > 0;
     return true;
   }
   function callSeedKeys() { var l = callListed(), keys = []; (l || []).forEach(function (k) { if (typeof k === "string") keys.push(callKeyN(k)); });
     if (!l) (D.call_sections || []).forEach(function (s) { (s && s.lines || []).forEach(function (x) { if (x && typeof x.key === "string") keys.push(callKeyN(x.key)); }); });
     return keys; }
-  function callListed() { var l = (D.house_prompts || {}).required_calls; return Array.isArray(l) ? l : null; }
-  function callKeysPage() {   // the backend's rule, exactly
+  function callListed() { var l = (F.house_prompts || {}).required_calls; return Array.isArray(l) ? l : null; }   // the root list, as the backend reads it
+  // The calls: the desk's list when it is an array (authoritative), else every answerable call row the form displays (all
+  // call sections, each condition that holds; notes stays optional). The backend uses the same rule.
+  function callKeysPage() {
     var listed = callListed(), keys = [];
-    if (listed) { listed.forEach(function (k) { if (typeof k === "string" && keys.indexOf(callKeyN(k)) < 0) keys.push(callKeyN(k)); }); return keys; }
-    (D.call_sections || []).forEach(function (s) {
-      if (!s || !Array.isArray(s.lines) || !callWhenPage(s.when)) return;
-      s.lines.forEach(function (l) {
-        if (!l || CALLS_OPTIONAL.indexOf(l.key) >= 0 || l.optional === true || !callWhenPage(l.when) || !callAnswerablePage(l)) return;
-        if (keys.indexOf(callKeyN(l.key)) < 0) keys.push(callKeyN(l.key));
-      });
+    if (!listed) return keys;   // no list, no rows (the desk republishes)
+    listed.forEach(function (k) {
+      if (typeof k !== "string") return;
+      var key = callKeyN(k), l = callLineFound(key);
+      if (l && l.optional === true) return;
+      if (l && l.fill_button && !callShapeError(l) && Object.keys(callFills(l)).length < callFillMin(l)) return;   // a control with too few qualified fills does not apply
+      if (l && !callShapeError(l) && (l.cond && !callCond(l.cond) || !callLive(l) && !callCoveredBy(l))) return;
+      if (keys.indexOf(key) < 0) keys.push(key);
     });
     return keys;
   }
-  function callStartKey(k) { var s0 = (D.call_sections || [])[0]; return !!(s0 && (s0.lines || []).some(function (l) { return l && callKeyN(l.key) === k; })); }
-  function callsWhenAsk() { return ssStart() && callKeysPage().some(function (k) { return !callStartKey(k) && !callFromFilePage(k); }); }   // a carry with no open call row: no choice
-  function callFromFilePage(k) { var s = (D.file_calls || {})[k]; return !!(s && s.source && callFilledPage(s.value)); }
+  // The keys that are calls (never desk defaults on a self-service form): the list and every call row after the To start card.
+  function callKeysAllPage() {
+    var keys = (callListed() || []).slice();
+    (D.call_sections || []).slice(1).forEach(function (s) { (s && s.lines || []).forEach(function (l) { if (l && typeof l.key === "string" && keys.indexOf(l.key) < 0) keys.push(l.key); }); });
+    return keys;
+  }
+  function callFromFilePage(k) { var s = callFileCalls()[k]; return !!(s && s.source && callFilledPage(s.value)); }
   function callQuestionsPage() { return (D.questions || []).filter(function (q) { return q && typeof q.id === "string" && q.kind !== "confirm" && q.material !== false && q.required !== false && q.id !== "client_permits"; }); }
   function reviewCallsTime() { return customerReturned() && ssLane() && signoff() && !delivered() && !signedOff(); }
-  function callValueIn(a, k) { var q = (a || {})["q_" + k]; return q != null && String(q).trim() ? q : (a || {})[k]; }
-  function callsMissingPage() { return !callListed() && !(D.call_sections || []).some(function (s) { return s && (s.lines || []).some(function (l) { return l && l.key; }); }) ||
-    callKeysPage().some(function (k) { return !callAnswerablePage(callLineFound(k)); }); }   // no call data, or a counted call with no control: the desk republishes
-  var callsTyping = {};   // a call whose typed entry is still being edited counts as open until it is committed (blur)
-  function callsBlankPage() {
-    var open = callKeysPage().filter(function (k) { return callsTyping[k] || !callFilledPage(callValueIn(state.answers, k)) && !callFromFilePage(k); });
-    callQuestionsPage().forEach(function (q) { if (!callFilledPage(state.answers["q_" + q.id])) open.push("?" + q.id); });
-    return open;
+  // His answers as this review first loaded: a call answered or changed since then is not in this report yet.
+  var callsLoad = null;
+  function callsLoadMark() {
+    var review = (D.review || {}).id || "";
+    if (callsLoad && callsLoad.review === review) return;
+    callsLoad = { review: review, answers: JSON.parse(JSON.stringify(state.answers || {})) };
+    var box = $("review-calls-box"); if (box) box.remove();   // drawn before his saved answers arrived: draw it again
+    renderReviewCalls($("sections"));
   }
-  function callsOpenPage() { if (!reviewCallsTime()) return []; if (callsMissingPage()) return ["calls_list_missing"]; return callsBlankPage(); }
+  function callValueIn(a, k) { var q = (a || {})["q_" + k]; return q != null && String(q).trim() ? q : (a || {})[k]; }
+  function callsAllPage() { return callKeysPage().map(function (k) { return { k: k, out: k, file: callFromFilePage(k) }; }).concat(callQuestionsPage().map(function (q) { return { k: q.id, out: "?" + q.id, file: false }; })); }
+  function callsUnsentPage() {
+    var review = (D.review || {}).id, calls = state.calls || {};
+    if (!review || !callsLoad || callsLoad.review !== review) return [];
+    return callsAllPage().filter(function (c) {
+      return (calls[c.k] || {}).report === review || JSON.stringify(callValueIn(state.answers, c.k)) !== JSON.stringify(callValueIn(callsLoad.answers, c.k));
+    }).map(function (c) { return c.out; });
+  }
+  function callNotHis(c) {   // a value with no record of his own (tap, file, usual) is not his call
+    if (callCoveredBy(callLineFound(c.k) || {})) return false;   // the control's fill: the backend checks its record
+    var v = callValueIn(state.answers, c.k), rec = (state.calls || {})[c.k], f = callFileCalls()[c.k];
+    if (!callsLoad || !callFilledPage(v) || c.out.charAt(0) === "?") return false;   // never before his saved records have arrived
+    if (callsLoad && JSON.stringify(v) !== JSON.stringify(callValueIn(callsLoad.answers, c.k))) return false;   // changed here: his tap
+    var signer = typeof R === "string" && /^[a-f0-9]{64}$/.test(R) ? R : "no tag";
+    var conf = {}; try { conf = JSON.parse(state.answers.calls_confirm || "{}") || {}; } catch (x) { conf = {}; }
+    if (String(conf[c.k]) === String(v)) return false;   // he re-confirmed it here (with or without a record yet)
+    if (!rec) return !(c.file && f && String(v) === String(f.value));
+    return !(["tap", "file", "usual"].indexOf(rec.source) >= 0 && rec.by !== "desk" && rec.signer === signer);   // only his own record, by this signer
+  }
+  function callsBlankPage() { return callsAllPage().filter(function (c) {
+    var v = callValueIn(state.answers, c.k), eff = c.out.charAt(0) === "?" ? v : callEffective(c.k), l = callLineFound(c.k) || {};
+    if (!callFilledPage(eff)) return true;
+    if (c.out.charAt(0) === "?") return false;
+    var carried = !callFilledPage(v) && callFromFilePage(c.k);   // his file's words: no button check
+    if (!carried && !callValidPage(l, eff) || Array.isArray(l.must) && l.must.map(String).indexOf(String(eff)) < 0) return true;   // must: on the effective answer
+    var ctl = callCoveredBy(l);
+    if (ctl) return String(eff) !== String(callFills(ctl)[c.k]);   // a covered row: its fill must be there (the backend checks its record)
+    return callNotHis(c);
+  }).map(function (c) { return c.out; }); }
+  function callsMissingPage() { return !callListed() || callKeysPage().some(function (k) { return !callAnswerablePage(callLineFound(k)); }); }   // no list, or a list error: the desk republishes
+  function callsOpenPage() { if (!reviewCallsTime()) return []; if (callsMissingPage()) return ["calls_list_missing"]; var a = callsBlankPage().filter(function (k) { return k.charAt(0) === "?" || callAnswerablePage(callLineFound(k)); }); callsUnsentPage().forEach(function (k) { if (a.indexOf(k) < 0) a.push(k); }); return a; }
   // The Start line as a recorded tap (default: when the report is ready). No new question, no forced pick.
   function renderCallsWhen(host) {
     var card = host.appendChild(el("section", { cls: "card calls-when", id: "calls-when" }));
@@ -3395,36 +3642,113 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     controls.calls_when.set(state.answers.calls_when);
     card.addEventListener("click", function (e) { if (e.target.closest && e.target.closest("button.tap")) setTimeout(function () { refresh(F); }, 0); });
   }
-  // At review: every open call row, in its own words and order, after everything else on the form. Count and rows: one rule.
+  // At review: every open call row, in its own words and order, value last, after everything else on the form.
+  function callsSendId(t) {   // the same answers text (it names the review) gives the same request id from any tab
+    var a = 0x811c9dc5, b = 0x01000193 ^ 0x5bd1e995, s = String(t);
+    for (var i = 0; i < s.length; i++) { var c = s.charCodeAt(i); a = Math.imul(a ^ c, 0x01000193) >>> 0; b = Math.imul(b ^ c, 0x5bd1e995) >>> 0; b ^= b >>> 15; }
+    return "pc_calls_" + ("0000000" + a.toString(16)).slice(-8) + ("0000000" + (b >>> 0).toString(16)).slice(-8) + "_" + s.length.toString(36);
+  }
   function renderReviewCalls(host, keep) {
     if (!reviewCallsTime() || $("review-calls-box")) return;
-    var listed = callKeysPage(), open = callsOpenPage().filter(function (k) { return k.charAt(0) !== "?" && k !== "calls_list_missing"; });
-    (keep || []).forEach(function (k) { if (listed.indexOf(k) >= 0 && open.indexOf(k) < 0) open.push(k); });   // a row he answered stays, with his value, for correction
-    if (!callsOpenPage().length && !(keep || []).length) return;
+    var listedNow = callKeysPage(), open = callsOpenPage().filter(function (k) { return k.charAt(0) !== "?" && k !== "calls_list_missing"; });
+    (keep || []).forEach(function (k) { if (listedNow.indexOf(k) >= 0 && open.indexOf(k) < 0) open.push(k); });   // a row he answered stays, with his value, for correction
+    if (!open.length && !callsOpenPage().length) return;
     var groups = [];
     (D.call_sections || []).forEach(function (sec) {
       var lines = (sec && sec.lines || []).filter(function (l) { return l && open.indexOf(callKeyN(l.key)) >= 0; });
-      if (lines.length) groups.push({ sec: sec, lines: lines.map(function (l) { return Object.assign({}, l, { when: null }); }) });   // counted means shown
+      if (lines.length) groups.push({ sec: sec, lines: lines });
     });
+    if (mapForm()) {   // the data's own order; optional rows (notes) show too
+      groups = [];
+      (D.call_sections || []).forEach(function (sec) {
+        var lines = (sec && sec.lines || []).filter(function (l) { return l && (open.indexOf(callKeyN(l.key)) >= 0 || l.map_row && l.optional === true && callLive(l)); });
+        if (lines.length) groups.push({ sec: sec, lines: lines });
+      });
+    }
+    var vi = mapForm() ? -1 : groups.findIndex(function (g) { return g.lines.some(function (l) { return l.key === "value"; }); });
+    if (vi >= 0) { var g = groups.splice(vi, 1)[0]; g.lines = g.lines.filter(function (l) { return l.key !== "value"; }).concat(g.lines.filter(function (l) { return l.key === "value"; })); groups.push(g); }
+    var reconfirm = callsAllPage().filter(function (c) { return c.out.charAt(0) !== "?" && callNotHis(c); }).map(function (c) { return c.k; });   // not his yet: shown empty, nothing written
     var box = host.appendChild(el("div", { id: "review-calls-box" })), cards = [];
-    groups.forEach(function (g) { callSection({ title: g.sec.title, note: g.sec.note, lines: g.lines }, box); cards.push(box.lastElementChild); });
-    groups.forEach(function (g) { g.lines.forEach(function (l) { if (controls[l.key]) controls[l.key].set(callValueIn(state.answers, callKeyN(l.key))); }); });   // every control shows his current answer (the count's source) before it can take a tap
-    var last = cards.length ? cards[cards.length - 1] : box.appendChild(el("section", { cls: "card" }));
-    (cards[0] || last).id = "review-calls";
-    var left = last.appendChild(el("p", { cls: "note calls-left" }));
-    var drawn = open.slice();
+    groups.forEach(function (g) {
+      var lines = g.lines.map(function (l) { return Object.assign({}, l, { when: null }); });   // counted means shown
+      callSection({ title: g.sec.title, note: g.sec.note, lines: lines }, box); cards.push({ card: box.lastElementChild, title: g.sec.title, lines: lines });
+    });
+    cards.forEach(function (c) { c.lines.forEach(function (l) { if (controls[l.key]) controls[l.key].set(callValueIn(state.answers, callKeyN(l.key))); }); });   // every control shows his current answer before it can take a tap
+    cards.forEach(function (c) { c.lines.forEach(function (l) { if (reconfirm.indexOf(callKeyN(l.key)) >= 0 && controls[l.key]) controls[l.key].set(""); }); });   // not his yet: shown empty, not written
+    reconfirm.forEach(function (k) {   // his tap on the value already stored re-confirms it (one calls_confirm write); any other tap is an ordinary answer
+      var row = box.querySelector('[data-call-line="' + (callLineFound(k) || {}).key + '"]'); if (!row) return;
+      row.addEventListener("click", function (e) {
+        var b = e.target.closest && e.target.closest("button.tap"); if (!b || b.classList.contains("step")) return;
+        if (String(b.value) !== String(callValueIn(state.answers, k))) return;
+        e.stopImmediatePropagation(); e.preventDefault();
+        var m = {}; try { m = JSON.parse(state.answers.calls_confirm || "{}") || {}; } catch (x) { m = {}; }
+        m[k] = b.value; put("calls_confirm", JSON.stringify(m));
+        if (controls[(callLineFound(k) || {}).key]) controls[(callLineFound(k) || {}).key].set(b.value);
+        changed();
+      }, true);
+    });
+    paintCallLines();   // (the controls are already painted from his answers, re-confirm rows empty, in the base)
+    var drawn = open.slice(), drawnSig = callValueSig();
     box.addEventListener("focusin", function (e) { var w = e.target && e.target.closest && e.target.closest("[data-call-line]"); if (w && /^(INPUT|TEXTAREA)$/.test(e.target.tagName) && !/^(button|checkbox|radio)$/.test(e.target.type || "")) callsTyping[callKeyN(w.getAttribute("data-call-line"))] = true; });
     box.addEventListener("focusout", function (e) { var w = e.target && e.target.closest && e.target.closest("[data-call-line]"); if (w) { delete callsTyping[callKeyN(w.getAttribute("data-call-line"))]; if (reviewCallsPaint) reviewCallsPaint(); } });
+    var last = cards.length ? cards[cards.length - 1].card : box.appendChild(el("section", { cls: "card" }));
+    if (cards.length) cards[0].card.id = "review-calls"; else last.id = "review-calls";
+    var left = last.appendChild(el("p", { cls: "note calls-left" }));
+    var send = last.appendChild(el("button", { type: "button", cls: "st", id: "send-calls", text: CALLS_WORDS.send }));
+    // His answers go as a reference (the rows, by name); the answers themselves are already saved and recorded.
+    function sendText() {
+      var unsent = callsUnsentPage(), parts = cards.map(function (c) {
+        var mine = c.lines.filter(function (l) { return unsent.indexOf(callKeyN(l.key)) >= 0; });
+        return mine.length ? CALLS_WORDS.sendHead.replace("{title}", c.title).replace("{id}", (D.review || {}).id || "") + "\n" + mine.map(function (l) { return callLabel(l); }).join("\n") : "";
+      });
+      var qs = callQuestionsPage().filter(function (q) { return unsent.indexOf("?" + q.id) >= 0; });
+      if (qs.length) parts.push(CALLS_WORDS.questionsHead.replace("{id}", (D.review || {}).id || "") + "\n" + qs.map(function (q) { return q.text || q.id; }).join("\n"));
+      return parts.filter(Boolean).join("\n\n").slice(0, 19000);
+    }
+    function savedExactly() {   // every unsent answer is in the last confirmed save
+      var base = (answerBase && answerBase.answers) || {};
+      return pendingTaps === 0 && callsUnsentPage().every(function (k) { var key = k.charAt(0) === "?" ? k.slice(1) : k; return JSON.stringify(callValueIn(base, key)) === JSON.stringify(callValueIn(state.answers, key)); });
+    }
+    function sentAlready() { var t = sendText(); return (state.post_changes || []).some(function (c) { return c && c.text === t; }); }
+    send.addEventListener("click", function () {
+      if (send.disabled || callsBlankPage().length || !savedExactly() || sentAlready() || postBusy) return;
+      var text = sendText(), request = { id: callsSendId(text), text: text };
+      var payload = { t: T, post_change: request, request_id: request.id };
+      if (D.recipient_attribution) { payload.r = R; payload.actor = ACTOR; }
+      if (D.acceptance_actions) payload.quote = body(false).quote;
+      var stand = { id: request.id, text: text, at: new Date().toISOString(), pending: true };
+      state.post_changes = (state.post_changes || []).concat(stand); paintStatus();
+      var item = outboxAdd("request", JSON.stringify(payload), request.id); item.calls = true; outboxSave();
+      function once() {
+        return post(item.doc).catch(function () {}).then(read).then(function (r) {
+          if (r.form && newer(r.form)) refresh(r.form);
+          verifyAction(item, r);
+          if (r.saved) apply(r.saved);
+          return r;
+        });
+      }
+      writing = writing.catch(function () {}).then(function () { return settle(item, once); }).then(function () {
+        paintStatus(); banner("Changes sent.", "ok");
+      }, function (e) {
+        if (e && e.form) refresh(e.form);
+        outboxDrop(item);   // a failed send is not kept for recovery: it never comes back into his Request-a-change box
+        state.post_changes = (state.post_changes || []).filter(function (p) { return p.id !== request.id; });
+        paintStatus(); if (e && e.code === "unknown") { closed(); return; }
+        banner("Not sent. Try again in a minute.", "warn");
+      });
+    });
     reviewCallsPaint = function () {
       var now = callsOpenPage().filter(function (k) { return k.charAt(0) !== "?" && k !== "calls_list_missing"; }), listed = callKeysPage();
       var opened = now.some(function (k) { return drawn.indexOf(k) < 0; }), closed = drawn.some(function (k) { return listed.indexOf(k) < 0; });
-      if (opened || closed) {   // a tap opened a new row or a condition closed one: draw again, keeping every row still a call (never on typing)
+      if (opened || closed || callValueSig() !== drawnSig) {   // also: the value row's range appears or moves once the calls before it are in   // a tap opened a new row or a condition closed one: draw again, keeping every row still a call (never on typing)
         var keep = drawn.slice(); reviewCallsPaint = null;
         setTimeout(function () { var b = $("review-calls-box"); if (b) b.remove(); renderReviewCalls(host, keep); }, 0); return;
       }
-      var blank = callsBlankPage().length;
+      var blank = callsBlankPage().length, unsent = callsUnsentPage().length;
       left.textContent = blank ? (blank === 1 ? CALLS_WORDS.leftOne : CALLS_WORDS.left.replace("{n}", blank)) : "";
       left.hidden = !left.textContent;
+      send.hidden = blank > 0 || !unsent || sentAlready();
+      send.disabled = readOnly || !online || postBusy || pendingTaps > 0 || !savedExactly();
     };
     reviewCallsPaint();
   }
@@ -3437,7 +3761,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (proposalReview()) { $("report").after($("form")); if (!factsOnlyReview() && (D.house_prompts || {}).their_calls !== true) renderProposals(host); return; }
     $("report").before($("form"));
     renderStartScope(host);
-    if (callsWhenAsk()) renderCallsWhen(host);
+    if (callsWhenAsk()) {
+      renderCallsWhen(host);
+      if (mapForm() && state.answers.calls_when === CALLS_WORDS.now) (D.call_sections || []).slice(1).forEach(function (sec) { callSection(sec, host); });
+    }
     renderReviewCalls(host);
     if (simpleStart()) return;
     CHECKLIST.sections.forEach(function (sec) {
@@ -3650,7 +3977,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   }
   function setStage(st) {
     stage = STAGES[st] ? st : "open";
-    if (!$("review-calls-box")) renderReviewCalls($("sections"));   // the page learns the stage after its first draw
+    if (!$("review-calls-box")) renderReviewCalls($("sections"));
     var built0 = (D.questions || []).length > 0 && stage === "open";
 
     var review = (D.house_prompts || {}).lane === "review";
@@ -4021,6 +4348,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if (roundsLocked() && !signedOff()) return ["Nothing to do", ["Your two change rounds are used.", "Your final report is on its way to your TOTAL folder."], ""];
     if (delivered()) return ["What to do now", ["Open your report in TOTAL.", "Review it, make any edits, and sign it.", "Questions? Use the box at the bottom of this page."], ""];
     if (signedOff()) return ["Nothing to do", ["You approved your report.", "It goes to your TOTAL folder next. We’ll email you."], ""];
+    if (signoff() && !reviewReady() && ssLane() && callsOpenPage().length && callsOpenPage()[0] !== "calls_list_missing") return ["What to do now", ["Your report is built. Answer your calls below to finish it."], ""];   // held for his calls: before any other card
     var request = changeState();
     if (request && (request.kind === "open" || request.kind === "answered" || request.request.pending)) return ["Nothing to do right now", ["We got your change request.", "We’ll post the updated report here and email you."], ""];
     if (signoff() && reviewReady()) {
@@ -4590,7 +4918,9 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     var unsentRequest = $("post-text").value, unsentFeedback = $("feedback-text").value;
     return read().then(function (r) {
       held = held.filter(function (i) { var d; try { d = JSON.parse(i.doc); } catch (e) { return true; }
-        if (landed(i.kind, d, r.saved || {}, i.hash)) { verifyAction(i, r); outboxDrop(i); return false; } return true; });
+        if (landed(i.kind, d, r.saved || {}, i.hash)) { verifyAction(i, r); outboxDrop(i); return false; }
+        if (i.kind === "request" && i.calls === true) { outboxDrop(i); return false; }   // a generated calls reference (its stored marker): never into his draft
+        return true; });
       if (r.form) refresh(r.form);
       savedEdits = edits; apply(r.saved || {});
       held.concat(typing ? [typing] : []).forEach(function (i) {
@@ -4667,7 +4997,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
   // through a <script> tag (JSONP) and writes with no-cors posts it cannot read; a read then shows whether it saved.
   function body(send) {
     var answers = state.answers;
-    if (!ssLane() && "calls_when" in answers) { answers = Object.assign({}, answers); delete answers.calls_when; }   // self-service only
+    if (!ssLane() && ("calls_when" in answers || "calls_confirm" in answers)) { answers = Object.assign({}, answers); delete answers.calls_when; delete answers.calls_confirm; }   // self-service only
     return { t: T, r: R, actor: ACTOR, expected_revision: answerRevision, review_id: (D.review || {}).id || "", quote: { price: O.price || "", ready_by: O.ready_by || "", lane: D.selected_lane || (D.house_prompts || {}).lane || "desk", terms: D.terms }, status: state.status, answers: answers, changes: state.changes, send: !!send };
   }
   // A browser signed in to several Google accounts gets its JSONP request redirected to /u/N/ and failing, because a
@@ -4955,6 +5285,12 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       pop(CALLS_WORDS.first, "calls");
       return;
     }
+    if (s === "READY" && callStartOpenPage().length) {   // his calls now: every Start call first
+      var firstOpen = document.querySelector('[data-call-line="' + (callLineFound(callStartOpenPage()[0]) || {}).key + '"]');
+      if (firstOpen) jumpTo(firstOpen);
+      pop(CALLS_WORDS.first, "calls");
+      return;
+    }
     var gaps = s === "READY" || s === "DONE" ? missing() : [];
     var blocking = s === "READY" && (callsFirst() || minimalCalls() || compOrderLane() && choosingLane()) ? gaps : gaps.filter(function (m) { return m.key === "q_client_permits"; });
     if (s === "READY" && startPage()) {
@@ -5092,6 +5428,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     ssSubmission = state.customer_submission;
     state.customer_submissions = saved.customer_submissions || [];
     state.invalidated_check = saved.invalidated_check || null;
+    state.calls = saved.calls && typeof saved.calls === "object" ? saved.calls : {};
     approved = stage === "returned" && (D.house_prompts || {}).lane === "review" && state.status === "DONE";
     conn(approved ? "Approved" : "");
     if (approved) { clearTimeout(timer); timer = null; tapped = null; pop(false); }
@@ -5109,6 +5446,7 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
       if (laneOptions(F).length && (laneForm(F, state.answers).selected_lane !== D.selected_lane || laneForm(F, state.answers).order.price !== O.price)) refresh(F);   // only a different saved lane or turn re-renders
       paintAll();
       answerBase = JSON.parse(JSON.stringify({ answers: state.answers, changes: state.changes }));
+      callsLoadMark();
     }
     paintStatus();
     banner(approved ? approvalNote() : customerReturned() || state.status === "DRAFT" ? "" : state.status === "READY" && stage === "open" ? readyNote() : SENT, "ok");
@@ -5178,6 +5516,10 @@ var SELF_NOTICE = "https://appraisalpartners.net/self-service-notice-2026-11-03.
     if(proposalReview() && D.proposed_calls) D.proposed_calls.sections.forEach(function(section){section.calls.forEach(function(c){low["q_pc_"+section.id+"_"+c.id]=String(c.value);});});
     if (valueLast() && !minimalCalls()) (D.comps || []).forEach(function (c, i) {   // a rating in a comp's record is his default too, beneath the rest
       ["quality", "condition"].forEach(function (w) { var k = "comp" + (i + 1) + "_" + w; if (c[w] && !(k in low)) low[k] = c[w]; });
+    });
+    if (ssLane()) callKeysAllPage().concat(((D.call_sections || [])[0] || {}).lines ? D.call_sections[0].lines.map(function (l) { return l && l.key; }) : []).forEach(function (k) {   // a desk default is never his call; his own file value stays
+      var f = callFileCalls()[k];
+      [k, "q_" + k].forEach(function (x) { if (x in low && !(f && f.source && String(low[x]) === String(f.value))) delete low[x]; });
     });
     Object.keys(low).forEach(function (k) { if (mine && twin(k) in mine) delete low[k]; });   // every lane: a lane switch never revives a call he cleared
     return Object.assign(low, mine || {});
